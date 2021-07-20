@@ -1,14 +1,20 @@
-function [values,clean_labels,bipolar_labels,chs_in_bipolar] = bipolar_montage(values,chLabels)
+function [values,clean_labels,bipolar_labels,chs_in_bipolar,which_chs_bipolar] = bipolar_montage(values,chLabels,which_chs)
 
 %{
 This function takes a chunk of multi-channel EEG data, along with channel
 names, and outputs the data in a bipolar montage. The output values(:,ich)
-equals the input values(:,ich) - values(
+equals the input values(:,ich) - values(:,jch), where jch is the next
+numbered contact on the same electrode as ich. For example. if ich is RA1,
+then jch is RA2 and values(:,RA1) will be the old values(:,RA1) - old
+values(:,RA2). If ich is the last contact on the electrode, then
+values(:,ich) is defined to be nans.
 %}
 
 %% Initialize output variables
 nchs = size(values,2);
 chs_in_bipolar = nan(nchs,2);
+old_values = values;
+which_chs_bipolar = [];
 
 %% Decompose chLabels
 [clean_labels,elecs,numbers] = decompose_labels(chLabels);
@@ -34,9 +40,16 @@ for ch = 1:nchs
     higher_label = [label_non_num,sprintf('%d',label_num_higher)];
     if sum(strcmp(clean_labels(:,1),higher_label)) > 0
         higher_ch = find(strcmp(clean_labels(:,1),higher_label));
-        out = values(:,ch)-values(:,higher_ch);
+        out = old_values(:,ch)-old_values(:,higher_ch);
         bipolar_label = [label,'-',higher_label];
         chs_in_bipolar(ch,:) = [ch,higher_ch];
+        
+        % Only make this a run channel if both members of the bipolar
+        % channel were run channels
+        if ismember(ch,which_chs) && ismember(higher_ch,which_chs)
+            which_chs_bipolar = [which_chs_bipolar;ch];
+        end
+        
     else
         % allow it to remain nans
         bipolar_label = '-';
@@ -45,6 +58,12 @@ for ch = 1:nchs
     bipolar_labels{ch} = bipolar_label;
     
     
+    
 end
+
+which_chs_bipolar = unique(which_chs_bipolar);
+
+%% Get location of midpoint between the bipolar channels
+for 
 
 end

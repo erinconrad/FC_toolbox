@@ -7,6 +7,10 @@ which_net = 'pc';
 tw = 2;
 out_name = 'test1';
 
+%% get pt name
+C = strsplit(file_name,'_');
+pt_name = C{1};
+
 %% Get file locs
 locations = fc_toolbox_locs;
 
@@ -25,6 +29,16 @@ addpath(genpath(ieeg_folder));
 pwfile = locations.ieeg_pw_file;
 login_name = locations.ieeg_login;
 
+%% Get elec locs
+box_path = locations.box_folder;
+elec_path = [box_path,'CNT Implant Reconstructions/'];
+temp_out = return_elec_locs(pt_name,elec_path);
+loc_labels = temp_out.elec_names;
+locs = temp_out.locs;
+anatomy = temp_out.anatomy;
+clear temp_out
+clean_loc_labels = decompose_labels(loc_labels);
+
 %% Get ieeg data
 data = download_ieeg_data(file_name,login_name,pwfile,times,1); % 1 means get lots of data
 chLabels = data.chLabels;
@@ -33,6 +47,17 @@ fs = data.fs;
 
 %% Cleaned labels
 clean_labels = decompose_labels(chLabels);
+
+%% Reconcile locs and anatomy with ieeg labels
+[ieeg_locs,ieeg_anatomy] = reconcile_locs_ieeg(clean_labels,clean_loc_labels,locs,anatomy);
+
+% I don't need these anymore and they might confuse me. I want everything
+% to be referenced to the ieeg channels
+clear anatomy
+clear locs
+clear loc_labels
+clear clean_loc_labels
+
 
 %% Find non-intracranial chs
 non_intracranial = find_non_intracranial(clean_labels);
@@ -46,12 +71,13 @@ which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 car_values = car_montage(values,which_chs);
 
 %% Bipolar montage
-[bipolar_values,clean_labels,bipolar_labels,chs_in_bipolar,which_chs_bipolar] = bipolar_montage(values,chLabels,which_chs);
+[bipolar_values,clean_labels,bipolar_labels,chs_in_bipolar,which_chs_bipolar,mid_locs,mid_anatomy] = ...
+    bipolar_montage(values,chLabels,which_chs,ieeg_locs,ieeg_anatomy);
 
 %% Table of channels
 is_run_car = ismember((1:length(clean_labels))',which_chs);
 is_run_bipolar = ismember((1:length(clean_labels))',which_chs_bipolar);
-T = table(clean_labels,is_run_car,bipolar_labels,is_run_bipolar);
+T = table(clean_labels,is_run_car,bipolar_labels,is_run_bipolar,mid_anatomy);
 
 %% Calculate network
 % Loop over montages
@@ -96,7 +122,7 @@ save([out_folder,out_name],'out');
 
 %% Show the networks
 if 1
-    plot_nets_and_corr(bipolar_net,car_net)
+    plot_nets_and_corr(bipolar_net,car_net,bipolar_labels,clean_labels)
     
 end
 

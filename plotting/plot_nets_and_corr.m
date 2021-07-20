@@ -1,4 +1,4 @@
-function plot_nets_and_corr(net1,net2)
+function plot_nets_and_corr(net1,net2,labels1,labels2)
 
 % Expand if flat
 [m,n] = size(net1);
@@ -13,9 +13,17 @@ figure
 tiledlayout(2,2)
 nexttile
 turn_nans_gray(net1)
+xticks(1:length(labels1))
+yticks(1:length(labels1))
+xticklabels(labels1)
+yticklabels(labels1)
 
 nexttile
 turn_nans_gray(net2)
+xticks(1:length(labels2))
+yticks(1:length(labels2))
+xticklabels(labels2)
+yticklabels(labels2)
 
 nexttile([1 2])
 ns1 = nansum(net1,2);

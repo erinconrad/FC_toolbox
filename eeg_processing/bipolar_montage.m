@@ -1,4 +1,5 @@
-function [values,clean_labels,bipolar_labels,chs_in_bipolar,which_chs_bipolar] = bipolar_montage(values,chLabels,which_chs)
+function [values,clean_labels,bipolar_labels,chs_in_bipolar,which_chs_bipolar,mid_locs,mid_anatomy] =...
+    bipolar_montage(values,chLabels,which_chs,locs,anatomy)
 
 %{
 This function takes a chunk of multi-channel EEG data, along with channel
@@ -62,5 +63,36 @@ for ch = 1:nchs
 end
 
 which_chs_bipolar = unique(which_chs_bipolar);
+
+%% Get location of midpoint between the bipolar channels and get anatomy
+mid_locs = nan(length(bipolar_labels),3);
+mid_anatomy = cell(length(bipolar_labels),1);
+for i = 1:length(bipolar_labels)
+    
+    % Get the pair
+    ch1 = chs_in_bipolar(i,1);
+    ch2 = chs_in_bipolar(i,2);
+    
+    if isnan(ch1) || isnan(ch2)
+        continue
+    end
+    
+    % get the locs
+    loc1 = locs(ch1,:);
+    loc2 = locs(ch2,:);
+    
+    % get midpoint
+    midpoint = (loc1 + loc2)/2;
+    mid_locs(i,:) = midpoint;
+    
+    % get anatomy of each
+    anat1 = anatomy{ch1};
+    anat2 = anatomy{ch2};
+    midanat = [anat1,'-',anat2];
+    mid_anatomy{i} = midanat;
+    
+end
+
+
 
 end
