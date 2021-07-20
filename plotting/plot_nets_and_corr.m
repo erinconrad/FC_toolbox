@@ -1,39 +1,56 @@
-function plot_nets_and_corr(net1,net2,labels1,labels2)
+function plot_nets_and_corr(out,im)
 
-% Expand if flat
-[m,n] = size(net1);
-smallest_dim = min([m,n]);
-if smallest_dim == 1
-    net1 = wrap_or_unwrap_adjacency_fc_toolbox(net1);
-    net2 = wrap_or_unwrap_adjacency_fc_toolbox(net2);
-end
-    
-
+%% initialize figure
 figure
-tiledlayout(2,2)
-nexttile
-turn_nans_gray(net1)
-xticks(1:length(labels1))
-yticks(1:length(labels1))
-xticklabels(labels1)
-yticklabels(labels1)
+set(gcf,'position',[20 20 1300 700])
+tiledlayout(1,2)
 
-nexttile
-turn_nans_gray(net2)
-xticks(1:length(labels2))
-yticks(1:length(labels2))
-xticklabels(labels2)
-yticklabels(labels2)
+% Loop over montages
 
-nexttile([1 2])
-ns1 = nansum(net1,2);
-ns2 = nansum(net2,2);
-[r,pval] = corr(ns1,ns2,'rows','pairwise');
-plot(ns1,ns2,'o','linewidth',2);
-yl = ylim;
-xl = xlim;
-text(xl(2),yl(2),sprintf('r = %1.2f, p = %1.3f',r,pval),...
-    'horizontalalignment','right','verticalalignment','top');
+montage = out.montage(im).name;
+labels = out.montage(im).labels;
+is_run = out.montage(im).is_run;
 
+% remove labels not in run
+labels = labels(is_run);
+
+for in = 1:2
+    network = out.montage(im).net(in).name;
+    data = out.montage(im).net(in).data;
+
+    % Expand
+    data = wrap_or_unwrap_adjacency_fc_toolbox(data);
+
+
+    % remove things not in run
+    data = data(is_run,is_run);
+
+
+    % show network
+    nexttile
+    turn_nans_gray(data)
+    xticks(1:length(labels))
+    yticks(1:length(labels))
+    xticklabels(labels)
+    yticklabels(labels)
+    set(gca,'fontsize',10)
+
+    % calculate correlation between wrapped matrices
+    [r,p] = corr(out.montage(im).net(1).data,out.montage(im).net(2).data,'rows','pairwise');
+    
+    if in == 1
+        ylabel(sprintf('%s\nr = %1.2f, p = %1.3f',montage,r,p),'fontsize',15);
+    end
+
+
+    if im == 2
+        xlabel(network,'fontsize',15)
+    end
+
+end
+
+
+
+  
 
 end

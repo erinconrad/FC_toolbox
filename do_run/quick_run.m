@@ -1,4 +1,4 @@
-function quick_run
+
 
 %% Parameters
 file_name = 'HUP212_phaseII';
@@ -6,6 +6,7 @@ times = [583265 583280];
 which_net = 'pc';
 tw = 2;
 out_name = 'test1';
+
 
 %% get pt name
 C = strsplit(file_name,'_');
@@ -58,6 +59,8 @@ clear locs
 clear loc_labels
 clear clean_loc_labels
 
+locs = ieeg_locs;
+anatomy = ieeg_anatomy;
 
 %% Find non-intracranial chs
 non_intracranial = find_non_intracranial(clean_labels);
@@ -68,63 +71,113 @@ which_chs = find(~non_intracranial); % channels to do analysis on
 which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 
 %% CAR montage
-car_values = car_montage(values,which_chs);
+[car_values,car_labels] = car_montage(values,which_chs,clean_labels);
 
 %% Bipolar montage
-[bipolar_values,clean_labels,bipolar_labels,chs_in_bipolar,which_chs_bipolar,mid_locs,mid_anatomy] = ...
-    bipolar_montage(values,chLabels,which_chs,ieeg_locs,ieeg_anatomy);
+[bipolar_values,~,bipolar_labels,chs_in_bipolar,which_chs_bipolar,mid_locs,mid_anatomy] = ...
+    bipolar_montage(values,chLabels,which_chs,locs,anatomy);
 
 %% Table of channels
 is_run_car = ismember((1:length(clean_labels))',which_chs);
 is_run_bipolar = ismember((1:length(clean_labels))',which_chs_bipolar);
-T = table(clean_labels,is_run_car,bipolar_labels,is_run_bipolar,mid_anatomy);
+if 0
+    
+    T = table(clean_labels,is_run_car,bipolar_labels,is_run_bipolar,mid_anatomy);
+end
 
 %% Calculate network
+
 % Loop over montages
 for im = 1:2
+   
     
     if im == 1
-        values = bipolar_values;
+        montage = 'bipolar';
     elseif im == 2
-        values = car_values;
+        montage = 'car';
+    end
+
+
+    switch montage
+        case 'bipolar'
+            values = bipolar_values;
+            is_run = is_run_bipolar;
+            curr_locs = mid_locs;
+            curr_labels = bipolar_labels;
+            curr_anatomy = mid_anatomy;
+        case 'car'
+            values = car_values;
+            is_run = is_run_car;
+            curr_locs = locs;
+            curr_labels = car_labels;
+            curr_anatomy = anatomy;
     end
     
-    % Choose network
-    switch which_net
-        case 'pc'
-            net = pc_calc(values,fs,tw);
+    % make non run channels nans
+    values(:,~is_run) = nan;
+    
+    % filters
+    values = notch_filter(values,fs);
+    values = bandpass_filter(values,fs);
+    
+    tout.montage(im).values = values;
+    tout.montage(im).name = montage;
+    
+    % Loop over networks to run
+    for in = 1:2
+
+        if in == 1
+            which_net = 'pc';
+        elseif in == 2
+            which_net = 'inv_dist';
+        end
+
+        % Choose network
+        switch which_net
+            case 'pc'
+                curr_net = pc_calc(values,fs,tw);
+            case 'inv_dist'
+                curr_net = inverse_dist(curr_locs);
+        end
+
+        % save
+        out.montage(im).name = montage;
+        out.montage(im).net(in).name = which_net;
+        out.montage(im).net(in).data = curr_net;
+        out.montage(im).labels = curr_labels;
+        out.montage(im).locs = curr_locs;
+        out.montage(im).anatomy = curr_anatomy;
+        out.montage(im).is_run = is_run;
+
     end
     
-    % save
-    if im == 1
-        bipolar_net = net;
-    elseif im == 2
-        car_net = net;
-    end
     
 end
 
 %% Save the networks
-out.net.bp = bipolar_net;
-out.net.car = car_net;
 out.file_name = file_name;
 out.fs = fs;
 out.chLabels = chLabels;
-out.bipolar_labels = bipolar_labels;
 out.clean_labels = clean_labels;
-out.is_run_bipolar = is_run_bipolar;
-out.is_run_car = is_run_car;
 out.chs_in_bipolar = chs_in_bipolar;
 out.bad = bad;
 out.bad_details = details;
 out.non_intracranial = non_intracranial;
 save([out_folder,out_name],'out');
 
-%% Show the networks
+%% Show data
 if 1
-    plot_nets_and_corr(bipolar_net,car_net,bipolar_labels,clean_labels)
+    %ex_chs = {'LA1','LA2','LA3','LA4'};
+    ex_chs = [];
+    im = 1;
+    simple_plot(tout,out,ex_chs,im)
+    
+end
+
+%% Show the networks
+if 0
+    plot_nets_and_corr(out,im)
     
 end
 
 
-end

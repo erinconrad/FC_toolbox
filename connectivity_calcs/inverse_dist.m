@@ -13,6 +13,9 @@ for i = 1:n
         A(j,i) = inv_dist;
     end
 end
+
+% Wrap it for storage
+A = wrap_or_unwrap_adjacency_fc_toolbox(A);
        
 
 end
