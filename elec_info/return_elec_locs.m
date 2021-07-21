@@ -13,45 +13,68 @@ for i = 1:length(listing)
     end
 end
 
-if length(match_idx) == 0
-    error('no file match');
-elseif length(match_idx) > 1
-    error('multiple file matches');
+if isempty(match_idx)
+    fprintf('\nWarning, no folder match for %s\n',name);
+    out = [];
+    return
+else
+    fprintf('\nGetting elec locs for %s\n',name);
 end
 
-%% Load the desired file
-T = readtable([elec_loc_folder,listing(match_idx).name,'/',elec_file]);
+for i = 1:length(match_idx)
+    
+    which_index = match_idx(i);
 
-%% Get electrode names
-elec_names = T.Var1;
-anatomy = T.Var2;
-locs = [T.Var3 T.Var4 T.Var5];
+    %% Load the desired file
+    try
+        T = readtable([elec_loc_folder,listing(which_index).name,'/',elec_file]);
+    catch
+        fprintf('\nWarning, no file match for %s\n',name);
+        
+        out(i).folder_name = listing(which_index).name;
+        out(i).elec_names = [];
+        out(i).locs = [];
+        out(i).anatomy = [];
+        
+        continue
+    end
+    
+    if ~ismember(T.Properties.VariableNames,'Var1')
+        out(i).folder_name = listing(which_index).name;
+        out(i).elec_names = [];
+        out(i).locs = [];
+        out(i).anatomy = [];
+        continue
+    end
 
-%% Do some sanity checks
-% Are the elec names strings
-if ~iscell(elec_names)
-    error('check elec names');
+    %% Get electrode names
+    elec_names = T.Var1;
+    anatomy = T.Var2;
+    locs = [T.Var3 T.Var4 T.Var5];
+
+    %% Do some sanity checks
+    % Are the elec names strings
+    if ~iscell(elec_names)
+        error('check elec names');
+    end
+
+    if ~strcmp(class(elec_names{1}),'char')
+        error('check elec names');
+    end
+    
+    % Is the median distance between electrodes and the one listed under them
+    % close to 5 mm?
+    %{
+    diff_locs = diff(locs,[],1);
+    dist_locs = vecnorm(diff_locs,2,2);
+    if abs(median(dist_locs)-5) > 0.1
+        error('check distances');
+    end
+    %}
+    out(i).folder_name = listing(which_index).name;
+    out(i).elec_names = elec_names;
+    out(i).locs = locs;
+    out(i).anatomy = anatomy;
 end
-
-if ~strcmp(class(elec_names{1}),'char')
-    error('check elec names');
-end
-
-% Are the anatomical names strings
-if ~iscell(anatomy)
-    error('check anatomy');
-end
-
-% Is the median distance between electrodes and the one listed under them
-% close to 5 mm?
-diff_locs = diff(locs,[],1);
-dist_locs = vecnorm(diff_locs,2,2);
-if abs(median(dist_locs)-5) > 0.1
-    error('check distances');
-end
-
-out.elec_names = elec_names;
-out.locs = locs;
-out.anatomy = anatomy;
 
 end
