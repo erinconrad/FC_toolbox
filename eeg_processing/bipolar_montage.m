@@ -65,32 +65,37 @@ end
 which_chs_bipolar = unique(which_chs_bipolar);
 
 %% Get location of midpoint between the bipolar channels and get anatomy
-mid_locs = nan(length(bipolar_labels),3);
-mid_anatomy = cell(length(bipolar_labels),1);
-for i = 1:length(bipolar_labels)
-    
-    % Get the pair
-    ch1 = chs_in_bipolar(i,1);
-    ch2 = chs_in_bipolar(i,2);
-    
-    if isnan(ch1) || isnan(ch2)
-        continue
+if ~isempty(locs) && ~isempty(anatomy)
+    mid_locs = nan(length(bipolar_labels),3);
+    mid_anatomy = cell(length(bipolar_labels),1);
+    for i = 1:length(bipolar_labels)
+
+        % Get the pair
+        ch1 = chs_in_bipolar(i,1);
+        ch2 = chs_in_bipolar(i,2);
+
+        if isnan(ch1) || isnan(ch2)
+            continue
+        end
+
+        % get the locs
+        loc1 = locs(ch1,:);
+        loc2 = locs(ch2,:);
+
+        % get midpoint
+        midpoint = (loc1 + loc2)/2;
+        mid_locs(i,:) = midpoint;
+
+        % get anatomy of each
+        anat1 = anatomy{ch1};
+        anat2 = anatomy{ch2};
+        midanat = [anat1,'-',anat2];
+        mid_anatomy{i} = midanat;
+
     end
-    
-    % get the locs
-    loc1 = locs(ch1,:);
-    loc2 = locs(ch2,:);
-    
-    % get midpoint
-    midpoint = (loc1 + loc2)/2;
-    mid_locs(i,:) = midpoint;
-    
-    % get anatomy of each
-    anat1 = anatomy{ch1};
-    anat2 = anatomy{ch2};
-    midanat = [anat1,'-',anat2];
-    mid_anatomy{i} = midanat;
-    
+else
+    mid_anatomy = [];
+    mid_locs = [];
 end
 
 

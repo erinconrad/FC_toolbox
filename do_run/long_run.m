@@ -1,41 +1,99 @@
-function long_run
+function long_run(whichPts)
 
-%% Establish parameters
+%% Parameters
+overwrite = 0;
+tw = 2; % 2 second time window for pc calculations
+which_net = 'pc';
 
-% Decide frequency and duration of sampling
-dur = 60; % each run should be 60 seconds
-freq = 600; % sample every 600 seconds
+%% Get file locs
+locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+data_folder = [locations.main_folder,'data/'];
+out_dir = [results_folder,'pc_out/'];
+if ~exist(out_dir,'dir')
+    mkdir(out_dir)
+end
 
-% Whether to avoid any times (or this could be done later)
-% no
+%% Load pt struct
+pt = load([data_folder,'pt.mat']);
+pt = pt.pt;
 
-% which patient
-name = 'HUP212';
-
-
-%% Get patient info
-
-% Get files
-
-% Get file durations
-
-
-% Get electrode info
-
-%% Seed a random number generator!
-
-%% Decide which times to run
-
+if isempty(whichPts)
+    whichPts = 1:length(pt);
+end
 
 %% Do the run
+% Loop over pts
+for i = 1:length(whichPts)
+    
+    clear pc % so it doesn't have old stuff
+    
+    p = whichPts(i);
+    name = pt(p).name;
+    out_name = [name,'_pc.mat'];
+    
+    % See if it already exists
+    if overwrite == 0
+        if exist([out_dir,out_name],'file') ~= 0
+            pc = load([out_dir,out_name]);
+            pc = pc.pc;
+            
+            last_file = length(pc.file);
+            last_run = length(pc.file(last_file).run);
+            
+            if last_run == size(pt(p).ieeg.file(last_file).run_times,1)
+                % We have finished already
+                fprintf('\nAlready finished %s, skipping...\n',name)
+                continue;
+            end
+        else
+            last_file = 1;
+            last_run = 1;
+            pc.name = name;
+        end
+    else
+        last_file = 1;
+        last_run = 1; % ok to redo one
+        pc.name = name;
+    end
+    
+    % Loop over files
+    for f = last_file:length(pt(p).ieeg.file)
 
-% Loop over files
+        file_name = pt(p).ieeg.file(f).name;
+        pc.file(f).name = file_name;
 
-% Get some basic info at start of file and store it
+        % Loop over times within file
+        for t = last_run:size(pt(p).ieeg.file(f).run_times,1)
+            
+            tic
+            fprintf('\nDoing %s file %d of %d run %d of %d\n',...
+                name,f,length(pt(p).ieeg.file),t,size(pt(p).ieeg.file(f).run_times,1));
 
-% Loop over times within file
+            run_times = pt(p).ieeg.file(f).run_times(t,:);
+            block_times = pt(p).ieeg.file(f).block_times(t,:);
 
-% Do al the stuff
+            % Do the run
+            out = individual_run(file_name,run_times,tw,which_net,0,[]);
+
+            % save this
+            pc.file(f).run(t).data = out;
+            pc.file(f).run(t).run_times = run_times;
+            pc.file(f).run(t).block_times = block_times;
+
+            save([out_dir,out_name],'pc');
+            ttoc = toc;
+            fprintf('\nRun took %1.1f s\n',ttoc);
+        end
+
+        % Once done with all runs, set last_run to 1 before moving to next
+        % file
+        last_run = 1;
+        
+    end
+    
+    
+end
 
 
 end

@@ -135,7 +135,9 @@ for im = 1:2
         % Choose network
         switch which_net
             case 'pc'
-                curr_net = pc_calc(values,fs,tw);
+
+                curr_net = pc_vector_calc(values,fs,tw);
+                
             case 'inv_dist'
                 curr_net = inverse_dist(curr_locs);
         end
