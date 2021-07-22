@@ -22,6 +22,29 @@ if isempty(whichPts)
     whichPts = 1:length(pt);
 end
 
+if ischar(whichPts)
+    for j = 1:length(pt)
+        if strcmp(whichPts,pt(j).name)
+            whichPts = j;
+            break
+        end
+    end
+end
+
+if iscell(whichPts)
+    whichPtsNames = whichPts;
+    whichPts = nan(length(whichPts));
+    for i = 1:length(whichPts)
+        for j = 1:length(pt)
+            if strcmp(whichPtsNames{i},pt(j).name)
+                whichPts(i) = j;
+                break
+            end
+        end
+    end
+end
+
+
 %% Do the run
 % Loop over pts
 for i = 1:length(whichPts)
