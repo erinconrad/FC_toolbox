@@ -4,7 +4,7 @@ function ccep_pc_corr(out,cout)
 do_binary = 0;
 plot_restricted = 0;
 im = 1;
-abs_pc = 1;
+do_r2 = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -46,8 +46,8 @@ ccep_response_labels = ccep_labels(response_chs);
 
 %% Get pc networks
 pc = out.montage(im).net(1).data;
-if abs_pc
-    pc = abs(pc);
+if do_r2
+    pc = (pc).^2;
 end
 pc = wrap_or_unwrap_adjacency_fc_toolbox(pc);
 pc_labels = out.montage(im).labels;

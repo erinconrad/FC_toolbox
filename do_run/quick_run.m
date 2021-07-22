@@ -1,9 +1,6 @@
-
+function quick_run(file_name,times,which_net,do_save,plot_montage)
 
 %% Parameters
-file_name = 'HUP212_phaseII';
-times = [583265 583280];
-which_net = 'pc';
 tw = 2;
 out_name = 'test1';
 
@@ -44,6 +41,7 @@ clean_loc_labels = decompose_labels(loc_labels);
 data = download_ieeg_data(file_name,login_name,pwfile,times,1); % 1 means get lots of data
 chLabels = data.chLabels;
 values = data.values;
+raw_values = values;
 fs = data.fs;
 
 %% Cleaned labels
@@ -155,8 +153,14 @@ for im = 1:2
     
     
 end
+tout.montage(3).name = 'raw';
+tout.montage(3).values = raw_values;
+out.montage(3).name = 'raw';
+out.montage(3).labels = clean_labels;
+out.montage(3).is_run = ones(length(clean_labels),1);
 
 %% Save the networks
+
 out.file_name = file_name;
 out.fs = fs;
 out.chLabels = chLabels;
@@ -165,14 +169,16 @@ out.chs_in_bipolar = chs_in_bipolar;
 out.bad = bad;
 out.bad_details = details;
 out.non_intracranial = non_intracranial;
-save([out_folder,out_name],'out');
+if do_save == 1
+    save([out_folder,out_name],'out');
+end
 
 %% Show data
 if 1
     %ex_chs = {'LA1','LA2','LA3','LA4'};
     ex_chs = [];
-    im = 1;
-    simple_plot(tout,out,ex_chs,im)
+    
+    simple_plot(tout,out,ex_chs,plot_montage)
     
 end
 
@@ -180,6 +186,8 @@ end
 if 0
     plot_nets_and_corr(out,im)
     
+end
+
 end
 
 
