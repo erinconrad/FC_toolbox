@@ -1,7 +1,6 @@
 function ccep_pc_dist(pc,ccep)
 
 %% Parameters
-f = 1;
 m = 1;
 
 %% Get file locs
@@ -25,11 +24,20 @@ for p = 1:length(pt)
 end
 
 %% Get avg pc network
-pc_ns_struct = ns_over_time(pc);
-pc_labels = pc.file(f).run(1).data.montage(m).labels;
-pc_net = pc_ns_struct.file(f).montage(m).net;
+out = net_over_time(pc);
+out = reconcile_files(out);
+pc_labels = out.montage(m).labels;
+pc_net = out.montage(m).net;
+
+% Take average over all times for net
+pc_net = nanmean(pc_net,2);
+
+% unwrap
+pc_net= wrap_or_unwrap_adjacency_fc_toolbox(pc_net);
 pc_net(logical(eye(size(pc_net)))) = nan;
 nan_chs = sum(~isnan(pc_net),1) == 0;
+
+% remove nans for plotting
 pc_net(nan_chs,:) = [];
 pc_net(:,nan_chs) = [];
 pc_plot_labels = pc_labels;
@@ -74,10 +82,69 @@ outdegree = outdegree';
 indegree(~response_chs) = nan;
 
 %% Get distance stuff
+% Reconcile locs and anatomy with ieeg labels
+loc_labels = pt(p).elecs.elec_names;
+locs = pt(p).elecs.locs;
+anatomy = pt(p).elecs.anatomy;
+clean_loc_labels = decompose_labels(loc_labels);
+clean_labels = out.all_labels;
+[locs,anatomy] = reconcile_locs_ieeg(clean_labels,clean_loc_labels,locs,anatomy);
+
+% locs
+[~,~,bipolar_labels,chs_in_bipolar,~,mid_locs,~] =...
+    bipolar_montage(nan(1,length(clean_labels)),clean_labels,1:length(clean_labels),locs,anatomy);
+
+[~,car_labels] = car_montage(nan(1,length(clean_labels)),1:length(clean_labels),clean_labels);
+
+if m ==1
+    labels = bipolar_labels;
+    out_locs = mid_locs;
+else
+    out_locs = locs;
+    labels = car_labels;
+    
+end
+
+
+% Make inv dist matrix
+A = inverse_dist(out_locs);
+A = wrap_or_unwrap_adjacency_fc_toolbox(A);
+A(nan_chs,:) = [];
+A(:,nan_chs) = [];
+labels(nan_chs) = [];
 
 %% Make sure labels match
-if ~isequal(pc_labels,ccep_labels) 
+%
+if ~isequal(pc_labels,ccep_labels) || ~isequal(pc_labels,labels)
     error('labels do not match')
 end
+%}
+
+%% Plot
+figure
+set(gcf,'position',[10 10 1300 500])
+tiledlayout(1,3,'tilespacing','tight','padding','tight')
+
+nexttile
+turn_nans_gray(pc_net)
+xticks(1:length(pc_plot_labels))
+yticks(1:length(pc_plot_labels))
+xticklabels(pc_plot_labels)
+yticklabels(pc_plot_labels)
+
+nexttile
+turn_nans_gray(A)
+xticks(1:length(labels))
+yticks(1:length(labels))
+xticklabels(labels)
+yticklabels(labels)
+
+nexttile
+turn_nans_gray(ccep_net)
+xticks(1:length(ccep_stim_labels))
+yticks(1:length(ccep_response_labels))
+xticklabels(ccep_stim_labels)
+yticklabels(ccep_response_labels)
+
 
 end

@@ -1,5 +1,7 @@
 function out = net_over_time(pc)
 
+span_to_look = 3;
+max_nans = 3;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -63,6 +65,18 @@ for f = 1:nfiles
         ns = ns_montage{m};
         
         ns = remove_dangling_times(ns,nruns);
+        ns_montage{m} = ns;
+        
+    end
+    
+    %% Also remove any surrounded by nans
+    for m = 1:nmontages
+        data = net_montage{m};
+        data = remove_if_nans_surround(data,span_to_look,max_nans);
+        net_montage{m} = data;
+        
+        ns = ns_montage{m};
+        ns = remove_if_nans_surround(ns,span_to_look,max_nans);
         ns_montage{m} = ns;
         
     end

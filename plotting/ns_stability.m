@@ -2,7 +2,6 @@ function ns_stability(pc)
 
 %% Parameters
 plotm = 1;
-plotf = 1;
 spacing = 20;
 
 %% Get file locs
@@ -14,13 +13,22 @@ addpath(genpath(scripts_folder));
 
 %% Get network over time
 out = net_over_time(pc);
+out = reconcile_files(out);
+
 
 %% Info
-ns = out.file(plotf).montage(plotm).ns;
+ns = out.montage(plotm).ns;
 nruns = size(ns,2);
 nchs = size(ns,1);
-run_center = out.file(plotf).run_center;
-clean_labels = out.file(plotf).montage(plotm).labels;
+clean_labels = out.montage(plotm).labels;
+
+%% Get ns stability
+% Mean ns
+mean_ns = nanmean(ns,2);
+nst = corr(mean_ns,ns,'Type','Spearman','rows','pairwise');
+
+%% Plot
+plot(nst);
 
 
 end
