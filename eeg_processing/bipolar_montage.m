@@ -64,8 +64,8 @@ end
 
 which_chs_bipolar = unique(which_chs_bipolar);
 
-%% Get location of midpoint between the bipolar channels and get anatomy
-if ~isempty(locs) && ~isempty(anatomy)
+%% Get location of midpoint between the bipolar channels
+if ~isempty(locs)
     mid_locs = nan(length(bipolar_labels),3);
     mid_anatomy = cell(length(bipolar_labels),1);
     for i = 1:length(bipolar_labels)
@@ -86,6 +86,26 @@ if ~isempty(locs) && ~isempty(anatomy)
         midpoint = (loc1 + loc2)/2;
         mid_locs(i,:) = midpoint;
 
+
+    end
+else
+    mid_locs = [];
+end
+
+%% Get anatomy
+if ~isempty(anatomy)
+    mid_anatomy = cell(length(bipolar_labels),1);
+    for i = 1:length(bipolar_labels)
+
+        % Get the pair
+        ch1 = chs_in_bipolar(i,1);
+        ch2 = chs_in_bipolar(i,2);
+
+        if isnan(ch1) || isnan(ch2)
+            continue
+        end
+
+        
         % get anatomy of each
         anat1 = anatomy{ch1};
         anat2 = anatomy{ch2};
@@ -95,9 +115,7 @@ if ~isempty(locs) && ~isempty(anatomy)
     end
 else
     mid_anatomy = [];
-    mid_locs = [];
 end
-
 
 
 end

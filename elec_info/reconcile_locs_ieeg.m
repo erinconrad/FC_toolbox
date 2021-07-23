@@ -27,7 +27,11 @@ for i = 1:nieeg
     matching_loc = locs(matching_loc_name,:);
     
     % matching anatomy
-    matching_anatomy = anatomy{matching_loc_name};
+    if strcmp(class(anatomy),'double')
+        matching_anatomy = [];
+    else
+        matching_anatomy = anatomy{matching_loc_name};
+    end
     
     % fill up output array and cell
     ieeg_locs(i,:) = matching_loc;

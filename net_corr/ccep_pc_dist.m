@@ -1,4 +1,4 @@
-function time_corr_pc_ccep(pc,ccep)
+function ccep_pc_dist(pc,ccep)
 
 %% Parameters
 f = 1;
@@ -11,9 +11,21 @@ locations = fc_toolbox_locs;
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% Get ns
+% Pt struct
+data_folder = [locations.main_folder,'data/'];
+pt = load([data_folder,'pt.mat']);
+pt = pt.pt;
+
+%% find corresponding p in pt
+name = pc.name;
+for p = 1:length(pt)
+    if strcmp(name,pt(p).name)
+        break
+    end
+end
+
+%% Get avg pc network
 pc_ns_struct = ns_over_time(pc);
-pc_ns = pc_ns_struct.file(f).montage(m).data;
 pc_labels = pc.file(f).run(1).data.montage(m).labels;
 pc_net = pc_ns_struct.file(f).montage(m).net;
 pc_net(logical(eye(size(pc_net)))) = nan;
@@ -61,46 +73,11 @@ outdegree(~stim_chs) = nan;
 outdegree = outdegree';
 indegree(~response_chs) = nan;
 
-
+%% Get distance stuff
 
 %% Make sure labels match
 if ~isequal(pc_labels,ccep_labels) 
     error('labels do not match')
 end
-
-%% Get pairwise correlations for each time
-[ns_out_corr,out_p] = corr(pc_ns,outdegree,'rows','pairwise');
-[ns_in_corr,in_p] = corr(pc_ns,indegree,'rows','pairwise');
-
-
-
-%% Plots
-figure
-set(gcf,'position',[10 10 1200 1000])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
-
-nexttile
-turn_nans_gray(pc_net)
-xticks(1:length(pc_plot_labels))
-yticks(1:length(pc_plot_labels))
-xticklabels(pc_plot_labels)
-yticklabels(pc_plot_labels)
-
-nexttile
-turn_nans_gray(ccep_net)
-xticks(1:length(ccep_stim_labels))
-xticklabels(ccep_stim_labels)
-yticks(1:length(ccep_response_labels))
-yticklabels(ccep_response_labels)
-
-nexttile([1,2])
-plot(ns_out_corr)
-hold on
-plot(ns_in_corr)
-xl = xlim;
-yl = ylim;
-text(xl(1),yl(2),sprintf('NS-out r = %1.2f\nNS-in r = %1.2f',nanmean(ns_out_corr),nanmean(ns_in_corr)),...
-    'verticalalignment','top')
-legend({'NS-outdegree','NS-indegree'})
 
 end

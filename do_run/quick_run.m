@@ -4,6 +4,26 @@ function quick_run(file_name,times,which_net,do_save,plot_montage)
 tw = 2;
 out_name = 'test1';
 
+if isempty(file_name)
+    file_name = 'HUP212_phaseII';
+end
+
+if isempty(times)
+    times = [100000 100015];
+end
+
+if isempty(which_net)
+    which_net = 'pc';
+end
+
+if isempty(do_save)
+    do_save = 0;
+end
+
+if isempty(plot_montage)
+    plot_montage = 1;
+end
+
 
 %% get pt name
 C = strsplit(file_name,'_');

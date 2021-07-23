@@ -8,7 +8,7 @@ A(logical(eye(n))) = 0;
 for i = 1:n
     for j = 1:i-1
         dist = vecnorm(locs(i,:)-locs(j,:));
-        inv_dist = 1/dist;
+        inv_dist = 1/(dist)^2;
         A(i,j) = inv_dist;
         A(j,i) = inv_dist;
     end
