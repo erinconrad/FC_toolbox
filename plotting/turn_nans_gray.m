@@ -1,4 +1,5 @@
 function h = turn_nans_gray(im)
+    h = imagesc(im);
     % white
     cmap = colormap;
     nanjet = [ 0.7,0.7,0.7; cmap  ];
@@ -14,7 +15,7 @@ function h = turn_nans_gray(im)
     cLimRange = dRange / pctCmRange;
     cmin = dmin - (pctDataSlotStart * cLimRange);
     cmax = dmax;
-    h = imagesc(im);
-    set(gcf,'colormap',nanjet);
+    
+    set(gca,'colormap',nanjet);
     caxis([cmin cmax]);
 end
