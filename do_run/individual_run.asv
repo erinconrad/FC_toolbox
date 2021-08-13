@@ -80,9 +80,6 @@ for im = 1:2
     % Get spikes
     gdf = detector(values,fs);
     
-    % Get alpha delta ratio
-    ad_rat = calc_ad(values,fs);
-    
     % Example plot
     if 0
         show_eeg_and_spikes(values,curr_labels,gdf,fs);
@@ -95,7 +92,6 @@ for im = 1:2
     out.montage(im).labels = curr_labels;
     out.montage(im).is_run = is_run;
     out.montage(im).spikes = gdf;
-    out.montage(im).ad = ad_rat;
     out.fs = fs;
     out.clean_labels = clean_labels;
     

@@ -1,4 +1,4 @@
-function simple_plot(tout,out,chs,im)
+function simple_plot(tout,out,chs,im,gdf,only_run)
 
 
 fs = out.fs;
@@ -30,31 +30,69 @@ is_run = out.montage(im).is_run;
 dur = size(values,1)/fs;
 
 if isempty(chs)
-    chs = find(is_run);
+    if only_run
+        chs = find(is_run);
+        
+        % Convert spike channels
+        all_chs = 1:length(labels);
+        
+    else
+    
+        chs = 1:length(labels);
+    end
 end
 
 offset = 0;
 ch_offsets = zeros(length(chs),1);
 ch_bl = zeros(length(chs),1);
+last_min = nan;
 for i = 1:length(chs)
     ich = chs(i);
-    plot(linspace(0,dur,size(values,1)),values(:,ich)-offset,'linewidth',2);
-    hold on
-    ch_offsets(i) = offset;
-    ch_bl(i) = -offset + nanmedian(values(:,ich));
+    
+    if sum(~isnan(values(:,ich))) ~=0
+        plot(linspace(0,dur,size(values,1)),values(:,ich)-offset,'linewidth',1);
+        hold on
+        ch_offsets(i) = offset;
+        ch_bl(i) = -offset + nanmedian(values(:,ich));
 
-    text(dur+0.05,ch_bl(i),sprintf('%s',labels{ich}),'fontsize',20)
+        text(dur+0.05,ch_bl(i),sprintf('%s',labels{ich}),'fontsize',20)
+        
+        last_min = min(values(:,ich));
+    end
 
+   
     if i<length(chs)
+        
+        
+        if ~isnan(max(values(:,chs(i+1)))) & ~isnan(last_min)
+            offset = offset - (last_min - max(values(:,chs(i+1))));
+        end
+            %{
         if ~isnan(min(values(:,ich)) - max(values(:,chs(i+1))))
             offset = offset - (min(values(:,ich)) - max(values(:,chs(i+1))));
         end
+            %}
     end
+    
 end
 xlabel('Time (seconds)')
 set(gca,'fontsize',20)
     
+for s = 1:size(gdf,1)
+    %index = spikes(s,1);
+    index = gdf(s,2);
     
+    % convert index to time
+    time = index/fs;
+    
+    ch = gdf(s,1);
+    offset_sp = ch_offsets(ch);
+    
+    value_sp = values(round(index),ch);
+    
+    plot(time,value_sp - offset_sp,'ko','markersize',10,'linewidth',2)
+    
+end
 
 
 

@@ -9,7 +9,7 @@ which_net = 'pc';
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 data_folder = [locations.main_folder,'data/'];
-out_dir = [results_folder,'pc_out/'];
+out_dir = [results_folder,'all_out/'];
 if ~exist(out_dir,'dir')
     mkdir(out_dir)
 end
