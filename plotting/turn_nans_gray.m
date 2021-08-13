@@ -17,5 +17,8 @@ function h = turn_nans_gray(im)
     cmax = dmax;
     
     set(gca,'colormap',nanjet);
+    if cmin == cmax && cmin == 1
+        cmin = 0;
+    end
     caxis([cmin cmax]);
 end

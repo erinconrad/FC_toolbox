@@ -4,6 +4,8 @@ function ccep_pc_dist(pc,ccep)
 
 %% Parameters
 m = 1;
+do_bin = 1; % only applies to ccep (which has extreme z scores)
+corr_type = 'Pearson';%'Spearman';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -44,7 +46,9 @@ pc_idx = indices{1};
 ccep_idx = indices{2};
 
 %% Get avg pc network
+%{
 pc_net = out.montage(m).net;
+
 
 % Take average over all times for net
 pc_net = nanmean(pc_net,2);
@@ -53,11 +57,17 @@ pc_net = nanmean(pc_net,2);
 pc_net= wrap_or_unwrap_adjacency_fc_toolbox(pc_net);
 pc_net(logical(eye(size(pc_net)))) = nan;
 nan_chs = sum(~isnan(pc_net),1) == 0;
+%}
+
+% Get all pcnet
+all_pc = wrap_or_unwrap_adjacency_fc_toolbox(out.montage(m).net);
+pc_net = nanmean(all_pc,3);
+ns_time = squeeze(nansum(all_pc,2));
 
 % restrict indices
 pc_labels = out.montage(m).labels(pc_idx);
 pc_net = pc_net(pc_idx,pc_idx);
-
+ns_time = ns_time(pc_idx,:);
 % remove nans
 %{
 pc_net(nan_chs,:) = [];
@@ -164,6 +174,7 @@ ccep_net = ccep_net(indices{1},indices{1});
 
 pc_labels = pc_labels(indices{2});
 pc_net = pc_net(indices{2},indices{2});
+ns_time  = ns_time(indices{2},:);
 
 labels = labels(indices{3});
 A = A(indices{3},indices{3});
@@ -176,35 +187,45 @@ if ~isequal(pc_labels,ccep_labels) || ~isequal(pc_labels,labels)
 end
 %}
 
+%% Binarize CCEP
+if do_bin
+    ccep_net(~isnan(ccep_net)) = 1;
+    %ccep_net(isnan(ccep_net)) = 0;
+    %ccep_net(logical(eye(size(ccep_net)))) = nan;
+end
+
 %% Do correlations
 % Correlations across columns
 outdegree = nansum(ccep_net,1);
 ns_pc_cols = nansum(pc_net,1);
 ns_dist_cols = nansum(A,1);
-out_pc_r = corr(outdegree',ns_pc_cols','rows','pairwise');
-out_dist_r = corr(outdegree',ns_dist_cols','rows','pairwise');
-pc_dist_r_cols = corr(ns_dist_cols',ns_pc_cols','rows','pairwise');
+out_pc_r = corr(outdegree',ns_pc_cols','rows','pairwise','type',corr_type);
+out_dist_r = corr(outdegree',ns_dist_cols','rows','pairwise','type',corr_type);
+pc_dist_r_cols = corr(ns_dist_cols',ns_pc_cols','rows','pairwise','type',corr_type);
 
 % Correlations across rows
 indegree = nansum(ccep_net,2);
 ns_pc_rows = nansum(pc_net,2);
 ns_dist_rows = nansum(A,2);
-in_pc_r = corr(indegree,ns_pc_rows,'rows','pairwise');
-in_dist_r = corr(indegree,ns_dist_rows,'rows','pairwise');
-pc_dist_r_rows = corr(ns_dist_rows,ns_pc_rows,'rows','pairwise');
+in_pc_r = corr(indegree,ns_pc_rows,'rows','pairwise','type',corr_type);
+in_dist_r = corr(indegree,ns_dist_rows,'rows','pairwise','type',corr_type);
+pc_dist_r_rows = corr(ns_dist_rows,ns_pc_rows,'rows','pairwise','type',corr_type);
 
 if abs(pc_dist_r_rows - pc_dist_r_cols) > 1e-4, error('what'); end
-fprintf('\nDistance-PC r = %1.2f\n',pc_dist_r_rows);
-fprintf('\nOutdegree-distance r = %1.2f\n',out_dist_r);
-fprintf('\nOutdegree-PC r = %1.2f\n',out_pc_r);
-fprintf('\nIndegree-distance r = %1.2f\n',in_dist_r);
-fprintf('\nIndegree-PC r = %1.2f\n',in_pc_r);
+if any(abs(ns_pc_cols'-ns_pc_rows) > 1e-4), error('what'); end
+
+%% NS time correlations
+%
+ns_time_dist_r = corr(ns_dist_rows,ns_time,'rows','pairwise','type',corr_type);
+ns_time_in_r = corr(indegree,ns_time,'rows','pairwise','type',corr_type);
+ns_time_out_r = corr(outdegree',ns_time,'rows','pairwise','type',corr_type);
+%}
 
 
 %% Plot
 figure
-set(gcf,'position',[10 10 1300 900])
-tiledlayout(2,3,'tilespacing','tight','padding','tight')
+set(gcf,'position',[10 10 1300 1000])
+tiledlayout(3,3,'tilespacing','tight','padding','tight')
 
 nexttile
 turn_nans_gray(A)
@@ -245,20 +266,59 @@ nexttile
 plot(ns_pc_rows,indegree,'o')
 yl = ylim;
 xl = xlim;
-text(xl(1),yl(2),sprintf('r = %1.2f\n',in_dist_r),'verticalalignment','top',...
+text(xl(1),yl(2),sprintf('r = %1.2f\n',in_pc_r),'verticalalignment','top',...
     'fontsize',15)
 xlabel('PC node strength')
 ylabel('Indegree')
 
 nexttile
+plot(ns_dist_rows,indegree,'o')
+yl = ylim;
+xl = xlim;
+text(xl(1),yl(2),sprintf('r = %1.2f\n',in_dist_r),'verticalalignment','top',...
+    'fontsize',15)
+xlabel('Inverse distance node strength')
+ylabel('Indegree')
+
+nexttile
+
+nexttile
 plot(ns_pc_rows,outdegree,'o')
 yl = ylim;
 xl = xlim;
-text(xl(1),yl(2),sprintf('r = %1.2f\n',out_dist_r),'verticalalignment','top',...
+text(xl(1),yl(2),sprintf('r = %1.2f\n',out_pc_r),'verticalalignment','top',...
     'fontsize',15)
 xlabel('PC node strength')
 ylabel('Outdegree')
 
+nexttile
+plot(ns_dist_rows,outdegree,'o')
+yl = ylim;
+xl = xlim;
+text(xl(1),yl(2),sprintf('r = %1.2f\n',out_dist_r),'verticalalignment','top',...
+    'fontsize',15)
+xlabel('Inverse distance node strength')
+ylabel('Outdegree')
 
+%
+figure
+set(gcf,'position',[10 10 1300 800])
+tiledlayout(2,3,'tilespacing','tight','padding','tight')
+
+% Raster of ns over time
+nexttile([1 3])
+turn_nans_gray(ns_time)
+
+nexttile
+plot(ns_time_dist_r)
+title('NS-dist correlation over time')
+
+nexttile
+plot(ns_time_in_r)
+title('NS-indegree correlation over time')
+
+nexttile
+plot(ns_time_out_r)
+title('NS-outdegree correlation over time')
 
 end

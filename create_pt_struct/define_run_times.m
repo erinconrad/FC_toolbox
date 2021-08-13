@@ -1,6 +1,7 @@
 function define_run_times
 
 %% Establish parameters
+overwrite = 0;
 % Decide frequency and duration of sampling
 mini_block = 60; % each run should be 60 seconds
 block = 600; % sample every 600 seconds

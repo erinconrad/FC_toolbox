@@ -1,8 +1,12 @@
-function find_intracranial_pts
+function find_intracranial_pts(first_num,last_num)
 
 %% Parameters
-first_num = 100;
-last_num = 218;
+if isempty(first_num)
+    first_num = 1;
+end
+if isempty(last_num)
+    last_num = 300;
+end
 
 %% Get file locs
 locations = fc_toolbox_locs;

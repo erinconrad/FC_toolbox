@@ -23,6 +23,7 @@ out.run_center = nan(n_runs_total,1);
 out.file_index = nan(n_runs_total,1);
 
 for m  = 1:nmontages
+    %out.montage(m).net = nan(nchs,nchs,n_runs_total);
     out.montage(m).net = nan(nchs*(nchs-1)/2,n_runs_total);
     out.montage(m).ns = nan(nchs,n_runs_total);
     out.montage(m).labels = cell(nchs,1);
@@ -83,6 +84,7 @@ for f = 1:nfiles
         % fill the new ones based on the indices
         new_net_uw(locb,locb,:) = net_uw;
         new_ns(locb,:) = ns;
+        %new_ns(locb,:) = nansum(net_uw,2);
         
         % rewrap the net
         new_net = nan(nchs*(nchs-1)/2,nruns);
