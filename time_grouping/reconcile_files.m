@@ -25,7 +25,8 @@ out.file_index = nan(n_runs_total,1);
 for m  = 1:nmontages
     %out.montage(m).net = nan(nchs,nchs,n_runs_total);
     out.montage(m).net = nan(nchs*(nchs-1)/2,n_runs_total);
-    out.montage(m).ns = nan(nchs,n_runs_total);
+    out.montage(m).spikes = nan(nchs,n_runs_total);
+    out.montage(m).ad = nan(nchs,n_runs_total);
     out.montage(m).labels = cell(nchs,1);
 end
 
@@ -64,7 +65,8 @@ for f = 1:nfiles
         
         % get current data
         net = out.file(f).montage(m).net;
-        ns = out.file(f).montage(m).ns;
+        spikes = out.file(f).montage(m).spikes;
+        ad = out.file(f).montage(m).ad;
         labels = out.file(f).montage(m).labels;
         
         % prep net_uw
@@ -78,12 +80,14 @@ for f = 1:nfiles
         
         % prep new ones (size of full set of labels)
         new_net_uw = nan(nchs,nchs,nruns);
-        new_ns = nan(nchs,nruns);
+        new_spikes = nan(nchs,nruns);
+        new_ad = nan(nchs,nruns);
         new_labels = cell(nchs,1);
         
         % fill the new ones based on the indices
         new_net_uw(locb,locb,:) = net_uw;
-        new_ns(locb,:) = ns;
+        new_spikes(locb,:) = spikes;
+        new_ad(locb,:) = ad;
         %new_ns(locb,:) = nansum(net_uw,2);
         
         % rewrap the net
@@ -95,7 +99,8 @@ for f = 1:nfiles
         
         % fill the struct
         out.montage(m).net(:,curr_run_idx:curr_run_idx+nruns-1) = new_net;
-        out.montage(m).ns(:,curr_run_idx:curr_run_idx+nruns-1) = new_ns;
+        out.montage(m).spikes(:,curr_run_idx:curr_run_idx+nruns-1) = new_spikes;
+        out.montage(m).ad(:,curr_run_idx:curr_run_idx+nruns-1) = new_ad;
         out.montage(m).labels(locb) = labels;
         
     end
@@ -110,7 +115,6 @@ end
 
 if 0
     im = 1;
-    ns = out.montage(im).ns;
     labels = out.montage(im).labels;
     all_nan = sum(~isnan(ns),2) == 0;
     turn_nans_gray(ns(~all_nan,:))

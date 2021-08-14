@@ -23,7 +23,8 @@ for f = 1:nfiles
     
     for m = 1:nmontages
         net_montage{m} = nan(nchs*(nchs-1)/2,nruns);
-        ns_montage{m} = nan(nchs,nruns);
+        spike_montage{m} = nan(nchs,nruns);
+        ad_montage{m} = nan(nchs,nruns);
     end
     
     for r = 1:nruns
@@ -34,7 +35,10 @@ for f = 1:nfiles
         for m = 1:nmontages
             data = pc.file(f).run(r).data.montage(m).net.data;
             is_run = pc.file(f).run(r).data.montage(m).is_run;
+            gdf = pc.file(f).run(r).data.montage(m).spikes;
+            ad = pc.file(f).run(r).data.montage(m).ad;
             
+            %% Network
             % unwrap
             data_uw = wrap_or_unwrap_adjacency_fc_toolbox(data);
             
@@ -44,28 +48,43 @@ for f = 1:nfiles
             % Take R^2
             data_uw = (data_uw).^2;
             
-            net_montage{m}(:,r) = wrap_or_unwrap_adjacency_fc_toolbox(data_uw);
+            %% Spikes
+            spikes = nan(nchs,1); % default to nan
+            spikes(is_run) = 0; % default zero if we run it
             
-            % get ns
-            ns = nansum(data_uw,1);
-            ns(sum(~isnan(data_uw),1)==0) = nan;
-            ns_montage{m}(:,r) = ns;
+            if ~isempty(gdf)
+                % Spike chs
+                spike_chs = gdf(:,1);
+
+                % Get counts
+                [C,~,ic]= unique(spike_chs);
+                a_counts = accumarray(ic,1);
+
+                spikes(C) = a_counts; % add counts
+            end
+            
+            % Fill up cell arrays
+            net_montage{m}(:,r) = wrap_or_unwrap_adjacency_fc_toolbox(data_uw);
+            spike_montage{m}(:,r) = spikes;
+            ad_montage{m}(:,r) = ad;
+
             
         end
     end
     
     %% Remove dangling times (immediately adjacent to disconnected periods; look bad)
     for m = 1:nmontages
-        data = net_montage{m};
-        
-        data = remove_dangling_times(data,nruns);
-        
+        data = net_montage{m};        
+        data = remove_dangling_times(data,nruns);        
         net_montage{m} = data;
         
-        ns = ns_montage{m};
-        
-        ns = remove_dangling_times(ns,nruns);
-        ns_montage{m} = ns;
+        spikes = spike_montage{m};
+        spikes = remove_dangling_times(spikes,nruns);
+        spike_montage{m} = spikes;
+       
+        ad = ad_montage{m};
+        ad = remove_dangling_times(ad,nruns);
+        ad_montage{m} = ad;
         
     end
     
@@ -75,16 +94,21 @@ for f = 1:nfiles
         data = remove_if_nans_surround(data,span_to_look,max_nans);
         net_montage{m} = data;
         
-        ns = ns_montage{m};
-        ns = remove_if_nans_surround(ns,span_to_look,max_nans);
-        ns_montage{m} = ns;
+        spikes = spike_montage{m};
+        spikes = remove_if_nans_surround(spikes,span_to_look,max_nans);
+        spikes_montage{m} = spikes;
+        
+        ad = ad_montage{m};
+        ad = remove_if_nans_surround(ad,span_to_look,max_nans);
+        ad_montage{m} = ad;
         
     end
     
     % prep out
     for m = 1:nmontages
         out.file(f).montage(m).net = net_montage{m};
-        out.file(f).montage(m).ns = ns_montage{m};
+        out.file(f).montage(m).spikes = spikes_montage{m};
+        out.file(f).montage(m).ad = ad_montage{m};
         out.file(f).montage(m).labels = pc.file(f).run(1).data.montage(m).labels;
         
     end
