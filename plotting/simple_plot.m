@@ -1,4 +1,4 @@
-function simple_plot(tout,out,chs,im,gdf,only_run)
+function simple_plot(tout,out,chs,im,gdf,only_run,bad)
 
 
 fs = out.fs;
@@ -50,7 +50,12 @@ for i = 1:length(chs)
     ich = chs(i);
     
     if sum(~isnan(values(:,ich))) ~=0
-        plot(linspace(0,dur,size(values,1)),values(:,ich)-offset,'linewidth',1);
+        
+        if ismember(ich,bad)
+            plot(linspace(0,dur,size(values,1)),values(:,ich)-offset,'r');
+        else
+            plot(linspace(0,dur,size(values,1)),values(:,ich)-offset,'k');
+        end
         hold on
         ch_offsets(i) = offset;
         ch_bl(i) = -offset + nanmedian(values(:,ich));

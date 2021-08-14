@@ -4,10 +4,10 @@ function [bad,details] = identify_bad_chs(values,which_chs,chLabels,fs)
 tile = 99;
 mult = 10;
 num_above = 1;
-abs_thresh = 1e4;
+abs_thresh = 1e3;
 
 %% Parameter to reject high 60 Hz
-percent_60_hz = 0.5;
+percent_60_hz = 0.1;
 
 %% Parameter to reject electrodes with much higher std than most electrodes
 mult_std = 10;
@@ -48,7 +48,7 @@ for i = 1:length(which_chs)
     
     %% Remove channels with too many above absolute thresh
     
-    if sum(abs(eeg - bl) > abs_thresh) > 0.01 * length(eeg)
+    if sum(abs(eeg - bl) > abs_thresh) > 10
         bad = [bad;ich];
         bad_ch = 1;
         high_ch = [high_ch;ich];

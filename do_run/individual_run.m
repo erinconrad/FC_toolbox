@@ -78,7 +78,7 @@ for im = 1:2
     end
     
     % Get spikes
-    gdf = detector(values,fs);
+    gdf = detector_alt(values,fs);
     
     % Get alpha delta ratio
     ad_rat = calc_ad(values,fs);
@@ -113,7 +113,8 @@ end
 if show_data
     ex_chs = [];
     only_run = 0;
-    simple_plot(tout,out,ex_chs,show_montage,gdf,only_run)
+    simple_plot(tout,out,ex_chs,show_montage,out.montage(show_montage).spikes,...
+        only_run,bad)
     pause
     close(gcf)
     clear tout
