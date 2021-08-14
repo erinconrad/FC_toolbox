@@ -216,6 +216,8 @@ if ~isempty(gdf)
 end
 
 % Multichannel requirements
-gdf =  multi_channel_requirements(gdf,nchs,fs);
+if ~isempty(gdf)
+    gdf =  multi_channel_requirements(gdf,nchs,fs);
+end
 
 end
