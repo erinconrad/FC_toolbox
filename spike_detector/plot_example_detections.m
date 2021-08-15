@@ -16,7 +16,7 @@ login_name = locations.ieeg_login;
 addpath(genpath(locations.script_folder));
 spike_folder = [results_folder,'all_out/'];
 data_folder = [locations.main_folder,'data/'];
-
+out_folder = [results_folder,'sp_validation/'];
 
 %% Load pt file
 pt = load([data_folder,'pt.mat']);
@@ -41,7 +41,7 @@ end
 
 for p = whichPts
     pt_name = pt(p).name;
-    out_folder = [results_folder,'sp_validation/'];
+    
     
     
     if exist(out_folder,'dir') ~= 0

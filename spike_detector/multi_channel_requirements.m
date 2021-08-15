@@ -22,9 +22,10 @@ while s<size(gdf,1)
         
         if s == size(gdf,1) - 1
             
-            % done with sequence, check if the length of sequence is
+            % done with sequence, check if the number of involved chs is
             % appropriate
-            l = length(curr_seq);
+            %l = length(curr_seq);
+            l = length(unique(gdf(curr_seq,1)));
             if l >= min_chs && l <= max_chs
                 final_spikes = [final_spikes;gdf(curr_seq,:)];
             end
@@ -33,7 +34,8 @@ while s<size(gdf,1)
     else
         % done with sequence, check if the length of sequence is
         % appropriate
-        l = length(curr_seq);
+        %l = length(curr_seq);
+        l = length(unique(gdf(curr_seq,1)));
         if l >= min_chs && l <= max_chs
             final_spikes = [final_spikes;gdf(curr_seq,:)];
         end

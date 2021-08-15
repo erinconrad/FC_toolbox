@@ -4,17 +4,14 @@ function gdf = detector_alt(values,fs)
 This is the spike detection algorithm used for the implant effect paper.
 %}
 
-tmul = 21;
+tmul = 19;
 absthresh = 100;
 
 % Initialize parameters
 too_high_abs = 1e3; % tmul above which I reject it as artifact
-spkdur = [20 220];                % spike duration must be less than this in ms
+spkdur = [15 220];                % spike duration must be less than this in ms
 spkdur = spkdur*fs/1000;   % convert to points;
-lpf1     = 40; % low pass filter for spikey component
-lpf2    = 7;  % low pass filter for slow wave component
-aftdur = 70;
-aftdur   = aftdur*fs/1000;   % convert to points;
+lpf1     = 30; % low pass filter for spikey component
 hpf  = 7; % high pass filter for spikey component
 
 % Initialize things
@@ -106,8 +103,8 @@ for j = 1:nchs
     % now have all the info we need to decide if this thing is a spike or not.
     for i = 1:size(spikes, 1)  % for each spike
         
-        % re-define baseline to be 10 seconds surrounding
-        surround = 2;
+        % re-define baseline to be 2 seconds surrounding
+        surround = 1;
         istart = max(1,round(spikes(i,1)-surround*fs));
         iend = min(length(hpdata),round(spikes(i,1)+surround*fs));
         alt_thresh = median(abs(hpdata(istart:iend)))*tmul;
@@ -157,9 +154,18 @@ for j = 1:nchs
 
     if 0
         figure
+        tiledlayout(3,1)
+        nexttile
         plot(data)
         hold on
-        plot(out(:,1),data(out(:,1)),'o')
+        if ~isempty(out)
+            plot(out(:,1),data(out(:,1)),'o')
+        end
+        nexttile
+        plot(lpdata)
+        nexttile
+        plot(hpdata)
+        
 
     end
    
