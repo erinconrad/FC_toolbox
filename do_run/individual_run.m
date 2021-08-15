@@ -116,8 +116,8 @@ if show_data
     only_run = 0;
     simple_plot(tout,out,ex_chs,show_montage,out.montage(show_montage).spikes,...
         only_run,bad)
-    pause
-    close(gcf)
+    %pause
+    %close(gcf)
     clear tout
 end
 
