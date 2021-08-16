@@ -129,7 +129,7 @@ for p = whichPts
 
         end
 
-        print([out_folder,sprintf('%s_montage%d',pt_name,im)],'-djpeg');
+        print(gcf,fname,'-djpeg');
         close(gcf)
     end
     

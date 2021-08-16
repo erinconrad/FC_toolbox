@@ -24,6 +24,14 @@ for p = 1:length(pt)
         continue
     end
     
+    if isfield(pt(p).ieeg.file(1),'run_times') == 1 && ...
+            ~isempty(pt(p).ieeg.file(1).run_times)
+        if overwrite == 0
+            fprintf('\nskipping %s\n',pt(p).name);
+        end
+        continue
+    end
+    
     fprintf('\nDoing %s\n',pt(p).name);
     
     nfiles = length(pt(p).ieeg.file);

@@ -1,12 +1,7 @@
-function find_intracranial_pts(first_num,last_num)
+function find_intracranial_pts(ieeg_nums)
 
 %% Parameters
-if isempty(first_num)
-    first_num = 1;
-end
-if isempty(last_num)
-    last_num = 300;
-end
+overwrite = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -20,16 +15,47 @@ login_name = locations.ieeg_login;
 addpath(genpath(ieeg_folder));
 addpath(genpath(script_folder));
 
+%% Load data file
+pt = load([data_folder,'pt.mat']);
+pt = pt.pt;
+
+%% Remove dangling patients
+npts = length(pt);
+for i = npts:-1:1
+    if isempty(pt(i).ieeg)
+        pt(i) = [];
+    else
+        break
+    end
+end
+
+if overwrite == 1
+    p = 1;
+else
+    p = length(pt) + 1; % start at next index of pt struct
+end
+
+if isempty(ieeg_nums)
+    first_num = 100;
+    last_num = 300;
+else
+    first_num = ieeg_nums(1);
+    last_num = ieeg_nums(2);
+end
+
 % Loop over numbers
 i = first_num; % the HUP*** I am checking
-p = 1; % the index in the pt struct
 while 1
     
     % Say I have not found the patient
     found_pt = 0;
     
     % Base name
-    base_ieeg_name = sprintf('HUP%d_phaseII',i);
+    if i < 100
+        base_ieeg_name = sprintf('HUP0%d_phaseII',i);
+    else
+        base_ieeg_name = sprintf('HUP%d_phaseII',i);
+    end
     
     % Initialize stuff for ieeg files
     dcount = 0; % which file
@@ -118,7 +144,11 @@ while 1
     end
 
     % done with that patient 
-    pt(p).name = sprintf('HUP%d',i);
+    if i <100
+        pt(p).name = sprintf('HUP0%d',i);
+    else
+        pt(p).name = sprintf('HUP%d',i);
+    end
     
     % Save the file
     save([data_folder,'pt.mat'],'pt');
