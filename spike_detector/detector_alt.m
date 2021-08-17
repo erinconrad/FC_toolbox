@@ -191,9 +191,11 @@ if isempty(gdf) == 0
 end
 
 %% Remove those at beginning and end
-close_idx = close_to_edge*fs;
-gdf(gdf(:,2) < close_idx,:) = [];
-gdf(gdf(:,2) > size(values,1) - close_idx,:) = [];
+if ~isempty(gdf)
+    close_idx = close_to_edge*fs;
+    gdf(gdf(:,2) < close_idx,:) = [];
+    gdf(gdf(:,2) > size(values,1) - close_idx,:) = [];
+end
 
 %% remove duplicates
 if ~isempty(gdf)
