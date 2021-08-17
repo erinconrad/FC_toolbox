@@ -43,8 +43,8 @@ for p = whichPts
     
     
     for im = 1:2
-        fname = [out_folder,sprintf('%s_montage%d',pt_name,im)];
-        if exist(fname,'file') ~= 0
+        outname = [out_folder,sprintf('%s_montage%d',pt_name,im)];
+        if exist(outname,'file') ~= 0
   
             if overwrite == 0
                 fprintf('\nSkipping %s\n',pt_name);
@@ -129,7 +129,7 @@ for p = whichPts
 
         end
 
-        print(fname,'-djpeg');
+        print(outname,'-djpeg');
         close(gcf)
     end
     
