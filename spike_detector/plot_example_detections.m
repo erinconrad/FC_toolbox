@@ -3,7 +3,7 @@ function plot_example_detections
 %% General parameters
 n_sp = 50;
 surround = 1;
-overwrite = 0;
+overwrite = 1;
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -87,9 +87,9 @@ for p = whichPts
             sp = randi(size(all_spikes,1));
 
             %% Get info about the spike
-            fs = out.file(f).run(h).data.fs;
             f = all_spikes(sp,3);
             h = all_spikes(sp,4);
+            fs = out.file(f).run(h).data.fs;
             sp_index = all_spikes(sp,2);
             run_start = out.file(f).run(h).run_times(1);
             sp_time = (sp_index-1)/fs + run_start;        
