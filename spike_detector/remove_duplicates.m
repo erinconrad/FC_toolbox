@@ -1,6 +1,6 @@
 function [gdf,n_removed] = remove_duplicates(gdf)
 % max time diff
-off = 50e-3;
+off = 100e-3;
 
 % sort by time
 gdf = sortrows(gdf,2);

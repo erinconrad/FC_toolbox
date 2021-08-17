@@ -6,6 +6,8 @@ This is the spike detection algorithm used for the implant effect paper.
 
 tmul = 19;
 absthresh = 100;
+sur_time = 0.5;
+close_to_edge = 0.05;
 
 % Initialize parameters
 too_high_abs = 1e3; % tmul above which I reject it as artifact
@@ -104,7 +106,7 @@ for j = 1:nchs
     for i = 1:size(spikes, 1)  % for each spike
         
         % re-define baseline to be 2 seconds surrounding
-        surround = 1;
+        surround = sur_time;
         istart = max(1,round(spikes(i,1)-surround*fs));
         iend = min(length(hpdata),round(spikes(i,1)+surround*fs));
         alt_thresh = median(abs(hpdata(istart:iend)))*tmul;
@@ -134,13 +136,17 @@ for j = 1:nchs
         %get_spike_details(out,data,fndata,HFdata,fs)
         %
          % Re-align spikes to peak of the spikey component
-         timeToPeak = [-.1,.15]; %Only look 100 ms before and 150 ms after the currently defined peak
+         timeToPeak = [-.15,.15]; %Only look 150 ms before and 150 ms after the currently defined peak
+         fullSurround = [-sur_time,sur_time]*fs;
          idxToPeak = timeToPeak*fs;
+         
          for i = 1:size(out,1)
             currIdx = out(i,1);
+            surround_idx = max(1,round(currIdx+fullSurround(1))):...
+                min(round(currIdx+fullSurround(2)),length(hpdata));
             idxToLook = max(1,round(currIdx+idxToPeak(1))):...
                     min(round(currIdx+idxToPeak(2)),length(hpdata));  
-            snapshot = hpdata(idxToLook); % Look at the high frequency data (where the mean is substracted already)
+            snapshot = hpdata(idxToLook)-median(hpdata(surround_idx)); % Look at the high frequency data (where the mean is substracted already)
             [~,I] = max(abs(snapshot)); % The peak is the maximum absolute value of this
             out(i,1) = idxToLook(1) + I - 1;
          end
@@ -184,6 +190,11 @@ if isempty(gdf) == 0
     gdf = [chs,times];
 end
 
+%% Remove those at beginning and end
+close_idx = close_to_edge*fs;
+gdf(gdf(:,2) < close_idx,:) = [];
+gdf(gdf(:,2) > size(values,1) - close_idx,:) = [];
+
 %% remove duplicates
 if ~isempty(gdf)
     keep = ones(size(gdf,1),1);
@@ -195,7 +206,7 @@ if ~isempty(gdf)
     diff_chs = [inf;diff(gdf(:,1))];
 
     % find those that are close in time and the same ch
-    too_close = abs(diff_times) < 50e-3*fs & diff_chs == 0;
+    too_close = abs(diff_times) < 100e-3*fs & diff_chs == 0;
 
     keep(too_close) = 0;
     keep = logical(keep);
