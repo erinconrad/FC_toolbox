@@ -3,7 +3,7 @@ function plot_example_detections
 %% General parameters
 n_sp = 50;
 surround = 1;
-overwrite = 1;
+overwrite = 0;
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -129,7 +129,7 @@ for p = whichPts
 
         end
 
-        print(gcf,fname,'-djpeg');
+        print(fname,'-djpeg');
         close(gcf)
     end
     
