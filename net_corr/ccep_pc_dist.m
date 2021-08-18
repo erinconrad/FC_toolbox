@@ -202,6 +202,22 @@ if do_sym
     labels = labels(stim_chs);
 end
 
+%% Again, make sure labels match
+%
+if ~isequal(pc_labels,ccep_labels) || ~isequal(pc_labels,labels)
+    error('labels do not match')
+end
+
+
+all.net.dist = A;
+all.net.ccep = ccep_net;
+all.net.pc = pc_net;
+all.ns_time = ns_time;
+all.labels 
+
+
+%{
+
 %% Do correlations
 % Correlations across columns
 outdegree = nansum(ccep_net,1);
@@ -227,13 +243,9 @@ if any(abs(ns_pc_cols'-ns_pc_rows) > 1e-4), error('what'); end
 ns_time_dist_r = corr(ns_dist_rows,ns_time,'rows','pairwise','type',corr_type);
 ns_time_in_r = corr(indegree,ns_time,'rows','pairwise','type',corr_type);
 ns_time_out_r = corr(outdegree',ns_time,'rows','pairwise','type',corr_type);
-%}
 
-%% Again, make sure labels match
-%
-if ~isequal(pc_labels,ccep_labels) || ~isequal(pc_labels,labels)
-    error('labels do not match')
-end
+
+
 
 %% Plot
 figure
@@ -352,5 +364,6 @@ title('NS-indegree correlation over time')
 nexttile
 plot(ns_time_out_r)
 title('NS-outdegree correlation over time')
+%}
 
 end

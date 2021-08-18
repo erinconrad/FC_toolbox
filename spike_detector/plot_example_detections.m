@@ -115,6 +115,10 @@ for p = whichPts
                 [values,~,labels] =...
                 bipolar_montage(values,chLabels,which_chs,[],[]);
             end
+            
+            % filters
+            values = notch_filter(values,fs);
+            values = bandpass_filter(values,fs);
 
             %% Plot data
             nexttile
