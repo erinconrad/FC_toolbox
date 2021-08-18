@@ -35,8 +35,16 @@ for f = 1:nfiles
         for m = 1:nmontages
             data = pc.file(f).run(r).data.montage(m).net.data;
             is_run = pc.file(f).run(r).data.montage(m).is_run;
-            gdf = pc.file(f).run(r).data.montage(m).spikes;
-            ad = pc.file(f).run(r).data.montage(m).ad;
+            if isfield(pc.file(f).run(r).data.montage(m),'spikes')
+                gdf = pc.file(f).run(r).data.montage(m).spikes;
+            else
+                gdf = [];
+            end
+            if isfield(pc.file(f).run(r).data.montage(m),'ad')
+                ad = pc.file(f).run(r).data.montage(m).ad;
+            else
+                ad = nan(nchs,1);
+            end
             
             %% Network
             % unwrap

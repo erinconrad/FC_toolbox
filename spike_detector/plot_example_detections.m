@@ -1,4 +1,4 @@
-function plot_example_detections
+function plot_example_detections(whichPts)
 
 %% General parameters
 n_sp = 50;
@@ -22,7 +22,7 @@ pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
 
 
-whichPts = [];
+if isempty(whichPts)
 listing = dir([spike_folder,'*.mat']);
 for i = 1:length(listing)
     C = listing(i).name;
@@ -35,6 +35,7 @@ for i = 1:length(listing)
             break
         end
     end
+end
 end
 
 

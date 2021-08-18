@@ -52,6 +52,7 @@ base_pc_labels = out.all_labels;
 % ccep
 ccep_labels = ccep.chLabels;
 
+
 %% Find intersecting labels and corresponding indices
 % we need to remember to restrict all future things based on these indices
 [indices,intersecting_set] = find_intersecting_idx({base_pc_labels,ccep_labels});
@@ -101,7 +102,7 @@ ccep_labels_car = cellfun(@(x) [x,'-CAR'],ccep_labels_car,'UniformOutput',false)
 
 % Identify stim and response chs
 stim_chs = ccep.ch_info.stim_chs;
-%response_chs = ccep.ch_info.response_chs;
+response_chs = ccep.ch_info.response_chs;
 
 if m == 1
     ccep_labels = ccep_labels_bipolar;
@@ -111,7 +112,6 @@ end
 
 ccep_labels = ccep_labels(ccep_idx);
 ccep_net = ccep_net(ccep_idx,ccep_idx);
-stim_chs = stim_chs(ccep_idx);
 %{
 stim_labels = ccep_labels(stim_chs);
 response_labels = ccep_labels(response_chs);
@@ -160,7 +160,24 @@ labels = labels(pc_idx);
 % Make inv dist matrix
 A = inverse_dist(out_locs);
 A = wrap_or_unwrap_adjacency_fc_toolbox(A);
+%{
+A(nan_chs,:) = [];
+A(:,nan_chs) = [];
+dist_labels(nan_chs) = [];
+%}
 
+%% Find common labels and restrict
+%{
+% common labels
+stim_overlap_labels = intersect(dist_labels,intersect(stim_labels,pc_labels));
+response_overlap_labels = intersect(dist_labels,intersect(response_labels,pc_labels));
+
+% restrict stim
+stim_stim_idx = ismember(stim_labels,stim_overlap_labels);
+ccep_net(:,~stim_stim_idx) = [];
+outdegree(~stim_stim_idx) = [];
+stim_labels(~stim_stim_idx) = [];
+%}
 
 %% Reconcile labels
 indices = reconcile_labels({ccep_labels,pc_labels,labels});
@@ -168,7 +185,6 @@ indices = reconcile_labels({ccep_labels,pc_labels,labels});
 % Restrict matrices to matching labels
 ccep_labels = ccep_labels(indices{1});
 ccep_net = ccep_net(indices{1},indices{1});
-stim_chs = stim_chs(indices{1});
 
 pc_labels = pc_labels(indices{2});
 pc_net = pc_net(indices{2},indices{2});
@@ -188,18 +204,14 @@ end
 %% Binarize CCEP
 if do_bin
     ccep_net(~isnan(ccep_net)) = 1;
+    %ccep_net(isnan(ccep_net)) = 0;
+    %ccep_net(logical(eye(size(ccep_net)))) = nan;
 end
 
 %% Force each matrix to be symmetric
 if do_sym
-    ccep_net = ccep_net(stim_chs,stim_chs);
-    A = A(stim_chs,stim_chs);
-    pc_net = pc_net(stim_chs,stim_chs);
-    ns_time = ns_time(stim_chs,:);
     
-    ccep_labels = ccep_labels(stim_chs);
-    pc_labels = pc_labels(stim_chs);
-    labels = labels(stim_chs);
+    
 end
 
 %% Do correlations
@@ -229,11 +241,6 @@ ns_time_in_r = corr(indegree,ns_time,'rows','pairwise','type',corr_type);
 ns_time_out_r = corr(outdegree',ns_time,'rows','pairwise','type',corr_type);
 %}
 
-%% Again, make sure labels match
-%
-if ~isequal(pc_labels,ccep_labels) || ~isequal(pc_labels,labels)
-    error('labels do not match')
-end
 
 %% Plot
 figure
@@ -242,95 +249,76 @@ tiledlayout(3,3,'tilespacing','tight','padding','tight')
 
 nexttile
 turn_nans_gray(A)
-%xticks(1:length(labels))
+xticks(1:length(labels))
 yticks(1:length(labels))
-%xticklabels(labels)
-xticklabels([])
+xticklabels(labels)
 yticklabels(labels)
-
-title('Inverse distance squared network')
-set(gca,'fontsize',15)
+title('Inverse distance')
 
 nexttile
 turn_nans_gray(pc_net)
-%{
 xticks(1:length(pc_labels))
 yticks(1:length(pc_labels))
 xticklabels(pc_labels)
 yticklabels(pc_labels)
-%}
-xticklabels([])
-yticklabels([])
-title('Pearson correlation network')
-set(gca,'fontsize',15)
+title('Pearson correlation')
 
 nexttile
 turn_nans_gray(ccep_net)
-%{
 xticks(1:length(ccep_labels))
 yticks(1:length(ccep_labels))
 xticklabels(ccep_labels)
 yticklabels(ccep_labels)
-%}
-xticklabels([])
-yticklabels([])
 xlabel('Stim')
 ylabel('Response')
-title('CCEP network')
-set(gca,'fontsize',15)
+title('CCEP')
 
 nexttile
-plot(ns_dist_rows,ns_pc_rows,'o','linewidth',2,'markersize',10)
+plot(ns_dist_rows,ns_pc_rows,'o')
 yl = ylim;
 xl = xlim;
 text(xl(1),yl(2),sprintf('r = %1.2f\n',pc_dist_r_rows),'verticalalignment','top',...
     'fontsize',15)
 xlabel('Inverse distance node strength')
 ylabel('PC node strength')
-set(gca,'fontsize',15)
 
 nexttile
-plot(ns_pc_rows,indegree,'o','linewidth',2,'markersize',10)
+plot(ns_pc_rows,indegree,'o')
 yl = ylim;
 xl = xlim;
 text(xl(1),yl(2),sprintf('r = %1.2f\n',in_pc_r),'verticalalignment','top',...
     'fontsize',15)
 xlabel('PC node strength')
 ylabel('Indegree')
-set(gca,'fontsize',15)
 
 nexttile
-plot(ns_dist_rows,indegree,'o','linewidth',2,'markersize',10)
+plot(ns_dist_rows,indegree,'o')
 yl = ylim;
 xl = xlim;
 text(xl(1),yl(2),sprintf('r = %1.2f\n',in_dist_r),'verticalalignment','top',...
     'fontsize',15)
 xlabel('Inverse distance node strength')
 ylabel('Indegree')
-set(gca,'fontsize',15)
 
 nexttile
-axis off
 
 nexttile
-plot(ns_pc_rows,outdegree,'o','linewidth',2,'markersize',10)
+plot(ns_pc_rows,outdegree,'o')
 yl = ylim;
 xl = xlim;
 text(xl(1),yl(2),sprintf('r = %1.2f\n',out_pc_r),'verticalalignment','top',...
     'fontsize',15)
 xlabel('PC node strength')
 ylabel('Outdegree')
-set(gca,'fontsize',15)
 
 nexttile
-plot(ns_dist_rows,outdegree,'o','linewidth',2,'markersize',10)
+plot(ns_dist_rows,outdegree,'o')
 yl = ylim;
 xl = xlim;
 text(xl(1),yl(2),sprintf('r = %1.2f\n',out_dist_r),'verticalalignment','top',...
     'fontsize',15)
 xlabel('Inverse distance node strength')
 ylabel('Outdegree')
-set(gca,'fontsize',15)
 
 %
 figure
