@@ -4,10 +4,10 @@ function [bad,details] = identify_bad_chs(values,which_chs,chLabels,fs)
 tile = 99;
 mult = 10;
 num_above = 1;
-abs_thresh = 1e3;
+abs_thresh = 5e3;
 
 %% Parameter to reject high 60 Hz
-percent_60_hz = 0.5;
+percent_60_hz = 0.7;
 
 %% Parameter to reject electrodes with much higher std than most electrodes
 mult_std = 10;

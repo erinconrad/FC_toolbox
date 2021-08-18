@@ -63,31 +63,28 @@ for im = 1:2
             curr_labels = car_labels;
     end
     
-    % make non run channels nans
-    values(:,~is_run) = nan;
-    
     % filters
     values = notch_filter(values,fs);
     values = bandpass_filter(values,fs);
     
+    % make non run channels nans
+    run_values = values;
+    run_values(:,~is_run) = nan;
+    skip = find(~is_run);
+    
     % Choose network
     switch which_net
         case 'pc'
-            curr_net = pc_vector_calc(values,fs,tw);
+            curr_net = pc_vector_calc(run_values,fs,tw);
         
     end
     
     % Get spikes
-    gdf = detector_alt(values,fs);
+    gdf = detector_alt(run_values,fs);
     fprintf('\nDetected %d spikes\n',size(gdf,1));
     
     % Get alpha delta ratio
-    ad_rat = calc_ad(values,fs);
-    
-    % Example plot
-    if 0
-        show_eeg_and_spikes(values,curr_labels,gdf,fs);
-    end
+    ad_rat = calc_ad(run_values,fs);
     
     % save
     out.montage(im).name = montage;
@@ -98,6 +95,7 @@ for im = 1:2
     out.montage(im).spikes = gdf;
     out.montage(im).ad = ad_rat;
     out.fs = fs;
+    out.montage(im).skip = skip;
     out.clean_labels = clean_labels;
     
     if show_data
@@ -115,7 +113,7 @@ if show_data
     ex_chs = [];
     only_run = 0;
     simple_plot(tout,out,ex_chs,show_montage,out.montage(show_montage).spikes,...
-        only_run,bad)
+        only_run,skip)
     %pause
     %close(gcf)
     clear tout
