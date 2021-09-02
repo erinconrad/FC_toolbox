@@ -1,4 +1,4 @@
-function [clean_labels,elecs,numbers] = decompose_labels(chLabels)
+function [clean_labels,elecs,numbers] = decompose_labels(chLabels,name)
 
 %{
 This function takes an arbitrary set of electrode labels. It returns clean_labels,
@@ -62,6 +62,16 @@ for ich = 1:length(chLabels)
     
     %% Remove '-'
     label = strrep(label,'-','');
+    
+    %% Remove CAR
+    label = strrep(label,'CAR','');
+    
+    %% Dumb fixes
+    if strcmp(name,'HUP099')
+        if strcmp(label(1),'R')
+            label = strrep(label,'R','');
+        end
+    end
     
     %% Fill the clean label
     clean_labels{ich} = label;

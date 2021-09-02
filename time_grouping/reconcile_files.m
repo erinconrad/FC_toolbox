@@ -49,6 +49,7 @@ end
 
 %% Go through and fill up data according to these indices
 curr_run_idx = 1;
+last_run_center = 0;
 for f = 1:nfiles
     
     run_center = out.file(f).run_center;
@@ -57,6 +58,8 @@ for f = 1:nfiles
     % run_center
     out.run_center(curr_run_idx:curr_run_idx+nruns-1,1) = run_center;
     out.file_index(curr_run_idx:curr_run_idx+nruns-1,1) = f;
+    out.times(curr_run_idx:curr_run_idx+nruns-1) = run_center + last_run_center;
+    last_run_center = run_center(end)+last_run_center;
    
     % get indices in full set
     locb = out.file(f).full_idx;

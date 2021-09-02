@@ -26,6 +26,7 @@ for i = 1:length(which_chs)
     bad_ch = 0;
     
     ich = which_chs(i);
+    %ich = 43;
     eeg = values(:,ich);
     bl = nanmedian(eeg);
     

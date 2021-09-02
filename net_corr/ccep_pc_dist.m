@@ -1,4 +1,4 @@
-function ccep_pc_dist(pc,ccep)
+function all = ccep_pc_dist(pc,ccep)
 
 % change wrap method
 
@@ -9,10 +9,7 @@ m = 1;
 % Binarize the ccep array. I think this is reasonable because I get a lot
 % of very high ccep responses occasionally that will drown out other real
 % responses.
-do_bin = 1;
-
-% Which correlation to do in final analysis
-corr_type = 'Pearson';%'Spearman';
+do_bin = 0;
 
 % force matrices to be symmetric (exclude response chs that are not stim
 % chs). I think this is reasonable to do because if I don't do this then I
@@ -23,6 +20,11 @@ do_sym = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+out_folder = [results_folder,'corrs/combined_nets/'];
+if ~exist(out_folder,'dir')
+    mkdir(out_folder)
+end
 
 % add script folder to path
 scripts_folder = locations.script_folder;
@@ -41,9 +43,16 @@ for p = 1:length(pt)
     end
 end
 
+
 %% Get pc info
 out = net_over_time(pc);
 out = reconcile_files(out);
+nruns = 0;
+for f = 1:length(pc.file)
+    nruns = nruns + length(pc.file(f).run);
+end
+block_dur_secs = diff(pc.file(1).run(1).block_times);
+run_dur_secs = diff(pc.file(1).run(1).run_times);
 
 %% Get all base labels
 % pc
@@ -108,6 +117,8 @@ if m == 1
 elseif m == 2
     ccep_labels = ccep_labels_car;
 end
+orig_ccep_labels = ccep_labels;
+
 
 ccep_labels = ccep_labels(ccep_idx);
 ccep_net = ccep_net(ccep_idx,ccep_idx);
@@ -208,14 +219,31 @@ if ~isequal(pc_labels,ccep_labels) || ~isequal(pc_labels,labels)
     error('labels do not match')
 end
 
+%% Get the networks out
+all.net.dist.data = A;
+all.net.dist.name = '1/{dist^2}';
 
-all.net.dist = A;
-all.net.ccep = ccep_net;
-all.net.pc = pc_net;
+all.net.pc.data = pc_net;
+all.net.pc.name = 'EEG Pearson correlation';
 all.ns_time = ns_time;
-all.labels 
 
+all.net.ccep.data = ccep_net;
+all.net.ccep.name = 'CCEP';
+all.net.ccep.x = 'Stim';
+all.net.ccep.y = 'Response';
+all.net.ccep.orig_labels = orig_ccep_labels;
+if isfield(ccep,'is_soz')
+    all.net.ccep.is_soz = ccep.is_soz;
+end
 
+all.labels = labels;
+all.pt_name = pc.name;
+all.block_dur_secs = block_dur_secs;
+all.run_dur_secs = run_dur_secs;
+all.nruns = nruns;
+
+%% Save file
+save([out_folder,pc.name,'.mat'],'all')
 %{
 
 %% Do correlations

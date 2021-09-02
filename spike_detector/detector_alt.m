@@ -11,10 +11,11 @@ close_to_edge = 0.05;
 
 % Initialize parameters
 too_high_abs = 1e3; % tmul above which I reject it as artifact
-spkdur = [15 220];                % spike duration must be less than this in ms
+spkdur = [15 200];                % spike duration must be less than this in ms
 spkdur = spkdur*fs/1000;   % convert to points;
 lpf1     = 30; % low pass filter for spikey component
 hpf  = 7; % high pass filter for spikey component
+vlpf = 0.5; % very low pass filter to exclude spikes if very low freq shift
 
 % Initialize things
 all_spikes  = [];
@@ -58,8 +59,10 @@ for j = 1:nchs
 
     for k = 1:2
         if k == 2
+            %kdata = -lpdata;
             kdata = -hpdata;
         else
+            %kdata = lpdata;
             kdata = hpdata;
         end
         
@@ -109,6 +112,7 @@ for j = 1:nchs
         surround = sur_time;
         istart = max(1,round(spikes(i,1)-surround*fs));
         iend = min(length(hpdata),round(spikes(i,1)+surround*fs));
+          
         alt_thresh = median(abs(hpdata(istart:iend)))*tmul;
         
         if spikes(i,3) > alt_thresh && spikes(i,3) > absthresh            % both parts together are bigger than thresh: so have some flexibility in relative sizes

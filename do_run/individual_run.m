@@ -83,6 +83,13 @@ for im = 1:2
     gdf = detector_alt(run_values,fs);
     fprintf('\nDetected %d spikes\n',size(gdf,1));
     
+    if ~isempty(gdf)
+        % Detect bad spikes
+       % bad_gdf = detector_alt(run_values,fs);
+        
+        
+    end
+    
     % Get alpha delta ratio
     ad_rat = calc_ad(run_values,fs);
     
