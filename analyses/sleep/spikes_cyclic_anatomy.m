@@ -8,8 +8,7 @@ To do:
 %}
 
 %% Parameters
-m = 2;
-restrict_to_main = 1;
+m = 2; % do not change
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
 main_lats = {'Left','Right'};
 main{1} = main_locs;
@@ -28,15 +27,18 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
+validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
+
 % Pt struct
 data_folder = [locations.main_folder,'data/'];
 pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
 
+%% Get the indices of the patients with good spikes
+T = readtable(validation_file);
+good_pts = T.Var13;
+npts = length(good_pts);
 
-%% Get the listing of the files with spikes
-listing = dir([spikes_folder,'*.mat']);
-npts = length(listing);
 
 all_rates = cell(2,1);
 all_P = cell(2,1);
@@ -47,14 +49,16 @@ for i = 1:length(all_P)
 end
 
 % Loop over patients
-for l = 1:npts
-    fname = [spikes_folder,listing(l).name];
+for j = 1:npts
+    name = pt(j).name;
+    
+    %% Load the spike file
+    fname = [spikes_folder,name,'_pc.mat'];
     
     %% Get basic info from the patient
     % load the spike file
     pc = load(fname);
     pc = pc.pc;
-    name = pc.name;
     
     % reconcile files (deal with changes in electrode names)
     out = net_over_time(pc);
@@ -67,17 +71,6 @@ for l = 1:npts
     
     % Clean the labels
     clean_labels = decompose_labels(labels,name);    
-    
-    % Get corresponding patient file info
-    found_pt = 0;
-    for j = 1:length(pt)
-        if strcmp(pt(j).name,name)
-            found_pt = 1;
-            break
-        end
-    end
-    
-    if ~found_pt, error('never found pt'); end
     
     % Get number of electrode localizations
     ne = length(pt(j).elecs);
@@ -197,6 +190,7 @@ for g = 1:length(all_rates)
     ylabel('Relative circadian power')
     xlim([0 length(avg_over_pts)+1])
 end
+save([out_folder,'circ_power'],'-dpng');
 
 
 end
