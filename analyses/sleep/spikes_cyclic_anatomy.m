@@ -37,6 +37,7 @@ pt = pt.pt;
 %% Get the indices of the patients with good spikes
 T = readtable(validation_file);
 good_pts = T.Var13;
+good_pts = good_pts(~isnan(good_pts));
 npts = length(good_pts);
 
 
