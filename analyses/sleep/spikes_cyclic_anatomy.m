@@ -138,8 +138,8 @@ for j = 1:npts
         
    
         all_rates{g} = rate_subgroup;
-        all_P{g}(:,l) = p_subgroup;
-        avg_rate{g}(:,l) = rate_avg_ind;
+        all_P{g}(:,j) = p_subgroup;
+        avg_rate{g}(:,j) = rate_avg_ind;
     end
     
     
@@ -156,8 +156,8 @@ for j = 1:npts
             legend(main{g})
             
             nexttile
-            plot(all_P{g}(:,l),'o')
-            xticks(1:length(all_P{g}(:,l)))
+            plot(all_P{g}(:,j),'o')
+            xticks(1:length(all_P{g}(:,j)))
             xticklabels(main{g})
         end
     end
