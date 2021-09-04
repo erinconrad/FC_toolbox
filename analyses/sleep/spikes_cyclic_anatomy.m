@@ -2,6 +2,7 @@ function spikes_cyclic_anatomy
 
 %{
 To do:
+- add stats
 - remove szs
 - look at effect of soz
 - look at spike leader
@@ -56,6 +57,14 @@ for l = 1:npts
     
     %% Load the spike file
     fname = [spikes_folder,name,'_pc.mat'];
+    
+    if ~exist(fname,'file')
+        for i = 1:length(all_P)
+            avg_rate{i}(:,l) = nan(length(main{i}),1);
+            all_P{i}(:,l) = nan(length(main{i}),1);
+        end
+        continue
+    end
     
     %% Get basic info from the patient
     % load the spike file
@@ -176,6 +185,10 @@ for g = 1:length(all_rates)
     curr_rate = avg_rate{g}/10; % divide by 10 minutes
     avg_over_pts = nanmean(curr_rate,2);
     std_over_pts = nanstd(curr_rate,[],2);
+    
+    % Do stats
+    
+    
     errorbar(avg_over_pts,std_over_pts,'o','markersize',10);
     xticks(1:length(avg_over_pts))
     xticklabels(main{g})
@@ -192,7 +205,8 @@ for g = 1:length(all_rates)
     ylabel('Relative circadian power')
     xlim([0 length(avg_over_pts)+1])
 end
-save([out_folder,'circ_power'],'-dpng');
+print([out_folder,'circ_power'],'-dpng');
+close(gcf)
 
 
 end

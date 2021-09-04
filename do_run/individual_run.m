@@ -1,4 +1,4 @@
-function out = individual_run(file_name,times,tw,which_net,show_data,show_montage)
+function out = individual_run(file_name,times,tw,which_net,show_data,show_montage,name)
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -20,7 +20,7 @@ values = data.values;
 fs = data.fs;
 
 %% Cleaned labels
-clean_labels = decompose_labels(chLabels);
+clean_labels = decompose_labels(chLabels,name);
 
 %% Find non-intracranial chs
 non_intracranial = find_non_intracranial(clean_labels);

@@ -97,7 +97,7 @@ for i = 1:length(whichPts)
             block_times = pt(p).ieeg.file(f).block_times(t,:);
 
             % Do the run
-            out = individual_run(file_name,run_times,tw,which_net,0,[]);
+            out = individual_run(file_name,run_times,tw,which_net,0,[],name);
 
             % save this
             pc.file(f).run(t).data = out;
