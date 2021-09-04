@@ -1,5 +1,5 @@
 function [values,clean_labels,bipolar_labels,chs_in_bipolar,which_chs_bipolar,mid_locs,mid_anatomy] =...
-    bipolar_montage(values,chLabels,which_chs,locs,anatomy)
+    bipolar_montage(values,chLabels,which_chs,locs,anatomy,name)
 
 %{
 This function takes a chunk of multi-channel EEG data, along with channel
@@ -18,7 +18,7 @@ old_values = values;
 which_chs_bipolar = [];
 
 %% Decompose chLabels
-[clean_labels,elecs,numbers] = decompose_labels(chLabels);
+[clean_labels,elecs,numbers] = decompose_labels(chLabels,name);
 bipolar_labels = cell(nchs,1);
 
 %% Bipolar montage
