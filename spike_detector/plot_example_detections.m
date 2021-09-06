@@ -1,9 +1,8 @@
-function plot_example_detections(whichPts)
+function plot_example_detections(whichPts,overwrite)
 
 %% General parameters
 n_sp = 50;
 surround = 1;
-overwrite = 1;
 
 %% Locations
 locations = fc_toolbox_locs;
