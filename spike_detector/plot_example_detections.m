@@ -43,7 +43,7 @@ for p = whichPts
     
     
     for im = 1:2
-        outname = [out_folder,sprintf('%s_montage%d',pt_name,im)]
+        outname = [out_folder,sprintf('%s_montage%d.jpg',pt_name,im)];
         if exist(outname,'file') ~= 0
   
             if overwrite == 0
