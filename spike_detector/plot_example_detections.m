@@ -43,7 +43,7 @@ for p = whichPts
     
     
     for im = 1:2
-        outname = [out_folder,sprintf('%s_montage%d',pt_name,im)];
+        outname = [out_folder,sprintf('%s_montage%d',pt_name,im)]
         if exist(outname,'file') ~= 0
   
             if overwrite == 0
@@ -107,12 +107,12 @@ for p = whichPts
             chLabels = data.chLabels;
             sp_index = surround*fs;
 
-            clean_labs = decompose_labels(chLabels);
+            clean_labs = decompose_labels(chLabels,pt_name);
             if im == 2
                 [values,labels] = car_montage(values,which_chs,clean_labs);
             else
                 [values,~,labels] =...
-                bipolar_montage(values,chLabels,which_chs,[],[]);
+                bipolar_montage(values,chLabels,which_chs,[],[],pt_name);
             end
             
             % filters
