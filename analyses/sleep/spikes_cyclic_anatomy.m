@@ -62,6 +62,7 @@ for l = 1:npts
         for i = 1:length(all_P)
             avg_rate{i}(:,l) = nan(length(main{i}),1);
             all_P{i}(:,l) = nan(length(main{i}),1);
+            fprintf('\n%s unavailable, skipping\n',name);
         end
         continue
     end
@@ -70,6 +71,16 @@ for l = 1:npts
     % load the spike file
     pc = load(fname);
     pc = pc.pc;
+    
+    % Skip the patient if it's incomplete
+    if length(pc.file) < length(pt(j).ieeg.file) || ...
+            length(pc.file(end).run) < size(pt(j).ieeg.file(end).run_times,1)
+        avg_rate{i}(:,l) = nan(length(main{i}),1);
+        all_P{i}(:,l) = nan(length(main{i}),1);
+        fprintf('\n%s incomplete, skipping\n',name);
+        continue
+    end
+        
     
     % reconcile files (deal with changes in electrode names)
     out = net_over_time(pc);
@@ -176,34 +187,90 @@ for l = 1:npts
     
 end
 
+
 %% Aggregate plots
 figure
 tiledlayout(2,2)
 
 for g = 1:length(all_rates)
+    
+    %% Rate
     nexttile
     curr_rate = avg_rate{g}/10; % divide by 10 minutes
     avg_over_pts = nanmean(curr_rate,2);
     std_over_pts = nanstd(curr_rate,[],2);
+    ngroups = size(curr_rate,1);
+    npts = size(curr_rate,2);
     
     % Do stats
-    
-    
+    [p,stats,post_hoc_p,which_groups] = circ_stats(curr_rate);
+
     errorbar(avg_over_pts,std_over_pts,'o','markersize',10);
+    hold on
     xticks(1:length(avg_over_pts))
     xticklabels(main{g})
     xlim([0 length(avg_over_pts)+1])
     ylabel('Spikes/elec/minute')
+    
+    if p > 0.05
+        pairs_to_plot = [];
+    else
+        pairs_to_plot = which_groups;
+    end
+    yl=ylim;
+    heights = get_heights(yl,pairs_to_plot);
+    ylim([yl(1) heights(end,2)]);
+    
+    if p > 0.05
+        plot([1 length(avg_over_pts)],...
+            [heights(size(heights,1)-1,1) heights(size(heights,1)-1,1)],'k');
+        text(mean([1 length(avg_over_pts)]),heights(size(heights,1)-1,2),...
+            'ns','fontsize',10,'horizontalalignment','center')
+    else
+        for k = 1:size(which_groups,1)
+            plot([which_groups(i,1)+0.1 which_groups(i,2)-0.1],[heights(i,1) heights(i,1)],'k-')
+            hold on
+            text(mean(which_groups(i,:)),which_groups(i,2),get_asterisks(0.01,1),'fontsize',10,'horizontalalignment','center')
+        end
+    end
+    
+    %% power
 
     nexttile
     curr_power = all_P{g};
     avg_over_pts = nanmean(curr_power,2);
     std_over_pts = nanstd(curr_power,[],2);
     errorbar(avg_over_pts,std_over_pts,'o','markersize',10);
+    hold on
     xticks(1:length(avg_over_pts))
     xticklabels(main{g})
     ylabel('Relative circadian power')
     xlim([0 length(avg_over_pts)+1])
+    
+    % Do stats
+    [p,stats,post_hoc_p,which_groups] = circ_stats(curr_rate);
+    
+    if p > 0.05
+        pairs_to_plot = [];
+    else
+        pairs_to_plot = which_groups;
+    end
+    yl=ylim;
+    heights = get_heights(yl,pairs_to_plot);
+    ylim([yl(1) heights(end,2)]);
+    
+    if p > 0.05
+        plot([1 length(avg_over_pts)],...
+            [heights(size(heights,1)-1,1) heights(size(heights,1)-1,1)],'k');
+        text(mean([1 length(avg_over_pts)]),heights(size(heights,1)-1,2),...
+            'ns','fontsize',10,'horizontalalignment','center')
+    else
+        for k = 1:size(which_groups,1)
+            plot([which_groups(i,1)+0.1 which_groups(i,2)-0.1],[heights(i,1) heights(i,1)],'k-')
+            hold on
+            text(mean(which_groups(i,:)),which_groups(i,2),get_asterisks(0.01,1),'fontsize',10,'horizontalalignment','center')
+        end
+    end
 end
 print([out_folder,'circ_power'],'-dpng');
 close(gcf)
