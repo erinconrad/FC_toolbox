@@ -216,7 +216,7 @@ for g = 1:length(all_rates)
     if p > 0.05
         pairs_to_plot = [];
     else
-        pairs_to_plot = which_groups(post_hoc_p < 0.05/size(which_groups,1));
+        pairs_to_plot = which_groups(post_hoc_p < 0.05/size(which_groups,1),:);
         post_hoc_p_to_plot = post_hoc_p(post_hoc_p < 0.05/size(which_groups,1));
     end
     yl=ylim;
@@ -258,7 +258,7 @@ for g = 1:length(all_rates)
     if p > 0.05
         pairs_to_plot = [];
     else
-        pairs_to_plot = which_groups(post_hoc_p < 0.05/size(which_groups,1));
+        pairs_to_plot = which_groups(post_hoc_p < 0.05/size(which_groups,1),:);
         post_hoc_p_to_plot = post_hoc_p(post_hoc_p < 0.05/size(which_groups,1));
     end
     yl=ylim;
