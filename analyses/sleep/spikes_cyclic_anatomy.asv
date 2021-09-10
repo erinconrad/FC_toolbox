@@ -233,8 +233,7 @@ for g = 1:length(all_rates)
             plot([pairs_to_plot(k,1)+0.1 pairs_to_plot(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
             hold on
             text(mean(pairs_to_plot(k,:)),pairs_to_plot(k,2),...
-                get_asterisks(post_hoc_p_to_plot(k),size(which_groups,1)),...
-                'fontsize',10,'horizontalalignment','center')
+                get_asterisks(post_hoc_p_to_plot(k),1),'fontsize',10,'horizontalalignment','center')
         end
     end
     
@@ -259,7 +258,6 @@ for g = 1:length(all_rates)
         pairs_to_plot = [];
     else
         pairs_to_plot = which_groups(post_hoc_p < 0.05/size(which_groups,1));
-        post_hoc_p_to_plot = post_hoc_p(post_hoc_p < 0.05/size(which_groups,1));
     end
     yl=ylim;
     heights = get_heights(yl,pairs_to_plot);
@@ -271,12 +269,10 @@ for g = 1:length(all_rates)
         text(mean([1 length(avg_over_pts)]),heights(size(heights,1)-1,2),...
             'ns','fontsize',10,'horizontalalignment','center')
     else
-        for k = 1:size(pairs_to_plot,1)
-            plot([pairs_to_plot(k,1)+0.1 pairs_to_plot(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
+        for k = 1:size(which_groups,1)
+            plot([which_groups(k,1)+0.1 which_groups(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
             hold on
-            text(mean(pairs_to_plot(k,:)),pairs_to_plot(k,2),...
-                get_asterisks(post_hoc_p_to_plot(k),size(which_groups,1)),...
-                'fontsize',10,'horizontalalignment','center')
+            text(mean(which_groups(k,:)),which_groups(k,2),get_asterisks(post_hoc_p(k),1),'fontsize',10,'horizontalalignment','center')
         end
     end
 end
