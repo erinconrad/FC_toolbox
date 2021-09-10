@@ -209,6 +209,7 @@ for g = 1:length(all_rates)
     hold on
     xticks(1:length(avg_over_pts))
     xticklabels(main{g})
+    xtickangle(30)
     xlim([0 length(avg_over_pts)+1])
     ylabel('Spikes/elec/minute')
     
@@ -228,9 +229,9 @@ for g = 1:length(all_rates)
             'ns','fontsize',10,'horizontalalignment','center')
     else
         for k = 1:size(which_groups,1)
-            plot([which_groups(i,1)+0.1 which_groups(i,2)-0.1],[heights(i,1) heights(i,1)],'k-')
+            plot([which_groups(k,1)+0.1 which_groups(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
             hold on
-            text(mean(which_groups(i,:)),which_groups(i,2),get_asterisks(0.01,1),'fontsize',10,'horizontalalignment','center')
+            text(mean(which_groups(k,:)),which_groups(k,2),get_asterisks(post_hoc_p(k),1),'fontsize',10,'horizontalalignment','center')
         end
     end
     
@@ -244,6 +245,7 @@ for g = 1:length(all_rates)
     hold on
     xticks(1:length(avg_over_pts))
     xticklabels(main{g})
+    xtickangle(30)
     ylabel('Relative circadian power')
     xlim([0 length(avg_over_pts)+1])
     
@@ -266,9 +268,9 @@ for g = 1:length(all_rates)
             'ns','fontsize',10,'horizontalalignment','center')
     else
         for k = 1:size(which_groups,1)
-            plot([which_groups(i,1)+0.1 which_groups(i,2)-0.1],[heights(i,1) heights(i,1)],'k-')
+            plot([which_groups(k,1)+0.1 which_groups(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
             hold on
-            text(mean(which_groups(i,:)),which_groups(i,2),get_asterisks(0.01,1),'fontsize',10,'horizontalalignment','center')
+            text(mean(which_groups(k,:)),which_groups(k,2),get_asterisks(post_hoc_p(k),1),'fontsize',10,'horizontalalignment','center')
         end
     end
 end
