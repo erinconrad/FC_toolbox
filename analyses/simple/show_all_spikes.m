@@ -83,7 +83,7 @@ for l = 1:npts
     set(gcf,'position',[10 10 1200 900])
     tiledlayout(1,1,'padding','tight')
     nexttile
-    h = turn_nans_white(spikes);
+    h = turn_nans_gray(spikes);
     set(h,'XData',times);
     xlim([times(1) times(end)])
     xlabel('Day')
