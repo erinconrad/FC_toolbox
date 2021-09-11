@@ -227,14 +227,14 @@ for g = 1:length(all_rates)
         plot([1 length(avg_over_pts)],...
             [heights(size(heights,1)-1,1) heights(size(heights,1)-1,1)],'k');
         text(mean([1 length(avg_over_pts)]),heights(size(heights,1)-1,2),...
-            'ns','fontsize',10,'horizontalalignment','center')
+            'ns','fontsize',20,'horizontalalignment','center')
     else
         for k = 1:size(pairs_to_plot,1)
             plot([pairs_to_plot(k,1)+0.1 pairs_to_plot(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
             hold on
             text(mean(pairs_to_plot(k,:)),pairs_to_plot(k,2),...
                 get_asterisks(post_hoc_p_to_plot(k),size(which_groups,1)),...
-                'fontsize',10,'horizontalalignment','center')
+                'fontsize',20,'horizontalalignment','center')
         end
     end
     
