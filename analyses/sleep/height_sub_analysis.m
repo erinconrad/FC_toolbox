@@ -12,25 +12,27 @@ pairs_to_plot(:,2) = max(old_pairs_to_plot,[],2);
 % Find overlapping groups (groups that would overlap on the x-axis)
 levels = nan(size(pairs_to_plot,1),1);
 levels(1) = 1;
+highest_level = 1;
 for i = 2:size(pairs_to_plot)
     
-    any_overlap = 0;
+    non_overlap_segment = 0;
     
     % loop over ones already done
     for j = 1:i-1
         % check for overlap
         overlap = find_overlapping_groups(pairs_to_plot([i,j],:));
         
-        if overlap == 1
-            any_overlap = 1;
+        if overlap == 0
+            non_overlap_segment = j;
             break
         end
     end
     
-    if any_overlap == 0
-        levels(i) = levels(i-1);
+    if non_overlap_segment == 0
+        levels(i) = highest_level + 1;
+        highest_level = levels(i);
     else
-        levels(i) = levels(i-1) + 1;
+        levels(i) = levels(non_overlap_segment);
     end
     
 end

@@ -42,11 +42,11 @@ end
 for l = 1:npts
     
     % Get the spikes and the labels
-    times = summ.times;
-    spikes = summ.spikes;
-    labels = summ.labels;
-    loc = summ.ana_loc;
-    lat = summ.ana_lat;
+    times = summ(l).times;
+    spikes = summ(l).spikes;
+    labels = summ(l).labels;
+    loc = summ(l).ana_loc;
+    lat = summ(l).ana_lat;
 
     
     % WRITE SOMETHING TO CHECK HOW MANY ARE EMPTY 
@@ -122,7 +122,8 @@ for g = 1:length(all_rates)
     npts = size(curr_rate,2);
     
     % Do stats
-    [p,stats,post_hoc_p,which_groups] = circ_stats(curr_rate);
+    %[p,stats,post_hoc_p,which_groups] = circ_stats(curr_rate);
+    [p,post_hoc_p,which_groups] = non_para_circ_stats(curr_rate);
 
     errorbar(avg_over_pts,std_over_pts,'o','markersize',10);
     hold on
@@ -146,14 +147,14 @@ for g = 1:length(all_rates)
         plot([1 length(avg_over_pts)],...
             [heights(size(heights,1)-1,1) heights(size(heights,1)-1,1)],'k');
         text(mean([1 length(avg_over_pts)]),heights(size(heights,1)-1,2),...
-            'ns','fontsize',20,'horizontalalignment','center')
+            'ns','fontsize',10,'horizontalalignment','center')
     else
         for k = 1:size(pairs_to_plot,1)
             plot([pairs_to_plot(k,1)+0.1 pairs_to_plot(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
             hold on
-            text(mean(pairs_to_plot(k,:)),pairs_to_plot(k,2),...
+            text(mean(pairs_to_plot(k,:)),heights(k,2),...
                 get_asterisks(post_hoc_p_to_plot(k),size(which_groups,1)),...
-                'fontsize',20,'horizontalalignment','center')
+                'fontsize',10,'horizontalalignment','center')
         end
     end
     
@@ -172,7 +173,7 @@ for g = 1:length(all_rates)
     xlim([0 length(avg_over_pts)+1])
     
     % Do stats
-    [p,stats,post_hoc_p,which_groups] = circ_stats(curr_rate);
+    [p,post_hoc_p,which_groups] = non_para_circ_stats(curr_power);
     
     if p > 0.05
         pairs_to_plot = [];
@@ -193,7 +194,7 @@ for g = 1:length(all_rates)
         for k = 1:size(pairs_to_plot,1)
             plot([pairs_to_plot(k,1)+0.1 pairs_to_plot(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
             hold on
-            text(mean(pairs_to_plot(k,:)),pairs_to_plot(k,2),...
+            text(mean(pairs_to_plot(k,:)),heights(k,2),...
                 get_asterisks(post_hoc_p_to_plot(k),size(which_groups,1)),...
                 'fontsize',10,'horizontalalignment','center')
         end
