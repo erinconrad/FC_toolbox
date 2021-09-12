@@ -19,6 +19,7 @@ main{2} = main_lats;
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/sleep/'];
+spikes_folder = [results_folder,'all_out/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
@@ -50,7 +51,11 @@ for l = 1:npts
 
     
     % WRITE SOMETHING TO CHECK HOW MANY ARE EMPTY 
-
+    
+    % Get anatomical groupings
+    [loc,lat] = cluster_anatomical_location(spike_anatomy);
+    
+    
     %% Get rates and spectral power for each group for these groups
     % Loop over loc vs lat
     for g = 1:2

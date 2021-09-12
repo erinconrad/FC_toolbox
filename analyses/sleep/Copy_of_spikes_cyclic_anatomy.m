@@ -1,4 +1,4 @@
-function spikes_cyclic_anatomy(summ)
+function spikes_cyclic_anatomy
 
 %{
 To do:
@@ -19,6 +19,7 @@ main{2} = main_lats;
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/sleep/'];
+spikes_folder = [results_folder,'all_out/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
@@ -27,9 +28,20 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
+validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
+
+% Pt struct
+data_folder = [locations.main_folder,'data/'];
+pt = load([data_folder,'pt.mat']);
+pt = pt.pt;
 
 %% Get the indices of the patients with good spikes
-npts = length(summ);
+T = readtable(validation_file);
+good_pts = T.Var13;
+good_pts = good_pts(~isnan(good_pts));
+npts = length(good_pts);
+
+
 all_rates = cell(2,1);
 all_P = cell(2,1);
 avg_rate = cell(2,1);
@@ -40,17 +52,85 @@ end
 
 % Loop over patients
 for l = 1:npts
+    j = good_pts(l);
+    name = pt(j).name;
+    
+    %% Load the spike file
+    fname = [spikes_folder,name,'_pc.mat'];
+    
+    if ~exist(fname,'file')
+        for i = 1:length(all_P)
+            avg_rate{i}(:,l) = nan(length(main{i}),1);
+            all_P{i}(:,l) = nan(length(main{i}),1);
+            fprintf('\n%s unavailable, skipping\n',name);
+        end
+        continue
+    end
+    
+    %% Get basic info from the patient
+    % load the spike file
+    pc = load(fname);
+    pc = pc.pc;
+    
+    % Skip the patient if it's incomplete
+    if length(pc.file) < length(pt(j).ieeg.file) || ...
+            length(pc.file(end).run) < size(pt(j).ieeg.file(end).run_times,1)
+        
+        fprintf('\n%s incomplete, skipping\n',name);
+        continue
+    end
+        
+    
+    % reconcile files (deal with changes in electrode names)
+    out = net_over_time(pc);
+    out = reconcile_files(out);
     
     % Get the spikes and the labels
-    times = summ.times;
-    spikes = summ.spikes;
-    labels = summ.labels;
-    loc = summ.ana_loc;
-    lat = summ.ana_lat;
+    times = out.times;
+    spikes = out.montage(m).spikes;
+    labels = out.montage(m).labels;
+    
+    % Clean the labels
+    clean_labels = decompose_labels(labels,name);    
+    
+    % Get number of electrode localizations
+    ne = length(pt(j).elecs);
+    
+    %% Find the anatomy corresponding to the spike labelsomy
+    % Initialize a new spike_anatomy cell array corresponding to spike
+    % labels
+    spike_anatomy = cell(length(labels),1);
+    spike_locs = nan(length(labels),3);
+    already_filled = zeros(length(labels),1);
+    
+    for e = 1:ne
+        % Get loc/anatomy names and labels
+        ana_name = pt(j).elecs(e).elec_names;
+        locs = pt(j).elecs(e).locs;
+        anatomy = pt(j).elecs(e).anatomy;
 
+        % Indices of the loc/anatomy names that match the spike labels
+        [lia,locb] = ismember(clean_labels,ana_name);
+        % sanity check
+        if ~isequal(clean_labels(lia~=0 & already_filled == 0),ana_name(locb(lia~=0 & already_filled == 0))), error('oh no'); end
+
+        
+        % Fill up spike anatomy and locs with the anatomy
+        if ~strcmp(class(anatomy),'double')
+            spike_anatomy(lia~=0 & already_filled == 0) = anatomy(locb(lia~=0 & already_filled == 0));
+        end
+        spike_locs(lia~=0 & already_filled == 0,:) = locs(locb(lia~=0 & already_filled == 0),:);
+        
+        % set already filled
+        already_filled(lia~=0 & already_filled == 0) = 1;
+    end
     
     % WRITE SOMETHING TO CHECK HOW MANY ARE EMPTY 
-
+    
+    % Get anatomical groupings
+    [loc,lat] = cluster_anatomical_location(spike_anatomy);
+    
+    
     %% Get rates and spectral power for each group for these groups
     % Loop over loc vs lat
     for g = 1:2
