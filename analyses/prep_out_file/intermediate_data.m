@@ -81,7 +81,7 @@ for l = 1:npts
     
     for e = 1:ne
         % Get loc/anatomy names and labels
-        ana_name = pt(j).elecs(e).elec_names;
+        ana_name = decompose_labels(pt(j).elecs(e).elec_names,name);
         locs = pt(j).elecs(e).locs;
         anatomy = pt(j).elecs(e).anatomy;
 

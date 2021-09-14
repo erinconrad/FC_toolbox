@@ -73,6 +73,10 @@ for ich = 1:length(chLabels)
         end
     end
     
+    if strcmp(name,'HUP189')
+        label = strrep(label,'Gr','G');
+    end
+    
     %% Fill the clean label
     clean_labels{ich} = label;
     
