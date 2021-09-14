@@ -93,12 +93,15 @@ for l = 1:npts
         
         % Fill up spike anatomy and locs with the anatomy
         if ~strcmp(class(anatomy),'double')
-            spike_anatomy(lia~=0 & already_filled == 0) = anatomy(locb(lia~=0 & already_filled == 0));
+            %spike_anatomy(lia~=0 & already_filled == 0) = anatomy(locb(lia~=0 & already_filled == 0));
+            spike_anatomy(lia~=0) = anatomy(locb(lia~=0));
         end
-        spike_locs(lia~=0 & already_filled == 0,:) = locs(locb(lia~=0 & already_filled == 0),:);
+        %spike_locs(lia~=0 & already_filled == 0,:) = locs(locb(lia~=0 & already_filled == 0),:);
+        spike_locs(lia~=0,:) = locs(locb(lia~=0),:);
         
         % set already filled
-        already_filled(lia~=0 & already_filled == 0) = 1;
+        %already_filled(lia~=0 & already_filled == 0) = 1;
+        already_filled(lia~=0) = 1;
     end
     
     % Get anatomical groupings
