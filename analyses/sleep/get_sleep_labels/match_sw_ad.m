@@ -1,4 +1,4 @@
-function match_sw_ad(pt,summ)
+function summ = match_sw_ad(pt,summ)
 
 for l = 1:length(summ)
     name = summ(l).name;
@@ -36,6 +36,15 @@ for l = 1:length(summ)
         
         % Remove duplicates in run indices array
         run_indices = unique(run_indices);
+        
+        % get the alpha delta ratios of these run indices
+        ad = summ(l).ad(:,run_indices);
+        
+        % average across electrodes
+        ad = nanmean(ad,1);
+        
+        % add data to summ
+        summ(l).sw.(fn{n}) = ad;
     end
     
 end
