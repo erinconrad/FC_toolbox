@@ -119,7 +119,7 @@ for l = 1:npts
     summ(count).ana_loc = loc;
     summ(count).ana_lat = lat;
     summ(count).file_times = file_times;
-    summ(count).file_index = file_index;
+    summ(count).file+
 
 
 end

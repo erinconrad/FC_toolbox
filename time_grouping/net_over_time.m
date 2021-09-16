@@ -30,6 +30,7 @@ for f = 1:nfiles
     for r = 1:nruns
         
         run_center(r) = mean(pc.file(f).run(r).run_times);
+        file_times(r) = mean(pc.file(f).run(r).run_times);
         
         %% Get the data and calculate ns
         for m = 1:nmontages
