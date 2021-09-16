@@ -1,4 +1,4 @@
-function data = remove_dangling_times(data,nruns)
+function [data,all_adj_bad] = remove_dangling_times(data,nruns)
 
  % find bad periods
 all_bad = find(sum(~isnan(data),1) == 0);

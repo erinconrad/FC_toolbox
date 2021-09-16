@@ -27,6 +27,8 @@ for m  = 1:nmontages
     out.montage(m).net = nan(nchs*(nchs-1)/2,n_runs_total);
     out.montage(m).spikes = nan(nchs,n_runs_total);
     out.montage(m).ad = nan(nchs,n_runs_total);
+    out.montage(m).coi_ch = nan(nchs,n_runs_total);
+    out.montage(m).coi_global = nan(n_runs_total,1);
     out.montage(m).labels = cell(nchs,1);
 end
 
@@ -70,6 +72,8 @@ for f = 1:nfiles
         net = out.file(f).montage(m).net;
         spikes = out.file(f).montage(m).spikes;
         ad = out.file(f).montage(m).ad;
+        coi_ch = out.file(f).montage(m).coi_ch;
+        coi_global = out.file(f).montage(m).coi_global;
         labels = out.file(f).montage(m).labels;
         
         % prep net_uw
@@ -85,12 +89,14 @@ for f = 1:nfiles
         new_net_uw = nan(nchs,nchs,nruns);
         new_spikes = nan(nchs,nruns);
         new_ad = nan(nchs,nruns);
+        new_coi_ch = nan(nchs,nruns);
         new_labels = cell(nchs,1);
         
         % fill the new ones based on the indices
         new_net_uw(locb,locb,:) = net_uw;
         new_spikes(locb,:) = spikes;
         new_ad(locb,:) = ad;
+        new_coi_ch(locb,:) = coi_ch;
         %new_ns(locb,:) = nansum(net_uw,2);
         
         % rewrap the net
@@ -104,6 +110,8 @@ for f = 1:nfiles
         out.montage(m).net(:,curr_run_idx:curr_run_idx+nruns-1) = new_net;
         out.montage(m).spikes(:,curr_run_idx:curr_run_idx+nruns-1) = new_spikes;
         out.montage(m).ad(:,curr_run_idx:curr_run_idx+nruns-1) = new_ad;
+        out.montage(m).coi_ch(:,curr_run_idx:curr_run_idx+nruns-1) = new_coi_ch;
+        out.montage(m).coi_global(curr_run_idx:curr_run_idx+nruns-1) = coi_global;
         out.montage(m).labels(locb) = labels;
         
     end
