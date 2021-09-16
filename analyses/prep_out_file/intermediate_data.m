@@ -42,6 +42,9 @@ for l = 1:npts
         continue
     end
     
+    %% Get block dur
+    block_dur = diff(pt(j).ieeg.file(1).block_times(1,:));
+    
      %% Get basic info from the patient
     % load the spike file
     pc = load(fname);
@@ -125,6 +128,7 @@ for l = 1:npts
     summ(count).file_times = file_times;
     summ(count).file_index = file_index;
     summ(count).ad = ad;
+    summ(count).block_dur = block_dur;
 
 
 end
