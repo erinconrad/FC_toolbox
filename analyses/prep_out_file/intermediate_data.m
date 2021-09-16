@@ -67,6 +67,7 @@ for l = 1:npts
     labels = out.montage(m).labels;
     file_times = out.run_center;
     file_index = out.file_index;
+    ad = out.montage(m).ad;
     
     % Clean the labels
     clean_labels = decompose_labels(labels,name);   
@@ -120,6 +121,7 @@ for l = 1:npts
     summ(count).ana_lat = lat;
     summ(count).file_times = file_times;
     summ(count).file_index = file_index;
+    summ(count).ad = ad;
 
 
 end

@@ -1,0 +1,39 @@
+function match_sw_ad(pt,summ)
+
+for l = 1:length(summ)
+    name = summ(l).name;
+    
+    % find corresponding pt p
+    p = find_matching_pt(name,pt);
+    if isnan(p), error('did not find pt'); end
+    
+    % Loop over sleep and wake tables
+    fn = fieldnames(pt(p).sw);
+    for n = 1:length(fn)
+        T = pt(p).sw.(fn{n});
+        
+        % Prep array of run indices
+        run_indices = nan(size(T,1),1);
+        
+        % Loop over annotations in the table
+        for t = 1:size(T,1)
+            % get file and time
+            f = T{t,1};
+            time = T{t,2};
+            
+            % find matching indices in pt
+            matching_files = pt(p).file_index == f;
+            
+            % find the index of the closest time
+            temp_file_times = pt(p).file_times;
+            temp_file_times(~matching_files) = inf; % this is just to make sure I will only find closest time in matching file
+            [~,I] = min(abs(temp_file_times - time));
+            
+            %
+            
+        end
+    end
+    
+end
+
+end
