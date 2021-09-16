@@ -1,4 +1,4 @@
-function P_in_bin = get_circ_power(rate,times)
+function P_in_bin = get_circ_power(rate,fs)
 
 pbin = [22 26];
 
@@ -6,7 +6,6 @@ pbin = [22 26];
 pbin = pbin*3600;
 fbin = 1./pbin;
 
-fs = 1/median(diff(times)); % how often I am spacing this in seconds
 X = rate - nanmean(rate); % subtract dc component
 X(isnan(X)) = nanmean(X); % set nans to mean
 Y = fft(X); % fft
