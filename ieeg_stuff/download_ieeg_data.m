@@ -76,7 +76,5 @@ end
 %% Delete session
 session.delete;
 clearvars -except data
-clearjava
-
 
 end
