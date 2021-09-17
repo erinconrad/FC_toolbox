@@ -1,5 +1,11 @@
 function compare_sw_ad(pt,summ)
 
+%% To do
+%{
+- Need to exclude seizure times!!! This is particularly important for this
+analysis, because I worry that annotations preferentially sample seizures.
+%}
+
 %% Get the alpha delta ratios for the sleep/wake annotations
 summ = match_sw_ad(pt,summ);
 
@@ -29,21 +35,28 @@ for p = 1:npts
     all_norm(p,:) = [sleep_norm,wake_norm];
 end
 
+%% Calculate roc
+[roc,auc] = calculate_roc(all_norm,1e3);
+figure
+plot(roc(:,1),roc(:,2),'k','linewidth',2)
+hold on
+plot([0 1],[0 1],'k--')
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend(sprintf('AUC %1.2f',auc),'location','northwest')
 
 
+%{
 %% Plot
 figure
 for p = 1:npts
     if any(isnan(all_sw(p,:))), continue; end
     plot([1 2],[all_norm(p,1),all_norm(p,2)],'k-');
-    %plot([1 2],[all_sw(p,1),all_sw(p,2)],'k-');
-    %plot([1 2],[all_prctile(p,1),all_prctile(p,2)],'k-');
     hold on
 end
 xlim([0.5 2.5])
 
-%[~,pval] = ttest(all_prctile(:,1),all_prctile(:,2))
-%[~,pval] = ttest(all_sw(:,1),all_sw(:,2))
 [~,pval] = ttest(all_norm(:,1),all_norm(:,2))
+%}
 
 end

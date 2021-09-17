@@ -1,5 +1,11 @@
 function all_pt_psd(summ)
 
+%% To do
+%{
+- add annotations
+- add patient-level analyses
+%}
+
 %% Parameters
 m = 2; % do not change
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
@@ -97,14 +103,12 @@ periods = 1./freqs/3600;
 low_period = periods <= 100;
 periods = periods(low_period);
 figure
-tiledlayout(1,3)
+set(gcf,'position',[100 100 1100 300])
+tiledlayout(1,3,'tilespacing','tight','padding','tight')
 
 %% Overall spike rate
 nexttile
-
 % Restrict to less than 100
-
-
 % Get stats
 all_psd = all_psd(:,low_period);
 all_psd = all_psd./sum(all_psd,2);
@@ -112,10 +116,12 @@ median_psd = median(all_psd,1);
 iqr_psd = [prctile(all_psd,25,1);prctile(all_psd,75,1)];
 
 % Plot
-shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
+mp = shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
 xlim([0 100])
 xlabel('Period (hours)')
-ylabel('Spike rate normalized power spectrum');
+ylabel({'Spike rate', 'normalized power spectrum'});
+legend(mp,'Overall spike rate','fontsize',15,'location','northwest')
+set(gca,'fontsize',15)
 
 %% Do the localizations
 nexttile
@@ -141,22 +147,26 @@ for sg = 1:size(loc_P,1)
 end
 xlim([0 100])
 xlabel('Period (hours)')
-ylabel('Spike rate normalized power spectrum');
+ylabel({'Spike rate', 'normalized power spectrum'});
+set(gca,'fontsize',15)
 legend(main_locs)
 
 %% Compare cyclical power across localizations
-% CONVERT TO NON PARAMETRIC TEST, MEDIAN, IQR
 nexttile
 curr_power = circ_P{g};
-avg_over_pts = nanmean(curr_power,2);
-std_over_pts = nanstd(curr_power,[],2);
-errorbar(avg_over_pts,std_over_pts,'o','markersize',10);
+median_over_pts = nanmedian(curr_power,2);
+iqr_over_pts = [prctile(curr_power,25,2),prctile(curr_power,75,2)];
+errorbar(1:length(main_locs),median_over_pts,...
+    median_over_pts-iqr_over_pts(:,1),...
+    iqr_over_pts(:,2)-median_over_pts,'o','markersize',10,...
+    'color','k','linewidth',2);
 hold on
-xticks(1:length(avg_over_pts))
+xticks(1:length(median_over_pts))
 xticklabels(main{g})
 xtickangle(30)
 ylabel('Relative circadian power')
-xlim([0 length(avg_over_pts)+1])
+set(gca,'fontsize',15)
+xlim([0 length(median_over_pts)+1])
 
 % Do stats
 [p,post_hoc_p,which_groups] = non_para_circ_stats(curr_power);
@@ -173,19 +183,22 @@ ylim([yl(1) heights(end,2)]);
 
 if p > 0.05
     plot([1 length(avg_over_pts)],...
-        [heights(size(heights,1)-1,1) heights(size(heights,1)-1,1)],'k');
+        [heights(size(heights,1)-1,1) heights(size(heights,1)-1,1)],'k',...
+        'linewidth',2);
     text(mean([1 length(avg_over_pts)]),heights(size(heights,1)-1,2),...
-        'ns','fontsize',10,'horizontalalignment','center')
+        'ns','fontsize',15,'horizontalalignment','center')
 else
     for k = 1:size(pairs_to_plot,1)
-        plot([pairs_to_plot(k,1)+0.1 pairs_to_plot(k,2)-0.1],[heights(k,1) heights(k,1)],'k-')
+        plot([pairs_to_plot(k,1)+0.1 pairs_to_plot(k,2)-0.1],[heights(k,1) heights(k,1)],'k-',...
+            'linewidth',2)
         hold on
         text(mean(pairs_to_plot(k,:)),heights(k,2),...
             get_asterisks(post_hoc_p_to_plot(k),size(which_groups,1)),...
-            'fontsize',10,'horizontalalignment','center')
+            'fontsize',15,'horizontalalignment','center')
     end
 end
 
+print([out_folder,'circadian'],'-dpng')
 
 end
 
