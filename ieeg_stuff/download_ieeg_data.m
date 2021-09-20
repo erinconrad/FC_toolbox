@@ -66,9 +66,14 @@ while 1
     % If any error, try again (this is because there are frequent random
     % server errors). Note this will be problematic if I have a real coding
     % error.
-    catch
-        attempt = attempt + 1;
-        fprintf('Failed to retrieve ieeg.org data, trying again (attempt %d)\n',attempt); 
+    catch ME
+        if contains(ME.message,'203') || contains(ME.message,'204') || ...
+                contains(ME.message,'202')
+            attempt = attempt + 1;
+            fprintf('Failed to retrieve ieeg.org data, trying again (attempt %d)\n',attempt); 
+        else
+            error('Non-server error');
+        end
         
     end
 end
