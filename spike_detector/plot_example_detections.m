@@ -60,6 +60,22 @@ for p = whichPts
         %% Load spike file
         out = load([spike_folder,sprintf('%s_pc.mat',pt_name)]);
         out = out.pc;
+        
+        %% Skip incomplete pts
+        
+        % Get corresponding pt
+        for j = 1:length(pt)
+            if strcmp(pt(j).name,pt_name)
+                break
+            end
+        end
+        
+        % Skip the patient if it's incomplete
+        if length(out.file) < length(pt(j).ieeg.file) || ...
+                length(out.file(end).run) < size(pt(j).ieeg.file(end).run_times,1)
+            fprintf('\n%s incomplete, skipping\n',name);
+            continue
+        end
 
         %% concatenate all spikes into one long thing
         % Include an extra column for the file index and block
