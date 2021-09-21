@@ -72,6 +72,7 @@ while 1
             fprintf('Failed to retrieve ieeg.org data, trying again (attempt %d)\n',attempt); 
         else
             error('Non-server error');
+            ME
         end
         
     end
