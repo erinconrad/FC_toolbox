@@ -73,7 +73,7 @@ for p = whichPts
         % Skip the patient if it's incomplete
         if length(out.file) < length(pt(j).ieeg.file) || ...
                 length(out.file(end).run) < size(pt(j).ieeg.file(end).run_times,1)
-            fprintf('\n%s incomplete, skipping\n',name);
+            fprintf('\n%s incomplete, skipping\n',pt_name);
             continue
         end
 
