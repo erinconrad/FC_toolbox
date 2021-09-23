@@ -67,12 +67,13 @@ while 1
     % server errors).
     catch ME
         if contains(ME.message,'503') || contains(ME.message,'504') || ...
-                contains(ME.message,'502')
+                contains(ME.message,'502') || contains(ME.message,'500')
             attempt = attempt + 1;
             fprintf('Failed to retrieve ieeg.org data, trying again (attempt %d)\n',attempt); 
         else
-            error('Non-server error');
             ME
+            error('Non-server error');
+            
         end
         
     end
