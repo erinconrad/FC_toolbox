@@ -114,16 +114,10 @@ for l = 1:npts
     
     % Skip this patient if most anatomy descriptions empty
     perc_empty = sum(cellfun(@(x) isempty(x),spike_anatomy))/length(spike_anatomy);
-    if perc_empty > 0.5
-        fprintf('\n%s has too many empty anatomical locations\n');
-        loc = cell(length(spike_anatomy),1);
-        lat = cell(length(spike_anatomy),1);
-        bad_anatomy_flag = 1;
-    else
-        % Get anatomical groupings
-        [loc,lat] = cluster_anatomical_location(spike_anatomy);
-        bad_anatomy_flag = 0;
-    end
+    if perc_empty 
+    
+    % Get anatomical groupings
+    [loc,lat] = cluster_anatomical_location(spike_anatomy);
     
     %% Put it all in the intermediate struct
     summ(count).name = name;
@@ -133,7 +127,6 @@ for l = 1:npts
     summ(count).labels = clean_labels;
     summ(count).locs = spike_locs;
     summ(count).anatomy = spike_anatomy;
-    summ(count).bad_anatomy_flag = bad_anatomy_flag;
     summ(count).ana_loc = loc;
     summ(count).ana_lat = lat;
     summ(count).file_times = file_times;
