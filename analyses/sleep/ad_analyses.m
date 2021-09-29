@@ -101,6 +101,7 @@ r_ad_spikes(skip_pts) = [];
 for i = 1:length(r_ad_ana)
     r_ad_ana{i}(:,skip_pts) = [];
 end
+npts = npts - length(skip_pts);
 
 %% Calculate roc
 [roc,auc] = calculate_roc(all_sleep,all_wake,1e3);
@@ -112,7 +113,7 @@ tiledlayout(2,2,'tilespacing','tight','padding','tight')
 
 %% A/D ratio in sleep vs wake
 nexttile
-for p = 1:npts
+for p = 1:size(ad_norm,1)
     if any(isnan(ad_norm(p,:))), continue; end
     plot([1 2],[ad_norm(p,1),ad_norm(p,2)],'k-');
     hold on
