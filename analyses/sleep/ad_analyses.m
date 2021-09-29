@@ -187,6 +187,6 @@ else
     end
 end
 
-
+print([out_folder,'ad_analyses'],'-dpng')
 
 end
