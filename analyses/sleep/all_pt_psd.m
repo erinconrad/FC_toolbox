@@ -56,6 +56,12 @@ for p = 1:npts
     lat = summ(p).ana_lat;
     run_length = length(times);
     
+    % Skip if all empty
+    if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
+        fprintf('\nskipping pt %d\n',p);
+        continue
+    end
+    
     % pad spikes
     spikes = [spikes,zeros(size(spikes,1),longest_run-run_length)];
     
