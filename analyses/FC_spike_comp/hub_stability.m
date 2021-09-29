@@ -1,4 +1,4 @@
-function show_all_spikes
+function hub_stability
 
 %% Parameters
 m = 2; % do not change
@@ -6,7 +6,7 @@ m = 2; % do not change
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/simple/spike_rasters/'];
+out_folder = [results_folder,'analysis/simple/stabilities/'];
 spikes_folder = [results_folder,'all_out/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
@@ -28,7 +28,6 @@ T = readtable(validation_file);
 good_pts = T.Var13;
 good_pts = good_pts(~isnan(good_pts));
 npts = length(good_pts);
-
 
 % Loop over patients
 for l = 1:npts
@@ -67,32 +66,52 @@ for l = 1:npts
     labels = out.montage(m).labels;
     run_dur = diff(pt(j).ieeg.file(1).run_times(1,:)); % 60 s
     spikes = spikes/run_dur*60; % convert spikes to spikes/minute (note this divides by 60 and then multiplies by 60 and so does nothing)
-    ekg = find_non_intracranial(labels);
+    net = out.montage(m).net;
     
+    % Calculate the ns
+    net = wrap_or_unwrap_adjacency_fc_toolbox(net);
+    ns = squeeze(nansum(net,1));
+    
+    
+    ekg = find_non_intracranial(labels);
     % remove non intracranial
     labels(ekg) = [];
     spikes(ekg,:) = [];
+    ns(ekg,:) = []; 
+
     spikes = spikes/length(labels); % get # spikes/elec
-    
     
     % Clean the labels
     labels = decompose_labels(labels,name);    
     
-    % Make raster plot of spikes over time
+    % Calculate the average across times
+    spike_avg = nanmean(spikes,2);
+    ns_avg = nanmean(ns,2);
+    
+    % calculate the stability over time
+    spike_stability = corr(spikes,spike_avg,'Type','Spearman','rows','pairwise');
+    ns_stability = corr(ns,ns_avg,'Type','Spearman','rows','pairwise');
+    
+    % Calculate correlation between spikes and ns
+    ntimes = length(times);
+    spike_ns_agreement = nan(ntimes,1);
+    for it = 1:ntimes
+        spike_ns_agreement(it) = corr(spikes(:,it),ns(:,it),'Type','Spearman','rows','pairwise');
+    end
+    
+    % Plot these
     figure
     set(gcf,'position',[10 10 1200 900])
-    tiledlayout(1,1,'padding','tight')
-    nexttile
-    h = turn_nans_gray(spikes);
-    set(h,'XData',times);
+    plot(times,spike_stability,'linewidth',2)
+    hold on
+    plot(times,ns_stability,'linewidth',2)
+    plot(times,spike_ns_agreement,'linewidth',2)
+    plot(xlim,[0 0],'k--','linewidth',2)
     xlim([times(1) times(end)])
     xlabel('Day')
-    yticks(1:length(labels));
-    yticklabels(labels);
-    ylabel('Electrode')
-    c = colorbar;
-    ylabel(c,'Spikes/elec/min','fontsize',15);
+    ylim([-1 1])
     title(name)
+    legend({'Spike stability','NS stability','Spike-NS agreement'})
     set(gca,'fontsize',15);
     
     % save and close the plot
@@ -100,7 +119,6 @@ for l = 1:npts
     close(gcf)
     
 end
-
 
 
 end

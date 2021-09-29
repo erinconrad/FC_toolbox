@@ -22,11 +22,13 @@ end
 if currently_flat == 1
     
     % Get the number of channels (solving quadratic equation)
+    
     y = length(adj_in(:,1));
+    
     nchs = 0.5 + sqrt(0.25+2*y);
     
     % sanity checks
-    if nchs-floor(nchs) > 0.01
+    if (nchs-floor(nchs)) > 0.01
         error('what\n');
     end
     nchs = round(nchs);
