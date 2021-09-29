@@ -31,6 +31,8 @@ ad_norm = nan(npts,2); %1 = sleep, 2 = wake
 all_wake = [];
 all_sleep = [];
 r_ad_spikes = nan(npts,1);
+skip_pts = [];
+
 
 r_ad_ana = cell(2,1);
 for i = 1:length(r_ad_ana)
@@ -46,6 +48,13 @@ for p = 1:npts
     lat = summ(p).ana_lat;
     spikes = summ(p).spikes;
     ad = nanmean(summ(p).ad,1); % mean across electrodes
+    
+    % Skip if all empty
+    if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
+        fprintf('\nskipping pt %d\n',p);
+        skip_pts = [skip_pts;p];
+        continue
+    end
     
     %% Wake vs sleep ad
     % Get normalized a/d ratio with sleep and wake
@@ -84,6 +93,13 @@ for p = 1:npts
         
 
     end
+end
+
+%% Remove empty pts
+ad_norm(skip_pts,:) = [];
+r_ad_spikes(skip_pts) = [];
+for i = 1:length(r_ad_ana)
+    r_ad_ana{i}(:,skip_pts) = [];
 end
 
 %% Calculate roc
@@ -188,5 +204,5 @@ else
 end
 
 print([out_folder,'ad_analyses'],'-dpng')
-
+close all
 end
