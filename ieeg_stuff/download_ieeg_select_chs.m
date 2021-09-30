@@ -16,9 +16,6 @@ while 1
         
         % find the matching chs
         ch_idx = ismember(cl_labels,chs_to_download);
-        if sum(ch_idx) ~= length(chs_to_download)
-            error('missing at least one channel you want');
-        end
         ch_idx = find(ch_idx);
 
         % Convert times to indices
@@ -38,7 +35,7 @@ while 1
         data.file_name = session.data.snapName;
 
         % Get ch labels
-        data.chLabels = channelLabels;
+        data.chLabels = channelLabels(ch_idx);
        
         % break out of while loop
         break

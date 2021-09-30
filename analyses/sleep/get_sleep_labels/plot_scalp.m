@@ -35,7 +35,7 @@ addpath(genpath(ieeg_folder));
 indices = find_pts_with_scalp(pt);
 
 %% Loop over pts
-for idx = 1:length(indices)
+for idx = 2:length(indices)
     p = indices(idx);
     name = pt(p).name;
     out_name = [name,'.mat'];
@@ -76,18 +76,7 @@ for idx = 1:length(indices)
     for f = last_file+1:length(pt(p).ieeg.file)
         
         fname = pt(p).ieeg.file(f).name;
-        fs = pt(p).ieeg.file(f).fs;
-        
-        %% Check if I have the channels I want
-        chLabels = pt(p).ieeg.file(f).chLabels;
-        chLabels = decompose_labels(chLabels,name);
-        a = ismember(chLabels,scalp_labels);
-        if sum(a) < length(scalp_labels)
-            fprintf('\nmissing some scalp labels,skipping patient\n');
-            skip_pt = 1;
-            break
-        end
-        
+        fs = pt(p).ieeg.file(f).fs;        
         nblocks = size(pt(p).ieeg.file(f).block_times,1);
         
         %% loop over blocks (skipping buffer, striding)
@@ -103,6 +92,7 @@ for idx = 1:length(indices)
             data = download_ieeg_select_chs(fname, login_name, pwfile, ...
             run_times,scalp_labels,name);
             values = data.values;
+            labels = decompose_labels(data.chLabels,name);
             
             %% Filters
             values = bandpass_filter(values,fs);
@@ -110,7 +100,7 @@ for idx = 1:length(indices)
             
             %% Get scalp montages
             [bi_values,bi_labels,trans_values,trans_labels] = ...
-                scalp_montages(values,scalp_labels);
+                scalp_montages(values,labels);
         
             % Remove the empty channels
             empty_chs = cellfun(@(x) strcmp(x,'-'),bi_labels);

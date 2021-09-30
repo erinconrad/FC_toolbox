@@ -28,6 +28,11 @@ for i = 1:size(bi_pair,1)
     first_idx = (strcmp(labels,first));
     second_idx = (strcmp(labels,second));
     
+    if sum(first_idx) == 0 || sum(second_idx) == 0
+        bi_labels{i} = '-';
+        continue
+    end
+    
     % define the value to be first minus second
     bi_values(:,i) = values(:,first_idx) - values(:,second_idx);
     
@@ -44,6 +49,11 @@ for i = 1:size(trans_pair,1)
     % find the corresponding elements
     first_idx = (strcmp(labels,first));
     second_idx = (strcmp(labels,second));
+    
+    if sum(first_idx) == 0 || sum(second_idx) == 0
+        trans_labels{i} = '-';
+        continue
+    end
     
     % define the value to be first minus second
     trans_values(:,i) = values(:,first_idx) - values(:,second_idx);
