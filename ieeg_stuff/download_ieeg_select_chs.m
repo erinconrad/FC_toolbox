@@ -1,5 +1,5 @@
 function data = download_ieeg_select_chs(fname, login_name, pwfile, ...
-    run_times,chs_to_download)
+    run_times,chs_to_download,name)
 
 attempt = 1;
 
@@ -9,7 +9,7 @@ while 1
     try
         session = IEEGSession(fname, login_name, pwfile);
         channelLabels = session.data.channelLabels;
-        cl_labels = clean_labels_2(channelLabels);
+        cl_labels = decompose_labels(channelLabels,name);
 
         % get fs
         data.fs = session.data.sampleRate;

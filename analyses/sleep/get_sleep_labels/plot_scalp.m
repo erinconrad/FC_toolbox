@@ -99,7 +99,7 @@ for idx = 1:length(indices)
             
             %% Download ieeg data for select chs
             data = download_ieeg_select_chs(fname, login_name, pwfile, ...
-            run_times,scalp_labels);
+            run_times,scalp_labels,name);
             values = data.values;
             
             %% Filters
