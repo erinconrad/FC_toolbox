@@ -126,6 +126,7 @@ for idx = 2:length(indices)
             out.last_file = f-1;
             out.last_run = b;
             out.name = name;
+            out.file(f).fs = fs;
             out.file(f).block(b).values = all_values;
             out.file(f).block(b).labels = all_labels;
             out.file(f).block(b).run_times = run_times;
