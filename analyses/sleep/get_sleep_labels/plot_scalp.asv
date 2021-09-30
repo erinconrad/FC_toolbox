@@ -56,15 +56,15 @@ for idx = 1:length(indices)
                 continue;
             end
         else
-            last_file = 0;
-            last_run = buffer-block_stride;
+            last_file = 1;
+            last_run = buffer-block_stride-1;
             out.name = name;
             out.finished = 0;
             out.file(1).blocks = [];
         end
     else
-        last_file = 0;
-        last_run = buffer-block_stride; % ok to redo one
+        last_file = 1;
+        last_run = buffer-block_stride-1; % ok to redo one
         pc.name = name;
         out.finished = 0;
         out.file(1).blocks = [];
@@ -73,7 +73,7 @@ for idx = 1:length(indices)
     fprintf('\nDoing %s\n',name);
      
     % loop over files
-    for f = last_file+1:length(pt(p).ieeg.file)
+    for f = 1:length(pt(p).ieeg.file)
         
         fname = pt(p).ieeg.file(f).name;
         fs = pt(p).ieeg.file(f).fs;
@@ -89,7 +89,7 @@ for idx = 1:length(indices)
         nblocks = size(pt(p).ieeg.file(f).block_times,1);
         
         %% loop over blocks (skipping buffer, striding)
-        for b = last_run+block_stride:block_stride:nblocks-buffer
+        for b = last_run+block_stride+1:block_stride:nblocks-buffer
             
             fprintf('\nDoing %s file %d of %d, block %d of %d (stride %d)\n',...
                 name,f,length(pt(p).ieeg.file),b,nblocks,block_stride);
@@ -124,14 +124,14 @@ for idx = 1:length(indices)
             all_labels = [bi_labels;trans_labels];
             
             %% Plot
-            if 0
+            if 1
                 show_scalp_eeg(all_values,fs,all_labels)
                 pause
                 close all
             end
             
             %% Save the data
-            out.last_file = f-1;
+            out.last_file = f;
             out.last_run = b;
             out.name = name;
             out.file(f).block(b).values = all_values;
@@ -148,7 +148,8 @@ for idx = 1:length(indices)
         end
         
         % at end of file, reset last run
-        last_run = buffer-block_stride;
+        last_run = buffer-block_stride-1;
+        last_file = 
     end
     
 end

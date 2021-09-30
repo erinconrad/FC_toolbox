@@ -17,6 +17,11 @@ chs_in_bipolar = nan(nchs,2);
 old_values = values;
 which_chs_bipolar = [];
 
+%% Input variable handling
+if isempty(which_chs)
+    which_chs = 1:size(values,2);
+end
+
 %% Decompose chLabels
 [clean_labels,elecs,numbers] = decompose_labels(chLabels,name);
 bipolar_labels = cell(nchs,1);
@@ -49,6 +54,18 @@ for ch = 1:nchs
         % channel were run channels
         if ismember(ch,which_chs) && ismember(higher_ch,which_chs)
             which_chs_bipolar = [which_chs_bipolar;ch];
+        end
+        
+    elseif strcmp(label,'FZ') % exception for FZ and CZ
+        if sum(strcmp(clean_labels(:,1),'CZ')) > 0
+            higher_ch = find(strcmp(clean_labels(:,1),'CZ'));
+            out = old_values(:,ch)-old_values(:,higher_ch);
+            bipolar_label = [label,'-','CZ'];
+            chs_in_bipolar(ch,:) = [ch,higher_ch];
+            
+            if ismember(ch,which_chs) && ismember(higher_ch,which_chs)
+                which_chs_bipolar = [which_chs_bipolar;ch];
+            end
         end
         
     else
