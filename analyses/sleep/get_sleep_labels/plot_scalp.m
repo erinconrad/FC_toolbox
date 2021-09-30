@@ -83,7 +83,9 @@ for idx = 1:length(indices)
         chLabels = decompose_labels(chLabels,name);
         a = ismember(chLabels,scalp_labels);
         if sum(a) < length(scalp_labels)
-            error('missing some scalp labels');
+            fprintf('\nmissing some scalp labels,skipping patient\n');
+            skip_pt = 1;
+            break
         end
         
         nblocks = size(pt(p).ieeg.file(f).block_times,1);
