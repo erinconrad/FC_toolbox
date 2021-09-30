@@ -80,7 +80,7 @@ for idx = 1:length(indices)
         
         %% Check if I have the channels I want
         chLabels = pt(p).ieeg.file(f).chLabels;
-        chLabels = clean_labels_2(chLabels);
+        chLabels = decompose_labels(chLabels);
         a = ismember(chLabels,scalp_labels);
         if sum(a) < length(scalp_labels)
             error('missing some scalp labels');
