@@ -10,7 +10,8 @@ block_stride = 24; % 4 hours = 24 ten-minute blocks
 buffer = 36;% 6 hours = 36 ten-minute blocks
 
 % scalp channels I want
-scalp_labels = {'F3';'C3';'FZ';'CZ';'F4';'C4';'F7';'F8'};
+scalp_labels = {'F3';'C3';'FZ';'CZ';'F4';'C4';'F7';'F8';'P3';'O1';...
+    'Fp2';'Fp1';'T3';'T4';'T5';'T6';'P4';'O1';'O2'};
 montage = [1 2;3 4;5 6];
 
 %% Get file locs
@@ -35,7 +36,7 @@ addpath(genpath(ieeg_folder));
 indices = find_pts_with_scalp(pt);
 
 %% Loop over pts
-for idx = 1:length(indices)
+for idx = 2:length(indices)
     p = indices(idx);
     name = pt(p).name;
     out_name = [name,'.mat'];
@@ -112,12 +113,12 @@ for idx = 1:length(indices)
             trans_labels(empty_chs) = [];
             
             % Combine these channels
-            all_values = [bi_values,trans_values];
-            all_labels = [bi_labels;trans_labels];
+            %all_values = [bi_values,trans_values];
+            %all_labels = [bi_labels;trans_labels];
             
             %% Plot
             if 0
-                show_scalp_eeg(all_values,fs,all_labels)
+                show_scalp_eeg(bi_values,fs,bi_labels)
                 pause
                 close all
             end
@@ -127,8 +128,10 @@ for idx = 1:length(indices)
             out.last_run = b;
             out.name = name;
             out.file(f).fs = fs;
-            out.file(f).block(b).values = all_values;
-            out.file(f).block(b).labels = all_labels;
+            out.file(f).block(b).bi_values = bi_values;
+            out.file(f).block(b).bi_labels = bi_labels;
+            out.file(f).block(b).trans_values = trans_values;
+            out.file(f).block(b).trans_labels = trans_labels;
             out.file(f).block(b).run_times = run_times;
             out.file(f).blocks = [out.file(f).blocks;b];
             

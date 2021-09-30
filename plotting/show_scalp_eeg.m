@@ -1,7 +1,7 @@
 function show_scalp_eeg(values,fs,labels)
 
 %% Parameters
-break_points = {'F4-C4';'F4-F8'};
+break_points = {'T5-O1','T6-O2','P3-O1','P4-O2','FZ-CZ','F4-F8'};
 secs_per_plot = 15;
 
 %% Initialize fig
@@ -12,8 +12,8 @@ dur_indices = round(size(values,1)/nwindows);
 if nwindows ~= 4, error('what'); end
 
 figure
-set(gcf,'position',[10 10 1200 800])
-tiledlayout(nwindows,1,'tilespacing','tight')
+set(gcf,'position',[1 400 1450 900])
+tiledlayout(nwindows,1,'tilespacing','tight','padding','tight')
 
 for t = 1:nwindows
     
@@ -33,7 +33,7 @@ for t = 1:nwindows
         ch_offsets(ich) = offset;
         ch_bl(ich) = -offset + nanmedian(eeg(:,ich));
 
-        text(secs_per_plot+0.05,ch_bl(ich),sprintf('%s',labels{ich}),'fontsize',20)
+        text(secs_per_plot-0.4,ch_bl(ich),sprintf('%s',labels{ich}),'fontsize',15)
         
         if ich < nchs
 
@@ -47,12 +47,19 @@ for t = 1:nwindows
 
     end
     
+    % Plot grid lines
+    for g = 1:15
+        plot([g g],ylim,'k--');
+    end
+    
     if t == nwindows
         xlabel('Time (seconds)')
+        xticks([1:15])
+        xticklabels({'1','2','3','4','5','6','7','8','9','10','11','12','13','14','15'})
     else
         xticklabels([])
     end
-    set(gca,'fontsize',15)
+    set(gca,'fontsize',10)
     
 end
 

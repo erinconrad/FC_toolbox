@@ -90,6 +90,14 @@ for ich = 1:length(chLabels)
     if isempty(label_num), label_num = nan; end
     numbers(ich) = label_num;
     
+    if contains(label,'Fp1','ignorecase',true)
+        clean_labels{ich} = 'Fp1';
+    end
+    
+    if contains(label,'Fp2','ignorecase',true)
+        clean_labels{ich} = 'Fp2';
+    end
+    
 end
 
 
