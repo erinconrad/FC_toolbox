@@ -35,7 +35,7 @@ addpath(genpath(ieeg_folder));
 indices = find_pts_with_scalp(pt);
 
 %% Loop over pts
-for idx = 2:length(indices)
+for idx = 1:length(indices)
     p = indices(idx);
     name = pt(p).name;
     out_name = [name,'.mat'];
