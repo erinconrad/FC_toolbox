@@ -1,6 +1,6 @@
 
 
-function compare_sw_ad
+function [all_sleep,all_wake] = compare_sw_ad
 
 
 %% Get file locs

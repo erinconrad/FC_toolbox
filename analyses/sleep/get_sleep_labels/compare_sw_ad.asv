@@ -1,12 +1,12 @@
 
 
-function compare_sw_ad
+function [all_sleep,all_walcompare_sw_ad
 
 
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-erin_des_folder = [results_folder,'analysis/sleep/erin_designations/'];
+out_folder = [results_folder,'analysis/sleep/'];
 %data_folder = [locations.main_folder,'data/'];
 
 % add script folder to path
@@ -54,7 +54,8 @@ plot([0 1],[0 1],'k--')
 xlabel('False positive rate')
 ylabel('True positive rate')
 legend(sprintf('AUC %1.2f',auc),'location','northwest')
-%}
+print([out_folder,'roc'],'-dpng');
+close all
 
 end
 
