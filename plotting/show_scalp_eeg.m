@@ -12,7 +12,7 @@ dur_indices = round(size(values,1)/nwindows);
 if nwindows ~= 4, error('what'); end
 
 figure
-set(gcf,'position',[1 400 1450 900])
+set(gcf,'position',[1 400 1200 900])
 tiledlayout(nwindows,1,'tilespacing','tight','padding','tight')
 
 for t = 1:nwindows
