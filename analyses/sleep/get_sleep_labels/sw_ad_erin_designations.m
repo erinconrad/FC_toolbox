@@ -1,5 +1,12 @@
 function summ = sw_ad_erin_designations
 
+%{
+This function takes Erin's sleep/wake designations from the
+erin_designations folder and decides whether it is a sleep state or an
+awake state, and grabs the corresponding alpha delta ratio, as well as all
+alpha delta ratios (for the purpose of normalization).
+%}
+
 %% Parameters
 sleep_names = {'1','2','3'};
 wake_names = {'a'};

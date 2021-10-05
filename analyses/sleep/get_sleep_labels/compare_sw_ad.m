@@ -2,6 +2,12 @@
 
 function [all_sleep,all_wake] = compare_sw_ad
 
+%{ 
+This function calculates an ROC curve representing the ability of the alpha
+delta ratio to discriminate sleep vs wake (as defined by Erin's review of
+scalp eeg data)
+%}
+
 
 %% Get file locs
 locations = fc_toolbox_locs;

@@ -1,5 +1,22 @@
 function scalp_gui
 
+%{
+This is the function to generate "true" sleep/wake labels to test the alpha
+delta ratio performance. It takes a bunch of minutes selected every four
+hours and it plots the scalp eeg in a bipolar montage (a limited set of
+electrodes). Erin then goes through and designates the state and it saves
+the output in the erin_designations folder. 
+
+Once these are made, I can then run compare_sw_ad, which takes the alpha
+delta ratio in the corresponding minutes and then I build an ROC curve to
+see how well the alpha delta ratio does at discriminating sleep vs wake
+state
+
+To run this, I need to move patient test_data files over to my laptop one
+at a time (because they're kind of big).
+%}
+
+
 %% Parameters
 which_montage = 'bipolar';
 skip_chs = 'FZ-CZ';
