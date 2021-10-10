@@ -39,14 +39,30 @@ addpath(genpath(scripts_folder));
 listing = dir([out_dir,'*.mat']);
 for l = 1:length(listing)
     fname = listing(l).name;
+    
+    % load the test data file
     out = load([out_dir,fname]);
     out = out.out;
+    name = out.name;
+    
+    % load the final output file
+    if exist([new_out_dir,name,'.mat'],'file') ~= 0
+        nout = load([new_out_dir,name,'.mat']);
+        if isfield(nout,'out')
+            nout = nout.out;
+        elseif isfield(nout,'nout')
+            nout = nout.nout;
+        end
+    else
+        nout.name = out.name;
+    end
+    
     
     if isfield(out,'erin_done') && out.erin_done == 1
         continue
     end
     
-    nout.name = out.name;
+    
     
     for f = 1:length(out.file)
         fs = out.file(f).fs;
@@ -57,7 +73,10 @@ for l = 1:length(listing)
         for ib = 1:length(out.file(f).blocks)
             b = out.file(f).blocks(ib);
             
-            if isfield(out.file(f).block(b),'erin') && ~isempty(out.file(f).block(b).erin)
+            if isfield(nout.file(f),'block') && ...
+                    length(nout.file(f).block) >=b &&...
+                    isfield(nout.file(f).block(b),'erin') &&...
+                    ~isempty(nout.file(f).block(b).erin)
                 continue
             end
             
@@ -92,7 +111,7 @@ for l = 1:length(listing)
             nout.file(f).block(b).run_times = out.file(f).block(b).run_times;
             nout.file(f).block(b).erin = out.file(f).block(b).erin;
                     
-            save([out_dir,fname],'nout');
+            save([new_out_dir,fname],'nout');
         end
         
     end

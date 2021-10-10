@@ -52,7 +52,7 @@ for l = 1:length(listing)
     ad = [];
     
     % Loop over the blocks I have designations for
-    for f = 1:length(out.file)
+    for f = 1:length(pc.file)
         blocks = out.file(f).blocks;
         for ib = 1:length(blocks)
             
