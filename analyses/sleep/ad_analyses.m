@@ -25,7 +25,8 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Get the alpha delta ratios for the sleep/wake annotations
-summ = match_sw_ad(pt,summ);
+%summ = match_sw_ad(pt,summ);
+summ = sw_ad_erin_designations;
 npts = length(summ);
 ad_norm = nan(npts,2); %1 = sleep, 2 = wake
 all_wake = [];
