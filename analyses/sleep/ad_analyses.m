@@ -1,4 +1,4 @@
-function ad_analyses(pt,summ)
+function ad_analyses
 
 %% To do
 %{
