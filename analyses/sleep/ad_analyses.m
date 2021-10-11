@@ -47,6 +47,8 @@ for j = 1:npts_val
     all_sleep = [all_sleep;sleep_norm];
 end
 
+error('look');
+
 % Calculate roc
 [roc,auc] = calculate_roc(all_sleep,all_wake,1e3);
 
