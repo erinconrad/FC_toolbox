@@ -164,10 +164,11 @@ for l = 1:npts
     summ.ad = ad;
     summ.block_dur = block_dur;
 
+    %% Save it all
+    save([out_folder,name,'.mat'],'summ');
 
 end
 
-%% Save it all
-save([out_folder,name,'.mat'],'summ');
+
 
 
