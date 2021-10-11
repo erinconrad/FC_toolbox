@@ -29,7 +29,7 @@ for f = 1:nfiles
         coa_montage{m} = nan(nchs*(nchs-1)/2,nruns);
         rl_montage{m} = nan(nchs,nruns);
         %coi_montage{m} = nan(nchs,nruns);
-        %coi_global_montage{m} = nan(nruns,1);
+        coi_global_montage{m} = nan(nruns,1);
     end
     
     for r = 1:nruns
@@ -65,7 +65,7 @@ for f = 1:nfiles
             %% Spikes
             spikes = nan(nchs,1); % default to nan
             %coi_ch = nan(nchs,1);
-            %global_coi = nan;
+            global_coi = nan;
             coa = nan(nchs,nchs);
             rl = nan(nchs,1);
             spikes(is_run) = 0; % default zero if we run it
@@ -82,7 +82,7 @@ for f = 1:nfiles
                 
                 % Get spike coi
                 %[coi_ch,global_coi] = get_spike_coi(gdf,nchs,fs);
-                [coa,rl] = build_sequences(gdf,nchs,fs);
+                [coa,rl,global_coi] = build_sequences(gdf,nchs,fs);
             end
             
             % Fill up cell arrays
@@ -92,7 +92,7 @@ for f = 1:nfiles
             spikes_montage{m}(:,r) = spikes;
             ad_montage{m}(:,r) = ad;
             %coi_montage{m}(:,r) = coi_ch;
-            %coi_global_montage{m}(r) = global_coi;
+            coi_global_montage{m}(r) = global_coi;
 
             
         end
@@ -109,7 +109,7 @@ for f = 1:nfiles
         rl_montage{m}(all_adj_bad) = nan;
         coa_montage{m}(:,all_adj_bad) = nan;
         %coi_montage{m}(:,all_adj_bad) = nan;
-        %coi_global_montage{m}(all_adj_bad) = nan;
+        coi_global_montage{m}(all_adj_bad) = nan;
         
          
     end
@@ -138,7 +138,7 @@ for f = 1:nfiles
         out.file(f).montage(m).spikes = spikes_montage{m};
         out.file(f).montage(m).ad = ad_montage{m};
         %out.file(f).montage(m).coi_ch = coi_montage{m};
-        %out.file(f).montage(m).coi_global = coi_global_montage{m};
+        out.file(f).montage(m).coi_global = coi_global_montage{m};
         out.file(f).montage(m).labels = pc.file(f).run(1).data.montage(m).labels;
         out.file(f).montage(m).coa = coa_montage{m};
         out.file(f).montage(m).rl = rl_montage{m};

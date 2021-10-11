@@ -28,7 +28,7 @@ for m  = 1:nmontages
     out.montage(m).spikes = nan(nchs,n_runs_total);
     out.montage(m).ad = nan(nchs,n_runs_total);
     %out.montage(m).coi_ch = nan(nchs,n_runs_total);
-    %out.montage(m).coi_global = nan(n_runs_total,1);
+    out.montage(m).coi_global = nan(n_runs_total,1);
     out.montage(m).coa = nan(nchs*(nchs-1)/2,n_runs_total);
     out.montage(m).rl = nan(nchs,n_runs_total);
     out.montage(m).labels = cell(nchs,1);
@@ -77,7 +77,7 @@ for f = 1:nfiles
         coa = out.file(f).montage(m).coa;
         rl = out.file(f).montage(m).rl;
         %coi_ch = out.file(f).montage(m).coi_ch;
-        %coi_global = out.file(f).montage(m).coi_global;
+        coi_global = out.file(f).montage(m).coi_global;
         labels = out.file(f).montage(m).labels;
         
         % prep net_uw and coa_uw
@@ -130,7 +130,7 @@ for f = 1:nfiles
         out.montage(m).coa(:,curr_run_idx:curr_run_idx+nruns-1) = new_coa;
         out.montage(m).rl(:,curr_run_idx:curr_run_idx+nruns-1) = new_rl;
         %out.montage(m).coi_ch(:,curr_run_idx:curr_run_idx+nruns-1) = new_coi_ch;
-        %out.montage(m).coi_global(curr_run_idx:curr_run_idx+nruns-1) = coi_global;
+        out.montage(m).coi_global(curr_run_idx:curr_run_idx+nruns-1) = coi_global;
         out.montage(m).labels(locb) = labels;
         
     end

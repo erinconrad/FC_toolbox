@@ -85,7 +85,7 @@ for p = 1:npts
     mean_spikes = nanmean(spikes,1);
     r_ad_spikes(p) = corr(mean_spikes',ad','rows','pairwise');
     
-    %% Correlation between co-spiking and ad
+    %% Correlation between 
     
     %% Get spectral power for each group for locs and lats
     % Loop over loc vs lat

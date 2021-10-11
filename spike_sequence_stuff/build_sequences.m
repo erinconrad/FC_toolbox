@@ -1,4 +1,4 @@
-function [coa,rl] = build_sequences(gdf,nchs,fs)
+function [coa,rl,global_coi] = build_sequences(gdf,nchs,fs)
 
 %% How close spikes need to be
 t2_seconds = 50e-3;
@@ -7,6 +7,7 @@ t2 = t2_seconds * fs;
 %% Initialize array
 coa = zeros(nchs,nchs);
 rl = cell(nchs,1);
+global_coi = nan(size(gdf,1),1);
 
 %% Loop over spikes
 for s = 1:size(gdf,1)
@@ -19,6 +20,7 @@ for s = 1:size(gdf,1)
     % find those less than t2 and not same ch. I will say these spikes are
     % in the same spike sequence
     close_enough = time_diff < t2 & gdf(:,1) ~= ch;
+    global_coi(s) = sum(close_enough);
  
     % Get the sequence start time and the latency of this channel in the
     % sequence
