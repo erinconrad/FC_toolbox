@@ -75,7 +75,7 @@ for f = 1:nfiles
         spikes = out.file(f).montage(m).spikes;
         ad = out.file(f).montage(m).ad;
         coa = out.file(f).montage(m).coa;
-        rl = out.file(f).montage(m).rl;
+        rl = out.file(f).monage(m).rl;
         %coi_ch = out.file(f).montage(m).coi_ch;
         %coi_global = out.file(f).montage(m).coi_global;
         labels = out.file(f).montage(m).labels;
@@ -107,30 +107,23 @@ for f = 1:nfiles
         new_spikes(locb,:) = spikes;
         new_ad(locb,:) = ad;
         new_coa_uw(locb,locb,:) = coa_uw;
-        new_rl(locb,:) = rl;
+        ne
         %new_coi_ch(locb,:) = coi_ch;
         %new_ns(locb,:) = nansum(net_uw,2);
         
-        % rewrap the net and coa
+        % rewrap the net
         new_net = nan(nchs*(nchs-1)/2,nruns);
-        new_coa = nan(nchs*(nchs-1)/2,nruns);
         for r = 1:nruns
             new_net_temp = wrap_or_unwrap_adjacency_fc_toolbox(new_net_uw(:,:,r));
             new_net(:,r) = new_net_temp;
-            
-            
-            new_coa_temp = wrap_or_unwrap_adjacency_fc_toolbox(new_coa_uw(:,:,r));
-            new_coa(:,r) = new_coa_temp;
         end
         
         % fill the struct
         out.montage(m).net(:,curr_run_idx:curr_run_idx+nruns-1) = new_net;
         out.montage(m).spikes(:,curr_run_idx:curr_run_idx+nruns-1) = new_spikes;
         out.montage(m).ad(:,curr_run_idx:curr_run_idx+nruns-1) = new_ad;
-        out.montage(m).coa(:,curr_run_idx:curr_run_idx+nruns-1) = new_coa;
-        out.montage(m).rl(:,curr_run_idx:curr_run_idx+nruns-1) = new_rl;
-        %out.montage(m).coi_ch(:,curr_run_idx:curr_run_idx+nruns-1) = new_coi_ch;
-        %out.montage(m).coi_global(curr_run_idx:curr_run_idx+nruns-1) = coi_global;
+        out.montage(m).coi_ch(:,curr_run_idx:curr_run_idx+nruns-1) = new_coi_ch;
+        out.montage(m).coi_global(curr_run_idx:curr_run_idx+nruns-1) = coi_global;
         out.montage(m).labels(locb) = labels;
         
     end

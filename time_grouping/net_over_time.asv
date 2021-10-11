@@ -66,8 +66,6 @@ for f = 1:nfiles
             spikes = nan(nchs,1); % default to nan
             %coi_ch = nan(nchs,1);
             %global_coi = nan;
-            coa = nan(nchs,nchs);
-            rl = nan(nchs,1);
             spikes(is_run) = 0; % default zero if we run it
             
             if ~isempty(gdf)
@@ -140,8 +138,7 @@ for f = 1:nfiles
         %out.file(f).montage(m).coi_ch = coi_montage{m};
         %out.file(f).montage(m).coi_global = coi_global_montage{m};
         out.file(f).montage(m).labels = pc.file(f).run(1).data.montage(m).labels;
-        out.file(f).montage(m).coa = coa_montage{m};
-        out.file(f).montage(m).rl = rl_montage{m};
+        out.file(f).montage(m).coa 
         
     end
     out.file(f).run_center = run_center;
