@@ -1,4 +1,4 @@
-function ad_analyses(summ)
+function ad_analyses_old(summ)
 
 %% To do
 %{
@@ -24,31 +24,16 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% Alpha delta ratio validation
+%% Get the alpha delta ratios for the sleep/wake annotations
+%summ = match_sw_ad(pt,summ);
 swdes = sw_ad_erin_designations;
-npts_val = length(swdes);
-ad_norm = nan(npts_val,2); %1 = sleep, 2 = wake
+npts = length(summ);
+ad_norm = nan(npts,2); %1 = sleep, 2 = wake
 all_wake = [];
 all_sleep = [];
-for j = 1:npts_val
-    sleep_ad = swdes(j).sw.sleep;
-    wake_ad = swdes(j).sw.wake;
-    ad_val = swdes(j).ad;
-
-    sleep_norm = (sleep_ad-nanmedian(ad))./iqr(ad_val);
-    wake_norm = (wake_ad-nanmedian(ad))./iqr(ad_val);
-    ad_norm(j,:) = [nanmean(sleep_norm),nanmean(wake_norm)];
-    all_wake = [all_wake;wake_norm];
-    all_sleep = [all_sleep;sleep_norm];
-end
-
-% Calculate roc
-[roc,auc] = calculate_roc(all_sleep,all_wake,1e3);
-
-%% Main analyses
-npts = length(summ);
 r_ad_spikes = nan(npts,1);
 skip_pts = [];
+
 
 r_ad_ana = cell(2,1);
 for i = 1:length(r_ad_ana)
@@ -64,6 +49,22 @@ for p = 1:npts
     ad = summ(p).ad;
     ad = nanmean(ad,1);
     
+    %% Find sw
+    sleep_norm = [];
+    wake_norm = [];
+    name = summ(p).name;
+    for j = 1:length(swdes)
+        if strcmp(swdes(j).name,name)
+            sleep_ad = swdes(j).sw.sleep;
+            wake_ad = swdes(j).sw.wake;
+            
+            sleep_norm = (sleep_ad-nanmedian(ad))./iqr(ad);
+            wake_norm = (wake_ad-nanmedian(ad))./iqr(ad);
+        end
+    end
+        
+    
+    
     
     % Skip if all empty
     if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
@@ -72,6 +73,10 @@ for p = 1:npts
         continue
     end
     
+    %% Wake vs sleep ad    
+    ad_norm(p,:) = [nanmean(sleep_norm),nanmean(wake_norm)];
+    all_wake = [all_wake;wake_norm];
+    all_sleep = [all_sleep;sleep_norm];
     
     %% Correlation between spike rate and ad
     % overall spike rate (averaged across electrodes)
@@ -104,12 +109,15 @@ for p = 1:npts
 end
 
 %% Remove empty pts
+ad_norm(skip_pts,:) = [];
 r_ad_spikes(skip_pts) = [];
 for i = 1:length(r_ad_ana)
     r_ad_ana{i}(:,skip_pts) = [];
 end
 npts = npts - length(skip_pts);
 
+%% Calculate roc
+[roc,auc] = calculate_roc(all_sleep,all_wake,1e3);
 
 %% initialize figure
 figure
