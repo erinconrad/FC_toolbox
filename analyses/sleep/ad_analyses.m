@@ -16,6 +16,7 @@ main{2} = main_lats;
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/sleep/'];
+summ_folder = [results_folder,'analysis/intermediate/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
@@ -35,8 +36,8 @@ for j = 1:npts_val
     wake_ad = swdes(j).sw.wake;
     ad_val = swdes(j).ad;
 
-    sleep_norm = (sleep_ad-nanmedian(ad))./iqr(ad_val);
-    wake_norm = (wake_ad-nanmedian(ad))./iqr(ad_val);
+    sleep_norm = (sleep_ad-nanmedian(ad_val))./iqr(ad_val);
+    wake_norm = (wake_ad-nanmedian(ad_val))./iqr(ad_val);
     ad_norm(j,:) = [nanmean(sleep_norm),nanmean(wake_norm)];
     all_wake = [all_wake;wake_norm];
     all_sleep = [all_sleep;sleep_norm];
