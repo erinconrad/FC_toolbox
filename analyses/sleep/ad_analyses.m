@@ -1,4 +1,4 @@
-function ad_analyses(summ)
+function ad_analyses
 
 %% To do
 %{
@@ -24,6 +24,10 @@ end
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
+
+%% Load summary file
+summ = load([summ_folder,'summ.mat']);
+summ = summ.summ;
 
 %% Alpha delta ratio validation
 swdes = sw_ad_erin_designations;
