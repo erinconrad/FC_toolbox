@@ -128,6 +128,7 @@ for l = 1:npts
     end
     
     %% Put it all in the intermediate struct
+    %{
     summ(count).name = name;
     summ(count).times = times;
     summ(count).spikes = spikes;
@@ -144,11 +145,29 @@ for l = 1:npts
     summ(count).file_index = file_index;
     summ(count).ad = ad;
     summ(count).block_dur = block_dur;
+    %}
+    
+    summ.name = name;
+    summ.times = times;
+    summ.spikes = spikes;
+    %summ(count).coi_global = coi_global;
+    summ.rl = rl;
+    summ.coa = coa;
+    summ.labels = clean_labels;
+    summ.locs = spike_locs;
+    summ.anatomy = spike_anatomy;
+    summ.bad_anatomy_flag = bad_anatomy_flag;
+    summ.ana_loc = loc;
+    summ.ana_lat = lat;
+    summ.file_times = file_times;
+    summ.file_index = file_index;
+    summ.ad = ad;
+    summ.block_dur = block_dur;
 
 
 end
 
 %% Save it all
-save([out_folder,'summ.mat'],'summ');
+save([out_folder,name,'.mat'],'summ');
 
 
