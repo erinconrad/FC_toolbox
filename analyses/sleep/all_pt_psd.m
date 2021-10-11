@@ -1,4 +1,4 @@
-function all_pt_psd(summ)
+function all_pt_psd
 
 %% To do
 %{
@@ -16,6 +16,7 @@ main{2} = main_lats;
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
+int_folder = [results_folder,'analysis/intermediate/'];
 out_folder = [results_folder,'analysis/sleep/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
@@ -26,11 +27,19 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 
+%% Listing of available files
+listing = dir([int_folder,'*.mat']);
+npts = length(listing);
+
 %% Get the longest run (will pad the others with zeros)
 longest_run = 0;
-npts = length(summ);
 for p = 1:npts
-    run_length = length(summ(p).times);
+    
+    %% Load
+    summ = load([int_folder,listing(p).name]);
+    summ = summ.summ;
+    
+    run_length = length(summ.times);
     if run_length > longest_run
         longest_run = run_length;
     end
@@ -51,10 +60,15 @@ skip_pts = [];
 
 %% Loop over patients and get psd per pt
 for p = 1:npts
-    spikes = summ(p).spikes;
-    times = summ(p).times;
-    loc = summ(p).ana_loc;
-    lat = summ(p).ana_lat;
+    
+    %% Load
+    summ = load([int_folder,listing(p).name]);
+    summ = summ.summ;
+    
+    spikes = summ.spikes;
+    times = summ.times;
+    loc = summ.ana_loc;
+    lat = summ.ana_lat;
     run_length = length(times);
     
     % Skip if all empty
