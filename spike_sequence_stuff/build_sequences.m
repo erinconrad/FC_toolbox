@@ -50,3 +50,4 @@ assert(issymmetric(coa));
 
 %% Average across spikes for rl
 rl = cellfun(@mean,rl);
+global_coi = mean(global_coi);
