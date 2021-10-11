@@ -70,7 +70,11 @@ for p = 1:npts
         continue
     end
     
-    %% Wake vs sleep ad    
+    %% Wake vs sleep ad
+    % Get normalized a/d ratio with sleep and wake
+    sleep_norm = ((sleep_ad-nanmean(ad))./nanstd(ad))';
+    wake_norm = ((wake_ad-nanmean(ad))./nanstd(ad))';
+    
     ad_norm(p,:) = [nanmean(sleep_norm),nanmean(wake_norm)];
     all_wake = [all_wake;wake_norm];
     all_sleep = [all_sleep;sleep_norm];
