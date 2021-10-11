@@ -47,6 +47,7 @@ for p = 1:npts
     lat = summ(p).ana_lat;
     spikes = summ(p).spikes;
     ad = summ(p).ad;
+    ad = nanmean(ad,1);
     
     %% Find sw
     sleep_norm = [];
