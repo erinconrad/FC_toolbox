@@ -42,6 +42,12 @@ end
 
 for p = 1:npts
     
+    %% Get main things
+    loc = summ(p).ana_loc;
+    lat = summ(p).ana_lat;
+    spikes = summ(p).spikes;
+    ad = summ(p).ad;
+    
     %% Find sw
     sleep_norm = [];
     wake_norm = [];
@@ -50,7 +56,6 @@ for p = 1:npts
         if strcmp(swdes(j).name,name)
             sleep_ad = swdes(j).sw.sleep;
             wake_ad = swdes(j).sw.wake;
-            ad = swdes(j).ad;
             
             sleep_norm = (sleep_ad-nanmedian(ad))./iqr(ad);
             wake_norm = (wake_ad-nanmedian(ad))./iqr(ad);
@@ -58,10 +63,7 @@ for p = 1:npts
     end
         
     
-    %% Get main things
-    loc = summ(p).ana_loc;
-    lat = summ(p).ana_lat;
-    spikes = summ(p).spikes;
+    
     
     % Skip if all empty
     if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
