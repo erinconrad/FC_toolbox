@@ -26,8 +26,14 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Load summary file
+%{
 summ = load([summ_folder,'summ.mat']);
 summ = summ.summ;
+%}
+
+%% Listing of available files
+listing = dir([int_folder,'*.mat']);
+npts = length(listing);
 
 %% Alpha delta ratio validation
 swdes = sw_ad_erin_designations;
@@ -51,7 +57,6 @@ end
 [roc,auc] = calculate_roc(all_sleep,all_wake,1e3);
 
 %% Main analyses
-npts = length(summ);
 r_ad_spikes = nan(npts,1);
 skip_pts = [];
 
@@ -62,14 +67,18 @@ end
 
 for p = 1:npts
     
+     %% Load
+    summ = load([int_folder,listing(p).name]);
+    summ = summ.summ;
+    
     %% Get main things
-    loc = summ(p).ana_loc;
-    lat = summ(p).ana_lat;
-    spikes = summ(p).spikes;
-    ad = summ(p).ad;
+    loc = summ.ana_loc;
+    lat = summ.ana_lat;
+    spikes = summ.spikes;
+    ad = summ.ad;
     ad = nanmean(ad,1);
-    coa = summ(p).coa;
-    rl = summ(p).rl;
+    coa = summ.coa;
+    rl = summ.rl;
     
     
     % Skip if all empty
