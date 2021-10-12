@@ -103,6 +103,8 @@ end
 
 for p = 1:npts
     
+    fprintf('\nDoing patient %d of %d\n',p,npts);
+    
      %% Load
     summ = load([int_folder,listing(p).name]);
     summ = summ.summ;
