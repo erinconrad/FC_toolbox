@@ -58,6 +58,7 @@ end
 
 %% Main analyses
 r_ad_spikes = nan(npts,1);
+r_ad_coi = nan(npts,1);
 skip_pts = [];
 
 r_ad_ana = cell(2,1);
@@ -79,7 +80,7 @@ for p = 1:npts
     ad = nanmean(ad,1);
     coa = summ.coa;
     rl = summ.rl;
-    out.montage(m).coi_global
+    coi_global = summ.coi_global;
     
     
     % Skip if all empty
@@ -96,6 +97,7 @@ for p = 1:npts
     r_ad_spikes(p) = corr(mean_spikes',ad','rows','pairwise');
     
     %% Correlation between co-spiking and ad
+    r_ad_coi(p) = corr(coi_global,ad','rows','pairwise');
     
     %% Get spectral power for each group for locs and lats
     % Loop over loc vs lat
@@ -133,7 +135,7 @@ npts = npts - length(skip_pts);
 %% initialize figure
 figure
 set(gcf,'position',[100 100 800 600])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+tiledlayout(3,2,'tilespacing','tight','padding','tight')
 
 %% A/D ratio in sleep vs wake
 nexttile
@@ -212,10 +214,10 @@ heights = get_heights([-1 0.3],pairs_to_plot);
 %ylim([yl(1) heights(end,2)]);
 
 if p > 0.05
-    plot([1 length(avg_over_pts)],...
+    plot([1 length(median_corr)],...
         [heights(size(heights,1)-1,1) heights(size(heights,1)-1,1)],'k',...
         'linewidth',2);
-    text(mean([1 length(avg_over_pts)]),heights(size(heights,1)-1,2),...
+    text(mean([1 length(median_corr)]),heights(size(heights,1)-1,2),...
         'ns','fontsize',15,'horizontalalignment','center')
 else
     for k = 1:size(pairs_to_plot,1)
@@ -227,6 +229,27 @@ else
             'fontsize',15,'horizontalalignment','center')
     end
 end
+
+%% COI by AD
+nexttile
+plot(r_ad_coi,'ko','linewidth',2)
+hold on
+xlim([0 npts+1])
+plot(xlim,[0 0],'k--')
+ylim([-1 1])
+set(gca,'fontsize',15)
+xticklabels([])
+xlabel('Patient')
+ylabel('AD-COI correlation')
+
+% Fisher transform rs
+z_ad_coi = atanh(r_ad_coi); 
+% two sided ttest of the fisher transformed rs
+[~,pval,~,stats] = ttest(z_ad_coi);
+xl = xlim;
+yl = ylim;
+text(xl(1),yl(2),sprintf('%s',get_p_text(pval)),...
+    'fontsize',15,'verticalalignment','top')
 
 print([out_folder,'ad_analyses'],'-dpng')
 close all
