@@ -9,6 +9,20 @@ function binary_ad_analyses
 
 %% Questions
 %{
+Fig 1 (no sleep/wake dependence) - 7 plots
+- spike rate by location and laterality and SOZ (3 plots)
+- rl by location and laterality and SOZ (3 plots)
+- spike rate correlates with rl?
+
+Fig 2 (sleep wake, ignoring antomy)
+- ROC curve for alpha delta ratio
+- overall spike rate sleep vs wake
+- COI sleep vs wake
+- spike rate consistency wake vs sleep
+- spike timing consistency wake vs sleep
+
+Fig 3 (int
+
 - How does overall spike rate change with sleep
 - Does the correlation between sleep and spike rate depend on anatomical
 location?
@@ -218,10 +232,15 @@ npts = npts - length(missing_loc);
 
 %% Figure 1 - ignoring sleep, comparison across locations
 %{
+Fig 1 (no sleep/wake dependence) - 7 plots
+- spike rate by location and laterality and SOZ (3 plots)
+- rl by location and laterality and SOZ (3 plots)
+- spike rate correlates with rl?
+
 Need to add SOZ analysis
 %}
-figure
-set(gcf,'position',[100 100 800 600])
+f1 = figure;
+set(f1,'position',[100 100 800 600])
 tiledlayout(2,3,'tilespacing','compact','padding','compact')
 
 % rate overall location (how does spike rate vary by location)
@@ -244,6 +263,7 @@ ylabel('Spike rate-latency correlation')
 z = fisher_transform(all_rate_rl_corr);
 [~,p] = ttest(z);
 simple_p_stats(ylim,p,[1 length(z)])
+set(gca,'fontsize',15)
 
 
 % rate overall lateralization
@@ -260,7 +280,46 @@ plot_paired_data(curr_rl*1e3,main_lats,'Spike latency (s)')
 
 % Insert SOZ-rl comparison here
 
-print([out_folder,'ad_fig1'],'-dpng')
+
+
+%% Figure 2
+%{
+Fig 2 (sleep wake, ignoring antomy)
+- ROC curve for alpha delta ratio
+- overall spike rate sleep vs wake
+- COI sleep vs wake
+- spike rate consistency wake vs sleep
+- spike timing consistency wake vs sleep
+%}
+f2 = figure;
+set(gcf,'position',[100 100 700 700])
+tiledlayout(3,2,'tilespacing','compact','padding','compact')
+
+% ROC
+nexttile([1 2])
+plot(roc(:,1),roc(:,2),'k','linewidth',2)
+hold on
+plot([0 1],[0 1],'k--')
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend(sprintf('AUC %1.2f',auc),'location','northwest')
+set(gca,'fontsize',15)
+
+% Overall spike rate sleep vs wake
+nexttile
+plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/???')
+
+% COI sleep vs wake
+nexttile
+plot_paired_data(all_coi',{'Wake','Sleep'},'Spike COI')
+
+% spike rate consistency wake vs sleep
+nexttile
+plot_paired_data(all_src',{'Wake','Sleep'},'Spike rate consistency')
+
+% spike timing consistency wake vs sleep
+nexttile
+plot_paired_data(all_stc',{'Wake','Sleep'},'Spike timing consistency')
 
 if 0
 %% Figure 2 - changes with sleep
@@ -409,7 +468,9 @@ ylim([yl(1) newyl])
 
 
 
-print([out_folder,'ad_analyses'],'-dpng')
 end
+
+print(f1,[out_folder,'ad_fig1'],'-dpng')
+print(f1,[out_folder,'ad_fig2'],'-dpng')
 close all
 end
