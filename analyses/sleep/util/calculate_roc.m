@@ -1,4 +1,4 @@
-function [roc,auc] = calculate_roc(array1,array2,npts)
+function [roc,auc,disc] = calculate_roc(array1,array2,npts)
 
 % positive = I say it is sleep
 % negative = I say it is wake
@@ -40,5 +40,12 @@ end
 
 %% Calculate AUC
 auc = trapz(roc(:,1),roc(:,2));
+
+%% Find discriminant
+% Find the threshold normalized alpha delta ratio that best separates wake
+% from sleep
+goodness = (ones(size(roc,1),1) - roc(:,1)) + roc(:,2); % 1-FPR + TPR;
+[~,disc] = max(goodness);
+disc = test_vals(disc);
 
 end

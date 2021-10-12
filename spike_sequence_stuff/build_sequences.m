@@ -20,6 +20,8 @@ for s = 1:size(gdf,1)
     % find those less than t2 and not same ch. I will say these spikes are
     % in the same spike sequence
     close_enough = time_diff < t2 & gdf(:,1) ~= ch;
+    
+    % How many other spikes co-occur with this spike?
     global_coi(s) = sum(close_enough);
  
     % Get the sequence start time and the latency of this channel in the

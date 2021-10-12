@@ -6,6 +6,19 @@ function ad_analyses
 - get soz to do that analysis
 %}
 
+%% Questions
+%{
+- How does overall spike rate change with sleep
+- Does the correlation between sleep and spike rate depend on anatomical
+location?
+- How does spike spread change with sleep?
+- Does spike timing correlate with spike rate? Is the spikiest channel also
+the one that spikes first?
+- Is the order of spike rate more consistent in wake or sleep?
+- Is the order of spike timing more consistent in wake or sleep?
+     - For these, I would probably need to designate wake and sleep
+%}
+
 %% Parameters
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
 main_lats = {'Left','Right'};
@@ -231,6 +244,8 @@ else
 end
 
 %% COI by AD
+% COI is the co-occurrence index - how many other spikes tend to co-occur with
+% each spike
 nexttile
 plot(r_ad_coi,'ko','linewidth',2)
 hold on
