@@ -323,6 +323,32 @@ plot_paired_data(all_src',{'Wake','Sleep'},'Spike rate consistency')
 nexttile
 plot_paired_data(all_stc',{'Wake','Sleep'},'Spike timing consistency')
 
+%% Figure 3 - sleep/location interaction
+%{
+Fig 3 (sleep wake/anatomy interaction)
+- rate sleep vs wake by location and laterality and SOZ
+- rl sleep vs wake by location and laterality and SOZ
+%}
+f3 = figure;
+set(gcf,'position',[100 100 800 600])
+tiledlayout(2,2,'tilespacing','compact','padding','compact')
+
+% Rate sleep vs wake by location
+nexttile
+interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/???');
+
+% Rl sleep vs wake by location
+nexttile
+interaction_plot_and_stats(r_rl_ana{1}*1e3,main_locs,'Spike latency (ms)');
+
+% Rate sleep vs wake by laterality
+nexttile
+interaction_plot_and_stats(r_ad_ana{2},main_lats,'Spike/elec/???');
+
+% Rl sleep vs wake by laterality
+nexttile
+interaction_plot_and_stats(r_rl_ana{2}*1e3,main_lats,'Spike latency (ms)');
+
 if 0
 %% Figure 2 - changes with sleep
 figure
@@ -474,5 +500,6 @@ end
 
 print(f1,[out_folder,'ad_fig1'],'-dpng')
 print(f2,[out_folder,'ad_fig2'],'-dpng')
+print(f3,[out_folder,'ad_fig3'],'-dpng')
 close all
 end

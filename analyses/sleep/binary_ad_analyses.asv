@@ -14,15 +14,16 @@ Fig 1 (no sleep/wake dependence) - 7 plots
 - rl by location and laterality and SOZ (3 plots)
 - spike rate correlates with rl?
 
-Fig 2 (sleep wake, ignoring antomy)
+Fig 2 (sleep wake, ignoring antomy) -  5 plots
 - ROC curve for alpha delta ratio
 - overall spike rate sleep vs wake
 - COI sleep vs wake
 - spike rate consistency wake vs sleep
 - spike timing consistency wake vs sleep
-- distance from soz sleep vs wake
 
-Fig 3 (int
+Fig 3 (sleep wake/anatomy interaction)
+- rate sleep vs wake by location and laterality and SOZ
+- rl sleep vs wake by location and laterality and SOZ
 
 - How does overall spike rate change with sleep
 - Does the correlation between sleep and spike rate depend on anatomical
@@ -264,6 +265,7 @@ ylabel('Spike rate-latency correlation')
 z = fisher_transform(all_rate_rl_corr);
 [~,p] = ttest(z);
 simple_p_stats(ylim,p,[1 length(z)])
+set(gca,'fontsize',15)
 
 
 % rate overall lateralization
@@ -291,12 +293,12 @@ Fig 2 (sleep wake, ignoring antomy)
 - spike rate consistency wake vs sleep
 - spike timing consistency wake vs sleep
 %}
-figure
-set(gcf,'position',[100 100 800 600])
+f2 = figure;
+set(gcf,'position',[100 100 700 700])
 tiledlayout(3,2,'tilespacing','compact','padding','compact')
 
 % ROC
-nexttile
+nexttile([1 2])
 plot(roc(:,1),roc(:,2),'k','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--')
@@ -311,6 +313,41 @@ plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/???')
 
 % COI sleep vs wake
 nexttile
+plot_paired_data(all_coi',{'Wake','Sleep'},'Spike COI')
+
+% spike rate consistency wake vs sleep
+nexttile
+plot_paired_data(all_src',{'Wake','Sleep'},'Spike rate consistency')
+
+% spike timing consistency wake vs sleep
+nexttile
+plot_paired_data(all_stc',{'Wake','Sleep'},'Spike timing consistency')
+
+%% Figure 3 - sleep/location interaction
+%{
+Fig 3 (sleep wake/anatomy interaction)
+- rate sleep vs wake by location and laterality and SOZ
+- rl sleep vs wake by location and laterality and SOZ
+%}
+figure
+set(gcf,'position',[100 100 800 600])
+tiledlayout(2,2,'tilespacing','compact','padding','compact')
+
+% Rate sleep vs wake by location
+nexttile
+interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/???');
+
+% Rl sleep vs wake by location
+nexttile
+interaction_plot_and_stats(r_rl_ana{1}*1e3,main_locs,'Spike latency (ms)');
+
+% Rate sleep vs wake by laterality
+nexttile
+interaction_plot_and_stats(r_ad_ana{2},main_lats,'Spike/elec/???');
+
+% Rl sleep vs wake by location
+nexttile
+interaction_plot_and_stats(r_rl_ana{1}*1e3,main_locs,'Spike latency (ms)');
 
 if 0
 %% Figure 2 - changes with sleep
@@ -462,5 +499,6 @@ ylim([yl(1) newyl])
 end
 
 print(f1,[out_folder,'ad_fig1'],'-dpng')
+print(f2,[out_folder,'ad_fig2'],'-dpng')
 close all
 end
