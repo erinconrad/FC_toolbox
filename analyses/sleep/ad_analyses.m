@@ -79,6 +79,7 @@ for p = 1:npts
     ad = nanmean(ad,1);
     coa = summ.coa;
     rl = summ.rl;
+    out.montage(m).coi_global
     
     
     % Skip if all empty
