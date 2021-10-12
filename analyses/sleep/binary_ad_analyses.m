@@ -14,14 +14,16 @@ Fig 1 (no sleep/wake dependence) - 7 plots
 - rl by location and laterality and SOZ (3 plots)
 - spike rate correlates with rl?
 
-Fig 2 (sleep wake, ignoring antomy)
+Fig 2 (sleep wake, ignoring antomy) -  5 plots
 - ROC curve for alpha delta ratio
 - overall spike rate sleep vs wake
 - COI sleep vs wake
 - spike rate consistency wake vs sleep
 - spike timing consistency wake vs sleep
 
-Fig 3 (int
+Fig 3 (sleep wake/anatomy interaction)
+- rate sleep vs wake by location and laterality and SOZ
+- rl sleep vs wake by location and laterality and SOZ
 
 - How does overall spike rate change with sleep
 - Does the correlation between sleep and spike rate depend on anatomical
@@ -471,6 +473,6 @@ ylim([yl(1) newyl])
 end
 
 print(f1,[out_folder,'ad_fig1'],'-dpng')
-print(f1,[out_folder,'ad_fig2'],'-dpng')
+print(f2,[out_folder,'ad_fig2'],'-dpng')
 close all
 end
