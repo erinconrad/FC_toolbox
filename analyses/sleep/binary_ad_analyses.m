@@ -335,19 +335,23 @@ tiledlayout(2,2,'tilespacing','compact','padding','compact')
 
 % Rate sleep vs wake by location
 nexttile
-interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/???');
+interaction_plot_and_stats(r_ad_ana{1},{'Wake','Sleep'},'Spike/elec/???');
 
-% Rl sleep vs wake by location
+% Rl sleep vs wake by location -  this is cool. It appears that the latency
+% doesn't go up much with sleep for mesial temporal, but it does for other
+% locations. That suggests that in sleep, spikes start in the same place
+% they always started (the mesial temporal lobe) and then spread to other
+% areas more.
 nexttile
-interaction_plot_and_stats(r_rl_ana{1}*1e3,main_locs,'Spike latency (ms)');
+interaction_plot_and_stats(r_rl_ana{1}*1e3,{'Wake','Sleep'},'Spike latency (ms)');
 
 % Rate sleep vs wake by laterality
 nexttile
-interaction_plot_and_stats(r_ad_ana{2},main_lats,'Spike/elec/???');
+interaction_plot_and_stats(r_ad_ana{2},{'Wake','Sleep'},'Spike/elec/???');
 
 % Rl sleep vs wake by laterality
 nexttile
-interaction_plot_and_stats(r_rl_ana{2}*1e3,main_lats,'Spike latency (ms)');
+interaction_plot_and_stats(r_rl_ana{2}*1e3,{'Wake','Sleep'},'Spike latency (ms)');
 
 if 0
 %% Figure 2 - changes with sleep
