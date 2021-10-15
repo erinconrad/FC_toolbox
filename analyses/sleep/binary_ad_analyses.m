@@ -74,6 +74,7 @@ all_wake = [];
 all_sleep = [];
 all_rate_rl_corr = [];
 for j = 1:npts_val
+    if isempty(swdes(j).sw), continue; end
     sleep_ad = swdes(j).sw.sleep;
     wake_ad = swdes(j).sw.wake;
     ad_val = swdes(j).ad;
