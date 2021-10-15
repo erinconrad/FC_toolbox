@@ -29,9 +29,12 @@ good_pts = T.Var13;
 good_pts = good_pts(~isnan(good_pts));
 npts = length(good_pts);
 
+%% Also grab SOZ info
+szT = readtable(validation_file,'Sheet','SOZ');
+
 count = 0;
 % Loop over patients
-for l = 1:npts
+for l = 2%1:npts
     j = good_pts(l);
     name = pt(j).name;
     
@@ -63,6 +66,20 @@ for l = 1:npts
     % reconcile files (deal with changes in electrode names)
     out = net_over_time(pc);
     out = reconcile_files(out);
+    
+    % Get the correct row of the SOZ table
+    szr = nan;
+    for k = 1:size(szT,1)
+        if strcmp(szT.name{k},name)
+            szr = k;
+            break
+        end
+    end
+    
+    % parse the soz names
+    [soz_labels,soz_chs] = parse_soz(szT.SOZElectrode{k},out.all_labels,name);
+    summ.soz.labels = soz_labels;
+    summ.soz.chs = soz_chs;
     
     % Get the spikes and the labels
     times = out.times;
