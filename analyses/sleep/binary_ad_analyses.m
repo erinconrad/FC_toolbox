@@ -421,6 +421,15 @@ interaction_plot_and_stats(rate_sw_soz,main_soz,'Spike/elec/???',{'Wake','Sleep'
 nexttile
 interaction_plot_and_stats(rl_sw_soz*1e3,main_soz,'Spike latency (ms)',{'Wake','Sleep'},1);
 
+f4 = figure;
+plot(roc(:,1),roc(:,2),'k','linewidth',2)
+hold on
+plot([0 1],[0 1],'k--')
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend(sprintf('AUC %1.2f',auc),'location','northwest')
+set(gca,'fontsize',15)
+
 %{
 if 0
     
@@ -576,5 +585,7 @@ end
 print(f1,[out_folder,'ad_fig1'],'-dpng')
 print(f2,[out_folder,'ad_fig2'],'-dpng')
 print(f3,[out_folder,'ad_fig3'],'-dpng')
+print(f4,[out_folder,'ad_fig3'],'-dpng')
+
 close all
 end
