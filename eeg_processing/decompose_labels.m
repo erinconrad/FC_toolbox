@@ -66,7 +66,12 @@ for ich = 1:length(chLabels)
     %% Remove CAR
     label = strrep(label,'CAR','');
     
-    %% Dumb fixes
+    %% Switch HIPP to DH, AMY to DA
+    % this may come back to bite me
+    label = strrep(label,'HIPP','DH');
+    label = strrep(label,'AMY','DA');
+    
+    %% Dumb fixes specific to individual patients
     if strcmp(name,'HUP099')
         if strcmp(label(1),'R')
             label = strrep(label,'R','');
