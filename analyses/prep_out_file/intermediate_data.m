@@ -34,7 +34,7 @@ szT = readtable(validation_file,'Sheet','SOZ');
 
 count = 0;
 % Loop over patients
-for l = 2%1:npts
+for l = 1:npts
     j = good_pts(l);
     name = pt(j).name;
     
