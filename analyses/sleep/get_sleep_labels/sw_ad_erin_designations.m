@@ -31,6 +31,9 @@ for l = 1:length(listing)
     fname = listing(l).name;
     name = strrep(fname,'.mat','');
     
+    % REMOVE THIS ONCE PT DONE!!!
+    if strcmp(name,'HUP213'), continue; end
+    
     % Load the file
     out = load([erin_des_folder,name,'.mat']);
     if isfield(out,'out')
