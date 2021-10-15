@@ -16,8 +16,13 @@ soz_labels = decompose_labels(C,name);
 [~,soz_chs] = ismember(soz_labels,labels);
 
 if any(soz_chs == 0)
-    fprintf('\n\nWARNING, cannot find the following contacts:\n');
+    fprintf('\n\nWARNING, cannot find the following contacts for %s:\n',name);
     soz_labels((soz_chs==0))
+    
+    fprintf('\nThe electrode names for this patient are:\n')
+    labels
+    
+    fprintf('\nCheck for funny label names.\n');
 end
 
 
