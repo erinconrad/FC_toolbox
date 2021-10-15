@@ -58,8 +58,13 @@ for l = 1:length(listing)
             
             designation = out.file(f).block(blocks(ib)).erin;
             
+            % remove non-intracranial
+            labels = pc.file(f).run(blocks(ib)).data.clean_labels;
+            ekg = find_non_intracranial(labels);
+            
             % Get alpha delta ratio
-            alpha_delta = nanmean(pc.file(f).run(blocks(ib)).data.montage(2).ad);
+            alpha_delta = (pc.file(f).run(blocks(ib)).data.montage(2).ad);
+            alpha_delta = nanmean(alpha_delta(~ekg));
             
             % fill these up
             sleep_state = [sleep_state;designation];
@@ -73,7 +78,14 @@ for l = 1:length(listing)
     % Also loop over every block to get details on ad
     for f = 1:length(pc.file)
         for ib = 1:length(pc.file(f).run)
-            all_ad = [all_ad;nanmean(pc.file(f).run(ib).data.montage(2).ad)];
+            alpha_delta = pc.file(f).run(ib).data.montage(2).ad;
+            
+            % remove non-intracranial
+            labels = pc.file(f).run(ib).data.clean_labels;
+            ekg = find_non_intracranial(labels);
+            alpha_delta = (alpha_delta(~ekg));
+            
+            all_ad = [all_ad;nanmean(alpha_delta)];
         end
     end
     

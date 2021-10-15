@@ -39,7 +39,6 @@ the one that spikes first?
 %% Parameters
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
 main_lats = {'Left','Right'};
-main_soz = {'SOZ','Not SOZ'};
 main{1} = main_locs;
 main{2} = main_lats;
 
@@ -336,11 +335,11 @@ plot_paired_data(curr_rl*1e3,main_lats,'Spike latency (s)')
 
 % Insert SOZ-rate comparison here
 nexttile
-plot_paired_data(rate_soz',main_soz,'Spike/elec/???')
+plot_paired_data(rate_soz',{'SOZ','not SOZ'},'Spike/elec/???')
 
 % Insert SOZ-rl comparison here
 nexttile
-plot_paired_data(rl_soz'*1e3,main_soz,'Spike latency (s)')
+plot_paired_data(rl_soz',{'SOZ','not SOZ'},'Spike latency (s)')
 
 
 %% Figure 2
@@ -353,7 +352,7 @@ Fig 2 (sleep wake, ignoring antomy)
 - spike timing consistency wake vs sleep
 %}
 f2 = figure;
-set(gcf,'position',[100 100 900 700])
+set(gcf,'position',[100 100 700 700])
 tiledlayout(3,2,'tilespacing','compact','padding','compact')
 
 % ROC
@@ -389,12 +388,12 @@ Fig 3 (sleep wake/anatomy interaction)
 - rl sleep vs wake by location and laterality and SOZ
 %}
 f3 = figure;
-set(gcf,'position',[100 100 800 800])
+set(gcf,'position',[100 100 800 600])
 tiledlayout(3,2,'tilespacing','compact','padding','compact')
 
 % Rate sleep vs wake by location
 nexttile
-interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/???',{'Wake','Sleep'},0);
+interaction_plot_and_stats(r_ad_ana{1},{'Wake','Sleep'},'Spike/elec/???');
 
 % Rl sleep vs wake by location -  this is cool. It appears that the latency
 % doesn't go up much with sleep for mesial temporal, but it does for other
@@ -402,23 +401,23 @@ interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/???',{'Wake','Sleep
 % they always started (the mesial temporal lobe) and then spread to other
 % areas more.
 nexttile
-interaction_plot_and_stats(r_rl_ana{1}*1e3,main_locs,'Spike latency (ms)',{'Wake','Sleep'},1);
+interaction_plot_and_stats(r_rl_ana{1}*1e3,{'Wake','Sleep'},'Spike latency (ms)');
 
 % Rate sleep vs wake by laterality
 nexttile
-interaction_plot_and_stats(r_ad_ana{2},main_lats,'Spike/elec/???',{'Wake','Sleep'},0);
+interaction_plot_and_stats(r_ad_ana{2},{'Wake','Sleep'},'Spike/elec/???');
 
 % Rl sleep vs wake by laterality
 nexttile
-interaction_plot_and_stats(r_rl_ana{2}*1e3,main_lats,'Spike latency (ms)',{'Wake','Sleep'},1);
+interaction_plot_and_stats(r_rl_ana{2}*1e3,{'Wake','Sleep'},'Spike latency (ms)');
 
 % Rate sleep vs wake by SOZ
 nexttile
-interaction_plot_and_stats(rate_sw_soz,main_soz,'Spike/elec/???',{'Wake','Sleep'},0);
+interaction_plot_and_stats(rate_sw_soz,{'Wake','Sleep'},'Spike/elec/???');
 
 % Rl sleep vs wake by SOZ
 nexttile
-interaction_plot_and_stats(rl_sw_soz*1e3,main_soz,'Spike latency (ms)',{'Wake','Sleep'},1);
+interaction_plot_and_stats(rl_sw_soz*1e3,{'Wake','Sleep'},'Spike latency (ms)');
 
 %{
 if 0
