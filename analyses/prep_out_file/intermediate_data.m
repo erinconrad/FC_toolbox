@@ -77,7 +77,8 @@ for l = 1:npts
     end
     
     % parse the soz names
-    [soz_labels,soz_chs] = parse_soz(szT.SOZElectrode{k},out.all_labels,name);
+    all_labels = decompose_labels(out.all_labels,name);
+    [soz_labels,soz_chs] = parse_soz(szT.SOZElectrode{k},all_labels,name);
     summ.soz.labels = soz_labels;
     summ.soz.chs = soz_chs;
     
