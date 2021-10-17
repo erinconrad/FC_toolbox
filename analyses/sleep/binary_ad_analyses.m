@@ -145,12 +145,16 @@ for p = 1:npts
     %% Get main things
     loc = summ.ana_loc;
     lat = summ.ana_lat;
-    lat(isempty(lat)) = {'unspecified'};
     spikes = summ.spikes;
     ad = summ.ad;
     rl = summ.rl;
     coi_global = summ.coi_global;
     labels = summ.labels;
+    
+    % Fix lat thing
+    for i = 1:length(lat)
+        if isempty(lat{i}), lat{i} = 'unspecified'; end
+    end
     
     %% Get features for soz vs not
     soz = summ.soz.chs;
