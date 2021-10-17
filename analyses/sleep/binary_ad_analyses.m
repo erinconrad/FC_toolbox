@@ -2,10 +2,19 @@ function binary_ad_analyses
 
 %% To do
 %{
+- double check anatomical designations
+- double check soz designations
+- see why it does not appear that spike rates are higher in SOZ, this seems
+wrong
 - exclude sz times
-- get soz to do that analysis
-      - why is soz analysis not working?
-- remove scalp
+- think about best analysis to measure interaction effect between
+sleep/SOZ/anatomical location. Could I build a mixed effects model where
+random effect is patient and fixed effects are wake/sleep, SOZ/not-SOZ,
+different anatomical locations?
+
+spike rate ~ (1|pt) + wake/sleep(binary) + soz/not_soz(binary) +
+anatomy(categorical)
+rl ~ same
 %}
 
 %% Questions
