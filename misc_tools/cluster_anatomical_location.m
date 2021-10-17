@@ -27,7 +27,7 @@ for ich = 1:length(anatomy)
     end
     
     % Make sure I found laterality
-    if isempty(lat{ich}), error('why can''t I find laterality?'); end
+    %if isempty(lat{ich}), error('why can''t I find laterality?'); end
     
     %% Get localization
     if contains(curr,'white','IgnoreCase',true)
