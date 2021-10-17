@@ -57,11 +57,11 @@ for p = 1:npts
     
     %% get top 5 spiking channels
     [~,I] = sort(nanmean(spikes,2),'descend');
-    fprintf('\nTop 5 spiking channels:\n');
+    fprintf('\nTop 5 spiking channels for %s:\n',name);
     table(labels(I(1:5)),loc(I(1:5)))
     
     %% Shows soz
-    fprintf('\nSOZ\n');
+    fprintf('\nSOZ for %s\n',name);
     table(labels(is_soz),loc(is_soz))
     
     pause
