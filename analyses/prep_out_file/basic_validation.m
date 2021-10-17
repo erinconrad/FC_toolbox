@@ -56,6 +56,7 @@ for p = 1:npts
     table(labels,loc)
     
     %% get top 5 spiking channels
+    spikes(isnan(spikes)) = -inf;
     [~,I] = sort(nanmean(spikes,2),'descend');
     fprintf('\nTop 5 spiking channels for %s:\n',name);
     table(labels(I(1:5)),loc(I(1:5)))
