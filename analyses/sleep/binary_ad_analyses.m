@@ -145,6 +145,7 @@ for p = 1:npts
     %% Get main things
     loc = summ.ana_loc;
     lat = summ.ana_lat;
+    lat(isempty(lat)) = {'unspecified'};
     spikes = summ.spikes;
     ad = summ.ad;
     rl = summ.rl;
