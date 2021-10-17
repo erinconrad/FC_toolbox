@@ -26,11 +26,7 @@ for p = 1:npts
     %% Get main things
     name = summ.name;
     loc = summ.ana_loc;
-    lat = summ.ana_lat;
     spikes = summ.spikes;
-    ad = summ.ad;
-    rl = summ.rl;
-    coi_global = summ.coi_global;
     labels = summ.labels;
     
     %% Get features for soz vs not
@@ -43,6 +39,17 @@ for p = 1:npts
         fprintf('\nMissing locs for %s\n',name);
         continue
     end
+    
+    %% Find and remove non-intracranial
+    %{
+    MUST REMEMBER TO ADD THIS FOR COA
+    %}
+    ekg = find_non_intracranial(labels);
+
+    loc = loc(~ekg,:);
+    spikes = spikes(~ekg,:);
+    labels = labels(~ekg);
+    is_soz = is_soz(~ekg);
     
     %% Table showing locs
     fprintf('\nLocations for %s:\n',name);
