@@ -11,6 +11,9 @@ wrong
 sleep/SOZ/anatomical location. Could I build a mixed effects model where
 random effect is patient and fixed effects are wake/sleep, SOZ/not-SOZ,
 different anatomical locations?
+- for each patient, pick the electrode where spikes seem to happen first.
+How much does spike rate increase for this during sleep? 
+- Does spike rate increase more or less with sleep for SOZ vs non SOZ
 
 spike rate ~ (1|pt) + wake/sleep(binary) + soz/not_soz(binary) +
 anatomy(categorical)
