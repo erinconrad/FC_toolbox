@@ -67,7 +67,7 @@ for l = 1:length(listing)
             
             % Get alpha delta ratio
             alpha_delta = (pc.file(f).run(blocks(ib)).data.montage(2).ad);
-            alpha_delta = nanmean(alpha_delta(~ekg));
+            alpha_delta = nanmean(alpha_delta(~ekg)); % ignore ekg channels
             
             % fill these up
             sleep_state = [sleep_state;designation];

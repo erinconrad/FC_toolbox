@@ -77,6 +77,8 @@ listing = dir([int_folder,'*.mat']);
 npts = length(listing);
 
 %% Alpha delta ratio validation
+fprintf('\nDoing alpha delta ratio validation\n');
+
 swdes = sw_ad_erin_designations;
 npts_val = length(swdes);
 ad_norm = nan(npts_val,2); %1 = sleep, 2 = wake
@@ -96,11 +98,11 @@ for j = 1:npts_val
     all_sleep = [all_sleep;sleep_norm];
 end
 
-error('look');
-
 % Calculate roc
 [roc,auc,disc] = calculate_roc(all_sleep,all_wake,1e3);
 
+
+fprintf('\nGot alpha delta ratio validation\n');
 
 %% Main analyses
 missing_loc = [];
