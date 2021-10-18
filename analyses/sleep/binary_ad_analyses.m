@@ -362,6 +362,8 @@ plot_paired_data(rate_soz',main_soz,'Spike/elec/???')
 nexttile
 plot_paired_data(rl_soz'*1e3,main_soz,'Spike latency (s)')
 
+print(f1,[out_folder,'ad_fig1'],'-dpng')
+
 
 %% Figure 2
 %{
@@ -401,6 +403,7 @@ plot_paired_data(all_src',{'Wake','Sleep'},'Spike rate consistency')
 % spike timing consistency wake vs sleep
 nexttile
 plot_paired_data(all_stc',{'Wake','Sleep'},'Spike timing consistency')
+print(f2,[out_folder,'ad_fig2'],'-dpng')
 
 %% Figure 3 - sleep/location interaction
 %{
@@ -440,7 +443,7 @@ interaction_plot_and_stats(rate_sw_soz,main_soz,'Spike/elec/???',{'Wake','Sleep'
 nexttile
 interaction_plot_and_stats(rl_sw_soz*1e3,main_soz,'Spike latency (ms)',{'Wake','Sleep'},1);
 
-
+print(f3,[out_folder,'ad_fig3'],'-dpng')
 %{
 if 0
     
@@ -593,9 +596,9 @@ ylim([yl(1) newyl])
 end
     %}
 
-print(f1,[out_folder,'ad_fig1'],'-dpng')
-print(f2,[out_folder,'ad_fig2'],'-dpng')
-print(f3,[out_folder,'ad_fig3'],'-dpng')
+
+
+
 
 close all
 end
