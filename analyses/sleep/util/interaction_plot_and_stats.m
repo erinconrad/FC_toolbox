@@ -9,7 +9,7 @@ xtextreap = {};
 for i = 1:size(thing,1)
     %plot([i-0.2 i+0.2],
     %
-    pr = prctile(thing(i,:,:),[25,75],2);
+    pr = squeeze(prctile(thing(i,:,:),[25,75],2));
     lp(i) = errorbar([i-0.2 i+0.2],squeeze(nanmedian(thing(i,:,:),2)),...
         squeeze(nanmedian(thing(i,:,:),2))-pr(:,1),...
         pr(:,2)-squeeze(nanmedian(thing(i,:,:),2)),'o','linewidth',2);
