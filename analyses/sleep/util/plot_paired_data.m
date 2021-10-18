@@ -1,6 +1,7 @@
 function plot_paired_data(data,xlabels,ytext)
 
-errorbar(nanmean(data,2),nanstd(data,[],2),'o','linewidth',2);
+%errorbar(nanmean(data,2),nanstd(data,[],2),'o','linewidth',2);
+errorbar(nanmedian(data,2),iqr(data,[],2),'o','linewidth',2);
 hold on
 xlim([0 size(data,1)+1])
 xticks(1:size(data,1))
