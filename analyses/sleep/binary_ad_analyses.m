@@ -2,8 +2,6 @@ function binary_ad_analyses
 
 %% To do
 %{
-- double check anatomical designations
-- double check soz designations
 - exclude sz times
 
 - is overlap between most frequent or earliest spiker and soz higher in
@@ -131,7 +129,8 @@ rate_soz = nan(npts,2);
 rl_soz = nan(npts,2);
 rate_sw_soz = nan(2,npts,2); % 2 for soz/not, then 2 for wake/sleep
 rl_sw_soz = nan(2,npts,2);% 2 for soz/not, then 2 for wake/sleep
-
+overlap_spikiest = nan(npts,2); % wake/sleep
+overlap_earliest = nan(npts,2); % wake/sleep
 
 for p = 1:npts
     
@@ -183,6 +182,8 @@ for p = 1:npts
     wake = ad_norm > disc;
     sleep = ad_norm <= disc;
     
+    
+    
     %% wake vs sleep spike rate
     % overall spike rate (averaged across electrodes)
     mean_spikes = nanmean(spikes,1);
@@ -207,6 +208,9 @@ for p = 1:npts
         'rows','pairwise'));
     all_src = [all_src;src_wake src_sleep];
     
+    
+    
+    
     %% Rate-rl correlation
     avg_rate = nanmean(spikes,2);
     avg_rl = nanmean(rl,2);
@@ -228,6 +232,17 @@ for p = 1:npts
     stc_sleep = nanmean(corr(mean_sleep_rl,sleep_rl,'type','spearman',...
         'rows','pairwise'));
     all_stc = [all_stc;stc_wake stc_sleep];
+    
+    %% Spikiest and earliest in sleep and wake    
+    [~,spikiest_sw(1)] = max(mean_wake_spikes);
+    [~,spikiest_sw(2)] = max(mean_sleep_spikes);
+    
+    [~,earliest_sw(1)] = min(mean_wake_rl);
+    [~,earliest_sw(2)] = min(mean_sleep_rl);
+    
+    % Do these overlap with SOZ
+    overlap_spikiest(p,:) = [is_soz(spikiest_sw(1)) is_soz(spikiest_sw(2))];
+    overlap_earliest(p,:) = [is_soz(earliest_sw(1)) is_soz(earliest_sw(2))];
     
     %% SOZ analysis
     % average over all times, all soz (and separately for all non soz)
@@ -423,12 +438,14 @@ nexttile
 interaction_plot_and_stats(r_rl_ana{1}*1e3,main_locs,'Spike latency (ms)',{'Wake','Sleep'},1);
 
 % Rate sleep vs wake by laterality
+%{
 nexttile
 interaction_plot_and_stats(r_ad_ana{2},main_lats,'Spike/elec/???',{'Wake','Sleep'},0);
 
 % Rl sleep vs wake by laterality
 nexttile
 interaction_plot_and_stats(r_rl_ana{2}*1e3,main_lats,'Spike latency (ms)',{'Wake','Sleep'},1);
+%}
 
 % Rate sleep vs wake by SOZ
 nexttile
@@ -437,6 +454,15 @@ interaction_plot_and_stats(rate_sw_soz,main_soz,'Spike/elec/???',{'Wake','Sleep'
 % Rl sleep vs wake by SOZ
 nexttile
 interaction_plot_and_stats(rl_sw_soz*1e3,main_soz,'Spike latency (ms)',{'Wake','Sleep'},1);
+
+% Overlap with highest spiker and SOZ in wake vs sleep
+nexttile
+plot_overlap(overlap_spikiest,{'Wake','Sleep'},{'How often is spikiest','electrode in SOZ'},1e4);
+
+% Overlap with earliest spiker and SOZ in wake vs sleep
+nexttile
+plot_overlap(overlap_earliest,{'Wake','Sleep'},{'How often is earliest','spiking electrode in SOZ'},1e4);
+
 
 print(f3,[out_folder,'ad_fig3'],'-dpng')
 %{
