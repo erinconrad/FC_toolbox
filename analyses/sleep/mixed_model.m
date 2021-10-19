@@ -1,5 +1,30 @@
 function mixed_model
 
+%{
+Pseudo code algorithm:
+
+- Loop over all patients
+- For each patient, divide all electrodes up into 8 anatomical categories:
+4 localizations x 2 lateralizations
+- Get average spike rate in each category, separately for sleep and wake
+- This yields 16 observations for each patient, containing the average
+spike rate for that anatomical category and that sleep or wake state
+- ALSO, add in a marker of whether that anatomical category is in the SOZ
+- so in the end I will have an Nx(p+1) table, where N is the number of
+observations (equal to npts x 16), and p is the number of predictors + 1
+response variable, and the predictors are:
+  (1) which patient (my random effect, all others are fixed effects)
+  (2) which localization
+  (3) which lateralization
+  (4) whether this category is SOZ or not
+  (5) sleep or wake
+- I then for a linear mixed effects model with spike rate as the response
+and those categorical/binary predictors to see if
+localization/lateralization/SOZ designation/sleep/wake independently
+predict spike rates
+
+%}
+
 %% Parameters
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
 main_lats = {'Left','Right'};

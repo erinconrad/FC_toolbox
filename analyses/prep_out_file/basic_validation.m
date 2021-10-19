@@ -28,6 +28,7 @@ for p = 1:npts
     loc = summ.ana_loc;
     spikes = summ.spikes;
     labels = summ.labels;
+    anatomy = summ.anatomy;
     
     %% Get features for soz vs not
     soz = summ.soz.chs;
@@ -50,20 +51,21 @@ for p = 1:npts
     spikes = spikes(~ekg,:);
     labels = labels(~ekg);
     is_soz = is_soz(~ekg);
+    anatomy = anatomy(~ekg);
     
     %% Table showing locs
     fprintf('\nLocations for %s:\n',name);
-    table(labels,loc)
+    table(labels,anatomy,loc)
     
     %% get top 5 spiking channels
     spikes(isnan(nanmean(spikes,2)),:) = -inf;
     [~,I] = sort(nanmean(spikes,2),'descend');
     fprintf('\nTop 5 spiking channels for %s:\n',name);
-    table(labels(I(1:5)),loc(I(1:5)))
+    table(labels(I(1:5)),anatomy(I(1:5)),loc(I(1:5)))
     
     %% Shows soz
     fprintf('\nSOZ for %s\n',name);
-    table(labels(is_soz),loc(is_soz))
+    table(labels(is_soz),anatomy(is_soz),loc(is_soz))
     
     pause
     

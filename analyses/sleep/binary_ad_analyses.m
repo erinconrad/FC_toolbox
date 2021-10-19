@@ -4,26 +4,12 @@ function binary_ad_analyses
 %{
 - double check anatomical designations
 - double check soz designations
-
 - exclude sz times
-- think about best analysis to measure interaction effect between
-sleep/SOZ/anatomical location. Could I build a mixed effects model where
-random effect is patient and fixed effects are wake/sleep, SOZ/not-SOZ,
-different anatomical locations?
-- for each patient, pick the electrode where spikes seem to happen first.
-How much does spike rate increase for this during sleep? 
-- Does spike rate increase more or less with sleep for SOZ vs non SOZ
-- is the greater spike rate in soz completely explained by mesial temporal?
+
 - is overlap between most frequent or earliest spiker and soz higher in
 sleep
 
-spike rate ~ (1|pt) + wake/sleep(binary) + soz/not_soz(binary) +
-anatomy(categorical)
-- what about breaking soz into anatomical locations, so that I can do it
-all by anatomical locations???? (avoiding spatial autocorrelation problem
-if I do it by channels). Could do 8 categories (4 loc x 2 lat), and each
-category has avg spike rate and if soz or not
-rl ~ same
+
 %}
 
 %% Questions
