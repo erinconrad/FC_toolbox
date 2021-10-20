@@ -131,6 +131,7 @@ rate_sw_soz = nan(2,npts,2); % 2 for soz/not, then 2 for wake/sleep
 rl_sw_soz = nan(2,npts,2);% 2 for soz/not, then 2 for wake/sleep
 overlap_spikiest = nan(npts,2); % wake/sleep
 overlap_earliest = nan(npts,2); % wake/sleep
+null_ps = nan(npts,1);
 
 for p = 1:npts
     
@@ -173,6 +174,7 @@ for p = 1:npts
     spikes = spikes(~ekg,:);
     rl = rl(~ekg,:);
     labels = labels(~ekg);
+    
     
     is_soz = is_soz(~ekg);
        
@@ -243,6 +245,7 @@ for p = 1:npts
     % Do these overlap with SOZ
     overlap_spikiest(p,:) = [is_soz(spikiest_sw(1)) is_soz(spikiest_sw(2))];
     overlap_earliest(p,:) = [is_soz(earliest_sw(1)) is_soz(earliest_sw(2))];
+    null_ps(p) = sum(is_soz)/length(is_soz);
     
     %% SOZ analysis
     % average over all times, all soz (and separately for all non soz)
@@ -457,11 +460,13 @@ interaction_plot_and_stats(rl_sw_soz*1e3,main_soz,'Spike latency (ms)',{'Wake','
 
 % Overlap with highest spiker and SOZ in wake vs sleep
 nexttile
-plot_overlap(overlap_spikiest,{'Wake','Sleep'},{'How often is spikiest','electrode in SOZ'},1e4);
+plot_overlap(overlap_spikiest,{'Wake','Sleep'},...
+    {'How often is spikiest','electrode in SOZ'},1e4,null_ps);
 
 % Overlap with earliest spiker and SOZ in wake vs sleep
 nexttile
-plot_overlap(overlap_earliest,{'Wake','Sleep'},{'How often is earliest','spiking electrode in SOZ'},1e4);
+plot_overlap(overlap_earliest,{'Wake','Sleep'},...
+    {'How often is earliest','spiking electrode in SOZ'},1e4,null_ps);
 
 
 print(f3,[out_folder,'ad_fig3'],'-dpng')
