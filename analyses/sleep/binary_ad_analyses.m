@@ -176,7 +176,7 @@ for p = 1:npts
     spikes = spikes(~ekg,:);
     rl = rl(~ekg,:);
     labels = labels(~ekg);
-    ns = ns(~ekg);
+    ns = ns(~ekg,:);
     
     
     is_soz = is_soz(~ekg);
