@@ -132,6 +132,7 @@ rl_sw_soz = nan(2,npts,2);% 2 for soz/not, then 2 for wake/sleep
 overlap_spikiest = nan(npts,2); % wake/sleep
 overlap_earliest = nan(npts,2); % wake/sleep
 null_ps = nan(npts,1);
+ns_sw = nan(npts,2);
 
 for p = 1:npts
     
@@ -149,6 +150,7 @@ for p = 1:npts
     rl = summ.rl;
     coi_global = summ.coi_global;
     labels = summ.labels;
+    ns = summ.ns;
     
     % Fix lat thing
     for i = 1:length(lat)
@@ -174,6 +176,7 @@ for p = 1:npts
     spikes = spikes(~ekg,:);
     rl = rl(~ekg,:);
     labels = labels(~ekg);
+    ns = ns(~ekg);
     
     
     is_soz = is_soz(~ekg);
@@ -183,8 +186,7 @@ for p = 1:npts
     ad_norm = (ad - nanmedian(ad))./iqr(ad);
     wake = ad_norm > disc;
     sleep = ad_norm <= disc;
-    
-    
+       
     
     %% wake vs sleep spike rate
     % overall spike rate (averaged across electrodes)
@@ -193,6 +195,10 @@ for p = 1:npts
     
     %% Wake vs sleep coi
     all_coi = [all_coi;nanmean(coi_global(wake)) nanmean(coi_global(sleep))];
+    
+    %% Wake vs sleep ns
+    mean_ns = nanmean(ns,1); % node strength averaged across electrodes
+    ns_sw = [ns_sw;nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
     
     %% SRC - spike rate consistency
     % Spikes in wake and sleep
@@ -209,8 +215,6 @@ for p = 1:npts
     src_sleep = nanmean(corr(mean_sleep_spikes,sleep_spikes,'type','spearman',...
         'rows','pairwise'));
     all_src = [all_src;src_wake src_sleep];
-    
-    
     
     
     %% Rate-rl correlation
@@ -392,7 +396,7 @@ set(gcf,'position',[100 100 900 700])
 tiledlayout(3,2,'tilespacing','compact','padding','compact')
 
 % ROC
-nexttile([1 2])
+nexttile
 plot(roc(:,1),roc(:,2),'k','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--')
@@ -416,6 +420,10 @@ plot_paired_data(all_src',{'Wake','Sleep'},'Spike rate consistency')
 % spike timing consistency wake vs sleep
 nexttile
 plot_paired_data(all_stc',{'Wake','Sleep'},'Spike timing consistency')
+
+% NS wake vs sleep
+nexttile
+plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength')
 print(f2,[out_folder,'ad_fig2'],'-dpng')
 
 %% Figure 3 - sleep/location interaction
