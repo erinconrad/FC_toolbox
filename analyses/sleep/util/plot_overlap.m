@@ -7,7 +7,7 @@ for i = 1:size(overlap,2)
 end
 pval_diff = binomial_generalized_difference(ps,sum(diff(overlap,1,2)));
 
-ci = bootci(nb,@(x) mean(x),overlap);
+%ci = bootci(nb,@(x) mean(x),overlap);
 %{
 errorbar(1:size(overlap,2),mean(overlap,1),...
     mean(overlap,1)-ci(1,:),...
