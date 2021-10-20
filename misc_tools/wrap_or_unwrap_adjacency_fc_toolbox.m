@@ -42,7 +42,7 @@ if threed == 0 && flat == 1
     if nchs-floor(nchs) > 0.01, error('what'); end
     nchs = round(nchs);
     
-    adj_out = zeros(nchs,nchs);
+    adj_out = nan(nchs,nchs);
     count = 0;
     for i = 1:nchs
         for j = 1:i-1
@@ -50,6 +50,10 @@ if threed == 0 && flat == 1
             adj_out(j,i) = adj_in(count);
         end
     end
+    
+    % Reflect across the diagonal to get full adjacency matrix
+    adj_out = adj_out + adj_out';
+    %adj_out(logical(eye(size(adj_out)))) = 0;
     
     if count ~= length(adj_in)
         error('what\n');
@@ -79,6 +83,10 @@ elseif threed == 1 && flat == 1
         if count ~= length(curr_adj)
             error('what\n');
         end
+        
+        % Reflect across the diagonal to get full adjacency matrix
+        curr_out = curr_out + curr_out';
+        %curr_out(logical(eye(size(curr_out)))) = 0;
         
         adj_out(:,:,k) = curr_out;
 
