@@ -98,7 +98,7 @@ for l = 1:npts
     fc = wrap_or_unwrap_adjacency_fc_toolbox(fc);
     
     % Get global efficiency over time
-    %ge = ge_over_blocks(fc);
+    ge = ge_over_blocks(fc);
     ns = ns_over_blocks(fc);
     
     % Clean the labels
@@ -189,6 +189,7 @@ for l = 1:npts
     summ.ad = ad;
     summ.block_dur = block_dur;
     summ.ns = ns;
+    summ.ge = ge;
 
     %% Save it all
     save([out_folder,name,'.mat'],'summ');
