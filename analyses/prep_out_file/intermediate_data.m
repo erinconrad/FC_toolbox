@@ -2,6 +2,7 @@ function intermediate_data
 
 %% Parameters
 m = 2; % do not change
+net_m = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -94,11 +95,13 @@ for l = 1:npts
     file_times = out.run_center;
     file_index = out.file_index;
     ad = out.montage(m).ad;
-    fc = out.montage(m).net;
+    
+    % bipolar montage for networks
+    fc = out.montage(net_m).net;
     fc = wrap_or_unwrap_adjacency_fc_toolbox(fc);
     
     % Get global efficiency and avg node strength over time
-    ge = ge_over_blocks(fc); % this takes a long time.
+    %ge = ge_over_blocks(fc); % this takes a long time.
     ns = ns_over_blocks(fc);
     
     % Clean the labels
@@ -189,7 +192,7 @@ for l = 1:npts
     summ.ad = ad;
     summ.block_dur = block_dur;
     summ.ns = ns;
-    summ.ge = ge;
+    %summ.ge = ge;
 
     %% Save it all
     save([out_folder,name,'.mat'],'summ');

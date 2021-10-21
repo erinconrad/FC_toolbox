@@ -152,7 +152,6 @@ for p = 1:npts
     coi_global = summ.coi_global;
     labels = summ.labels;
     ns = summ.ns;
-    ge = summ.ge;
     
     % Fix lat thing
     for i = 1:length(lat)
@@ -178,7 +177,10 @@ for p = 1:npts
     spikes = spikes(~ekg,:);
     rl = rl(~ekg,:);
     labels = labels(~ekg);
-    ns = ns(~ekg,:);
+    
+    % dont remove channels from ns because don't know mapping for bipolar
+    % montage
+    %ns = ns(~ekg,:);
     
     
     is_soz = is_soz(~ekg);
@@ -201,7 +203,6 @@ for p = 1:npts
     %% Wake vs sleep ns
     mean_ns = nanmean(ns,1); % node strength averaged across electrodes
     ns_sw = [ns_sw;nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
-    ge_sw = [ge_sw;nanmean(ge(wake)) nanmean(ge(sleep))];
 
     
     %% SRC - spike rate consistency
@@ -427,7 +428,7 @@ plot_paired_data(all_stc',{'Wake','Sleep'},'Spike timing consistency')
 
 % GE wake vs sleep
 nexttile
-plot_paired_data(ge_sw',{'Wake','Sleep'},'Global efficiency')
+plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength')
 print(f2,[out_folder,'ad_fig2'],'-dpng')
 
 %% Figure 3 - sleep/location interaction
