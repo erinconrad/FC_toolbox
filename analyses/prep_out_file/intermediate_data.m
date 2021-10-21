@@ -97,8 +97,8 @@ for l = 1:npts
     fc = out.montage(m).net;
     fc = wrap_or_unwrap_adjacency_fc_toolbox(fc);
     
-    % Get global efficiency over time
-    ge = ge_over_blocks(fc);
+    % Get global efficiency and avg node strength over time
+    ge = ge_over_blocks(fc); % this takes a long time.
     ns = ns_over_blocks(fc);
     
     % Clean the labels

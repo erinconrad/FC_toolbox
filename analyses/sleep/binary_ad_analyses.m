@@ -133,6 +133,7 @@ overlap_spikiest = nan(npts,2); % wake/sleep
 overlap_earliest = nan(npts,2); % wake/sleep
 null_ps = nan(npts,1);
 ns_sw = nan(npts,2);
+ge_sw = nan(npts,2);
 
 for p = 1:npts
     
@@ -151,6 +152,7 @@ for p = 1:npts
     coi_global = summ.coi_global;
     labels = summ.labels;
     ns = summ.ns;
+    ge = summ.ge;
     
     % Fix lat thing
     for i = 1:length(lat)
@@ -199,6 +201,8 @@ for p = 1:npts
     %% Wake vs sleep ns
     mean_ns = nanmean(ns,1); % node strength averaged across electrodes
     ns_sw = [ns_sw;nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
+    ge_sw = [ge_sw;nanmean(ge(wake)) nanmean(ge(sleep))];
+
     
     %% SRC - spike rate consistency
     % Spikes in wake and sleep
@@ -421,9 +425,9 @@ plot_paired_data(all_src',{'Wake','Sleep'},'Spike rate consistency')
 nexttile
 plot_paired_data(all_stc',{'Wake','Sleep'},'Spike timing consistency')
 
-% NS wake vs sleep
+% GE wake vs sleep
 nexttile
-plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength')
+plot_paired_data(ge_sw',{'Wake','Sleep'},'Global efficiency')
 print(f2,[out_folder,'ad_fig2'],'-dpng')
 
 %% Figure 3 - sleep/location interaction
