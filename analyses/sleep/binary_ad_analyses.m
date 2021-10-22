@@ -431,6 +431,8 @@ nexttile
 plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength')
 print(f2,[out_folder,'ad_fig2'],'-dpng')
 
+error('look');
+
 %% Figure 3 - sleep/location interaction
 %{
 Fig 3 (sleep wake/anatomy interaction)
