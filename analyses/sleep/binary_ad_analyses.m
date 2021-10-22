@@ -133,7 +133,7 @@ all_coi = nan(npts,2);
 all_src = nan(npts,2);
 all_std = nan(npts,2);
 all_rate_rl_corr = nan(npts,1);
-missing_loc = zeros(npts,2);
+missing_loc = zeros(npts,1);
 
 %% Loop over patients
 for p = 1:npts
