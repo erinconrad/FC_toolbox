@@ -77,6 +77,7 @@ npts_val = length(swdes);
 ad_norm = nan(npts_val,2); %1 = sleep, 2 = wake
 all_wake = [];
 all_sleep = [];
+all_rate_rl_corr = [];
 for j = 1:npts_val
     if isempty(swdes(j).sw), continue; end
     sleep_ad = swdes(j).sw.sleep;
@@ -97,6 +98,11 @@ end
 fprintf('\nGot alpha delta ratio validation\n');
 
 %% Main analyses
+missing_loc = [];
+all_rates = [];
+all_coi = [];
+all_src = [];
+all_stc = [];
 
 r_ad_ana = cell(2,1);
 for i = 1:length(r_ad_ana)
@@ -118,7 +124,7 @@ for i = 1:length(rl_overall_ana)
     rl_overall_ana{i} = nan(length(main{i}),npts);
 end
 
-%% Initialize stuff
+
 rate_soz = nan(npts,2);
 rl_soz = nan(npts,2);
 rate_sw_soz = nan(2,npts,2); % 2 for soz/not, then 2 for wake/sleep
@@ -128,14 +134,7 @@ overlap_earliest = nan(npts,2); % wake/sleep
 null_ps = nan(npts,1);
 ns_sw = nan(npts,2);
 ge_sw = nan(npts,2);
-all_rates = nan(npts,2);
-all_coi = nan(npts,2);
-all_src = nan(npts,2);
-all_std = nan(npts,2);
-all_rate_rl_corr = nan(npts,1);
-missing_loc = zeros(npts,2);
 
-%% Loop over patients
 for p = 1:npts
     
     fprintf('\nDoing patient %d of %d\n',p,npts);
@@ -199,7 +198,7 @@ for p = 1:npts
     all_rates(p,:) = [nanmean(mean_spikes(wake)) nanmean(mean_spikes(sleep))];
     
     %% Wake vs sleep coi
-    all_coi(p,:) = [nanmean(coi_global(wake)) nanmean(coi_global(sleep))];
+    all_coi(p,:) = [all_coi;nanmean(coi_global(wake)) nanmean(coi_global(sleep))];
     
     %% Wake vs sleep ns
     mean_ns = nanmean(ns,1); % node strength averaged across electrodes
@@ -220,14 +219,14 @@ for p = 1:npts
         'rows','pairwise'));
     src_sleep = nanmean(corr(mean_sleep_spikes,sleep_spikes,'type','spearman',...
         'rows','pairwise'));
-    all_src(p,:) = [src_wake src_sleep];
+    all_src = [all_src;src_wake src_sleep];
     
     
     %% Rate-rl correlation
     avg_rate = nanmean(spikes,2);
     avg_rl = nanmean(rl,2);
     rate_rl_corr = corr(avg_rate,avg_rl,'type','spearman','rows','pairwise');
-    all_rate_rl_corr(p) = rate_rl_corr;
+    all_rate_rl_corr = [all_rate_rl_corr;rate_rl_corr];
     
     %% SRC - spike timing consistency
     % Spikes in wake and sleep
@@ -243,7 +242,7 @@ for p = 1:npts
         'rows','pairwise'));
     stc_sleep = nanmean(corr(mean_sleep_rl,sleep_rl,'type','spearman',...
         'rows','pairwise'));
-    all_stc(p,:) = [stc_wake stc_sleep];
+    all_stc = [all_stc;stc_wake stc_sleep];
     
     %% Spikiest and earliest in sleep and wake    
     [~,spikiest_sw(1)] = max(mean_wake_spikes);
@@ -277,7 +276,7 @@ for p = 1:npts
     
     %% Skip subsequent loc analyses if missing
     if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
-        missing_loc(p) = 1;
+        missing_loc = [missing_loc;p];
         continue
     end
     
@@ -330,7 +329,7 @@ for i = 1:length(r_ad_ana)
     r_ad_ana{i}(:,missing_loc,:) = [];
     rate_overall_ana{i}(:,missing_loc) = [];
 end
-npts = npts - sum(missing_loc);
+npts = npts - length(missing_loc);
 
 
 %% Figure 1 - ignoring sleep, comparison across locations
@@ -432,6 +431,7 @@ nexttile
 plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength')
 print(f2,[out_folder,'ad_fig2'],'-dpng')
 
+error('look');
 
 %% Figure 3 - sleep/location interaction
 %{

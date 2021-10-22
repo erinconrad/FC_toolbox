@@ -2,7 +2,7 @@ function intermediate_data
 
 %% Parameters
 m = 2; % do not change
-net_m = 1;
+net_m = 2;
 
 %% Get file locs
 locations = fc_toolbox_locs;
