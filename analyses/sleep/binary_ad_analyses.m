@@ -326,6 +326,7 @@ for p = 1:npts
 end
 
 %% Remove empty pts for loc analyses
+missing_loc = logical(missing_loc);
 for i = 1:length(r_ad_ana)
     r_ad_ana{i}(:,missing_loc,:) = [];
     rate_overall_ana{i}(:,missing_loc) = [];
