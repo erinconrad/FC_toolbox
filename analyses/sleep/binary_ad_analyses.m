@@ -202,7 +202,7 @@ for p = 1:npts
     
     %% Wake vs sleep ns
     mean_ns = nanmean(ns,1); % node strength averaged across electrodes
-    ns_sw = [ns_sw;nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
+    ns_sw(p,:) = [nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
 
     
     %% SRC - spike rate consistency
