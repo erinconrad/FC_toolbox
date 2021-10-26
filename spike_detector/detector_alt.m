@@ -1,7 +1,6 @@
 function gdf = detector_alt(values,fs)
 
 %{
-This is the spike detection algorithm used for the implant effect paper.
 %}
 
 tmul = 19;
