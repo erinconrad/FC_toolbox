@@ -184,4 +184,9 @@ T.sleep_des = nominal(T.sleep_des);
 lme = fitlme(T,'all_rates~loc_des+lat_des+soz_des+sleep_des+(1|p_des)');
 lme
 
+plot(lme.residuals,'o')
+title('LME residuals')
+print(gcf,[out_folder,'residuals'],'-dpng')
+close(gcf)
+
 end
