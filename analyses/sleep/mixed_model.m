@@ -28,6 +28,7 @@ predict spike rates
 %% Parameters
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
 main_lats = {'Left','Right'};
+sw = {'wake','sleep'};
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -184,8 +185,40 @@ T.sleep_des = nominal(T.sleep_des);
 lme = fitlme(T,'all_rates~loc_des+lat_des+soz_des+sleep_des+(1|p_des)');
 lme
 
+figure
+set(gcf,'position',[1 357 1440 440])
+tiledlayout(1,3)
+nexttile
 plot(lme.residuals,'o')
 title('LME residuals')
+xlabel('All model points')
+ylabel('Residual')
+
+nexttile
+for i = 1:length(main_locs)
+    b = lme.residuals;
+    curr_res = b((ismember(T.loc_des,main_locs{i})));
+    plot(i+randn(length(curr_res),1)*0.05,curr_res,'o')
+    hold on
+end
+xticks(1:4)
+xticklabels(main_locs)
+ylabel('Residual')
+title('LME residuals by location')
+
+nexttile
+for i = 1:length(sw)
+    b = lme.residuals;
+    curr_res = b((ismember(T.sleep_des,sw{i})));
+    plot(i+randn(length(curr_res),1)*0.05,curr_res,'o')
+    hold on
+end
+xticks(1:length(sw))
+xticklabels(sw)
+ylabel('Residual')
+title('LME residuals by sleep/wake')
+
+
 print(gcf,[out_folder,'residuals'],'-dpng')
 close(gcf)
 
