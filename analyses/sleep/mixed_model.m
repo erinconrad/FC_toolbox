@@ -1,4 +1,4 @@
-function mixed_model
+function lme = mixed_model
 
 %{
 Pseudo code algorithm:
