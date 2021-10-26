@@ -78,10 +78,10 @@ fprintf('\nGot alpha delta ratio validation\n');
 big_array = [];
 missing_loc = [];
 all_rates = [];
-sleep_des = [];
-loc_des = [];
-lat_des = [];
-soz_des = [];
+sleep_des = {};
+loc_des = {};
+lat_des = {};
+soz_des = {};
 p_des = [];
 for p = 1:npts
     fprintf('\nDoing patient %d of %d\n',p,npts);
@@ -151,20 +151,20 @@ for p = 1:npts
             for k = 1:2 % wake, sleep
                 if k == 1
                     all_rates = [all_rates;nanmean(spikes(ic,wake),'all')];
-                    sleep_des = [sleep_des;0];
+                    sleep_des = [sleep_des;'wake'];
                 elseif k == 2
                     all_rates = [all_rates;nanmean(spikes(ic,sleep),'all')];
-                    sleep_des = [sleep_des;1];
+                    sleep_des = [sleep_des;'sleep'];
                 end
                 
-                loc_des = [loc_des;i];
-                lat_des = [lat_des;j];
+                loc_des = [loc_des;main_locs{i}];
+                lat_des = [lat_des;main_lats{j}];
                 p_des = [p_des;p];
                 
                 if ismember(main_locs{i},soz_loc) && ismember(main_lats{j},soz_lat)
-                    soz_des = [soz_des;1];
+                    soz_des = [soz_des;'soz'];
                 else
-                    soz_des = [soz_des;0];
+                    soz_des = [soz_des;'notsoz'];
                 end
             end
         end
