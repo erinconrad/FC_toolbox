@@ -175,7 +175,7 @@ for p = 1:npts
     
     loc = loc(~ekg,:);
     lat = lat(~ekg);
-    spikes = spikes(~ekg,:);
+    spikes = spikes(~ekg,:); % spike rate #spikes/elec/one minute block (spikes/elec/min)
     rl = rl(~ekg,:);
     labels = labels(~ekg);
     
@@ -195,7 +195,7 @@ for p = 1:npts
     
     %% wake vs sleep spike rate
     % overall spike rate (averaged across electrodes)
-    mean_spikes = nanmean(spikes,1);
+    mean_spikes = nanmean(spikes,1); % still spikes/elec/min
     all_rates(p,:) = [nanmean(mean_spikes(wake)) nanmean(mean_spikes(sleep))];
     
     %% Wake vs sleep coi
@@ -348,12 +348,14 @@ tiledlayout(3,3,'tilespacing','compact','padding','compact')
 % rate overall location (how does spike rate vary by location)
 nexttile
 curr_rate = rate_overall_ana{1}; % location
-plot_paired_data(curr_rate,main_locs,'Spike/elec/???')
+plot_paired_data(curr_rate,main_locs,'Spike/elec/min')
+xtickangle(30)
 
 % rloverall location
 nexttile
 curr_rl = rl_overall_ana{1}; % location
 plot_paired_data(curr_rl*1e3,main_locs,'Spike latency (ms)')
+xtickangle(30)
 
 %rl-rate correlation
 nexttile([3 1])
@@ -371,20 +373,20 @@ set(gca,'fontsize',15)
 % rate overall lateralization
 nexttile
 curr_rate = rate_overall_ana{2}; % lateralization
-plot_paired_data(curr_rate,main_lats,'Spike/elec/???')
+plot_paired_data(curr_rate,main_lats,'Spike/elec/min')
 
 % rloverall lateralization
 nexttile
 curr_rl = rl_overall_ana{2}; % lateralization
-plot_paired_data(curr_rl*1e3,main_lats,'Spike latency (s)')
+plot_paired_data(curr_rl*1e3,main_lats,'Spike latency (ms)')
 
 % Insert SOZ-rate comparison here
 nexttile
-plot_paired_data(rate_soz',main_soz,'Spike/elec/???')
+plot_paired_data(rate_soz',main_soz,'Spike/elec/min')
 
 % Insert SOZ-rl comparison here
 nexttile
-plot_paired_data(rl_soz'*1e3,main_soz,'Spike latency (s)')
+plot_paired_data(rl_soz'*1e3,main_soz,'Spike latency (ms)')
 
 print(f1,[out_folder,'ad_fig1'],'-dpng')
 
@@ -414,7 +416,7 @@ set(gca,'fontsize',15)
 
 % Overall spike rate sleep vs wake
 nexttile
-plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/???')
+plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/min')
 
 % COI sleep vs wake
 nexttile
@@ -446,7 +448,7 @@ tiledlayout(3,2,'tilespacing','compact','padding','compact')
 
 % Rate sleep vs wake by location
 nexttile
-interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/???',{'Wake','Sleep'},0);
+interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/min',{'Wake','Sleep'},0);
 
 % Rl sleep vs wake by location -  this is cool. It appears that the latency
 % doesn't go up much with sleep for mesial temporal, but it does for other
@@ -468,7 +470,7 @@ interaction_plot_and_stats(r_rl_ana{2}*1e3,main_lats,'Spike latency (ms)',{'Wake
 
 % Rate sleep vs wake by SOZ
 nexttile
-interaction_plot_and_stats(rate_sw_soz,main_soz,'Spike/elec/???',{'Wake','Sleep'},0);
+interaction_plot_and_stats(rate_sw_soz,main_soz,'Spike/elec/min',{'Wake','Sleep'},0);
 
 % Rl sleep vs wake by SOZ
 nexttile

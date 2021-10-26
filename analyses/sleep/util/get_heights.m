@@ -8,8 +8,8 @@ else
 end
 nlevels = length(unique(levels)); % +1 to add a bar for the main comparison
 
-level_heights1 = yl(1) + (yl(2)-yl(1))*(1+0.1*(1:nlevels)');
-level_heights2 = yl(1) + (yl(2)-yl(1))*(1.04+0.1*(1:nlevels)');
+level_heights1 = yl(1) + (yl(2)-yl(1))*(1+0.15*(1:nlevels)');
+level_heights2 = yl(1) + (yl(2)-yl(1))*(1.08+0.15*(1:nlevels)');
 
 heights = nan(length(levels),2);
 
