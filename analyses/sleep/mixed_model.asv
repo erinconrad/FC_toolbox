@@ -206,11 +206,7 @@ for i = 1:length(resid_group)
 end
 figure
 imagesc(resid_corr)
-xticks(1:length(resid_group))
-xticklabels(group_name)
-
-yticks(1:length(resid_group))
-yticklabels(group_name)
+xticks(1:lengt
 colorbar
 print(gcf,[out_folder,'residual_corr'],'-dpng')
 close(gcf)
