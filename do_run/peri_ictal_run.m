@@ -95,13 +95,13 @@ for i = 1:length(whichPts)
         for s = last_sz:length(pt(p).ieeg.file(f).sz_run_times)
             
             % loop over run times within seizure
-            for t = last_run:size(pt(p).ieeg.file(last_file).sz_run_times{s},1)
+            for t = last_run:size(pt(p).ieeg.file(f).sz_run_times{s},1)
             
                 tic
                 fprintf('\nDoing %s file %d of %d seizure %d of %d run %d of %d\n',...
                     name,f,length(pt(p).ieeg.file),...
                     s,length(pt(p).ieeg.file(f).sz_run_times),...
-                    t,size(pt(p).ieeg.file(last_file).sz_run_times{s},1));
+                    t,size(pt(p).ieeg.file(f).sz_run_times{s},1));
 
                 run_times = pt(p).ieeg.file(f).sz_run_times{s}(t,:);
                 sz_times = pt(p).ieeg.file(f).sz_times(s,:);
