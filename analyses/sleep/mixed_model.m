@@ -195,7 +195,18 @@ for i = 1:length(main_locs)
     end
 end
 
-error('check it out');
+resid_corr = nan(length(resid_group),length(resid_group));
+for i = 1:length(resid_group)
+    for j = 1:length(resid_group)
+        resid_corr(i,j) = corr(resid_group{i},resid_group{j},'rows','pairwise');
+    end
+end
+figure
+imagesc(resid_corr)
+colorbar
+print(gcf,[out_folder,'residual_corr'],'-dpng')
+close(gcf)
+
 
 %{
 figure
