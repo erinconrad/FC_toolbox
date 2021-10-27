@@ -208,6 +208,7 @@ figure
 imagesc(resid_corr)
 xticks(1:length(resid_group))
 xticklabels(group_name)
+xtickangle(30)
 
 yticks(1:length(resid_group))
 yticklabels(group_name)
