@@ -104,18 +104,12 @@ for p = whichPts
                     gdf = out.file(f).run(h).data.montage(im).spikes;
 
                     all_spikes = [all_spikes;gdf,...
-                        repmat(h,size(gdf,1),1),...
-                        repmat(f,size(gdf,1),1)];
+                        repmat(f,size(gdf,1),1),...
+                        repmat(h,size(gdf,1),1)];
                 end
             elseif which_ver == 2
                 for s = 1:length(out.file(f).sz)
-                    for h = 1:length(out.file(f).sz(s).run)
-                        gdf = out.file(f).sz(s).run(h).data.montage(im).spikes;
-                        all_spikes = [all_spikes;gdf,...
-                            repmat(h,size(gdf,1),1),...
-                            repmat(f,size(gdf,1),1),...
-                            repmat(s,size(gdf,1),1)];
-                    end
+                    h = 1
                 end
             end
         end
@@ -132,25 +126,17 @@ for p = whichPts
             sp = randi(size(all_spikes,1));
 
             %% Get info about the spike
-            f = all_spikes(sp,4);
-            h = all_spikes(sp,3);
-            
-            if which_ver == 1
-                fs = out.file(f).run(h).data.fs;
-                run_start = out.file(f).run(h).run_times(1);
-                which_chs = find(out.file(f).run(h).data.montage(im).is_run);
-            elseif which_ver ==2
-                s = all_spikes(sp,5);
-                fs = out.file(f).sz(s).run(h).data.fs;
-                run_start = out.file(f).sz(s).run(h).run_times(1);
-                which_chs = find(out.file(f).sz(s).run(h).data.montage(im).is_run);
-            end
+            f = all_spikes(sp,3);
+            h = all_spikes(sp,4);
+            fs = out.file(f).run(h).data.fs;
             sp_index = all_spikes(sp,2);
-            
+            run_start = out.file(f).run(h).run_times(1);
             sp_time = (sp_index-1)/fs + run_start;        
             sp_ch = all_spikes(sp,1);
+
+
             fname = pt(p).ieeg.file(f).name;
-            
+            which_chs = find(out.file(f).run(h).data.montage(im).is_run);
 
 
             %% Get the EEG data
