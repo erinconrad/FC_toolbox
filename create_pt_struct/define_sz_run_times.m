@@ -1,10 +1,10 @@
 function define_sz_run_times
 
 %% Establish parameters
-overwrite = 0;
+overwrite = 1;
 % Decide frequency and duration of sampling
 mini_block = 60; % each run should be 60 seconds
-peri_ictal_time = 3600; % 1 hour before and one hour after the sz
+peri_ictal_time = 3600*2; % 2 hours before and two hours after the sz
 
 %% Seed random number generator (so that I get the same thing every time if I re-run)
 rng(0)

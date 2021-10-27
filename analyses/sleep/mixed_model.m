@@ -185,6 +185,19 @@ T.sleep_des = nominal(T.sleep_des);
 lme = fitlme(T,'all_rates~loc_des+lat_des+soz_des+sleep_des+(1|p_des)');
 lme
 
+%% Check out residuals
+b = lme.residuals;
+resid_group = {};
+for i = 1:length(main_locs)
+    for j = 1:length(main_lats)
+        curr_res = b(ismember(T.loc_des,main_locs{i}) & ismember(T.lat_des,main_lats{j}));
+        resid_group = [resid_group;curr_res];
+    end
+end
+
+error('check it out');
+
+%{
 figure
 set(gcf,'position',[1 357 1440 440])
 tiledlayout(1,3)
@@ -221,5 +234,6 @@ title('LME residuals by sleep/wake')
 
 print(gcf,[out_folder,'residuals'],'-dpng')
 close(gcf)
+%}
 
 end
