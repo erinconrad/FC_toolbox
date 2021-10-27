@@ -33,7 +33,7 @@ for r = 1:nrows
                 if strcmp(pt(p).ieeg.file(f).name,file_name)
                     % if match, fill up seizure info
                     sz_times = all_seizure_times{r};
-                    pt(p).ieeg.file(f).sz_times = sz_times;
+                    pt(p).ieeg.file(f).sz_times = sz_times*3600; % turn from hours to seconds
                     pt(p).ieeg.file(f).sz_time_source = 'Nina AED sz times';
                     break
                 end
