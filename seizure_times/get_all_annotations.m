@@ -19,7 +19,7 @@ addpath(genpath(script_folder));
 pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
 
-for p = 113%1:length(pt)
+for p = 1:length(pt)
     for f = 1:length(pt(p).ieeg.file)
         ieeg_name = pt(p).ieeg.file(f).name;
         session = IEEGSession(ieeg_name,login_name,pwfile);
@@ -65,5 +65,7 @@ for p = 113%1:length(pt)
         
     end
 end
+
+save([data_folder,'pt.mat'],'pt');
 
 end
