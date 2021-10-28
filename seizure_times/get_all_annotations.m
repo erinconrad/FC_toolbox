@@ -29,7 +29,7 @@ for p = 1:length(pt)
             pt(p).ieeg.file(f).ann = 'empty';
         end
         
-        
+        clear ann
         for ai = 1:n_layers
             
             count = 0;

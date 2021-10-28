@@ -14,21 +14,23 @@ poss_sz_text = {};
 poss_sz_start = [];
 files = [];
 names = [];
-for p = 1:14
-for f = 1:length(pt(p).filename)
+for p = 1:length(pt)
+for f = 1:length(pt(p).ieeg.file)
     
-    if ~isfield(pt(p).filename(f),'ann'), continue; end
-    n_anns = length(pt(p).filename(f).ann);
+    if ~isfield(pt(p).ieeg.file(f),'ann'), continue; end
+    n_anns = length(pt(p).ieeg.file(f).ann);
 
     
 
     for a = 1:n_anns
         
-        n_events = length(pt(p).filename(f).ann(a).event);
+        if strcmp(pt(p).ieeg.file(f).ann,'empty'), continue; end
+        
+        n_events = length(pt(p).ieeg.file(f).ann(a).event);
         for i = 1:n_events
 
 
-            description = pt(p).filename(f).ann(a).event(i).description;
+            description = pt(p).ieeg.file(f).ann(a).event(i).description;
 
             % search for seizure-y strings
             if contains(description,'seizure','IgnoreCase',true) || ...
@@ -38,7 +40,7 @@ for f = 1:length(pt(p).filename)
                     contains(description,'EEC','IgnoreCase',true) 
 
                 poss_sz_text = [poss_sz_text;description];
-                poss_sz_start = [poss_sz_start;pt(p).filename(f).ann(a).event(i).start];
+                poss_sz_start = [poss_sz_start;pt(p).ieeg.file(f).ann(a).event(i).start];
                 files = [files;f];
                 names = [names;pt(p).name];
 
