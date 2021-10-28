@@ -27,8 +27,9 @@ for p = 1:length(pt)
             ~isempty(pt(p).ieeg.file(1).sz_run_times)
         if overwrite == 0
             fprintf('\nskipping %s\n',pt(p).name);
+            continue
         end
-        continue
+        
     end
 
     fprintf('\nDoing %s\n',pt(p).name);
