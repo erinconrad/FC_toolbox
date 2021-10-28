@@ -1,7 +1,6 @@
 function get_all_annotations
 
 %% Parameters
-overwrite = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -27,7 +26,7 @@ for p = 1:length(pt)
         n_layers = length(session.data.annLayer);
         
         if n_layers == 0
-            pt(p).ieeg.file(dcount).ann = 'empty';
+            pt(p).ieeg.file(f).ann = 'empty';
         end
         
         
