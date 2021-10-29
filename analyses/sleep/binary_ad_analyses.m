@@ -350,7 +350,7 @@ end
 npts = npts - sum(missing_loc);
 
 
-%% How does spike rate and timing vary across locations
+%% (No sleep) How does spike rate and timing vary across locations
 f1 = figure;
 set(gcf,'position',[10 271 1260 526])
 tiledlayout(2,3)
@@ -386,6 +386,65 @@ curr_rl = rl_strat_ana{1};
 interaction_plot_and_stats(curr_rl*1e3,main_locs,...
     'Spike latency (ms)',{'SOZ','Not SOZ'},1);
 print(f1,[out_folder,'no_sleep'],'-dpng')
+
+%% How do spikes vary with sleep
+f2 = figure;
+set(gcf,'position',[10 10 800 1000])
+tiledlayout(3,2,'tilespacing','tight','padding','tight')
+
+% ROC
+nexttile
+plot(roc(:,1),roc(:,2),'k','linewidth',2)
+hold on
+plot([0 1],[0 1],'k--')
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend(sprintf('AUC %1.2f',auc),'location','northwest')
+set(gca,'fontsize',15)
+
+% Overall spike rate sleep vs wake
+nexttile
+plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/min','paired')
+
+% COI sleep vs wake
+nexttile
+plot_paired_data(all_coi',{'Wake','Sleep'},'Spike COI','paired')
+
+% spike rate consistency wake vs sleep
+nexttile
+plot_paired_data(all_src',{'Wake','Sleep'},'Spike rate consistency','paired')
+
+% spike timing consistency wake vs sleep
+nexttile
+plot_paired_data(all_stc',{'Wake','Sleep'},'Spike timing consistency','paired')
+
+% average ns wake vs sleep
+nexttile
+plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength','paired')
+print(f2,[out_folder,'sleep_fig'],'-dpng')
+
+
+
+%% Interaction between sleep and location
+f3=figure;
+set(gcf,'position',[10 10 600 500])
+tiledlayout(2,2,'tilespacing','tight','padding','tight')
+
+% Is sleep-related increase in spike rate higher for SOZ?
+nexttile
+interaction_plot_and_stats(rate_sw_soz,main_soz,'Spike/elec/min',{'Wake','Sleep'},0);
+
+nexttile
+plot_and_stats_change(rate_sw_soz,main_soz,{'Spike rate change','in sleep'},'paired')
+
+% Is sleep-related increase in spike rate higher for different anatomical
+% locations?
+nexttile
+interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/min',{'Wake','Sleep'},0);
+
+nexttile
+plot_and_stats_change(r_ad_ana{1},main_locs,{'Spike rate change','in sleep'},'paired')
+print(f3,[out_folder,'sleep_loc_interaction'],'-dpng')
 
 %{
 %% Figure 1 - ignoring sleep, comparison across locations

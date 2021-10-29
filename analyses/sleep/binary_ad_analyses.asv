@@ -108,7 +108,12 @@ for i = 1:length(rate_strat_ana)
     rate_strat_ana{i} = nan(length(main{i}),npts,2);
 end
 
-rl_strat_ana
+
+
+rl_strat_ana = cell(2,1);
+for i = 1:length(rl_strat_ana)
+    rl_strat_ana{i} = nan(length(main{i}),npts,2);
+end
 
 r_rl_ana = cell(2,1);
 for i = 1:length(r_rl_ana)
@@ -345,9 +350,9 @@ end
 npts = npts - sum(missing_loc);
 
 
-%% How does spike rate and timing vary across locations
+%% (No sleep) How does spike rate and timing vary across locations
 f1 = figure;
-set(gcf,'position',[10 10 800 1000])
+set(gcf,'position',[10 271 1260 526])
 tiledlayout(2,3)
 
 % spike rate by location
@@ -373,13 +378,36 @@ plot_paired_data(curr_rl*1e3,main_locs,'Spike latency (ms)','paired')
 % spike rl by SOZ
 nexttile
 plot_paired_data(rl_soz'*1e3,main_soz,'Spike latency (ms)','paired')
-print(f1,[out_folder,'no_sleep'],'-dpng')
+
 
 % Is rl lower in SOZ within each anatomical region
 nexttile
-curr_rate = rate_strat_ana{1};
-interaction_plot_and_stats(curr_rate*1e3,main_locs,...
-    'Spikes/elec/min',{'SOZ','Not SOZ'},1);
+curr_rl = rl_strat_ana{1};
+interaction_plot_and_stats(curr_rl*1e3,main_locs,...
+    'Spike latency (ms)',{'SOZ','Not SOZ'},1);
+print(f1,[out_folder,'no_sleep'],'-dpng')
+
+%% How do spikes vary with sleep
+
+%% Interaction between sleep and location
+figure
+tiledlayout(2,2)
+
+% Is sleep-related increase in spike rate higher for SOZ?
+nexttile
+interaction_plot_and_stats(rate_sw_soz,main_soz,'Spike/elec/min',{'Wake','Sleep'},0);
+
+nexttile
+plot_and_stats_change(rate_sw_soz,main_soz,'Spike rate change in sleep','unpaired')
+
+% Is sleep-related increase in spike rate higher for different anatomical
+% locations?
+nexttile
+interaction_plot_and_stats(r_ad_ana{1},main_locs,'Spike/elec/min',{'Wake','Sleep'},0);
+
+nexttile
+plot_and_stats_change(r_ad_ana{1},main_soz,'Spike rate change in sleep','unpaired')
+
 
 %{
 %% Figure 1 - ignoring sleep, comparison across locations
