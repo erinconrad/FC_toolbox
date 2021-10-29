@@ -57,6 +57,8 @@ all_psd = nan(npts,ceil(longest_run/2));
 fs = 0.0017;%1/summ(1).block_dur;
 all_freqs = nan(npts,ceil(longest_run/2));
 skip_pts = [];
+all_locs = {};
+all_lats = {};
 
 %% Loop over patients and get psd per pt
 for p = 1:npts

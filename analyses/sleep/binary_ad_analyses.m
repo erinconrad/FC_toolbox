@@ -103,6 +103,11 @@ for i = 1:length(r_ad_ana)
     r_ad_ana{i} = nan(length(main{i}),npts,2);
 end
 
+rate_strat_ana = cell(2,1);
+for i = 1:length(rate_strat_ana)
+    rate_strat_ana{i} = nan(length(main{i}),npts,2);
+end
+
 r_rl_ana = cell(2,1);
 for i = 1:length(r_rl_ana)
     r_rl_ana{i} = nan(length(main{i}),npts,2);
@@ -307,6 +312,9 @@ for p = 1:npts
             rl_overall_ana{g}(sg,p) = nanmean(rl(ic,:),'all');
             %}
             
+            
+            % Spike rate for soz vs not
+            rate_strat_ana{g}(sg,p,:) = [nanmean(spikes(ic,is_soz),'all') nanmean(spikes(ic,~is_soz),'all')];
             %{
             rate_subgroup = nanmean(spikes(ic,:),1);
             rl_subgroup = nanmean(rl(ic,:),1);
@@ -334,6 +342,16 @@ end
 npts = npts - sum(missing_loc);
 
 
+%% Figure 2 - how does spike rate and timing vary across locations
+figure
+
+% Is spike rate higher in SOZ within each anatomical region
+curr_rate = rate_strat_ana{1};
+interaction_plot_and_stats(curr_rate*1e3,main_locs,'Spikes/elec/min',{'SOZ','Not SOZ'},1);
+
+
+
+%{
 %% Figure 1 - ignoring sleep, comparison across locations
 %{
 Fig 1 (no sleep/wake dependence) - 7 plots
@@ -645,4 +663,5 @@ end
 
 
 close all
+%}
 end

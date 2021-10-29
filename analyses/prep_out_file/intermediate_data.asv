@@ -83,9 +83,7 @@ for l = 1:npts
     [soz_labels,soz_chs] = parse_soz(szT.SOZElectrode{k},all_labels,name);
     summ.soz.labels = soz_labels;
     summ.soz.chs = soz_chs;
-    summ.soz.loc = szT.region{k};
-    summ.soz.lat = szT.lateralization{k};
-    
+    summ.soz.loc = 
     
     % Get the spikes and the labels
     times = out.times;

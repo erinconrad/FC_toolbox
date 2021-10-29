@@ -1,0 +1,5 @@
+function [loc,lat] = seizure_localization_parser(soz)
+
+if s
+
+end
