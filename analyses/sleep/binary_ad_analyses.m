@@ -108,6 +108,13 @@ for i = 1:length(rate_strat_ana)
     rate_strat_ana{i} = nan(length(main{i}),npts,2);
 end
 
+
+
+rl_strat_ana = cell(2,1);
+for i = 1:length(rl_strat_ana)
+    rl_strat_ana{i} = nan(length(main{i}),npts,2);
+end
+
 r_rl_ana = cell(2,1);
 for i = 1:length(r_rl_ana)
     r_rl_ana{i} = nan(length(main{i}),npts,2);
@@ -315,6 +322,7 @@ for p = 1:npts
             
             % Spike rate for soz vs not
             rate_strat_ana{g}(sg,p,:) = [nanmean(spikes(ic,is_soz),'all') nanmean(spikes(ic,~is_soz),'all')];
+            rl_strat_ana{g}(sg,p,:) = [nanmean(rl(ic,is_soz),'all') nanmean(rl(ic,~is_soz),'all')];
             %{
             rate_subgroup = nanmean(spikes(ic,:),1);
             rl_subgroup = nanmean(rl(ic,:),1);
@@ -344,8 +352,8 @@ npts = npts - sum(missing_loc);
 
 %% How does spike rate and timing vary across locations
 f1 = figure;
-set(gcf,'position',[10 10 800 1000])
-tiledlayout(3,2)
+set(gcf,'position',[10 271 1260 526])
+tiledlayout(2,3)
 
 % spike rate by location
 nexttile
@@ -357,7 +365,7 @@ nexttile
 plot_paired_data(rate_soz',main_soz,'Spike/elec/min','paired')
 
 % Is spike rate higher in SOZ within each anatomical region
-nexttile([1 2])
+nexttile
 curr_rate = rate_strat_ana{1};
 interaction_plot_and_stats(curr_rate*1e3,main_locs,...
     'Spikes/elec/min',{'SOZ','Not SOZ'},1);
@@ -371,6 +379,12 @@ plot_paired_data(curr_rl*1e3,main_locs,'Spike latency (ms)','paired')
 nexttile
 plot_paired_data(rl_soz'*1e3,main_soz,'Spike latency (ms)','paired')
 print(f1,[out_folder,'no_sleep'],'-dpng')
+
+% Is rl lower in SOZ within each anatomical region
+nexttile
+curr_rl = rl_strat_ana{1};
+interaction_plot_and_stats(curr_rl*1e3,main_locs,...
+    'Spike latency (ms)',{'SOZ','Not SOZ'},1);
 
 %{
 %% Figure 1 - ignoring sleep, comparison across locations
