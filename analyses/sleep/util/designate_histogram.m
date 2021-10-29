@@ -2,6 +2,16 @@ function [transitions,bins] = designate_histogram(sleep,n_periods,min_same,later
 
 % the transition is the first sleep period
 
+%{
+Take a list of binary sleep or no sleep labels. Loop over the indices. Look
+back 3 hours and forward 3 hours to see if there are enough that are mostly
+awake before and mostly asleep after. If it meets this criterion, it is a
+potential sleep transition point. I then look 2 hours forward to see if
+there is a better sleep transition point (one with more sleep where there
+should be sleep and wake where there should be wake). I take the best one.
+I then continue looping forward to build up a bunch of transition points.
+%}
+
 transitions = [];
 i = time_to_take_spikes + 1;
 

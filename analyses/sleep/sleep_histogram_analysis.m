@@ -79,10 +79,15 @@ for p = 1:npts
 end
 
 if 1
-    plot(nanmean(all_pts_bins,1))
+    bins = nanmean(all_pts_bins,1);
+    times = linspace(-12,12,length(bins));
+    plot(times,bins)
     hold on
-    plot([time_to_take_spikes time_to_take_spikes],ylim,'r--')
+    plot([0 0],ylim,'r--')
     title('Spike rate surrounding sleep onset')
+    xlabel('Hours')
+    ylabel('Spikes/elecs/min')
+    xlim([-12 12])
     print([out_folder,'histogram'],'-dpng')
 end
 
