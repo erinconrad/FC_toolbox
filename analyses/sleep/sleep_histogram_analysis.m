@@ -79,6 +79,7 @@ for p = 1:npts
 end
 
 if 1
+    figure
     bins = nanmean(all_pts_bins,1);
     times = linspace(-12,12,length(bins));
     plot(times,bins)
