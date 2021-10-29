@@ -378,13 +378,14 @@ plot_paired_data(curr_rl*1e3,main_locs,'Spike latency (ms)','paired')
 % spike rl by SOZ
 nexttile
 plot_paired_data(rl_soz'*1e3,main_soz,'Spike latency (ms)','paired')
-print(f1,[out_folder,'no_sleep'],'-dpng')
+
 
 % Is rl lower in SOZ within each anatomical region
 nexttile
 curr_rl = rl_strat_ana{1};
 interaction_plot_and_stats(curr_rl*1e3,main_locs,...
     'Spike latency (ms)',{'SOZ','Not SOZ'},1);
+print(f1,[out_folder,'no_sleep'],'-dpng')
 
 %{
 %% Figure 1 - ignoring sleep, comparison across locations
