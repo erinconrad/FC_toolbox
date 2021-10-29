@@ -1,6 +1,6 @@
-function [p,post_hoc_p,which_groups]=get_and_plot_non_para_stats(yl,data)
+function [p,post_hoc_p,which_groups]=get_and_plot_non_para_stats(yl,data,p_or_unp)
 
-[p,post_hoc_p,which_groups] = non_parametric_stats(data);
+[p,post_hoc_p,which_groups] = non_parametric_stats(data,p_or_unp);
 if p > 0.05
     pairs_to_plot = [];
 else

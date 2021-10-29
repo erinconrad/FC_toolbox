@@ -347,7 +347,8 @@ figure
 
 % Is spike rate higher in SOZ within each anatomical region
 curr_rate = rate_strat_ana{1};
-interaction_plot_and_stats(curr_rate*1e3,main_locs,'Spikes/elec/min',{'SOZ','Not SOZ'},1);
+interaction_plot_and_stats(curr_rate*1e3,main_locs,...
+    'Spikes/elec/min',{'SOZ','Not SOZ'},1);
 
 
 

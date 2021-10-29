@@ -1,4 +1,4 @@
-function plot_paired_data(data,xlabels,ytext)
+function plot_paired_data(data,xlabels,ytext,p_or_unp)
 
 %errorbar(nanmean(data,2),nanstd(data,[],2),'o','linewidth',2);
 pr = prctile(data,[25,75],2);
@@ -10,7 +10,7 @@ xticks(1:size(data,1))
 xticklabels(xlabels)
 ylabel(ytext)
 yl = ylim;
-[p,post_hoc_p,which_groups]=get_and_plot_non_para_stats(yl,data);
+[p,post_hoc_p,which_groups]=get_and_plot_non_para_stats(yl,data,p_or_unp);
 set(gca,'fontsize',15)
 
 end

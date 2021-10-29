@@ -199,11 +199,9 @@ mt = cellfun(@(x) strcmp(x,'mesial temporal'), all_locs);
 circ_mt = all_circ_P(mt);
 circ_other = all_circ_P(~mt);
 
-% pad both with nans
-circ_mt = [circ_mt;nan(length(mt)-length(circ_mt),1)];
-circ_other = [circ_other;nan(length(mt)-length(circ_other),1)];
+% get longest length and pad other with nans
+max_len = max(length(circ_mt),length(circ
 nexttile
-plot_paired_data(([circ_mt,circ_other])',{'Mesial temporal','Other'},'Relative circadian power','unpaired')
 
 %{
 nexttile
