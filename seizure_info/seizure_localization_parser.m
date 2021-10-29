@@ -1,7 +1,7 @@
 function [loc,lat] = seizure_localization_parser(soz_loc,soz_lat)
 
-if strcmp(soz_loc,'mesial temporal')
-    loc = 'mesial temporal';
+if contains(soz_loc,'temporal')
+    loc = 'temporal';
 else
     loc = 'other';
 end

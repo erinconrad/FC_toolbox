@@ -8,6 +8,7 @@ hold on
 xlim([0 size(data,1)+1])
 xticks(1:size(data,1))
 xticklabels(xlabels)
+xtickangle(30);
 ylabel(ytext)
 yl = ylim;
 [p,post_hoc_p,which_groups]=get_and_plot_non_para_stats(yl,data,p_or_unp);

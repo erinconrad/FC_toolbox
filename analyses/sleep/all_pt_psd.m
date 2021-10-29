@@ -142,7 +142,7 @@ periods = 1./freqs/3600;
 low_period = periods <= 100;
 periods = periods(low_period);
 figure
-set(gcf,'position',[100 100 1400 300])
+set(gcf,'position',[100 100 1400 500])
 tiledlayout(1,4,'tilespacing','tight','padding','tight')
 
 %% Overall spike rate
@@ -159,8 +159,9 @@ mp = shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
 xlim([0 100])
 xlabel('Period (hours)')
 ylabel({'Spike rate', 'normalized power spectrum'});
-legend(mp,'Overall spike rate','fontsize',15,'location','northwest')
+%legend(mp,'Overall spike rate','fontsize',15,'location','northwest')
 set(gca,'fontsize',15)
+title('Spike rate power spectral density')
 
 %% Do the localizations
 nexttile
@@ -189,13 +190,15 @@ xlabel('Period (hours)')
 ylabel({'Spike rate', 'normalized power spectrum'});
 set(gca,'fontsize',15)
 legend(main_locs)
+title({'Spike rate power spectral density','by spike location'});
 
 %% Compare cyclical power across electrode localizations
 nexttile
 plot_paired_data(circ_P{g},main_locs,'Relative circadian power','paired')
+title({'Relative circadian power','by spike location'})
 
 %% Compare cyclical power between patients with different soz localizations
-mt = cellfun(@(x) strcmp(x,'mesial temporal'), all_locs);
+mt = cellfun(@(x) strcmp(x,'temporal'), all_locs);
 circ_mt = all_circ_P(mt);
 circ_other = all_circ_P(~mt);
 
@@ -203,8 +206,8 @@ circ_other = all_circ_P(~mt);
 circ_mt = [circ_mt;nan(length(mt)-length(circ_mt),1)];
 circ_other = [circ_other;nan(length(mt)-length(circ_other),1)];
 nexttile
-plot_paired_data(([circ_mt,circ_other])',{'Mesial temporal','Other'},'Relative circadian power','unpaired')
-
+plot_paired_data(([circ_mt,circ_other])',{'Temporal','Other'},'Relative circadian power','unpaired')
+title({'Relative circadian power','by SOZ localization'});
 %{
 nexttile
 curr_power = circ_P{g};
