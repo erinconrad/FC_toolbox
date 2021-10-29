@@ -343,34 +343,23 @@ npts = npts - sum(missing_loc);
 
 
 %% How does spike rate and timing vary across locations
-f1 = figure;
-set(gcf,'position',[10 10 800 1000])
-tiledlayout(3,2)
+figure
+set(gcf,'position',[10 10 1400 600])
+tiledlayout(2,3)
 
 % spike rate by location
 nexttile
-curr_rate = rate_overall_ana{1}; % location
-plot_paired_data(curr_rate,main_locs,'Spike/elec/min','paired')
 
 % spike rate by soz vs not
 nexttile
-plot_paired_data(rate_soz',main_soz,'Spike/elec/min','paired')
 
 % Is spike rate higher in SOZ within each anatomical region
-nexttile([1 2])
+nexttile
 curr_rate = rate_strat_ana{1};
 interaction_plot_and_stats(curr_rate*1e3,main_locs,...
     'Spikes/elec/min',{'SOZ','Not SOZ'},1);
 
-% Spike rl by location
-nexttile
-curr_rl = rl_overall_ana{1}; % location
-plot_paired_data(curr_rl*1e3,main_locs,'Spike latency (ms)','paired')
 
-% spike rl by SOZ
-nexttile
-plot_paired_data(rl_soz'*1e3,main_soz,'Spike latency (ms)','paired')
-print(f1,[out_folder,'no_sleep'],'-dpng')
 
 %{
 %% Figure 1 - ignoring sleep, comparison across locations
@@ -683,7 +672,6 @@ end
 
 
 
-
-%}
 close all
+%}
 end
