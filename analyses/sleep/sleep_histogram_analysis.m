@@ -40,7 +40,8 @@ npts = length(listing);
 %% AD validation
 [roc,auc,disc] = ad_validation;
 
-all_pts_bins = [];
+all_pts_spikes_bins = [];
+all_pts_sleep_bins = [];
 
 for p = 1:npts
     
@@ -70,25 +71,31 @@ for p = 1:npts
     %% Find transition points and bins
     [transitions,bins] = designate_histogram(sleep,n_periods,min_same,later_search,time_to_take_spikes);
     spikes_in_bins = nan(size(bins));
+    sleep_in_bins = nan(size(bins));
     for t = 1:length(transitions)
         spikes_in_bins(t,:) = avg_spikes(bins(t,:));
+        sleep_in_bins(t,:) = sleep(bins(t,:));
     end
     
-    all_pts_bins = [all_pts_bins;spikes_in_bins];
+    all_pts_spikes_bins = [all_pts_spikes_bins;spikes_in_bins];
+    all_pts_sleep_bins = [all_pts_sleep_bins;sleep_in_bins];
     
 end
 
 if 1
     figure
-    bins = nanmean(all_pts_bins,1);
+    spike_bins = nanmean(all_pts_spikes_bins,1);
+    sleep_bins = nanmean(all_pts_sleep_bins,1);
     times = linspace(-12,12,length(bins));
-    plot(times,bins)
+    spp = plot(times,spike_bins,'k-');
     hold on
+    slp = plot(times,sleep_bins,'k--');
     plot([0 0],ylim,'r--')
     title('Spike rate surrounding sleep onset')
     xlabel('Hours')
     ylabel('Spikes/elecs/min')
     xlim([-12 12])
+    legend([spp,slp],{'Spikes','Sleep'})
     print([out_folder,'histogram'],'-dpng')
 end
 
