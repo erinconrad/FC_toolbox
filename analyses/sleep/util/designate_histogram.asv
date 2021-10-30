@@ -66,9 +66,9 @@ if 0
     end
 end
 
-bins = nan(length(transitions),time_to_take_spikes*2);
+bins = nan(length(transitions),time_to_take_spikes*2+1);
 for t = 1:length(transitions)
-    bins(t,:) = transitions(t) - time_to_take_spikes:transitions(t) + time_to_take_spikes-1;
+    bins(t,:) = transitions(t) - time_to_take_spikes:transitions(t) + time_to_take_spikes;
 end
 
 end
