@@ -35,8 +35,15 @@ for js = 1:length(json_file)
                 % First, see if the sz times already available from the Erin
                 % Excel source (which is preferable). If they exist, skip for
                 % this reason
-                if isfield(pt(j).ieeg.file(1),'sz_time_source') && ...
-                        strcmp(pt(j).ieeg.file(1).sz_time_source,'Erin Excel')
+                nfiles = length(pt(j).ieeg.file);
+                erin_done = 0;
+                for f = 1:nfiles
+                    if isfield(pt(j).ieeg.file(f),'sz_time_source') && ...
+                            strcmp(pt(j).ieeg.file(f).sz_time_source,'Erin Excel')
+                        erin_done = 1;
+                    end
+                end
+                if erin_done
                     fprintf('\n%s has szs from Erin Excel, skipping\n',pt(j).name);
                     continue
                 end
@@ -44,7 +51,7 @@ for js = 1:length(json_file)
                 % Second, see if there is more than one ieeg file. If there is,
                 % I cannot use this, because the json file does not specify
                 % which ieeg file the times are from
-                nfiles = length(pt(j).ieeg.file);
+                
                 if nfiles > 1
                     fprintf('\n%s has more than one ieeg file, skipping\n',pt(j).name);
                     continue

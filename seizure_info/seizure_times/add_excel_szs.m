@@ -13,7 +13,7 @@ pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
 
 %% Get sheet names from sz table
-sheet = sheetnames([data_folder,'sz_times/more_seizure_times.xlsx']);
+sheet = sheetnames([data_folder,'sz_times/seizure times.xlsx']);
 
 
 % Loop over patients
@@ -29,7 +29,7 @@ for p = 1:length(pt)
             else
                 
                 % Load sheet
-                T = readtable([data_folder,'sz_times/more_seizure_times.xlsx'],'Sheet',sname);
+                T = readtable([data_folder,'sz_times/seizure times.xlsx'],'Sheet',sname);
                 
                 % initialize data
                 for f = 1:length(pt(p).ieeg.file)
