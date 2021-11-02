@@ -63,7 +63,11 @@ for i = 1:npts
     
     for f = 1:nfiles
         
-        sz_times = pt(p).ieeg.file(f).sz_times;
+        if ~isfield(pt(p).ieeg.file(f),'sz_times')
+            sz_times = [];
+        else
+            sz_times = pt(p).ieeg.file(f).sz_times;
+        end
         
         nblocks = length(pc.file(f).run);
         
