@@ -1,6 +1,9 @@
 function add_sz_times_multiple_sources
 
-%% Add szs from excel file
+%% Clinician excel file
+add_clinician_seizure_times
+
+%% Add szs from Erin excel file
 add_excel_szs
 
 %% Add szs from json file
