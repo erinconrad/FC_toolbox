@@ -58,7 +58,7 @@ for l = 1:npts
         
     
     % reconcile files (deal with changes in electrode names)
-    out = net_over_time(pc);
+    out = net_over_time(pc,pt,j);
     out = reconcile_files(out);
     
     % Get the spikes and the labels
