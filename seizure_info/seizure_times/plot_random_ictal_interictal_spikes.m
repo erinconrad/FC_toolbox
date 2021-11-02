@@ -2,7 +2,7 @@ function plot_random_ictal_interictal_spikes
 
 %% Parameters
 m = 2; % do not change
-nspikes = 500;
+nspikes = 100;
 spikes_per_fig = 20;
 spikes_per_row = 2;
 nfigs = nspikes/spikes_per_fig;
