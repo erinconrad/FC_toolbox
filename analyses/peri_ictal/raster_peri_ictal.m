@@ -70,8 +70,8 @@ tiledlayout(3,1,'tilespacing','compact','padding','tight')
 nexttile
 turn_nans_gray(spikes)
 hold on
-for s = 1:length(sz_to_plot)
-    plot([sz_to_plot(s) sz_to_plot(s)],ylim,'r--','linewidth',3)
+for is = 1:length(sz_to_plot)
+    plot([sz_to_plot(is) sz_to_plot(is)],ylim,'r--','linewidth',3)
 end
 xlabel('Minutes')
 ylabel('Electrode')
@@ -87,7 +87,9 @@ yticklabels(labels(1:skip:size(spikes,1)))
 nexttile
 turn_nans_gray(ns)
 hold on
-plot([sz sz],ylim,'r--','linewidth',3)
+for is = 1:length(sz_to_plot)
+    plot([sz_to_plot(is) sz_to_plot(is)],ylim,'r--','linewidth',3)
+end
 xlabel('Minutes')
 ylabel('Electrode')
 title('Pearson correlation node strength')
@@ -101,7 +103,9 @@ yticklabels(labels(1:skip:size(spikes,1)))
 nexttile
 turn_nans_gray(ad)
 hold on
-plot([sz sz],ylim,'r--','linewidth',3)
+for is = 1:length(sz_to_plot)
+    plot([sz_to_plot(is) sz_to_plot(is)],ylim,'r--','linewidth',3)
+end
 xlabel('Minutes')
 ylabel('Electrode')
 title('Alpha delta ratio (lower suggests sleep or pathological slowing)')
