@@ -24,7 +24,7 @@ for f = 1:nfiles
         nmontages = length(pc.file(f).sz(s).run(1).data.montage);
         nchs = length(pc.file(f).sz(s).run(1).data(1).clean_labels);
         clean_labels = pc.file(f).sz(s).run(1).data(1).clean_labels;
-        run_center = nan(nruns,1);
+        run_times = nan(nruns,2);
         
         for m = 1:nmontages
             net_montage{m} = nan(nchs*(nchs-1)/2,nruns);
@@ -38,7 +38,7 @@ for f = 1:nfiles
         
         for r = 1:nruns
         
-            run_center(r) = mean(pc.file(f).sz(s).run(r).run_times);
+            run_times(r,:) = (pc.file(f).sz(s).run(r).run_times);
             file_times(r) = mean(pc.file(f).sz(s).run(r).run_times);
             
             %% Get the data and calculate ns
@@ -108,7 +108,7 @@ for f = 1:nfiles
             out.file(f).sz(s).montage(m).rl = rl_montage{m};
 
         end
-        out.file(f).sz(s).run_center = run_center;
+        out.file(f).sz(s).run_times = run_times;
         out.file(f).sz(s).clean_labels = clean_labels;
         
         

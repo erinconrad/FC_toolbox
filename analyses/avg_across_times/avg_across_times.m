@@ -37,6 +37,7 @@ for p = 1:npts
     name = summ.name;
     spikes = summ.spikes;
     labels = summ.labels;
+    soz_labels = summ.soz.labels;
     
     %% Find and remove non-intracranial
     ekg = find_non_intracranial(labels);
@@ -50,6 +51,7 @@ for p = 1:npts
     out(p).name = name;
     out(p).avg_spikes = avg_spikes;
     out(p).labels = labels;
+    out(p).soz_labels;
     
     if 0
         [sorted_spikes,I] = sort(avg_spikes,'descend');

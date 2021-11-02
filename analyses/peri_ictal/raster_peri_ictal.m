@@ -27,6 +27,7 @@ ad = data.ad;
 labels = data.labels;
 nruns = size(spikes,2);
 sz = nruns/2;
+run_times = out.file(f).sz(s).run_times;
 
 % Get all seizure times
 all_szs = nan(length(pc.file(f).sz),2);
@@ -36,17 +37,19 @@ for is = 1:length(pc.file(f).sz)
     all_szs(is,:) = [sz_start sz_end];
 end
 
-% convert sz times to minutes
+% convert sz times and run centers to minutes
 all_szs = all_szs/60;
+run_times = run_times/60;
+old_all_szs = all_szs;
 
 % realign middle to be current sz 
-all_szs = all_szs + repmat(sz-all_szs(s,1),size(all_szs,1),1);
+all_szs = all_szs + repmat(sz-old_all_szs(s,1),size(all_szs,1),1);
 % just take start
-all_szs = all_szs(:,1);
-sz_to_plot = all_szs(all_szs > 0 & all_szs < nruns);
+sz_to_plot = all_szs(all_szs(:,1) > 0 & all_szs(:,1) < nruns,:);
+run_times = run_times + repmat(sz-old_all_szs(s,1),size(run_times,1),2);
 
 % confirm that one is close to center
-if ~any(abs(sz_to_plot-sz)<1), error('what'); end
+if ~any(abs(sz_to_plot(:,1)-sz)<1), error('what'); end
 
 % Get node strength
 net_uw = wrap_or_unwrap_adjacency_fc_toolbox(net);
@@ -63,15 +66,18 @@ ad(ekg,:) = [];
 labels(ekg) = [];
 
 figure
+times = run_times(:,1);
 set(gcf,'position',[10 10 1200 1000])
 tiledlayout(3,1,'tilespacing','compact','padding','tight')
 
 % spikes
 nexttile
-turn_nans_gray(spikes)
+h = turn_nans_gray(spikes);
 hold on
+set(h,'XData',times);
 for is = 1:length(sz_to_plot)
-    plot([sz_to_plot(is) sz_to_plot(is)],ylim,'r--','linewidth',3)
+    plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
+    plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
 xlabel('Minutes')
 ylabel('Electrode')
@@ -85,10 +91,12 @@ yticklabels(labels(1:skip:size(spikes,1)))
 
 % ns
 nexttile
-turn_nans_gray(ns)
+h = turn_nans_gray(ns);
 hold on
+set(h,'XData',times);
 for is = 1:length(sz_to_plot)
-    plot([sz_to_plot(is) sz_to_plot(is)],ylim,'r--','linewidth',3)
+    plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
+    plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
 xlabel('Minutes')
 ylabel('Electrode')
@@ -101,10 +109,12 @@ yticklabels(labels(1:skip:size(spikes,1)))
 
 % ad
 nexttile
-turn_nans_gray(ad)
+h = turn_nans_gray(ad);
 hold on
+set(h,'XData',times);
 for is = 1:length(sz_to_plot)
-    plot([sz_to_plot(is) sz_to_plot(is)],ylim,'r--','linewidth',3)
+    plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
+    plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
 xlabel('Minutes')
 ylabel('Electrode')
