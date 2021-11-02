@@ -18,6 +18,8 @@ missing_names = {};
 portal_idx = [];
 portal_names = {};
 
+source = cell(length(pt),1);
+
 for p = 1:length(pt)
     if ~isfield(pt(p).ieeg.file(1),'sz_times')
         missing_idx = [missing_idx;p];
@@ -30,6 +32,8 @@ for p = 1:length(pt)
         portal_names = [portal_names;pt(p).name];
     end
     
+    source{p} = pt(p).ieeg.file(1).sz_time_source;
+    
 end
 
 fprintf('\nMissing seizure times:\n');
@@ -37,5 +41,7 @@ table(missing_idx,missing_names)
 
 fprintf('\nPortal seizure times:\n');
 table(portal_idx,portal_names)
+
+[C,ia,ic] = unique(source);
 
 end

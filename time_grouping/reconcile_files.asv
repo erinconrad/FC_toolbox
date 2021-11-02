@@ -80,7 +80,7 @@ for f = 1:nfiles
         %coi_ch = out.file(f).montage(m).coi_ch;
         coi_global = out.file(f).montage(m).coi_global;
         labels = out.file(f).montage(m).labels;
-        n_rm_ictal = out.file(f).montage(m).n_rm_ictal;
+        n_rm_ictal = out.file(f).montage(
         
         % prep net_uw and coa_uw
         net_uw = nan(length(labels),length(labels),nruns);
@@ -134,7 +134,6 @@ for f = 1:nfiles
         %out.montage(m).coi_ch(:,curr_run_idx:curr_run_idx+nruns-1) = new_coi_ch;
         out.montage(m).coi_global(curr_run_idx:curr_run_idx+nruns-1) = coi_global;
         out.montage(m).labels(locb) = labels;
-        out.montage(m).n_rm_ictal = out.montage(m).n_rm_ictal + n_rm_ictal;
         
     end
     

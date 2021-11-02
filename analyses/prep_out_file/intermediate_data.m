@@ -66,7 +66,7 @@ for l = 1:npts
     count = count + 1;
     
     % reconcile files (deal with changes in electrode names)
-    out = net_over_time(pc);
+    out = net_over_time(pc,pt,j);
     out = reconcile_files(out);
     
     % Get the correct row of the SOZ table
@@ -98,6 +98,7 @@ for l = 1:npts
     file_times = out.run_center;
     file_index = out.file_index;
     ad = out.montage(m).ad;
+    n_rm_ictal = out.montage(m).n_rm_ictal;
     
     % bipolar montage for networks
     fc = out.montage(net_m).net;
@@ -195,6 +196,7 @@ for l = 1:npts
     summ.ad = ad;
     summ.block_dur = block_dur;
     summ.ns = ns;
+    summ.n_rm_ictal = n_rm_ictal;
     %summ.ge = ge;
 
     %% Save it all

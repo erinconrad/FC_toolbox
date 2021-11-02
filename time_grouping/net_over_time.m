@@ -1,5 +1,7 @@
-function out = net_over_time(pc)
+function out = net_over_time(pc,pt,j)
 
+%% Parameters
+rm_ictal_spikes = 1; % remove spikes in seizures?
 span_to_look = 3;
 max_nans = 3;
 
@@ -22,6 +24,22 @@ for f = 1:nfiles
     clean_labels = pc.file(f).run(1).data(1).clean_labels;
     run_center = nan(nruns,1);
     
+    % Get seizure times
+    if ~isfield(pt(j).ieeg.file(f),'sz_times')
+        sz_times = [];
+    else
+        sz_times = pt(j).ieeg.file(f).sz_times;
+    end
+    
+    % initialize cell arrays
+    net_montage = cell(nmontages,1);
+    spikes_montage = cell(nmontages,1);
+    ad_montage = cell(nmontages,1);
+    coa_montage = cell(nmontages,1);
+    rl_montage = cell(nmontages,1);
+    coi_global_montage = cell(nmontages,1);
+    n_rm_ictal = zeros(nmontages,1);
+    
     for m = 1:nmontages
         net_montage{m} = nan(nchs*(nchs-1)/2,nruns);
         spikes_montage{m} = nan(nchs,nruns);
@@ -36,6 +54,7 @@ for f = 1:nfiles
         
         run_center(r) = mean(pc.file(f).run(r).run_times);
         file_times(r) = mean(pc.file(f).run(r).run_times);
+        run_start = pc.file(f).run(r).run_times(1);
         
         %% Get the data and calculate ns
         for m = 1:nmontages
@@ -69,6 +88,11 @@ for f = 1:nfiles
             coa = nan(nchs,nchs);
             rl = nan(nchs,1);
             spikes(is_run) = 0; % default zero if we run it
+            
+            if rm_ictal_spikes && ~isempty(gdf)
+                [gdf,n_ictal] = rm_spikes_in_seizures(gdf,fs,run_start,sz_times);
+                n_rm_ictal(m) = n_rm_ictal(m) + n_ictal;
+            end
             
             if ~isempty(gdf)
                 % Spike chs
@@ -142,6 +166,7 @@ for f = 1:nfiles
         out.file(f).montage(m).labels = pc.file(f).run(1).data.montage(m).labels;
         out.file(f).montage(m).coa = coa_montage{m};
         out.file(f).montage(m).rl = rl_montage{m};
+        out.file(f).montage(m).n_rm_ictal = n_rm_ictal(m);
         
     end
     out.file(f).run_center = run_center;
