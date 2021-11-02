@@ -70,11 +70,16 @@ for i = 1:npts
         end
         
         nblocks = length(pc.file(f).run);
+        fs = pt(p).ieeg.file(f).fs;
         
         for b = 1:nblocks
             gdf = (pc.file(f).run(b).data.montage(m).spikes);
-            
             if isempty(gdf), continue; end
+            
+            % redefine spike times as seconds rather than indices
+            run_start = pc.file(f).run(b).run_times(1);
+            gdf(:,2) = (gdf(:,2)-1)/fs + run_start; 
+            
             if isempty(sz_times)
                 interictal = logical(ones(size(gdf,1),1));
                 ictal = ~interictal;
@@ -93,7 +98,7 @@ for i = 1:npts
         end
     end
     
-    spikes{i,1} = interictal_spikes;
+    spikes{i,1} = ictal_spikes;
     spikes{i,2} = interictal_spikes;
     
 end
@@ -126,15 +131,15 @@ for i = 1:2 % ictal and interictal
             f = spikes{ip,i}(is,2);
             b = spikes{ip,i}(is,3);
             sp_ch = spikes{ip,i}(is,4); 
-            sp_index = spikes{ip,i}(is,5);
+            sp_time = spikes{ip,i}(is,5);
             name = pt(p).name;
             
             pc = load([spikes_folder,sprintf('%s_pc.mat',name)]);
             pc = pc.pc;
             fs = pt(p).ieeg.file(f).fs;
             which_chs = find(pc.file(f).run(b).data.montage(m).is_run);
-            run_start = pc.file(f).run(b).run_times(1);
-            sp_time = (sp_index-1)/fs + run_start;  
+            %run_start = pc.file(f).run(b).run_times(1);
+            %sp_time = (sp_index-1)/fs + run_start;  
             
             fname = pt(p).ieeg.file(f).name;
             
@@ -172,9 +177,9 @@ for i = 1:2 % ictal and interictal
         end
 
         if i == 1
-            ic_text = 'interictal';
-        elseif i == 2
             ic_text = 'ictal';
+        elseif i == 2
+            ic_text = 'interictal';
         end
         
         outname = sprintf('%s_%d',ic_text,i_f);
