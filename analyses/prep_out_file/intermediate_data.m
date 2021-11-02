@@ -100,6 +100,7 @@ for l = 1:npts
     file_index = out.file_index;
     ad = out.montage(m).ad;
     n_rm_ictal = out.montage(m).n_rm_ictal;
+    sz_times = out.sz_times;
     
     % bipolar montage for networks
     fc = out.montage(net_m).net;
@@ -198,6 +199,7 @@ for l = 1:npts
     summ.block_dur = block_dur;
     summ.ns = ns;
     summ.n_rm_ictal = n_rm_ictal;
+    summ.sz_times = sz_times;
     %summ.ge = ge;
 
     %% Save it all
