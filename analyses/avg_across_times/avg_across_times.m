@@ -51,7 +51,7 @@ for p = 1:npts
     out(p).name = name;
     out(p).avg_spikes = avg_spikes;
     out(p).labels = labels;
-    out(p).soz_labels;
+    out(p).soz_labels = soz_labels;
     
     if 0
         [sorted_spikes,I] = sort(avg_spikes,'descend');
