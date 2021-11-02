@@ -177,7 +177,7 @@ for i = 1:2 % ictal and interictal
             ic_text = 'ictal';
         end
         
-        outname = [ic_text,i_f];
+        outname = sprintf('%s_%d',ic_text,i_f);
         
         print([out_folder,outname],'-djpeg');
         close(gcf)
