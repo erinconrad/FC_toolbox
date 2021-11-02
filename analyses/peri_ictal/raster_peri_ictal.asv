@@ -1,4 +1,4 @@
-function raster_peri_ictal(pc,f,s,do_save)
+function raster_peri_ictal(pc,f,s)
 
 %% Parameters
 skip = 6; % show every skip electrode labels
@@ -19,41 +19,20 @@ addpath(genpath(scripts_folder));
 %% Put runs together
 out = peri_ictal_grouping(pc);
 name = pc.name;
-fname = pc.file(f).name;
+fname = pc.file(f).nam
 data = out.file(f).sz(s).montage(m);
 spikes = data.spikes;
 net = data.net;
 ad = data.ad;
 labels = data.labels;
-nruns = size(spikes,2);
-sz = nruns/2;
 
-% Get all seizure times
-all_szs = nan(length(pc.file(f).sz),2);
-for is = 1:length(pc.file(f).sz)
-    sz_start = pc.file(f).sz(is).run(nruns/2).run_times(2); % end of middle run is start of sz
-    sz_end = pc.file(f).sz(is).run(nruns/2+1).run_times(1); % first of middle +1 run is end of sz
-    all_szs(is,:) = [sz_start sz_end];
-end
-
-% convert sz times to minutes
-all_szs = all_szs/60;
-
-% realign middle to be current sz 
-all_szs = all_szs + repmat(sz-all_szs(s,1),size(all_szs,1),1);
-% just take start
-all_szs = all_szs(:,1);
-sz_to_plot = all_szs(all_szs > 0 & all_szs < nruns);
-
-% confirm that one is close to center
-if ~any(abs(sz_to_plot-sz)<1), error('what'); end
 
 % Get node strength
 net_uw = wrap_or_unwrap_adjacency_fc_toolbox(net);
 ns = squeeze(nanmean(net_uw,1));
 
-
-
+nruns = size(spikes,2);
+sz = nruns/2;
 
 % remove intracranial
 ekg = find_non_intracranial(labels);
@@ -70,9 +49,7 @@ tiledlayout(3,1,'tilespacing','compact','padding','tight')
 nexttile
 turn_nans_gray(spikes)
 hold on
-for s = 1:length(sz_to_plot)
-    plot([sz_to_plot(s) sz_to_plot(s)],ylim,'r--','linewidth',3)
-end
+plot([sz sz],ylim,'r--','linewidth',3)
 xlabel('Minutes')
 ylabel('Electrode')
 title('Spike rates')
@@ -111,9 +88,5 @@ ylabel(c3,'Alpha delta ratio','fontsize',15)
 yticks(1:skip:size(spikes,1))
 yticklabels(labels(1:skip:size(spikes,1)))
 
-if do_save
-    print(gcf,[out_folder,sprintf('%s_sz%d',fname,s)],'-dpng');
-    close(gcf)
-end
 
 end

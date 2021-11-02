@@ -2,7 +2,7 @@ function out = peri_ictal_grouping(pc)
 
 %% Get file locs
 locations = fc_toolbox_locs;
-
+data_
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
