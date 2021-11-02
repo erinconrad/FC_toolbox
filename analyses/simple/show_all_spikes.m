@@ -68,6 +68,7 @@ for l = 1:npts
     run_dur = diff(pt(j).ieeg.file(1).run_times(1,:)); % 60 s
     spikes = spikes/run_dur*60; % convert spikes to spikes/minute (note this divides by 60 and then multiplies by 60 and so does nothing)
     ekg = find_non_intracranial(labels);
+    sz_times = out.sz_times/3600/25;
     
     % remove non intracranial
     labels(ekg) = [];
@@ -84,7 +85,15 @@ for l = 1:npts
     tiledlayout(1,1,'padding','tight')
     nexttile
     h = turn_nans_gray(spikes);
+    hold on
     set(h,'XData',times);
+    
+    % show the seizure times
+    for s = 1:size(sz_times,1)
+        plot([sz_times(s,1) sz_times(s,1)],ylim,'r--')
+        plot([sz_times(s,2) sz_times(s,2)],ylim,'r--')
+    end
+    
     xlim([times(1) times(end)])
     xlabel('Day')
     yticks(1:length(labels));

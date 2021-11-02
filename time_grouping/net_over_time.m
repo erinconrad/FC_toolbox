@@ -171,6 +171,7 @@ for f = 1:nfiles
     end
     out.file(f).run_center = run_center;
     out.file(f).clean_labels = clean_labels;
+    out.file(f).sz_times = sz_times;
     
     
     
