@@ -71,9 +71,13 @@ for i = 1:npts
             gdf = (pc.file(f).run(b).data.montage(m).spikes);
             
             if isempty(gdf), continue; end
-            
-            ictal = (any(gdf(:,2)' >= sz_times(:,1) & gdf(:,2)' <= sz_times(:,2),1))';
-            interictal = ~ictal;
+            if isempty(sz_times)
+                interictal = logical(ones(size(gdf,1),1));
+                ictal = ~interictal;
+            else
+                ictal = (any(gdf(:,2)' >= sz_times(:,1) & gdf(:,2)' <= sz_times(:,2),1))';
+                interictal = ~ictal;
+            end
             
             interictal_spikes = [interictal_spikes;...
                 repmat([p,f,b],sum(interictal),1),gdf(interictal,:)];
