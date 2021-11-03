@@ -109,7 +109,7 @@ for p = 1:npts
         
         % sleep bins
         sleep_in_bins(s,:) = [nan(1,sum(too_early)),...
-            sleep_in_bins(curr_bins(bins_in_range)),nan(1,sum(too_late))];
+            sleep(curr_bins(bins_in_range)),nan(1,sum(too_late))];
 
     end
     
