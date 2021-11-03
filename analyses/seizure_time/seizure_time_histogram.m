@@ -48,8 +48,6 @@ for p = 1:npts
     spikes = summ.spikes;
     sz_times = summ.sz_times;
     times = summ.times;
-    times = times;
-    sz_times = sz_times;
     
     %% Find and remove non-intracranial
     ekg = find_non_intracranial(labels);
@@ -58,32 +56,27 @@ for p = 1:npts
     avg_spikes = nanmean(spikes,1);
     
     
+    %% bin times around seizures
+    bins = bin_seizure_times(sz_times,times,surround,rm_cluster,surround_secs);
+    
     %% test plots
     if 0
-        figure
-        h = turn_nans_gray(spikes);
-        hold on
-        set(h,'XData',times);
-        for s = 1:size(sz_times,1)
-            plot([sz_times(s,1) sz_times(s,1)],ylim,'r--')
-            plot([sz_times(s,2) sz_times(s,2)],ylim,'r--')
-        end
-        xlim([times(1) times(end)])
         
         figure
         plot(times,avg_spikes)
         hold on
         for s = 1:size(sz_times,1)
-            plot([sz_times(s,1) sz_times(s,1)],ylim,'r--')
-            plot([sz_times(s,2) sz_times(s,2)],ylim,'r--')
+            plot([sz_times(s,1) sz_times(s,1)],ylim,'b-','linewidth',2)
+        end
+        for s = 1:size(bins,1)
+            plot([times(bins(s,1)) times(bins(s,1))],ylim,'g--','linewidth',1)
+            plot([times(bins(s,end)) times(bins(s,end))],ylim,'r--','linewidth',1)
         end
         xlim([times(1) times(end)])
     end
     
-    %% bin times around seizures
-    bins = bin_seizure_times(sz_times,times,surround,rm_cluster,surround_secs);
-    
     %% Get spikes in those times
+    
     sp_bins = nan(size(bins));
     for s = 1:size(bins,1)
         
@@ -95,9 +88,25 @@ for p = 1:npts
         too_late = curr_bins > size(avg_spikes,2);
         
         % get the spikes for those in range
-        out_bins = [nan(1,sum(too_early)),avg_spikes(bins_in_range),nan(1,sum(too_late))];
+        out_bins = [nan(1,sum(too_early)),avg_spikes(curr_bins(bins_in_range)),nan(1,sum(too_late))];
         
         sp_bins(s,:) = out_bins;
+    end
+    
+    %% test plots
+    if 0
+        
+        figure
+        plot(times,avg_spikes)
+        hold on
+        for s = 1:size(sz_times,1)
+            plot([sz_times(s,1) sz_times(s,1)],ylim,'b-','linewidth',2)
+        end
+        for s = 1:size(bins,1)
+            plot(times(bins(s,:)),sp_bins(s,:),'ro');
+            %plot(times(bins(s,:)),avg_spikes(bins(s,:)),'ro');
+        end
+        xlim([times(1) times(end)])
     end
     
     %% Average over seizures
