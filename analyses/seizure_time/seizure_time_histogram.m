@@ -191,9 +191,14 @@ T.Sleep = categorical(T.Sleep);
 T.Seizure = categorical(T.Seizure);
 T.Patient = categorical(T.Patient);
 
-glme = fitglme(T,'SpikeRate~ Bin + Sleep + (1|Seizure) + (1|Patient)',...
+glme = fitglme(T,'SpikeRate~ Bin + Sleep + (1|Seizure)',...
     'Distribution','Poisson');
 glme
+
+
+lme = fitlme(T,'SpikeRate~ Bin + Sleep + (1|Seizure)');
+lme
+
 
 figure
 sp_bins = nanmean(all_pts_spikes_bins,1);
