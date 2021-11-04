@@ -74,15 +74,15 @@ for p = 1:npts
     
     spikes = spikes(~ekg,:);
     avg_spikes = nanmean(spikes,1);
-    spike_counts = nansum(spikes,1);
     ad = ad(~ekg,:);
     ad = nanmean(ad,1);
     
     %% Determine "wake" and "sleep" times
     % normalized ad
     ad_norm = (ad - nanmedian(ad))./iqr(ad);
+    wake = ad_norm > disc;
     sleep = ad_norm <= disc;
-    sleep(isnan(sleep)) = 0;
+    
     
     %% bin times around seizures
     bins = bin_seizure_times(sz_times,times,surround,rm_cluster,surround_secs);
@@ -107,7 +107,6 @@ for p = 1:npts
     
     sp_bins = nan(size(bins));
     sleep_in_bins = nan(size(bins));
-    sp_count_bins = nan(size(bins));
 
     for s = 1:size(bins,1)
         
@@ -121,8 +120,6 @@ for p = 1:npts
         % get the spikes for those in range
         out_bins = [nan(1,sum(too_early)),avg_spikes(curr_bins(bins_in_range)),nan(1,sum(too_late))];
         sp_bins(s,:) = out_bins;
-        
-        sp_count_bins(s,:) = [nan(1,sum(too_early)),spike_counts(curr_bins(bins_in_range)),nan(1,sum(too_late))];
         
         
         % sleep bins
@@ -155,7 +152,7 @@ for p = 1:npts
     bin_id_bins = repmat(1:nbins,nszs,1);
     
     % reshape things to one dimensional vector
-    sp_vec = reshape(sp_count_bins,nszs*nbins,1); % spike rates
+    sp_vec = reshape(sp_bins,nszs*nbins,1); % spike rates
     sz_id_vec = reshape(sz_id_bins,nszs*nbins,1); % identify which seizure
     bin_id_vec = reshape(bin_id_bins,nszs*nbins,1); % which bin (will treat as categorical)
     sleep_vec = reshape(sleep_in_bins,nszs*nbins,1); % sleep or wake (binary)
@@ -181,19 +178,10 @@ for p = 1:npts
 end
 
 %% Do model
-T = table(all_pts_sp_vec,all_pts_bin_id_vec,(all_pts_sleep_vec),...
+T = table(all_pts_sp_vec,all_pts_bin_id_vec,all_pts_sleep_vec,...
     all_pts_sz_id_vec,all_pts_sz_id_vec,'VariableNames',...
-    {'SpikeRate','Bin','Sleep','Seizure','Patient'});
+    {'SpikeRate','Bin','Sleep','Seizu);
 
-% establish categorical variables
-T.Bin = categorical(T.Bin);
-T.Sleep = categorical(T.Sleep);
-T.Seizure = categorical(T.Seizure);
-T.Patient = categorical(T.Patient);
-
-glme = fitglme(T,'SpikeRate~ Bin + Sleep + (1|Seizure) + (1|Patient)',...
-    'Distribution','Poisson');
-glme
 
 figure
 sp_bins = nanmean(all_pts_spikes_bins,1);
