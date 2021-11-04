@@ -199,6 +199,8 @@ glme
 lme = fitlme(T,'SpikeRate~ Bin + Sleep + (1|Seizure)');
 lme
 
+lme_no_sleep = fitlme(T,'SpikeRate~ Bin + (1|Seizure)');
+lme_no_sleep
 
 figure
 sp_bins = nanmean(all_pts_spikes_bins,1);
