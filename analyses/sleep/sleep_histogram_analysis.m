@@ -22,6 +22,13 @@ main_soz = {'SOZ','Not SOZ'};
 main{1} = main_locs;
 main{2} = main_lats;
 
+
+if rm_cluster == 1
+    rm_cluster_text = '_rm_sz_clusters';
+else
+    rm_cluster_text = '_keep_sz_clusters';
+end
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -251,7 +258,7 @@ legend(anap,main_soz)
 ylim(yl);
 
 %% Save
-print([out_folder,'histogram'],'-dpng')
+print([out_folder,'histogram',rm_cluster_text],'-dpng')
 
 
 
