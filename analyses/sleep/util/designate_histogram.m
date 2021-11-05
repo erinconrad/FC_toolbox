@@ -1,4 +1,5 @@
-function [transitions,bins] = designate_histogram(sleep,n_periods,min_same,later_search,time_to_take_spikes)
+function [transitions,bins] = designate_histogram(sleep,n_periods,min_same,...
+    later_search,time_to_take_spikes,rm_cluster)
 
 % the transition is the first sleep period
 
@@ -55,10 +56,26 @@ while i < length(sleep) - time_to_take_spikes
     end
 end
 
+% remove clusters if I want
+ntransitions = length(transitions);
+if rm_cluster
+    trans_to_rm = zeros(ntransitions,1);
+    all_trans_idx = (1:ntransitions)';
+    for s = 1:ntransitions
+        loo = all_trans_idx ~= s;
+        if any(abs(transitions(s) - transitions(loo)) < time_to_take_spikes)
+            trans_to_rm(s) = 1;
+        end
+    end
+    transitions(logical(trans_to_rm)) = [];
+    ntransitions = length(transitions);
+end
+
 % show it
 days_per_index = 1/6/24;
 times = linspace(0,length(sleep)*days_per_index,length(sleep));
 if 0
+    figure
     plot(times,sleep,'o')
     hold on
     for t = 1:length(transitions)

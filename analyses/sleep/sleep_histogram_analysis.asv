@@ -186,7 +186,7 @@ T.Patient = categorical(T.Patient);
 lme = fitlme(T,'SpikeRate~ Bin + (1|SleepTransition)');
 
 % Find the ids of the significant bins (relative to the first bin)
-sig_bins = lme.Coefficients.pValue < 0.05/nbins; % Bonferroni correction
+sig_bins = lme.Coefficients.pValue(1) < 0.05/nbins; % Bonferroni correction
 sig_bins(1) = 0; % the first one is the intercept, ignore
 
 
@@ -205,8 +205,7 @@ spike_bins = nanmean(all_pts_spikes_bins,1);
 sleep_bins = nanmean(all_pts_sleep_bins,1);
 times = linspace(-12,12,length(spike_bins));
 spp = plot(times,spike_bins,'k-');
-hold on
-plot(times(sig_bins),spike_bins(sig_bins)+0.05,'r*');
+
 %hold on
 %slp = plot(times,sleep_bins,'k--');
 title('Spike rate surrounding sleep onset')
@@ -215,7 +214,7 @@ ylabel('Spikes/elecs/min')
 xlim([-12 12])
 yl = ylim;
 plot([0 0],yl,'r--')
-%legend([spp;slp],{'Spikes','Proportion in sleep'})
+legend([spp;slp],{'Spikes','Proportion in sleep'})
 ylim(yl);
 
 %% Anatomy
