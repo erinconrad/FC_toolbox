@@ -212,7 +212,6 @@ sleep_bins = nanmean(all_pts_sleep_bins,1);
 times = linspace(-surround_hours,surround_hours,length(sp_bins));
 psp = plot(times,sp_bins);
 hold on
-plot(times(sig_bins),sp_bins(sig_bins)+0.05,'r*');
 title('Spike rate surrounding seizure onset')
 ylabel('Spikes/min')
 xlabel('Hours')
