@@ -1,5 +1,12 @@
 function plot_scalp(pt)
 
+%{
+This function looks for patients with a complete unilateral scalp montage,
+pulls the data every 4 hours, does basic pre-processing, and saves the one
+minute chunk of specifically the scalp data. The purpose is to generate
+testing labels.
+%}
+
 %% Parameters
 overwrite = 0;
 

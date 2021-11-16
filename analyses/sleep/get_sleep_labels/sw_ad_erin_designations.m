@@ -8,8 +8,8 @@ alpha delta ratios (for the purpose of normalization).
 %}
 
 %% Parameters
-sleep_names = {'1','2','3'};
-wake_names = {'a'};
+sleep_names = {'1','2','3'}; % these labels mean sleep
+wake_names = {'a'}; % this label means awake
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -67,7 +67,7 @@ for l = 1:length(listing)
             
             % Get alpha delta ratio
             alpha_delta = (pc.file(f).run(blocks(ib)).data.montage(2).ad);
-            alpha_delta = nanmean(alpha_delta(~ekg)); % ignore ekg channels
+            alpha_delta = nanmean(alpha_delta(~ekg)); % ignore ekg and scalp channels
             
             % fill these up
             sleep_state = [sleep_state;designation];

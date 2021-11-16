@@ -163,6 +163,7 @@ ylabel({'Spike rate', 'normalized power spectrum'});
 set(gca,'fontsize',15)
 title('Spike rate power spectral density')
 
+%{
 %% Do the localizations
 nexttile
 g = 1;
@@ -191,6 +192,7 @@ ylabel({'Spike rate', 'normalized power spectrum'});
 set(gca,'fontsize',15)
 legend(main_locs)
 title({'Spike rate power spectral density','by spike location'});
+%}
 
 %% Compare cyclical power across electrode localizations
 nexttile
@@ -208,53 +210,6 @@ circ_other = [circ_other;nan(length(mt)-length(circ_other),1)];
 nexttile
 plot_paired_data(([circ_mt,circ_other])',{'Temporal','Other'},'Relative circadian power','unpaired')
 title({'Relative circadian power','by SOZ localization'});
-%{
-nexttile
-curr_power = circ_P{g};
-median_over_pts = nanmedian(curr_power,2);
-iqr_over_pts = [prctile(curr_power,25,2),prctile(curr_power,75,2)];
-errorbar(1:length(main_locs),median_over_pts,...
-    median_over_pts-iqr_over_pts(:,1),...
-    iqr_over_pts(:,2)-median_over_pts,'o','markersize',10,...
-    'color','k','linewidth',2);
-hold on
-xticks(1:length(median_over_pts))
-xticklabels(main{g})
-xtickangle(30)
-ylabel('Relative circadian power')
-set(gca,'fontsize',15)
-xlim([0 length(median_over_pts)+1])
-
-% Do stats
-[p,post_hoc_p,which_groups] = non_para_circ_stats(curr_power);
-
-if p > 0.05
-    pairs_to_plot = [];
-else
-    pairs_to_plot = which_groups(post_hoc_p < 0.05/size(which_groups,1),:);
-    post_hoc_p_to_plot = post_hoc_p(post_hoc_p < 0.05/size(which_groups,1));
-end
-yl=ylim;
-heights = get_heights(yl,pairs_to_plot);
-ylim([yl(1) heights(end,2)]);
-
-if p > 0.05
-    plot([1 length(median_over_pts)],...
-        [heights(size(heights,1)-1,1) heights(size(heights,1)-1,1)],'k',...
-        'linewidth',2);
-    text(mean([1 length(median_over_pts)]),heights(size(heights,1)-1,2),...
-        'ns','fontsize',15,'horizontalalignment','center')
-else
-    for k = 1:size(pairs_to_plot,1)
-        plot([pairs_to_plot(k,1)+0.1 pairs_to_plot(k,2)-0.1],[heights(k,1) heights(k,1)],'k-',...
-            'linewidth',2)
-        hold on
-        text(mean(pairs_to_plot(k,:)),heights(k,2),...
-            get_asterisks(post_hoc_p_to_plot(k),size(which_groups,1)),...
-            'fontsize',15,'horizontalalignment','center')
-    end
-end
-%}
 
 
 

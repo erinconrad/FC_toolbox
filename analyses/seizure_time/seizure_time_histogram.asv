@@ -211,7 +211,7 @@ if do_avg
     T.Bin = categorical(T.Bin);
     T.Patient = categorical(T.Patient);
     
-    lme = fitlme(T,'SpikeRate ~ Bin + Sleep + (1|Patient)');
+    lme =
     
 else
     % Treat every seizure separately
