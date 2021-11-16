@@ -8,11 +8,11 @@ spike rate ~ time relative to seizure + sleep vs wake + (1|patient)
 %}
 
 %% Parameters
-surround_hours = 12;
+surround_hours = 6;
 
 
-surround_secs = surround_hours*3600;
-surround = surround_hours*6;
+surround_secs = surround_hours*3600; % convert to seconds
+surround = surround_hours*6; % convert to #bins (6 hours = 6*6 10 minute bins)
 nbins = surround*2;
 
 if rm_cluster == 1
@@ -212,6 +212,7 @@ if do_avg
     T.Patient = categorical(T.Patient);
     
     lme = fitlme(T,'SpikeRate ~ Bin + Sleep + (1|Patient)');
+    lme
     
 else
     % Treat every seizure separately
@@ -263,7 +264,7 @@ ylabel('Proportion detected to be asleep')
 xlim([-surround_hours surround_hours])
 plot([0 0],ylim,'r--')
 
-print([out_folder,'histogram',rm_cluster_text],'-dpng')
+print([out_folder,'histogram',rm_cluster_text,do_avg_text],'-dpng')
 close(gcf)
 
 end
