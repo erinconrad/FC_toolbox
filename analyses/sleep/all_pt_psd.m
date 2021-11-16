@@ -163,7 +163,7 @@ ylabel({'Spike rate', 'normalized power spectrum'});
 set(gca,'fontsize',15)
 title('Spike rate power spectral density')
 
-%{
+%
 %% Do the localizations
 nexttile
 g = 1;
@@ -214,6 +214,7 @@ title({'Relative circadian power','by SOZ localization'});
 
 
 print([out_folder,'circadian'],'-dpng')
+close(gcf)
 
 end
 

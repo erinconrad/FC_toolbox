@@ -259,7 +259,7 @@ ylim(yl);
 
 %% Save
 print([out_folder,'histogram',rm_cluster_text],'-dpng')
-
+close(gcf)
 
 
 end
