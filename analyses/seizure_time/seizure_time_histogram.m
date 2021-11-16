@@ -227,10 +227,10 @@ else
     T.Patient = categorical(T.Patient);
 
 
-    lme = fitlme(T,'SpikeRate~ Bin + Sleep + (1|Seizure)');
+    lme = fitlme(T,'SpikeRate~ Bin + Sleep + (1|Seizure) + (1|Patient)');
     lme
 
-    lme_no_sleep = fitlme(T,'SpikeRate~ Bin + (1|Seizure)');
+    lme_no_sleep = fitlme(T,'SpikeRate~ Bin + (1|Seizure) + (1|Patient)');
     lme_no_sleep
 end
 
