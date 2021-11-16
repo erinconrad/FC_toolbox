@@ -40,12 +40,16 @@ T = readtable(validation_file);
 good_pts = T.Var13;
 good_pts = good_pts(~isnan(good_pts));
 npts = length(good_pts);
+ 
 
 % Create a cell array containing all spikes
 spikes = cell(npts,2);
+pt_names = cell(npts,1);
 for i = 1:npts
     p = good_pts(i);
     name = pt(p).name;
+    
+    pt_names{i} = name;
     
     %% Load the spike file
     fname = [spikes_folder,name,'_pc.mat'];
@@ -102,6 +106,13 @@ for i = 1:npts
     spikes{i,2} = interictal_spikes;
     
 end
+
+%% Make a table of spike counts
+sp_count_fname = 'ictal_interictal_counts.csv';
+ictal_spikes = cellfun(@(x) size(x,1),spikes(:,1));
+interictal_spikes = cellfun(@(x) size(x,1),spikes(:,2));
+T = table(pt_names,ictal_spikes,interictal_spikes,'VariableNames',{'Name','Ictal','Interictal'});
+writetable(T,[out_folder,sp_count_fname]);
 
 %% Loop over nspikes
 for i = 1:2 % ictal and interictal
