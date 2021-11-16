@@ -30,6 +30,8 @@ for p = 1:length(pt)
                 
                 if strcmp(source,'portal times, worst source')
                     note = 'left pad 60 s, right pad 10 minutes';
+                elseif strcmp(source,'Erin Excel')
+                    note = 'looked for seizure-y annotations and portal times and verified onset plus or minus several seconds';
                 else
                     note = '';
                 end
