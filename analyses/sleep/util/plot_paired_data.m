@@ -18,8 +18,11 @@ pr = prctile(data,[25,75],2);
 
 switch plot_type
     case 'errorbar'
-        errorbar(1:size(data,1),nanmedian(data,2),...
-            nanmedian(data,2)-pr(:,1),pr(:,2)-nanmedian(data,2),'o','linewidth',2);
+        for j = 1:size(data,1)
+            errorbar(j,nanmedian(data(j,:),2),...
+                nanmedian(data(j,:),2)-pr(j,1),pr(j,2)-nanmedian(data(j,:),2),'o','linewidth',2);
+            hold on
+        end
     case 'all'
         for j = 1:size(data,1)
             plot(j+0.05*randn(size(data,2),1),...

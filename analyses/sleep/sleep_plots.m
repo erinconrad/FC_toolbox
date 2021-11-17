@@ -1,6 +1,7 @@
 function sleep_plots(out)
 
 %% Parameters
+plot_type = 'errorbar';
 nblocks = 6;
 baseline = 1:nblocks; % one hour
 preictal = 31:31+nblocks-1;
@@ -34,7 +35,7 @@ title('Spike rate power spectral density')
 
 % Compare cyclical power across electrode localizations
 nexttile
-plot_paired_data(circ_P{1},main_locs,'Relative circadian power','paired','violin')
+plot_paired_data(circ_P{1},main_locs,'Relative circadian power','paired',plot_type)
 title({'Relative circadian power','by spike location'})
 
 % Compare cyclical power between patients with different soz localizations
@@ -45,7 +46,7 @@ circ_other = all_circ_P(~mt);
 circ_mt = [circ_mt;nan(length(mt)-length(circ_mt),1)]; % pad both with nans
 circ_other = [circ_other;nan(length(mt)-length(circ_other),1)];
 plot_paired_data(([circ_mt,circ_other])',{'Temporal','Other'},'Relative circadian power',...
-    'unpaired','violin')
+    'unpaired',plot_type)
 title({'Relative circadian power','by SOZ localization'});
 print([out_folder,'Fig1'],'-dpng')
 close(gcf)
@@ -98,19 +99,19 @@ ylim(yl);
 % C: Sleep vs wake overall rate
 nexttile
 all_rates = bin_out.all_rates;
-plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/min','paired','violin')
+plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/min','paired',plot_type)
 title('Spike rate in sleep vs wake')
 
 % D: Sleep vs wake co-spiking
 nexttile
 all_coi = bin_out.all_coi;
-plot_paired_data(all_coi',{'Wake','Sleep'},'Spike COI','paired','violin')
+plot_paired_data(all_coi',{'Wake','Sleep'},'Spike COI','paired',plot_type)
 title('Co-spiking in sleep vs wake')
 
 % E: Sleep vs wake node strength
 nexttile
 ns_sw = bin_out.ns_sw;
-plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength','paired','violin')
+plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength','paired',plot_type)
 title('Functional connectivity in sleep vs wake')
 
 print([out_folder,'Fig2'],'-dpng')
@@ -118,41 +119,66 @@ close(gcf)
 
 %% Figure 3 - Effect of anatomical location
 figure
-set(gcf,'position',[10 10 1300 700])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
-
-% A: Spike rate according to sleep vs wake and anatomical location
-nexttile
+set(gcf,'position',[10 10 1400 900])
+tiledlayout(2,4,'tilespacing','tight','padding','tight')
 main = bin_out.main;
 r_ad_ana = bin_out.r_ad_ana;
-interaction_plot_and_stats(r_ad_ana{1},main{1},'Spike/elec/min',{'Wake','Sleep'},0,'violin');
+
+%
+% A: Spike rate according to sleep vs wake and anatomical location
+nexttile
+interaction_plot_and_stats(r_ad_ana{1},main{1},'Spike/elec/min',{'Wake','Sleep'},0,plot_type);
 title('Spike rate by anatomical location')
 
-% B: Spike rate according to sleep vs wake and SOZ
+% Spike rate according to sleep vs wake and SOZ
 nexttile
 r_ad_ana = bin_out.r_ad_ana;
-interaction_plot_and_stats(r_ad_ana{3},main{3},'Spike/elec/min',{'Wake','Sleep'},0,'violin');
+interaction_plot_and_stats(r_ad_ana{3},main{3},'Spike/elec/min',{'Wake','Sleep'},0,plot_type);
 title('Spike rate by SOZ vs not SOZ')
 
 % C: Spike latency according to sleep vs wake and anatomical location
 nexttile
 r_rl_ana = bin_out.r_rl_ana;
-interaction_plot_and_stats(r_rl_ana{1}*1e3,main{1},'Spike latency (ms)',{'Wake','Sleep'},0,'violin');
+interaction_plot_and_stats(r_rl_ana{1}*1e3,main{1},'Spike latency (ms)',{'Wake','Sleep'},0,plot_type);
 title('Spike latency by anatomical location')
 
-% D: Spike latency according to sleep vs wake and SOZ
+% Spike latency according to sleep vs wake and SOZ
 nexttile
 r_rl_ana = bin_out.r_rl_ana;
-interaction_plot_and_stats(r_rl_ana{3}*1e3,main{3},'Spike latency (ms)',{'Wake','Sleep'},0,'violin');
+interaction_plot_and_stats(r_rl_ana{3}*1e3,main{3},'Spike latency (ms)',{'Wake','Sleep'},0,plot_type);
 title('Spike latency by SOZ vs not SOZ')
+
+
+% Is sleep-related increase in spike rate difference across anatomical
+% locations
+nexttile
+plot_and_stats_change(r_ad_ana{1},main{1},'Spike/elec/min','paired')
+title('Sleep-related rate change')
+
+% Is sleep-related increase in spike rate higher for SOZ?
+nexttile
+plot_and_stats_change(r_ad_ana{3},main{3},'Spike/elec/min','paired')
+title('Sleep-related rate change')
+
+
+% Spike latency increase based on anatomical location
+nexttile
+plot_and_stats_change(r_rl_ana{1},main{1},{'Latency difference (ms)'},'paired')
+title('Sleep-related latency change')
+
+
+% Is sleep-related increase in latency higher for SOZ?
+nexttile
+plot_and_stats_change(r_rl_ana{3},main{3},{'Latency difference (ms)'},'paired')
+title('Sleep-related latency change')
 
 print([out_folder,'Fig3'],'-dpng')
 close(gcf)
 
 %% Figure 4 - Effect of seizures
 figure
-set(gcf,'position',[10 10 1400 700])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+set(gcf,'position',[10 10 1000 1000])
+tiledlayout(3,2,'tilespacing','tight','padding','tight')
 
 sig_bins = sz_out.sig_bins;
 all_pts_spikes_bins = sz_out.all_pts_spikes_bins;
@@ -185,7 +211,7 @@ spikes_baseline = nanmean(all_pts_spikes_bins(:,baseline),2);
 spikes_pre = nanmean(all_pts_spikes_bins(:,preictal),2);
 spikes_post = nanmean(all_pts_spikes_bins(:,postictal),2);
 plot_paired_data([spikes_baseline,spikes_pre,spikes_post]',...
-    {'Baseline','Pre-ictal','Post-ictal'},'Spikes/elec/min','paired','violin')
+    {'Baseline','Pre-ictal','Post-ictal'},'Spikes/elec/min','paired',plot_type)
 title('Distribution in peri-ictal spike rates across patients')
 
 % C: Post-ictal increase according to anatomical location
@@ -205,14 +231,28 @@ end
 % anatomical localiztion
 nexttile
 interaction_plot_and_stats(bl_post_strat{1},main{1},'Spike/elec/min',...
-    {'Baseline','Post-ictal'},0,'violin');
+    {'Baseline','Post-ictal'},0,plot_type);
 title('Post-ictal spike rate by anatomical location')
 
-% D: Post-ictal increase according to SOZ vs not
+% Post-ictal increase according to SOZ vs not
 nexttile
 interaction_plot_and_stats(bl_post_strat{3},main{3},'Spike/elec/min',...
-    {'Baseline','Post-ictal'},0,'violin');
+    {'Baseline','Post-ictal'},0,plot_type);
 title('Post-ictal spike rate by SOZ vs not SOZ')
+
+% anatomical localiztion
+nexttile
+plot_and_stats_change(bl_post_strat{1},main{1},'Spike/elec/min',...
+    'paired');
+title('Post-ictal rate change')
+
+% Post-ictal increase according to SOZ vs not
+nexttile
+plot_and_stats_change(bl_post_strat{3},main{3},'Spike/elec/min',...
+    'paired');
+title('Post-ictal rate change')
+
+
 print([out_folder,'Fig4'],'-dpng')
 close(gcf)
 
