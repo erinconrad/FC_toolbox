@@ -54,14 +54,14 @@ close(gcf)
 %% Figure 2 - What happens to spikes with sleep
 figure
 set(gcf,'position',[10 10 800 1000])
-tiledlayout(3,2,'tilespacing','tight','padding','tight')
+tiledlayout(2,2,'tilespacing','tight','padding','tight')
 
 % A: ROC curve
 roc = roc_out.roc;
 auc = roc_out.auc;
 disc_I = roc_out.disc_I;
 
-nexttile([1 2])
+nexttile
 plot(roc(:,1),roc(:,2),'k','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--')
@@ -78,14 +78,14 @@ all_pts_sleep_bins = sleep_hist_out.all_pts_sleep_bins;
 sig_bins = sleep_hist_out.sig_bins;
 
 nexttile
-spike_bins = nanmean(all_pts_spikes_bins,1);
-sleep_bins = nanmean(all_pts_sleep_bins,1);
-times = linspace(-12,12,length(spike_bins));
-spp = plot(times,spike_bins,'k-','linewidth',2);
+median_spikes = nanmedian(all_pts_spikes_bins,1);
+iqr_spikes = prctile(all_pts_spikes_bins,[25,75],1);
+times = linspace(-12,12,length(median_spikes));
+%spp = plot(times,spike_bins,'k-','linewidth',2);
+shaded_error_bars(times,median_spikes,iqr_spikes,[0 0 0]);
 hold on
-plot(times(sig_bins),spike_bins(sig_bins)+0.05,'r*','linewidth',2);
+plot(times(sig_bins),median_spikes(sig_bins)+0.05,'r*','linewidth',2);
 hold on
-%slp = plot(times,sleep_bins,'k--');
 title('Spike rate surrounding sleep onset')
 xlabel('Hours')
 ylabel('Spikes/elecs/min')
@@ -97,10 +97,12 @@ set(gca,'fontsize',15)
 ylim(yl);
 
 % C: Sleep vs wake overall rate
+%{
 nexttile
 all_rates = bin_out.all_rates;
 plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/min','paired',plot_type)
 title('Spike rate in sleep vs wake')
+%}
 
 % D: Sleep vs wake co-spiking
 nexttile
@@ -178,7 +180,7 @@ close(gcf)
 %% Figure 4 - Effect of seizures
 figure
 set(gcf,'position',[10 10 1000 1000])
-tiledlayout(3,2,'tilespacing','tight','padding','tight')
+tiledlayout(2,3,'tilespacing','tight','padding','tight')
 
 sig_bins = sz_out.sig_bins;
 all_pts_spikes_bins = sz_out.all_pts_spikes_bins;
@@ -188,7 +190,21 @@ sp_bins = nanmean(all_pts_spikes_bins,1)';
 sleep_bins = nanmean(all_pts_sleep_bins,1)';
 times = linspace(-surround_hours,surround_hours,length(sp_bins));
 
+% Seizure surge histogram
+nexttile
+median_spikes = nanmedian(all_pts_spikes_bins,1);
+iqr_spikes = prctile(all_pts_spikes_bins,[25 75],1);
+shaded_error_bars(times,median_spikes,iqr_spikes,[0 0 0]);
+hold on
+plot(times(sig_bins),sp_bins(sig_bins)+0.05,'r*','markersize',15,'linewidth',2); % sig times
+plot([0 0],ylim,'k--','LineWidth',2);
+set(gca,'fontsize',15)
+title('Spikes surrounding seizures')
+xlabel('Hours')
+ylabel('Spikes/elec/min')
+
 % A: Seizure surge histogram with superimposed sleep
+%{
 nexttile
 yLabels = {'Spikes/elec/min','Proportion asleep'};
 h = stackedplot(times,[sp_bins,sleep_bins],'DisplayLabels',yLabels);
@@ -203,9 +219,11 @@ arrayfun(@(h)xline(h,0,'k--','LineWidth',2),ax) % plot line at 0
 %plot(ax(1),times(sig_bins),sp_bins(sig_bins)+0.05,'r*','markersize',15,'linewidth',2); % sig times
 set(gca,'fontsize',15)
 title('Spikes and sleep surrounding seizures')
+%}
 
 % B: Distribution amongst patients in post ictal change and pre-ictal
 % change
+%{
 nexttile
 spikes_baseline = nanmean(all_pts_spikes_bins(:,baseline),2);
 spikes_pre = nanmean(all_pts_spikes_bins(:,preictal),2);
@@ -213,6 +231,7 @@ spikes_post = nanmean(all_pts_spikes_bins(:,postictal),2);
 plot_paired_data([spikes_baseline,spikes_pre,spikes_post]',...
     {'Baseline','Pre-ictal','Post-ictal'},'Spikes/elec/min','paired',plot_type)
 title('Distribution in peri-ictal spike rates across patients')
+%}
 
 % C: Post-ictal increase according to anatomical location
 spikes_strat = sz_out.spikes_strat;
@@ -239,6 +258,18 @@ nexttile
 interaction_plot_and_stats(bl_post_strat{3},main{3},'Spike/elec/min',...
     {'Baseline','Post-ictal'},0,plot_type);
 title('Post-ictal spike rate by SOZ vs not SOZ')
+
+% Seizure surge histogram for sleep
+nexttile
+median_sleep = nanmedian(all_pts_sleep_bins,1);
+iqr_sleep = prctile(all_pts_sleep_bins,[25 75],1);
+shaded_error_bars(times,median_sleep,iqr_sleep,[0 0 0]);
+hold on
+plot([0 0],ylim,'k--','LineWidth',2);
+set(gca,'fontsize',15)
+title('Sleep surrounding seizures')
+xlabel('Hours')
+ylabel('Proportion asleep')
 
 % anatomical localiztion
 nexttile
