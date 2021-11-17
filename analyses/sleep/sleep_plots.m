@@ -53,7 +53,7 @@ close(gcf)
 
 %% Figure 2 - What happens to spikes with sleep
 figure
-set(gcf,'position',[10 10 800 1000])
+set(gcf,'position',[10 10 1000 1000])
 tiledlayout(2,2,'tilespacing','tight','padding','tight')
 
 % A: ROC curve
@@ -179,7 +179,7 @@ close(gcf)
 
 %% Figure 4 - Effect of seizures
 figure
-set(gcf,'position',[10 10 1000 1000])
+set(gcf,'position',[10 10 1300 800])
 tiledlayout(2,3,'tilespacing','tight','padding','tight')
 
 sig_bins = sz_out.sig_bins;

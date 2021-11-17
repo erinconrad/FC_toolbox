@@ -33,6 +33,6 @@ end
 % Calculate roc
 [roc,auc,disc,disc_I] = calculate_roc(all_sleep,all_wake,1e3);
 
-
+% Get number of sleep and wake
 
 end

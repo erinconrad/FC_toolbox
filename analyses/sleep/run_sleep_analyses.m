@@ -31,6 +31,13 @@ sleep_hist_out = sleep_histogram_analysis(rm_cluster,disc);
 fprintf('\nDoing binary AD analyses\n');
 bin_out = binary_ad_analyses(disc);
 
+% Stats on amount of wake and sleep
+n_sleep_wake = bin_out.n_sleep_wake;
+perc_asleep = n_sleep_wake(:,1)./(sum(n_sleep_wake,2))*100;
+iqr_sleep = prctile(perc_asleep,[25 75]);
+fprintf('\nAcross all patients, a median of %1.1f%% (IQR %1.1f%% - %1.1f%%) of periods were determined to be asleep.\n',...
+    nanmedian(perc_asleep),iqr_sleep(1),iqr_sleep(2));
+
 %% Do seizure time analyses
 fprintf('\nDoing seizure histogram analyses\n');
 sz_out = seizure_time_histogram(rm_cluster,do_avg,disc);

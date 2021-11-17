@@ -67,6 +67,7 @@ ns_sw = nan(npts,2);
 all_rates = nan(npts,2);
 all_coi = nan(npts,2);
 missing_loc = zeros(npts,1);
+n_sleep_wake = nan(npts,2);
 
 %% Loop over patients
 for p = 1:npts
@@ -127,6 +128,8 @@ for p = 1:npts
     wake = ad_norm > disc;
     sleep = ad_norm <= disc;
        
+    n_sleep_wake(p,1) = sum(sleep);
+    n_sleep_wake(p,2) = sum(wake);
     
     %% wake vs sleep spike rate
     % overall spike rate (averaged across electrodes)
@@ -224,6 +227,7 @@ out.all_coi = all_coi;
 out.ns_sw = ns_sw;
 out.r_ad_ana = r_ad_ana;
 out.r_rl_ana = r_rl_ana;
+out.n_sleep_wake = n_sleep_wake;
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{
