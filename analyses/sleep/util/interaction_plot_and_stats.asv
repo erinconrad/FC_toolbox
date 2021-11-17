@@ -34,16 +34,9 @@ for i = 1:size(thing,1)
         case 'errorbar'
             for j = 1:size(thing,3)
                 pr = squeeze(prctile(thing(i,:,j),[25,75]));
-                if j == 1
-                    add = -0.2;
-                elseif j == 2
-                    add = 0.2;
-                end
-                lp(i) = errorbar(i+add,squeeze(nanmedian(thing(i,:,j),2)),...
-                    squeeze(nanmedian(thing(i,:,j),2))-pr(1),...
-                    pr(2)-squeeze(nanmedian(thing(i,:,j),2)),'o','linewidth',2,...
-                'color',fc(i,:));
-                hold on
+                lp(i) = errorbar([i-0.2 i+0.2],squeeze(nanmedian(thing(i,:,:),2)),...
+                    squeeze(nanmedian(thing(i,:,:),2))-pr(:,1),...
+                    pr(:,2)-squeeze(nanmedian(thing(i,:,:),2)),'o','linewidth',2);
             end
         case 'violin'
             violin_erin(squeeze(thing(i,:,:)),'x',[i-0.2 i+0.2],...
