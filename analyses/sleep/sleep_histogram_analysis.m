@@ -1,4 +1,4 @@
-function sleep_histogram_analysis(rm_cluster)
+function out = sleep_histogram_analysis(rm_cluster,disc)
 
 %{
 I need to do a linear rather than a poisson model because I don't have
@@ -24,9 +24,9 @@ main{2} = main_lats;
 
 
 if rm_cluster == 1
-    rm_cluster_text = '_rm_sz_clusters';
+    rm_cluster_text = '_rm_clusters';
 else
-    rm_cluster_text = '_keep_sz_clusters';
+    rm_cluster_text = '_keep_clusters';
 end
 
 %% Get file locs
@@ -51,9 +51,6 @@ summ = summ.summ;
 %% Listing of available files
 listing = dir([int_folder,'*.mat']);
 npts = length(listing);
-
-%% AD validation
-[roc,auc,disc] = ad_validation;
 
 %% INitialize stuff
 all_pts_spikes_bins = nan(npts,nbins);
@@ -190,18 +187,30 @@ T.Patient = categorical(T.Patient);
 
 % Do a linear mixed effects model, treating each bin as a separate
 % categorical predictor
-lme = fitlme(T,'SpikeRate~ Bin + (1|SleepTransition)');
+lme = fitlme(T,'SpikeRate~ Bin + (1|SleepTransition) + (1|Patient)');
 
 % Find the ids of the significant bins (relative to the first bin)
 sig_bins = lme.Coefficients.pValue < 0.05/nbins; % Bonferroni correction
 sig_bins(1) = 0; % the first one is the intercept, ignore
 
+spike_bins = nanmean(all_pts_spikes_bins,1);
+times = linspace(-12,12,length(spike_bins));
+out.lme = lme;
+out.sig_bins = sig_bins;
+out.all_pts_spikes_bins = all_pts_spikes_bins;
+out.all_pts_sleep_bins = all_pts_sleep_bins;
+out.times = times;
+out.title = 'Spike rate surrounding sleep onset';
+out.xlabel = 'Hours';
+out.ylabel = 'Spikes/elecs/min';
+out.xlim = [-12 12];
+out.T = T;
 
 %{
 lme_with_pt = fitlme(T,'SpikeRate~ Bin + (1|SleepTransition) + (1|Patient)');
 lme_with_pt
 %}
-
+%{
 figure
 set(gcf,'position',[10 10 1400 450])
 tiledlayout(1,3,'padding','tight','tilespacing','tight')
@@ -260,6 +269,6 @@ ylim(yl);
 %% Save
 print([out_folder,'histogram',rm_cluster_text],'-dpng')
 close(gcf)
-
+%}
 
 end

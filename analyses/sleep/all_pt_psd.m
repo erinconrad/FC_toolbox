@@ -1,4 +1,4 @@
-function all_pt_psd
+function out = all_pt_psd
 
 %% To do
 %{
@@ -137,16 +137,11 @@ all_freqs(skip_pts,:)= [];
 sum_diff_freqs = sum(abs(sum(abs(diff(all_freqs,1,1)))));
 assert(sum_diff_freqs < 1e-3);
 
-%% Initialize figure
+%% Stuff
 periods = 1./freqs/3600;
 low_period = periods <= 100;
 periods = periods(low_period);
-figure
-set(gcf,'position',[100 100 1400 500])
-tiledlayout(1,4,'tilespacing','tight','padding','tight')
 
-%% Overall spike rate
-nexttile
 % Restrict to less than 100
 % Get stats
 all_psd = all_psd(:,low_period);
@@ -154,6 +149,25 @@ all_psd = all_psd./sum(all_psd,2);
 median_psd = median(all_psd,1);
 iqr_psd = [prctile(all_psd,25,1);prctile(all_psd,75,1)];
 
+%% Prep output
+out.all_psd = all_psd;
+out.low_period = low_period;
+out.median_psd = median_psd;
+out.iqr_psd = iqr_psd;
+out.periods = periods;
+out.circ_P = circ_P;
+out.main_locs = main_locs;
+out.all_circ_P = all_circ_P;
+out.all_locs = all_locs;
+
+%{
+%% Initialize figure
+figure
+set(gcf,'position',[100 100 1400 500])
+tiledlayout(1,4,'tilespacing','tight','padding','tight')
+
+%% Overall spike rate
+nexttile
 % Plot
 mp = shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
 xlim([0 100])
@@ -192,7 +206,7 @@ ylabel({'Spike rate', 'normalized power spectrum'});
 set(gca,'fontsize',15)
 legend(main_locs)
 title({'Spike rate power spectral density','by spike location'});
-%}
+
 
 %% Compare cyclical power across electrode localizations
 nexttile
@@ -215,6 +229,7 @@ title({'Relative circadian power','by SOZ localization'});
 
 print([out_folder,'circadian'],'-dpng')
 close(gcf)
+%}
 
 end
 

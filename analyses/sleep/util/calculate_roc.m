@@ -1,4 +1,4 @@
-function [roc,auc,disc] = calculate_roc(array1,array2,npts)
+function [roc,auc,disc,disc_I] = calculate_roc(array1,array2,npts)
 
 % positive = I say it is sleep
 % negative = I say it is wake
@@ -46,6 +46,7 @@ auc = trapz(roc(:,1),roc(:,2));
 % from sleep
 goodness = (ones(size(roc,1),1) - roc(:,1)) + roc(:,2); % 1-FPR + TPR;
 [~,disc] = max(goodness);
+disc_I = disc;
 disc = test_vals(disc);
 
 end

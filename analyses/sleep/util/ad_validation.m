@@ -1,4 +1,4 @@
-function [roc,auc,disc] = ad_validation
+function [roc,auc,disc,disc_I] = ad_validation
 
 %{
 This is the main validation function to test how well the alpha delta ratio
@@ -31,7 +31,7 @@ for j = 1:npts_val
 end
 
 % Calculate roc
-[roc,auc,disc] = calculate_roc(all_sleep,all_wake,1e3);
+[roc,auc,disc,disc_I] = calculate_roc(all_sleep,all_wake,1e3);
 
 
 

@@ -32,6 +32,10 @@ switch plot_type
             hold on
                 
         end
+    case 'violin'
+        violin_erin(data')
+        hold on
+        
 end
 hold on
 xlim([0 size(data,1)+1])

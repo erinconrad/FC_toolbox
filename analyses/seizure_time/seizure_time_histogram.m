@@ -1,4 +1,4 @@
-function seizure_time_histogram(rm_cluster,do_avg)
+function out = seizure_time_histogram(rm_cluster,do_avg,disc)
 
 %{
 Build a model:
@@ -9,11 +9,17 @@ spike rate ~ time relative to seizure + sleep vs wake + (1|patient)
 
 %% Parameters
 surround_hours = 6;
-
-
 surround_secs = surround_hours*3600; % convert to seconds
 surround = surround_hours*6; % convert to #bins (6 hours = 6*6 10 minute bins)
 nbins = surround*2;
+
+main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
+main_lats = {'Left','Right'};
+main_soz = {'SOZ','Not SOZ'};
+main{1} = main_locs;
+main{2} = main_lats;
+main{3} = main_soz;
+
 
 if rm_cluster == 1
     rm_cluster_text = '_rm_clust';
@@ -45,9 +51,6 @@ addpath(genpath(scripts_folder));
 listing = dir([int_folder,'*.mat']);
 npts = length(listing);
 
-%% AD validation
-[roc,auc,disc] = ad_validation;
-
 %% initialize
 all_pts_spikes_bins = nan(npts,nbins);
 all_pts_sleep_bins = nan(npts,nbins);
@@ -57,6 +60,13 @@ all_pts_sz_id_vec = [];
 all_pts_bin_id_vec = [];
 all_pts_id_vec = [];
 all_pts_sleep_vec = [];
+missing_loc = zeros(npts,1);
+
+spikes_strat = cell(3,1);
+for i = 1:length(spikes_strat)
+    spikes_strat{i} = nan(length(main{i}),npts,nbins);
+end
+
 
 % start running count of which seiuzre
 sz_count = 0;
@@ -74,6 +84,18 @@ for p = 1:npts
     sz_times = summ.sz_times;
     times = summ.times;
     ad = summ.ad;
+    loc = summ.ana_loc;
+    lat = summ.ana_lat;
+    
+    % Fix lat thing
+    for i = 1:length(lat)
+        if isempty(lat{i}), lat{i} = 'unspecified'; end
+    end
+    
+    %% Get features for soz vs not
+    soz = summ.soz.chs;
+    chnums = 1:length(labels);
+    is_soz = ismember(chnums,soz);
     
     %% Find and remove non-intracranial
     ekg = find_non_intracranial(labels);
@@ -83,6 +105,12 @@ for p = 1:npts
     spike_counts = nansum(spikes,1);
     ad = ad(~ekg,:);
     ad = nanmean(ad,1);
+    loc = loc(~ekg,:);
+    lat = lat(~ekg);
+    is_soz = is_soz(~ekg);
+    soz_text = cell(sum(~ekg),1);
+    soz_text(is_soz) = {'SOZ'};
+    soz_text(~is_soz) = {'Not SOZ'};
     
     %% Determine "wake" and "sleep" times
     % normalized ad
@@ -137,6 +165,56 @@ for p = 1:npts
 
     end
     
+    %% Get spike rate in each bin for each group for locs and lats
+    % Loop over loc vs lat vs soz
+    for g = 1:3
+        if g == 1
+            group = loc;
+            % Skip subsequent loc analyses if missing
+            if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
+                missing_loc(p) = 1;
+                continue
+            end
+        elseif g == 2
+            group = lat;
+        elseif g == 3
+            group = soz_text;
+        end
+        
+        % Get the rates corresponding to the subgroups
+        % (can probably do this without a for loop)
+       
+        for sg = 1:length(main{g})
+            ic = ismember(group,main{g}(sg));
+            
+            sp_bins_loc = nan(size(bins));
+            
+            for s = 1:size(bins,1)
+                
+                curr_bins = bins(s,:);
+        
+                % get only those bins that are within range
+                bins_in_range = curr_bins > 0 & curr_bins <= size(avg_spikes,2);
+                too_early = curr_bins <= 0;
+                too_late = curr_bins > size(avg_spikes,2);
+                
+                % get the spikes for those in range for correct locs
+                sp_bins_loc(s,:) = [nan(1,sum(too_early)),...
+                    nanmean(spikes(ic,curr_bins(bins_in_range)),1),nan(1,sum(too_late))];
+        
+            end
+            
+            % Average across seizures
+            sp_bins_loc = nanmean(sp_bins_loc,1);
+            
+            % add to cell array
+            spikes_strat{g}(sg,p,:) =  sp_bins_loc;
+            
+        end
+        
+
+    end
+    
     %% test plots
     if 0
         
@@ -186,6 +264,11 @@ for p = 1:npts
     all_pts_sleep_bins(p,:) = sleep_in_bins;
 end
 
+%% Remove empty pts for loc analyses
+missing_loc = logical(missing_loc);
+spikes_strat{1}(:,missing_loc,:) = [];
+
+
 %% Do model
 
 if do_avg
@@ -212,7 +295,6 @@ if do_avg
     T.Patient = categorical(T.Patient);
     
     lme = fitlme(T,'SpikeRate ~ Bin + Sleep + (1|Patient)');
-    lme
     
 else
     % Treat every seizure separately
@@ -228,17 +310,28 @@ else
 
 
     lme = fitlme(T,'SpikeRate~ Bin + Sleep + (1|Seizure) + (1|Patient)');
-    lme
 
     lme_no_sleep = fitlme(T,'SpikeRate~ Bin + (1|Seizure) + (1|Patient)');
-    lme_no_sleep
 end
 
 % Find the ids of the significant bins (relative to the first bin)
 sig_bins = lme.Coefficients.pValue < 0.05/nbins; % Bonferroni correction
 sig_bins(1) = 0; % the first one is the intercept, ignore
 sig_bins = sig_bins(1:end-1); % the last one is the coefficient for sleep, remove
+sp_bins = nanmean(all_pts_spikes_bins,1);
+times = linspace(-surround_hours,surround_hours,length(sp_bins));
+out.lme = lme;
+out.sig_bins = sig_bins;
+out.all_pts_spikes_bins = all_pts_spikes_bins;
+out.all_pts_sleep_bins = all_pts_sleep_bins;
+out.times = times;
+out.surround_hours = surround_hours;
+out.xlim = [-surround_hours surround_hours];
+out.T = T;
+out.spikes_strat = spikes_strat;
+out.main = main;
 
+%{
 figure
 tiledlayout(2,1,'tilespacing','tight','padding','tight')
 
@@ -266,5 +359,6 @@ plot([0 0],ylim,'r--')
 
 print([out_folder,'histogram',rm_cluster_text,do_avg_text],'-dpng')
 close(gcf)
+%}
 
 end

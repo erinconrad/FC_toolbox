@@ -1,29 +1,48 @@
-function run_sleep_analyses
-
 %% Parameters
-main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
-main_lats = {'Left','Right'};
-main_soz = {'SOZ','Not SOZ'};
-main{1} = main_locs;
-main{2} = main_lats;
-main{3} = main_soz;
+rm_cluster = 0;
+do_avg = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/sleep/'];
 int_folder = [results_folder,'analysis/intermediate/'];
+out_folder = [results_folder,'analysis/sleep/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
 
-% add script folder to path
-scripts_folder = locations.script_folder;
-addpath(genpath(scripts_folder));
+%% Do circadian analysis
+fprintf('\nDoing circadian analysis\n');
+circ_out = all_pt_psd;
 
-%% Listing of available files
-listing = dir([int_folder,'*.mat']);
-npts = length(listing);
+%% Do alpha delta ratio validation
+fprintf('\nDoing alpha delta ratio validation\n');
+[roc,auc,disc,disc_I] = ad_validation;
+roc_out.roc = roc;
+roc_out.auc = auc;
+roc_out.disc = disc;
+roc_out.disc_I = disc_I;
 
+%% Do histogram analysis
+fprintf('\nDoing sleep histogram analysis\n');
+sleep_hist_out = sleep_histogram_analysis(rm_cluster,disc);
 
-end
+%% Do binary ad analyses
+fprintf('\nDoing binary AD analyses\n');
+bin_out = binary_ad_analyses(disc);
+
+%% Do seizure time analyses
+fprintf('\nDoing seizure histogram analyses\n');
+sz_out = seizure_time_histogram(rm_cluster,do_avg,disc);
+
+%% Put together
+out.circ_out = circ_out;
+out.roc_out = roc_out;
+out.sleep_hist_out = sleep_hist_out;
+out.bin_out = bin_out;
+out.sz_out = sz_out;
+out.out_folder = out_folder;
+
+%% Do plots
+fprintf('\nDoing other plots\n');
+sleep_plots(out)

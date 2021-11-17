@@ -1,5 +1,43 @@
-function out = binary_ad_analyses(disc)
+function binary_ad_analyses(roc,auc,disc)
 
+%% To do
+%{
+- exclude sz times
+
+- is overlap between most frequent or earliest spiker and soz higher in
+sleep
+
+
+%}
+
+%% Questions
+%{
+Fig 1 (no sleep/wake dependence) - 7 plots
+- spike rate by location and laterality and SOZ (3 plots)
+- rl by location and laterality and SOZ (3 plots)
+- spike rate correlates with rl?
+
+Fig 2 (sleep wake, ignoring antomy) -  5 plots
+- ROC curve for alpha delta ratio
+- overall spike rate sleep vs wake
+- COI sleep vs wake
+- spike rate consistency wake vs sleep
+- spike timing consistency wake vs sleep
+
+Fig 3 (sleep wake/anatomy interaction)
+- rate sleep vs wake by location and laterality and SOZ
+- rl sleep vs wake by location and laterality and SOZ
+
+- How does overall spike rate change with sleep
+- Does the correlation between sleep and spike rate depend on anatomical
+location?
+- How does spike spread change with sleep?
+- Does spike timing correlate with spike rate? Is the spikiest channel also
+the one that spikes first?
+- Is the order of spike rate more consistent in wake or sleep?
+- Is the order of spike timing more consistent in wake or sleep?
+     - For these, I would probably need to designate wake and sleep
+%}
 
 %% Parameters
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
@@ -7,7 +45,6 @@ main_lats = {'Left','Right'};
 main_soz = {'SOZ','Not SOZ'};
 main{1} = main_locs;
 main{2} = main_lats;
-main{3} = main_soz;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -29,43 +66,53 @@ npts = length(listing);
 
 %% Main analyses
 
-r_ad_ana = cell(3,1);
+r_ad_ana = cell(2,1);
 for i = 1:length(r_ad_ana)
     r_ad_ana{i} = nan(length(main{i}),npts,2);
 end
 
-rate_strat_ana = cell(3,1);
+rate_strat_ana = cell(2,1);
 for i = 1:length(rate_strat_ana)
     rate_strat_ana{i} = nan(length(main{i}),npts,2);
 end
 
 
 
-rl_strat_ana = cell(3,1);
+rl_strat_ana = cell(2,1);
 for i = 1:length(rl_strat_ana)
     rl_strat_ana{i} = nan(length(main{i}),npts,2);
 end
 
-r_rl_ana = cell(3,1);
+r_rl_ana = cell(2,1);
 for i = 1:length(r_rl_ana)
     r_rl_ana{i} = nan(length(main{i}),npts,2);
 end
 
-rate_overall_ana = cell(3,1);
+rate_overall_ana = cell(2,1);
 for i = 1:length(rate_overall_ana)
     rate_overall_ana{i} = nan(length(main{i}),npts);
 end
 
-rl_overall_ana = cell(3,1);
+rl_overall_ana = cell(2,1);
 for i = 1:length(rl_overall_ana)
     rl_overall_ana{i} = nan(length(main{i}),npts);
 end
 
-%% Initialize other stuff
+%% Initialize stuff
+rate_soz = nan(npts,2);
+rl_soz = nan(npts,2);
+rate_sw_soz = nan(2,npts,2); % 2 for soz/not, then 2 for wake/sleep
+rl_sw_soz = nan(2,npts,2);% 2 for soz/not, then 2 for wake/sleep
+overlap_spikiest = nan(npts,2); % wake/sleep
+overlap_earliest = nan(npts,2); % wake/sleep
 null_ps = nan(npts,1);
 ns_sw = nan(npts,2);
+ge_sw = nan(npts,2);
 all_rates = nan(npts,2);
 all_coi = nan(npts,2);
+all_src = nan(npts,2);
+all_std = nan(npts,2);
+all_rate_rl_corr = nan(npts,1);
 missing_loc = zeros(npts,1);
 
 %% Loop over patients
@@ -110,6 +157,7 @@ for p = 1:npts
     lat = lat(~ekg);
     spikes = spikes(~ekg,:); % spike rate #spikes/elec/one minute block (spikes/elec/min)
     rl = rl(~ekg,:);
+    labels = labels(~ekg);
     
     % dont remove channels from ns because don't know mapping for bipolar
     % montage
@@ -117,9 +165,6 @@ for p = 1:npts
     
     
     is_soz = is_soz(~ekg);
-    soz_text = cell(sum(~ekg),1);
-    soz_text(is_soz) = {'SOZ'};
-    soz_text(~is_soz) = {'Not SOZ'};
        
     %% Determine "wake" and "sleep" times
     % normalized ad
@@ -140,8 +185,58 @@ for p = 1:npts
     mean_ns = nanmean(ns,1); % node strength averaged across electrodes
     ns_sw(p,:) = [nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
 
-  
-    %{
+    
+    %% SRC - spike rate consistency
+    % Spikes in wake and sleep
+    wake_spikes = spikes(:,wake);
+    sleep_spikes = spikes(:,sleep);
+    
+    % Mean vector of spike rates across electrodes
+    mean_wake_spikes = nanmean(wake_spikes,2);
+    mean_sleep_spikes = nanmean(sleep_spikes,2);
+    
+    % SRC - Spearman correlation of spikes rates with the mean
+    src_wake = nanmean(corr(mean_wake_spikes,wake_spikes,'type','spearman',...
+        'rows','pairwise'));
+    src_sleep = nanmean(corr(mean_sleep_spikes,sleep_spikes,'type','spearman',...
+        'rows','pairwise'));
+    all_src(p,:) = [src_wake src_sleep];
+    
+    
+    %% Rate-rl correlation
+    avg_rate = nanmean(spikes,2);
+    avg_rl = nanmean(rl,2);
+    rate_rl_corr = corr(avg_rate,avg_rl,'type','spearman','rows','pairwise');
+    all_rate_rl_corr(p) = rate_rl_corr;
+    
+    %% SRC - spike timing consistency
+    % Spikes in wake and sleep
+    wake_rl = rl(:,wake);
+    sleep_rl = rl(:,sleep);
+    
+    % Mean vector of spike timing (rl) across electrodes
+    mean_wake_rl = nanmean(wake_rl,2);
+    mean_sleep_rl = nanmean(sleep_rl,2);
+    
+    % SRC - Spearman correlation of spikes timing with the mean
+    stc_wake = nanmean(corr(mean_wake_rl,wake_rl,'type','spearman',...
+        'rows','pairwise'));
+    stc_sleep = nanmean(corr(mean_sleep_rl,sleep_rl,'type','spearman',...
+        'rows','pairwise'));
+    all_stc(p,:) = [stc_wake stc_sleep];
+    
+    %% Spikiest and earliest in sleep and wake    
+    [~,spikiest_sw(1)] = max(mean_wake_spikes);
+    [~,spikiest_sw(2)] = max(mean_sleep_spikes);
+    
+    [~,earliest_sw(1)] = min(mean_wake_rl);
+    [~,earliest_sw(2)] = min(mean_sleep_rl);
+    
+    % Do these overlap with SOZ
+    overlap_spikiest(p,:) = [is_soz(spikiest_sw(1)) is_soz(spikiest_sw(2))];
+    overlap_earliest(p,:) = [is_soz(earliest_sw(1)) is_soz(earliest_sw(2))];
+    null_ps(p) = sum(is_soz)/length(is_soz);
+    
     %% SOZ analysis
     % average over all times, all soz (and separately for all non soz)
     rate_soz(p,:) = [nanmean(spikes(is_soz,:),'all') nanmean(spikes(~is_soz,:),'all')];
@@ -159,25 +254,21 @@ for p = 1:npts
             rl_sw_soz(sz,p,:) = [nanmean(rl(~is_soz,wake),'all') nanmean(rl(~is_soz,sleep),'all')];
         end
     end
-    %}
-    %
     
+    %% Skip subsequent loc analyses if missing
+    if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
+        missing_loc(p) = 1;
+        continue
+    end
     
  
     %% Get spectral power for each group for locs and lats
     % Loop over loc vs lat
-    for g = 1:3
+    for g = 1:2
         if g == 1
             group = loc;
-            % Skip subsequent loc analyses if missing
-            if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
-                missing_loc(p) = 1;
-                continue
-            end
         elseif g == 2
             group = lat;
-        elseif g == 3
-            group = soz_text;
         end
         
         % Get the rates corresponding to the subgroups
@@ -187,6 +278,7 @@ for p = 1:npts
             ic = ismember(group,main{g}(sg));
             
             %
+            % Get the spike rate/ad correlation for that region
             r_ad_ana{g}(sg,p,:) = [nanmean(spikes(ic,wake),'all') nanmean(spikes(ic,sleep),'all')];
             r_rl_ana{g}(sg,p,:) = [nanmean(rl(ic,wake),'all') nanmean(rl(ic,sleep),'all')];
 
@@ -199,7 +291,18 @@ for p = 1:npts
             % Spike rate for soz vs not
             rate_strat_ana{g}(sg,p,:) = [nanmean(spikes(ic,is_soz),'all') nanmean(spikes(ic,~is_soz),'all')];
             rl_strat_ana{g}(sg,p,:) = [nanmean(rl(ic,is_soz),'all') nanmean(rl(ic,~is_soz),'all')];
-            
+            %{
+            rate_subgroup = nanmean(spikes(ic,:),1);
+            rl_subgroup = nanmean(rl(ic,:),1);
+                    
+            % Get the spike rate/ad correlation for that region
+            r_ad_ana{g}(sg,p,:) = [nanmean(rate_subgroup(wake)) nanmean(rate_subgroup(sleep))];
+            r_rl_ana{g}(sg,p,:) = [nanmean(rl_subgroup(wake)) nanmean(rl_subgroup(sleep))];
+
+            % ignoring sleep/wake diff
+            rate_overall_ana{g}(sg,p) = nanmean(rate_subgroup);
+            rl_overall_ana{g}(sg,p) = nanmean(rl_subgroup);
+            %}
         end
         
 
@@ -208,22 +311,15 @@ end
 
 %% Remove empty pts for loc analyses
 missing_loc = logical(missing_loc);
-r_ad_ana{1}(:,missing_loc,:) = [];
-rate_overall_ana{1}(:,missing_loc) = [];
+for i = 1:length(r_ad_ana)
+    r_ad_ana{i}(:,missing_loc,:) = [];
+    rate_overall_ana{i}(:,missing_loc) = [];
+end
 npts = npts - sum(missing_loc);
 
 
 %% Prep out structure
-out.rate_overall_ana = rate_overall_ana;
-out.main = main;
-out.rate_strat_ana = rate_strat_ana;
-out.rl_overall_ana = rl_overall_ana;
-out.rl_strat_ana = rl_strat_ana;
-out.all_rates = all_rates;
-out.all_coi = all_coi;
-out.ns_sw = ns_sw;
-out.r_ad_ana = r_ad_ana;
-out.r_rl_ana = r_rl_ana;
+
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{
