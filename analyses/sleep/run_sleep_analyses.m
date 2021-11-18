@@ -1,3 +1,6 @@
+%% To do
+% Don't need to skip patients in circadian analysis
+
 %% Parameters
 rm_cluster = 0;
 do_avg = 0;
@@ -53,3 +56,6 @@ out.out_folder = out_folder;
 %% Do plots
 fprintf('\nDoing other plots\n');
 sleep_plots(out)
+
+%% Save out file
+save([out_folder,'out.mat'],'out')
