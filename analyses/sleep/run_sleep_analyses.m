@@ -53,9 +53,10 @@ out.bin_out = bin_out;
 out.sz_out = sz_out;
 out.out_folder = out_folder;
 
+%% Save out file
+save([out_folder,'out.mat'],'out')
+
 %% Do plots
 fprintf('\nDoing other plots\n');
 sleep_plots(out)
 
-%% Save out file
-save([out_folder,'out.mat'],'out')
