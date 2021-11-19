@@ -56,6 +56,10 @@ while i < length(sleep) - time_to_take_spikes
     end
 end
 
+% remove transitions too close to the start or end of the record
+transitions(transitions-time_to_take_spikes <=0) = [];
+transitions(transitions+time_to_take_spikes > length(sleep)) = [];
+
 % remove clusters if I want
 ntransitions = length(transitions);
 if rm_cluster
