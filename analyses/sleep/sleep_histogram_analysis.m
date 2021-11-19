@@ -133,11 +133,13 @@ for p = 1:npts
     all_pts_sleep_bins(p,:) = sleep_in_bins;
     
     %% bin seizure times into this framework
-    sz_start = sz_times(:,1);
-    sz_bins = find_segment_closest_time(bins,times,sz_start);
-    
-    pt_sz_bins{p} = sz_bins;
-    all_sz_bins = [all_sz_bins;sz_bins];
+    if ~isempty(sz_times)
+        sz_start = sz_times(:,1);
+        sz_bins = find_segment_closest_time(bins,times,sz_start);
+
+        pt_sz_bins{p} = sz_bins;
+        all_sz_bins = [all_sz_bins;sz_bins];
+    end
     
     %% Also prep for a model
     nbins = size(sp_counts_in_bins,2);
