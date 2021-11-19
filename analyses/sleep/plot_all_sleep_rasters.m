@@ -21,7 +21,7 @@ load([out_folder,'out.mat']);
 listing = dir([int_folder,'*.mat']);
 npts = length(listing);
 
-for p = 2%1:npts
+for p = 1:npts
     
     fprintf('\nDoing patient %d of %d\n',p,npts);
     

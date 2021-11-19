@@ -34,7 +34,7 @@ set(gcf,'position',[10 10 1200 900])
     end
     
     for t = 1:length(transitions)
-        plot([transitions(t) transitions(t)],ylim,'m--','linewidth',2)
+        plot([transitions(t) transitions(t)],ylim,'c--','linewidth',2)
         
     end
     
