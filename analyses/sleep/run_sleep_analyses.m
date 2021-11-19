@@ -2,7 +2,7 @@
 % Don't need to skip patients in circadian analysis
 
 %% Parameters
-rm_cluster = 0;
+rm_cluster = 1;
 do_avg = 0;
 
 %% Get file locs

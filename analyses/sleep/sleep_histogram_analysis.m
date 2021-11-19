@@ -82,6 +82,8 @@ for p = 1:npts
     spikes = summ.spikes;
     loc = summ.ana_loc;
     name = summ.name;
+    sz_times = summ.sz_times;
+    times = summ.times;
     
     names{p} = name;
     

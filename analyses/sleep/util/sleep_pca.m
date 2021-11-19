@@ -1,4 +1,4 @@
-function sleep_pca(spike_bins,times,locs)
+function sleep_pca(spike_bins,times,locs,names)
 
 %ex_pts = [21,55,23,13,50,77];
 
@@ -37,6 +37,7 @@ for i = 1:6
     plot(times,spike_bins(top_12(i),:),'linewidth',2)
     hold on
     plot([0 0],ylim,'k--','linewidth',2)
+    title(names(top_12(i)))
 end
 
 nexttile([1 2])
