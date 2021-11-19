@@ -1,4 +1,4 @@
-function quick_raster(summ)
+function sleep_raster(summ,out,j)
 
 
 % Get the spikes and the labels
@@ -12,7 +12,8 @@ sz_times = summ.sz_times/3600/24;
 name = summ.name;
 
 % get sleep transitions
-%transitions = out.sleep_hist_out.all_transitions{j};
+transitions = out.sleep_hist_out.all_transitions{j};
+transitions = times(transitions);
 
 % remove non intracranial
 labels(ekg) = [];
@@ -29,7 +30,12 @@ set(gcf,'position',[10 10 1200 900])
     % show the seizure times
     for s = 1:size(sz_times,1)
         plot([sz_times(s,1) sz_times(s,1)],ylim,'r--','linewidth',2)
-        plot([sz_times(s,2) sz_times(s,2)],ylim,'r--','linewidth',2)
+        %plot([sz_times(s,2) sz_times(s,2)],ylim,'r--','linewidth',2)
+    end
+    
+    for t = 1:length(transitions)
+        plot([transitions(t) transitions(t)],ylim,'m--','linewidth',2)
+        
     end
     
     xlim([times(1) times(end)])

@@ -124,6 +124,7 @@ for p = 1:npts
         sleep_in_bins(t,:) = sleep(bins(t,:));
         sp_counts_in_bins(t,:) = sp_counts(bins(t,:));
     end
+    all_transitions{p} = transitions;
     
     % Average across transitions
     spikes_in_bins = nanmean(spikes_in_bins,1);
@@ -227,7 +228,7 @@ out.T = T;
 out.names = names;
 out.pt_sz_bins = pt_sz_bins;
 out.all_sz_bins = all_sz_bins;
-out.all_transitions = all_transitions
+out.all_transitions = all_transitions;
 
 %{
 lme_with_pt = fitlme(T,'SpikeRate~ Bin + (1|SleepTransition) + (1|Patient)');
