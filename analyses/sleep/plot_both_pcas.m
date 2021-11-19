@@ -1,5 +1,8 @@
 function plot_both_pcas
 
+%% Parameters
+ncomponents = 2;
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -17,6 +20,11 @@ sz_bins = out.sz_out.all_pts_spikes_bins;
 sz_times = out.sz_out.times;
 
 %% Do both pcas
-any_pca(sleep_bins,sleep_times,locs,names)
+any_pca(sleep_bins,sleep_times,locs,names,ncomponents)
+any_pca(sz_bins,sz_times,locs,names,ncomponents)
+
+%% Also show all histograms
+plot_all_histograms(sleep_bins,sleep_times,names)
+plot_all_histograms(sz_bins,sz_times,names)
 
 end

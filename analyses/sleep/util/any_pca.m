@@ -1,4 +1,4 @@
-function any_pca(spike_bins,times,locs,names)
+function any_pca(spike_bins,times,locs,names,nc)
 
 %ex_pts = [21,55,23,13,50,77];
 

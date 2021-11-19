@@ -60,6 +60,7 @@ rate_anatomy = nan(length(main_locs),npts,nbins);
 rate_soz = nan(2,npts,nbins);
 pt_sz_bins = cell(npts,1);
 all_sz_bins = [];
+all_transitions = cell(npts,1);
 
 all_pts_sp_vec = [];
 all_pts_bin_id_vec = [];
@@ -226,6 +227,7 @@ out.T = T;
 out.names = names;
 out.pt_sz_bins = pt_sz_bins;
 out.all_sz_bins = all_sz_bins;
+out.all_transitions = all_transitions
 
 %{
 lme_with_pt = fitlme(T,'SpikeRate~ Bin + (1|SleepTransition) + (1|Patient)');
