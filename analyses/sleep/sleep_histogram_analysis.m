@@ -64,6 +64,8 @@ all_pts_bin_id_vec = [];
 all_pts_id_vec = [];
 all_pts_trans_id_vec = [];
 
+names = cell(npts,1);
+
 % start running count of which sleep transition
 trans_count = 0;
 for p = 1:npts
@@ -79,6 +81,9 @@ for p = 1:npts
     ad = summ.ad;
     spikes = summ.spikes;
     loc = summ.ana_loc;
+    name = summ.name;
+    
+    names{p} = name;
     
     %% Get features for soz vs not
     soz = summ.soz.chs;
@@ -205,6 +210,7 @@ out.xlabel = 'Hours';
 out.ylabel = 'Spikes/elecs/min';
 out.xlim = [-12 12];
 out.T = T;
+out.names = names;
 
 %{
 lme_with_pt = fitlme(T,'SpikeRate~ Bin + (1|SleepTransition) + (1|Patient)');

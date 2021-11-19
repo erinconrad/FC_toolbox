@@ -67,6 +67,8 @@ for i = 1:length(spikes_strat)
     spikes_strat{i} = nan(length(main{i}),npts,nbins);
 end
 
+names = cell(npts,1);
+
 
 % start running count of which seiuzre
 sz_count = 0;
@@ -86,6 +88,9 @@ for p = 1:npts
     ad = summ.ad;
     loc = summ.ana_loc;
     lat = summ.ana_lat;
+    name = summ.name;
+    
+    names{p} = name;
     
     % Fix lat thing
     for i = 1:length(lat)
@@ -330,6 +335,7 @@ out.xlim = [-surround_hours surround_hours];
 out.T = T;
 out.spikes_strat = spikes_strat;
 out.main = main;
+out.names = names;
 
 %{
 figure

@@ -60,6 +60,7 @@ skip_pts = [];
 all_locs = cell(npts,1);
 all_lats = cell(npts,1);
 all_circ_P = nan(npts,1);
+names = cell(npts,1);
 
 %% Loop over patients and get psd per pt
 for p = 1:npts
@@ -75,13 +76,10 @@ for p = 1:npts
     run_length = length(times);
     soz_loc = summ.soz.loc;
     soz_lat = summ.soz.lat;
+    name = summ.name;
     
-    % Skip if all empty
-    if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
-        fprintf('\nskipping pt %d\n',p);
-        skip_pts = [skip_pts;p];
-        continue
-    end
+    
+    names{p} = name;;
     
     % parse SOZ localization
     [soz_loc,soz_lat] = seizure_localization_parser(soz_loc,soz_lat);
@@ -104,6 +102,13 @@ for p = 1:npts
     all_circ_P(p) = get_circ_power(avg_spikes,fs);
     
     %% Get spectral power for each group for locs and lats
+    % Skip if all empty
+    if sum(cellfun(@(x) isempty(x),loc)) == length(loc) 
+        fprintf('\nskipping pt %d\n',p);
+        skip_pts = [skip_pts;p];
+        continue
+    end
+    
     % Loop over loc vs lat
     for g = 1:2
         if g == 1
@@ -130,8 +135,8 @@ for p = 1:npts
 end
 
 %% Remove nan rows
-all_psd(skip_pts,:) = [];
-all_freqs(skip_pts,:)= [];
+%all_psd(skip_pts,:) = [];
+%all_freqs(skip_pts,:)= [];
 
 %% confirm freqs same across patients
 sum_diff_freqs = sum(abs(sum(abs(diff(all_freqs,1,1)))));
@@ -159,6 +164,8 @@ out.circ_P = circ_P;
 out.main_locs = main_locs;
 out.all_circ_P = all_circ_P;
 out.all_locs = all_locs;
+out.skip_pts = skip_pts;
+out.names = names;
 
 %{
 %% Initialize figure

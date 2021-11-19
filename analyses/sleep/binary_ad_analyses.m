@@ -68,6 +68,7 @@ all_rates = nan(npts,2);
 all_coi = nan(npts,2);
 missing_loc = zeros(npts,1);
 n_sleep_wake = nan(npts,2);
+names = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -87,6 +88,9 @@ for p = 1:npts
     coi_global = summ.coi_global;
     labels = summ.labels;
     ns = summ.ns;
+    name = summ.name;
+    
+    names{p} = name;
     
     % Fix lat thing
     for i = 1:length(lat)
@@ -228,7 +232,7 @@ out.ns_sw = ns_sw;
 out.r_ad_ana = r_ad_ana;
 out.r_rl_ana = r_rl_ana;
 out.n_sleep_wake = n_sleep_wake;
-
+out.names = names;
 %% (No sleep) How does spike rate and timing vary across locations
 %{
 f1 = figure;
