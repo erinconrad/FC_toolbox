@@ -1,4 +1,4 @@
-function plot_all_histograms(hists)
+function plot_all_histograms(hists,names)
 
 midpoint = size(hists,2)/2;
 
@@ -9,6 +9,7 @@ for i = 1:size(hists,1)
     plot(hists(i,:))
     hold on
     plot([midpoint midpoint],ylim,'--')
+    title(names{i})
 end
 
 end

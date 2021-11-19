@@ -10,7 +10,7 @@ for a defined time period. But the linear model seems ok.
 
 %% Parameters
 n_periods = 6*3; % want a minimum of 3 hours (18 10-minute blocks) of mostly wake or mostly sleep
-min_same = 0.8; % want 80% consistency within that time period
+min_same = 0.7; % want 70% consistency within that time period
 later_search = 12;
 
 time_to_take_spikes = 6*12;
