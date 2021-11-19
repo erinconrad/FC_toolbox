@@ -1,4 +1,4 @@
-function find_segment_closest_time(segments,times,szs)
+function sz_bins = find_segment_closest_time(segments,times,szs)
 
 %{
 This function takes an tx1 list of times_of_interest and an nxk list of segments and it
@@ -25,7 +25,10 @@ for is = 1:nsleeps
             % find the closest one
             [~,I] = min(abs(curr_times-curr_sz));
             
-            sz_bins = [sz_bins;curr_sleep(I)];
+            % get the number of segments relative to the start of the
+            % segment
+            
+            sz_bins = [sz_bins;is,I];
             
         end
     end

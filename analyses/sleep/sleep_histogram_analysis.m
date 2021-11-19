@@ -58,6 +58,8 @@ all_pts_sleep_bins = nan(npts,nbins);
 missing_loc = zeros(npts,1);  
 rate_anatomy = nan(length(main_locs),npts,nbins);
 rate_soz = nan(2,npts,nbins);
+pt_sz_bins = cell(npts,1);
+all_sz_bins = [];
 
 all_pts_sp_vec = [];
 all_pts_bin_id_vec = [];
@@ -129,6 +131,13 @@ for p = 1:npts
     % Add to list of patients
     all_pts_spikes_bins(p,:) = spikes_in_bins;
     all_pts_sleep_bins(p,:) = sleep_in_bins;
+    
+    %% bin seizure times into this framework
+    sz_start = sz_times(:,1);
+    sz_bins = find_segment_closest_time(bins,times,sz_start);
+    
+    pt_sz_bins{p} = sz_bins;
+    all_sz_bins = [all_sz_bins;sz_bins];
     
     %% Also prep for a model
     nbins = size(sp_counts_in_bins,2);
@@ -213,6 +222,8 @@ out.ylabel = 'Spikes/elecs/min';
 out.xlim = [-12 12];
 out.T = T;
 out.names = names;
+out.pt_sz_bins = pt_sz_bins;
+out.all_sz_bins = all_sz_bins;
 
 %{
 lme_with_pt = fitlme(T,'SpikeRate~ Bin + (1|SleepTransition) + (1|Patient)');
