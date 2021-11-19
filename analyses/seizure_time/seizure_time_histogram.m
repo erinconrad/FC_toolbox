@@ -8,7 +8,7 @@ spike rate ~ time relative to seizure + sleep vs wake + (1|patient)
 %}
 
 %% Parameters
-surround_hours = 6;
+surround_hours = 3;
 surround_secs = surround_hours*3600; % convert to seconds
 surround = surround_hours*6; % convert to #bins (6 hours = 6*6 10 minute bins)
 nbins = surround*2;
