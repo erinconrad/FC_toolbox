@@ -126,7 +126,7 @@ r_ad_ana = bin_out.r_ad_ana;
 %
 % A: Spike rate according to sleep vs wake and anatomical location
 nexttile
-interaction_plot_and_stats(r_ad_ana{1},main{1},'Spike/elec/min',{'Wake','Sleep'},0,plot_type);
+interaction_plot_and_stats(r_ad_ana{1},make_multi_line(main{1}),'Spike/elec/min',{'Wake','Sleep'},0,plot_type);
 title('Spike rate by anatomical location')
 
 % Spike rate according to sleep vs wake and SOZ
@@ -138,7 +138,7 @@ title('Spike rate by SOZ vs not SOZ')
 % C: Spike latency according to sleep vs wake and anatomical location
 nexttile
 r_rl_ana = bin_out.r_rl_ana;
-interaction_plot_and_stats(r_rl_ana{1}*1e3,main{1},'Spike latency (ms)',{'Wake','Sleep'},0,plot_type);
+interaction_plot_and_stats(r_rl_ana{1}*1e3,make_multi_line(main{1}),'Spike latency (ms)',{'Wake','Sleep'},0,plot_type);
 title('Spike latency by anatomical location')
 
 % Spike latency according to sleep vs wake and SOZ
@@ -250,7 +250,7 @@ end
 
 % anatomical localiztion
 nexttile
-interaction_plot_and_stats(bl_post_strat{1},main{1},'Spike/elec/min',...
+interaction_plot_and_stats(bl_post_strat{1},make_multi_line(main{1}),'Spike/elec/min',...
     {'Baseline','Post-ictal'},0,plot_type);
 title('Post-ictal spike rate by anatomical location')
 

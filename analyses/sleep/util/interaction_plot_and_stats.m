@@ -87,7 +87,7 @@ if show_leg
 else
     yl = ylim;
     ytext = yl(1) + 1.05*(yl(2)-yl(1));
-    newyl = [yl(1) yl(1) + 1.1*(yl(2)-yl(1))];
+    newyl = [yl(1) yl(1) + 1.15*(yl(2)-yl(1))];
     for i = 1:length(legend_text)
         text(i,ytext,legend_text{i},'horizontalalignment','center','fontsize',15);
     end

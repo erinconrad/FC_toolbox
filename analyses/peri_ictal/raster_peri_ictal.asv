@@ -50,8 +50,7 @@ sz_to_plot = all_szs(all_szs(:,1) > 0 & all_szs(:,1) < nruns,:);
 % realign later seizure based on current sz length
 later_szs = sz_to_plot(:,1) > 120.1;
 curr_sz = abs(sz_to_plot(:,1)-120) < 0.01;
-curr_sz_length = sz_to_plot(curr_sz,2) - sz_to_plot(curr_sz,1);
-%sz_to_plot(later_szs,:) = sz_to_plot(later_szs,:) + curr_sz_length;
+curr_sz_length = sz_to_plot(
 
 run_times = run_times + repmat(sz-old_all_szs(s,1),size(run_times,1),2);
 
@@ -82,12 +81,10 @@ nexttile
 h = turn_nans_gray(spikes);
 hold on
 set(h,'XData',times);
-%{
 for is = 1:size(sz_to_plot,1)
     plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
     plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
-%}
 xlabel('Minutes')
 ylabel('Electrode')
 title('Spike rates')
@@ -103,12 +100,10 @@ nexttile
 h = turn_nans_gray(ns);
 hold on
 set(h,'XData',times);
-%{
 for is = 1:size(sz_to_plot,1)
     plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
     plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
-%}
 xlabel('Minutes')
 ylabel('Electrode')
 title('Pearson correlation node strength')
@@ -123,12 +118,10 @@ nexttile
 h = turn_nans_gray(ad);
 hold on
 set(h,'XData',times);
-%{
 for is = 1:size(sz_to_plot,1)
     plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
     plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
-%}
 xlabel('Minutes')
 ylabel('Electrode')
 title('Alpha delta ratio (lower suggests sleep or pathological slowing)')

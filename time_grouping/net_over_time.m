@@ -39,6 +39,7 @@ for f = 1:nfiles
     rl_montage = cell(nmontages,1);
     coi_global_montage = cell(nmontages,1);
     n_rm_ictal = zeros(nmontages,1);
+    %seq = cell(nmontages,1);
     
     for m = 1:nmontages
         net_montage{m} = nan(nchs*(nchs-1)/2,nruns);
@@ -48,6 +49,7 @@ for f = 1:nfiles
         rl_montage{m} = nan(nchs,nruns);
         %coi_montage{m} = nan(nchs,nruns);
         coi_global_montage{m} = nan(nruns,1);
+        seq{m} = [];
     end
     
     for r = 1:nruns
@@ -107,11 +109,14 @@ for f = 1:nfiles
                 % Get spike coi
                 %[coi_ch,global_coi] = get_spike_coi(gdf,nchs,fs);
                 [coa,rl,global_coi] = build_sequences(gdf,nchs,fs);
+            else
+               
             end
             
             % Fill up cell arrays
             net_montage{m}(:,r) = wrap_or_unwrap_adjacency_fc_toolbox(data_uw);
             coa_montage{m}(:,r) = wrap_or_unwrap_adjacency_fc_toolbox(coa);
+            %seq{m} = [seq{m};seq_matrix];
             rl_montage{m}(:,r) = rl;
             spikes_montage{m}(:,r) = spikes;
             ad_montage{m}(:,r) = ad;
@@ -167,6 +172,7 @@ for f = 1:nfiles
         out.file(f).montage(m).coa = coa_montage{m};
         out.file(f).montage(m).rl = rl_montage{m};
         out.file(f).montage(m).n_rm_ictal = n_rm_ictal(m);
+        %out.file(f).montage(m).seq = seq{m};
         
     end
     out.file(f).run_center = run_center;

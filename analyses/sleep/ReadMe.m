@@ -1,8 +1,11 @@
 %{
 
 To do:
-- double check some of the sleep designation stuff, as this is the basis of
-all other analyses
+- add code to identify and track what happens to the different spike
+populations over time
+    - spike co-activation networks
+    - identify the leader of each network, see what happens to those with
+    sleep and after seizures
 
 This contains the script to run the sleep analysis. A brief overview of
 the pipeline:

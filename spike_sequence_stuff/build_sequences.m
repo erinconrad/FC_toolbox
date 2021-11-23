@@ -5,9 +5,11 @@ t2_seconds = 50e-3;
 t2 = t2_seconds * fs;
 
 %% Initialize array
+nspikes = size(gdf,1);
 coa = zeros(nchs,nchs);
 rl = cell(nchs,1);
 global_coi = nan(size(gdf,1),1);
+%seq_matrix = nan(nspikes,nchs);
 
 %% Loop over spikes
 for s = 1:size(gdf,1)
@@ -16,6 +18,7 @@ for s = 1:size(gdf,1)
     
     % difference in spike time between this one and all others
     time_diff = abs(time - gdf(:,2));
+    %unsigned_time_diff = (time - gdf(:,2));
     
     % find those less than t2 and not same ch. I will say these spikes are
     % in the same spike sequence
@@ -36,6 +39,12 @@ for s = 1:size(gdf,1)
     
     % Add count to coa
     coa(ch,close_chs) = coa(ch,close_chs) + 1;
+    
+    % Get the latency of all of the co-spiking channels for that spikes
+    %{
+    seq_matrix(s,gdf(close_enough,1)) = unsigned_time_diff(close_enough);
+    seq_matrix(s,ch) = 0; % add itself
+    %}
     
     % add time to rl if at least two channels
     if sum(close_enough) > 0
