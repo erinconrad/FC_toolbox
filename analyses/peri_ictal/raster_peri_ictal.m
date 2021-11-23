@@ -34,6 +34,7 @@ all_szs = nan(length(pc.file(f).sz),2);
 for is = 1:length(pc.file(f).sz)
     sz_start = pc.file(f).sz(is).run(nruns/2).run_times(2); % end of middle run is start of sz
     sz_end = pc.file(f).sz(is).run(nruns/2+1).run_times(1); % first of middle +1 run is end of sz
+    if isnan(sz_end), sz_end = sz_start; end
     all_szs(is,:) = [sz_start sz_end];
 end
 
@@ -81,15 +82,23 @@ tiledlayout(3,1,'tilespacing','compact','padding','tight')
 nexttile
 h = turn_nans_gray(spikes);
 hold on
-set(h,'XData',times);
+%set(h,'XData',times);
 %{
 for is = 1:size(sz_to_plot,1)
     plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
     plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
 %}
-xlabel('Minutes')
-ylabel('Electrode')
+%xlabel('Minutes')
+
+sz_blocks = get_sz_blocks(times,sz_to_plot);
+yl = ylim;
+for is = 1:size(sz_to_plot,1)
+    area([sz_blocks(is,1) sz_blocks(is,2)],[yl(2) yl(2)],'basevalue',yl(1),...
+        'facecolor','r')
+end
+xlabel('Minute blocks')
+ylabel(sprintf('Electrode (show every %d)',skip))
 title('Spike rates')
 set(gca,'fontsize',15)
 c1 = colorbar;
@@ -102,15 +111,23 @@ yticklabels(labels(1:skip:size(spikes,1)))
 nexttile
 h = turn_nans_gray(ns);
 hold on
-set(h,'XData',times);
+%set(h,'XData',times);
 %{
 for is = 1:size(sz_to_plot,1)
     plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
     plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
 %}
-xlabel('Minutes')
-ylabel('Electrode')
+%xlabel('Minutes')
+sz_blocks = get_sz_blocks(times,sz_to_plot);
+yl = ylim;
+for is = 1:size(sz_to_plot,1)
+    area([sz_blocks(is,1) sz_blocks(is,2)],[yl(2) yl(2)],'basevalue',yl(1),...
+        'facecolor','r')
+end
+
+ylabel(sprintf('Electrode (show every %d)',skip))
+xlabel('Minute blocks')
 title('Pearson correlation node strength')
 set(gca,'fontsize',15)
 c2 = colorbar;
@@ -122,15 +139,22 @@ yticklabels(labels(1:skip:size(spikes,1)))
 nexttile
 h = turn_nans_gray(ad);
 hold on
-set(h,'XData',times);
+%set(h,'XData',times);
 %{
 for is = 1:size(sz_to_plot,1)
     plot([sz_to_plot(is,1) sz_to_plot(is,1)],ylim,'r--','linewidth',1)
     plot([sz_to_plot(is,2) sz_to_plot(is,2)],ylim,'r--','linewidth',1)
 end
 %}
-xlabel('Minutes')
-ylabel('Electrode')
+%xlabel('Minutes')
+xlabel('Minute blocks')
+sz_blocks = get_sz_blocks(times,sz_to_plot);
+yl = ylim;
+for is = 1:size(sz_to_plot,1)
+    area([sz_blocks(is,1) sz_blocks(is,2)],[yl(2) yl(2)],'basevalue',yl(1),...
+        'facecolor','r')
+end
+ylabel(sprintf('Electrode (show every %d)',skip))
 title('Alpha delta ratio (lower suggests sleep or pathological slowing)')
 set(gca,'fontsize',15)
 c3 = colorbar;
