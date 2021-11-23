@@ -7,4 +7,6 @@ for ir = 1:length(range)
     [~,Q(ir)]=community_louvain(sum_coa,gamma);
 end
 
+plot(range,Q)
+
 end

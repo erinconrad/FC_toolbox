@@ -27,23 +27,16 @@ ana = summ.ana_loc;
 spikes = summ.spikes;
 labels = summ.labels;
 
-%% unwrap to 3 dimensional matrix
-coa = wrap_or_unwrap_adjacency_fc_toolbox(coa);
-
 %% Find and remove non-intracranial
 ekg = find_non_intracranial(labels);
-coa = coa(~ekg,~ekg,:);
-locs = locs(~ekg,:);
-rl = rl(~ekg);
-ana = ana(~ekg);
-spikes = spikes(~ekg,:);
-labels = labels(~ekg);
+coa = coa(
 
 avg_spikes = nanmean(spikes,2);
 
 mean_rl = nanmean(rl,2);
 
-
+% unwrap to 3 dimensional matrix
+coa = wrap_or_unwrap_adjacency_fc_toolbox(coa);
 
 % sum over all times (nan because times that I throw out have no spikes)
 sum_coa = nansum(coa,3);
