@@ -44,7 +44,7 @@ for p = 1:npts
     ad = nanmean(ad,1);
     
     %% Get spike networks
-    [dist,leader_ana] = get_spike_networks(summ);
+    [dist,leader_ana] = get_spike_networks(summ,disc);
     nclusters = size(dist,1);
     
      %% Determine "wake" and "sleep" times

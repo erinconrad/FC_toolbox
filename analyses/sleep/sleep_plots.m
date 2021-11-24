@@ -7,22 +7,12 @@ nblocks = 6;
 %% Unpack substructures
 unpack_any_struct(out);
 
-%% Bonus test - subnetwork analysis
-figure
-main = subnet_out.main;
-all_clust_ws = subnet_out.all_clust_ws;
-interaction_plot_and_stats(all_clust_ws,make_multi_line(main{1}),'Distribution',...
-    {'Awake','Asleep'},0,plot_type);
-title('Wake/sleep spike rate by anatomical location')
-print([out_folder,'FigTest1'],'-dpng')
-close(gcf)
-
 %% Bonus test - SOZ ranking sw
 figure
 soz_rank_sw = bin_out.soz_rank_sw;
 plot_paired_data(soz_rank_sw',{'Wake','Sleep'},'Rank in spike rate','paired',plot_type)
 title({'SOZ rank in spike rate','by wake vs sleep'})
-print([out_folder,'FigTest2'],'-dpng')
+print([out_folder,'SOZTest'],'-dpng')
 close(gcf)
 
 %% Fig 1 - Circadian analysis

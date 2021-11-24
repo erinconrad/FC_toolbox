@@ -38,8 +38,6 @@ subnet_out = subnetwork_analysis(disc);
 fprintf('\nDoing sleep histogram analysis\n');
 sleep_hist_out = sleep_histogram_analysis(rm_cluster,disc);
 
-
-
 % Stats on amount of wake and sleep
 n_sleep_wake = bin_out.n_sleep_wake;
 perc_asleep = n_sleep_wake(:,1)./(sum(n_sleep_wake,2))*100;
