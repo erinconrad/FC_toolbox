@@ -45,7 +45,7 @@ for p = 1:npts
     
     %% get rid and labels
     rid = pt(ip).rid;
-    labels = pt(ip).labels;
+    elabels = summ.labels;
     
     %% Get atlas
     out = get_atlas_parcellations(rid,elabels);
