@@ -1,4 +1,4 @@
-function out = get_atlas_parcellations(rid,elabels)
+function out = get_atlas_parcellations(rid,elabels,name)
 
 %% Parameters
 which_atlas = 'aal';
@@ -9,7 +9,7 @@ atlas_folder = [locations.main_folder,'data/atlas/'];
 parcellation_folder = [atlas_folder,'atlas_localizations/'];
 
 %% Clean labels
-elabels = clean_labels_2(elabels);
+elabels = clean_labels_2(elabels,name);
 
 %% Load correct atlas table
 if rid<100
@@ -31,7 +31,7 @@ T = readtable([parcellation_folder,listing.name]);
 
 %% Get the atlas elec labels and clean these
 alabels = T.channel;
-alabels = clean_labels_2(alabels);
+alabels = decompose_labels(alabels,name);
 
 %% Find the indices of the atlas corresponding to each label
 [lia,locb] = ismember(elabels,alabels);

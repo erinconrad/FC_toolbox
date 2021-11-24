@@ -48,7 +48,7 @@ for p = 1:npts
     elabels = summ.labels;
     
     %% Get atlas
-    out = get_atlas_parcellations(rid,elabels);
+    out = get_atlas_parcellations(rid,elabels,name);
 
     if ~isempty(out.enum)
         names = [names;name];
