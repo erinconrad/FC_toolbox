@@ -112,7 +112,7 @@ for l = 1:npts
     ns = ns_over_blocks(fc);
     
     % rewrap it
-    fc = wrap_or_unwrap_adjacency_fc_toolbox(fc);
+    %fc = wrap_or_unwrap_adjacency_fc_toolbox(fc);
     
     % Clean the labels
     clean_labels = decompose_labels(labels,name);   
@@ -205,7 +205,7 @@ for l = 1:npts
     summ.n_rm_ictal = n_rm_ictal;
     summ.sz_times = sz_times;
     summ.rid = rid;
-    summ.fc = fc;
+    %summ.fc = fc;
     %summ.ge = ge;
 
     %% Save it all
