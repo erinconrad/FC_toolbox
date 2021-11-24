@@ -69,6 +69,8 @@ all_coi = nan(npts,2);
 missing_loc = zeros(npts,1);
 n_sleep_wake = nan(npts,2);
 names = cell(npts,1);
+seq_sw = nan(npts,4);
+soz_rank_sw = nan(npts,2);
 
 %% Loop over patients
 for p = 1:npts
@@ -89,6 +91,7 @@ for p = 1:npts
     labels = summ.labels;
     ns = summ.ns;
     name = summ.name;
+    seq_info = summ.seq_info;
     
     names{p} = name;
     
@@ -146,6 +149,10 @@ for p = 1:npts
     %% Wake vs sleep ns
     mean_ns = nanmean(ns,1); % node strength averaged across electrodes
     ns_sw(p,:) = [nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
+    
+    %% Wake vs sleep seq info
+    seq_sw(p,:) = [nanmean(seq_info(1,wake)) nanmean(seq_info(1,sleep)),...
+        nanmean(seq_info(2,wake)) nanmean(seq_info(2,sleep))];
 
   
     %{
@@ -169,7 +176,19 @@ for p = 1:npts
     %}
     %
     
-    
+    %% Rank for soz electrodes in sleep and wake
+    spikes_for_rank = spikes;
+    spikes_for_rank(isnan(spikes_for_rank)) = 0; % make nan - inf so not to screw up sort
+    ranking = nan(size(spikes));
+    % Loop over times
+    for r = 1:size(spikes,2)
+        [~,I] = sort(spikes_for_rank(:,r),'descend');
+        curr_rank = 1:size(spikes,1);
+        curr_rank(I) = curr_rank;
+        ranking(:,r) = curr_rank;
+    end
+    soz_median_ranking = nanmedian(ranking(is_soz,:),1);
+    soz_rank_sw(p,:) = [nanmean(soz_median_ranking(wake)),nanmean(soz_median_ranking(sleep))];
  
     %% Get spectral power for each group for locs and lats
     % Loop over loc vs lat
@@ -233,6 +252,8 @@ out.r_ad_ana = r_ad_ana;
 out.r_rl_ana = r_rl_ana;
 out.n_sleep_wake = n_sleep_wake;
 out.names = names;
+out.seq_sw = seq_sw;
+out.soz_rank_sw = soz_rank_sw;
 %% (No sleep) How does spike rate and timing vary across locations
 %{
 f1 = figure;

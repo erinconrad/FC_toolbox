@@ -26,6 +26,10 @@ roc_out.auc = auc;
 roc_out.disc = disc;
 roc_out.disc_I = disc_I;
 
+%% Do binary ad analyses
+fprintf('\nDoing binary AD analyses\n');
+bin_out = binary_ad_analyses(disc);
+
 %% Do subnetwork wake/sleep analysis
 fprintf('\nDoing subnetwork analysis\n');
 subnet_out = subnetwork_analysis(disc);
@@ -34,9 +38,7 @@ subnet_out = subnetwork_analysis(disc);
 fprintf('\nDoing sleep histogram analysis\n');
 sleep_hist_out = sleep_histogram_analysis(rm_cluster,disc);
 
-%% Do binary ad analyses
-fprintf('\nDoing binary AD analyses\n');
-bin_out = binary_ad_analyses(disc);
+
 
 % Stats on amount of wake and sleep
 n_sleep_wake = bin_out.n_sleep_wake;

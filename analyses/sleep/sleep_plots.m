@@ -14,7 +14,15 @@ all_clust_ws = subnet_out.all_clust_ws;
 interaction_plot_and_stats(all_clust_ws,make_multi_line(main{1}),'Distribution',...
     {'Awake','Asleep'},0,plot_type);
 title('Wake/sleep spike rate by anatomical location')
-print([out_folder,'FigTest'],'-dpng')
+print([out_folder,'FigTest1'],'-dpng')
+close(gcf)
+
+%% Bonus test - SOZ ranking sw
+figure
+soz_rank_sw = bin_out.soz_rank_sw;
+plot_paired_data(soz_rank_sw',{'Wake','Sleep'},'Rank in spike rate','paired',plot_type)
+title({'SOZ rank in spike rate','by wake vs sleep'})
+print([out_folder,'FigTest2'],'-dpng')
 close(gcf)
 
 %% Fig 1 - Circadian analysis
@@ -61,14 +69,14 @@ close(gcf)
 %% Figure 2 - What happens to spikes with sleep
 figure
 set(gcf,'position',[10 10 1000 1000])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+tiledlayout(3,2,'tilespacing','tight','padding','tight')
 
 % A: ROC curve
 roc = roc_out.roc;
 auc = roc_out.auc;
 disc_I = roc_out.disc_I;
 
-nexttile
+nexttile([1 2])
 plot(roc(:,1),roc(:,2),'k','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--')
@@ -111,11 +119,25 @@ plot_paired_data(all_rates',{'Wake','Sleep'},'Spike/elec/min','paired',plot_type
 title('Spike rate in sleep vs wake')
 %}
 
+
+nseq = bin_out.seq_sw(:,1:2);
+seq_length = bin_out.seq_sw(:,3:4);
+
+% C: sleep vs wake nseq
+nexttile
+plot_paired_data(nseq',{'Wake','Sleep'},'Number of sequences','paired',plot_type)
+
+% D sleep vs wake sequence length
+nexttile
+plot_paired_data(seq_length',{'Wake','Sleep'},'Number of spikes in sequences','paired',plot_type)
+
 % D: Sleep vs wake co-spiking
+%{
 nexttile
 all_coi = bin_out.all_coi;
 plot_paired_data(all_coi',{'Wake','Sleep'},'Spike COI','paired',plot_type)
 title('Co-spiking in sleep vs wake')
+%}
 
 % E: Sleep vs wake node strength
 nexttile
