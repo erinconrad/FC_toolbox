@@ -1,4 +1,4 @@
-function [coa,rl,global_coi] = build_sequences(gdf,nchs,fs)
+function [coa,rl,global_coi,seq_lengths] = build_sequences(gdf,nchs,fs)
 
 %% How close spikes need to be
 t2_seconds = 50e-3;
@@ -10,11 +10,30 @@ coa = zeros(nchs,nchs);
 rl = cell(nchs,1);
 global_coi = nan(size(gdf,1),1);
 %seq_matrix = nan(nspikes,nchs);
+seqs = {};
 
 %% Loop over spikes
 for s = 1:size(gdf,1)
     time = gdf(s,2);
     ch = gdf(s,1);
+    
+    % Take last sequence
+    if ~isempty(seqs)
+        last_seq = seqs{end};
+        last_ch = last_seq(end,1);
+        last_time = last_seq(end,2);
+        if time < last_time
+            error('what');
+        end
+        
+        if time - last_time < t2
+            seqs{end}(end+1,:) = [ch time];
+        else
+            seqs{end+1}(1,:) = [ch time];
+        end
+    else
+        seqs{1}(1,:) = [ch time];
+    end
     
     % difference in spike time between this one and all others
     time_diff = abs(time - gdf(:,2));
@@ -52,6 +71,8 @@ for s = 1:size(gdf,1)
     end
 
 end
+
+seq_lengths = cellfun(@(x) size(x,1), seqs);
 
 %% confirm coa symmetric
 %assert(issymmetric(coa))

@@ -49,7 +49,8 @@ for f = 1:nfiles
         rl_montage{m} = nan(nchs,nruns);
         %coi_montage{m} = nan(nchs,nruns);
         coi_global_montage{m} = nan(nruns,1);
-        seq{m} = [];
+        seq_info{m} = nan(2,nruns);
+        %seq{m} = [];
     end
     
     for r = 1:nruns
@@ -83,13 +84,20 @@ for f = 1:nfiles
             % Take R^2
             data_uw = (data_uw).^2;
             
-            %% Spikes
+            %% Default thigns to nan
             spikes = nan(nchs,1); % default to nan
             %coi_ch = nan(nchs,1);
             global_coi = nan;
             coa = nan(nchs,nchs);
+            nseq_and_length = nan(2,1);
             rl = nan(nchs,1);
+            
+            %% Change defaults to zeros if we run it
+            % this way I distinguish between zero spikes because we just
+            % didn't run it from zero spikes because none were detected
             spikes(is_run) = 0; % default zero if we run it
+            nseq_and_length = [0 0];
+            coa = zeros(nchs,nchs);
             
             if rm_ictal_spikes && ~isempty(gdf)
                 [gdf,n_ictal] = rm_spikes_in_seizures(gdf,fs,run_start,sz_times);
@@ -108,7 +116,8 @@ for f = 1:nfiles
                 
                 % Get spike coi
                 %[coi_ch,global_coi] = get_spike_coi(gdf,nchs,fs);
-                [coa,rl,global_coi] = build_sequences(gdf,nchs,fs);
+                [coa,rl,global_coi,seq_lengths] = build_sequences(gdf,nchs,fs);
+                nseq_and_length = [length(seq_lengths) mean(seq_lengths)];
             else
                
             end
@@ -122,6 +131,7 @@ for f = 1:nfiles
             ad_montage{m}(:,r) = ad;
             %coi_montage{m}(:,r) = coi_ch;
             coi_global_montage{m}(r) = global_coi;
+            seq_info{m}(:,r) = nseq_and_length;
 
             
         end
@@ -139,6 +149,7 @@ for f = 1:nfiles
         coa_montage{m}(:,all_adj_bad) = nan;
         %coi_montage{m}(:,all_adj_bad) = nan;
         coi_global_montage{m}(all_adj_bad) = nan;
+        seq_info{m}(:,all_adj_bad) = nan;
         
          
     end
@@ -172,6 +183,7 @@ for f = 1:nfiles
         out.file(f).montage(m).coa = coa_montage{m};
         out.file(f).montage(m).rl = rl_montage{m};
         out.file(f).montage(m).n_rm_ictal = n_rm_ictal(m);
+        out.file(f).montage(m).seq_info = seq_info{m};
         %out.file(f).montage(m).seq = seq{m};
         
     end

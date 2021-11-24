@@ -33,6 +33,7 @@ for m  = 1:nmontages
     out.montage(m).rl = nan(nchs,n_runs_total);
     out.montage(m).labels = cell(nchs,1);
     out.montage(m).n_rm_ictal = 0;
+    out.montage(m).seq_info = nan(2,n_runs_total);
 end
 
 %% Find how to match labels in each file with these labels
@@ -86,6 +87,7 @@ for f = 1:nfiles
         coi_global = out.file(f).montage(m).coi_global;
         labels = out.file(f).montage(m).labels;
         n_rm_ictal = out.file(f).montage(m).n_rm_ictal;
+        seq_info = out.file(f).montage(m).seq_info;
         
         % prep net_uw and coa_uw
         net_uw = nan(length(labels),length(labels),nruns);
@@ -140,6 +142,7 @@ for f = 1:nfiles
         out.montage(m).coi_global(curr_run_idx:curr_run_idx+nruns-1) = coi_global;
         out.montage(m).labels(locb) = labels;
         out.montage(m).n_rm_ictal = out.montage(m).n_rm_ictal + n_rm_ictal;
+        out.montage(m).seq_info(:,curr_run_idx:curr_run_idx+nruns-1) = seq_info;
         
     end
     
