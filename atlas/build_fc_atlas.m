@@ -42,7 +42,7 @@ npts = length(listing);
 names = {};
 
 %% Initialize atlas
-atlas = nan(n_parcels,n_parcels,npts);
+atlas_mat = nan(n_parcels,n_parcels,npts);
 
 %% Loop over patients
 for p = 1:npts
@@ -108,12 +108,12 @@ for p = 1:npts
         
     end
     
-    atlas(:,:,p) = fc_atlas_space;
+    atlas_mat(:,:,p) = fc_atlas_space;
     
 end
 
 %% Save the atlas
-out.atlas = atlas;
+out.atlas = atlas_mat;
 out.atlas_nums = atlas_nums;
 out.atlas_names = atlas_names;
 save([out_folder,atlas,'.mat'],'out');
