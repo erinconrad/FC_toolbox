@@ -9,7 +9,7 @@ atlas_folder = [locations.main_folder,'data/atlas/'];
 parcellation_folder = [atlas_folder,'atlas_localizations/'];
 
 %% Clean labels
-elabels = clean_labels_2(elabels,name);
+elabels = decompose_labels(elabels,name);
 
 %% Load correct atlas table
 if rid<100
