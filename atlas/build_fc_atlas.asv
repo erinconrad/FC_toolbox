@@ -51,7 +51,7 @@ for p = 1:npts
     summ = load([int_folder,listing(p).name]);
     summ = summ.summ;
     name = summ.name;
-    names = [names;name];
+    
     
     %% Find corresponding pt index
     found_it = 0;
@@ -117,7 +117,6 @@ end
 out.atlas = atlas_mat;
 out.atlas_nums = atlas_nums;
 out.atlas_names = atlas_names;
-out.pt_names = names;
 save([out_folder,atlas,'.mat'],'out');
 
 end
