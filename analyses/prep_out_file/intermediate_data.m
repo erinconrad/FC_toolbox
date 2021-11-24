@@ -202,6 +202,7 @@ for l = 1:npts
     summ.n_rm_ictal = n_rm_ictal;
     summ.sz_times = sz_times;
     summ.rid = rid;
+    summ.fc = fc;
     %summ.ge = ge;
 
     %% Save it all
