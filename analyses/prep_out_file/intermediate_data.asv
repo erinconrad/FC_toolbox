@@ -112,7 +112,7 @@ for l = 1:npts
     ns = ns_over_blocks(fc);
     
     % Get avg fc
-    avg_fc = nanmean(fc,3);
+    avg_
     
     % Clean the labels
     clean_labels = decompose_labels(labels,name);   
@@ -205,7 +205,7 @@ for l = 1:npts
     summ.n_rm_ictal = n_rm_ictal;
     summ.sz_times = sz_times;
     summ.rid = rid;
-    summ.avg_fc = avg_fc;
+    %summ.fc = fc;
     %summ.ge = ge;
 
     %% Save it all
