@@ -151,8 +151,8 @@ for p = 1:npts
     ns_sw(p,:) = [nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
     
     %% Wake vs sleep seq info
-    seq_sw(p,:) = [nanmean(seq_info(1,wake)) nanmean(seq_info(1,sleep)),...
-        nanmean(seq_info(2,wake)) nanmean(seq_info(2,sleep))];
+    seq_sw(p,:) = [nanmedian(seq_info(1,wake)) nanmedian(seq_info(1,sleep)),...
+        nanmedian(seq_info(2,wake)) nanmedian(seq_info(2,sleep))];
 
   
     %{
