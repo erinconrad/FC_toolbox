@@ -39,7 +39,8 @@ pt = pt.pt;
 listing = dir([int_folder,'*.mat']);
 npts = length(listing);
 
-names = {};
+names = cell(npts,1);
+sozs = cell(npts,1);
 
 %% Initialize atlas
 atlas_mat = nan(n_parcels,n_parcels,npts);
@@ -51,7 +52,7 @@ for p = 1:npts
     summ = load([int_folder,listing(p).name]);
     summ = summ.summ;
     name = summ.name;
-    names = [names;name];
+    names{p} = name;
     
     %% Find corresponding pt index
     found_it = 0;
@@ -78,6 +79,12 @@ for p = 1:npts
     
     %% Get avg fc
     fc = summ.avg_fc;
+    
+    %% Soz
+    soz = decompose_labels(summ.soz.labels,name);
+    soz_out = get_atlas_parcellations(rid,soz,name);
+    soz_num = soz_out.enum;
+    sozs{p} = soz_num;
     
     %% Put into atlas space
     fc_atlas_space = nan(n_parcels,n_parcels);
@@ -118,6 +125,7 @@ out.atlas = atlas_mat;
 out.atlas_nums = atlas_nums;
 out.atlas_names = atlas_names;
 out.pt_names = names;
+out.sozs = sozs;
 save([out_folder,atlas,'.mat'],'out');
 
 end
