@@ -39,6 +39,7 @@ count = 0;
 for l = 1:npts
     j = good_pts(l);
     name = pt(j).name;
+    rid = pt(j).rid;
     
     %% Load the spike file
     fname = [spikes_folder,name,'_pc.mat'];
@@ -200,6 +201,7 @@ for l = 1:npts
     summ.ns = ns;
     summ.n_rm_ictal = n_rm_ictal;
     summ.sz_times = sz_times;
+    summ.rid = rid;
     %summ.ge = ge;
 
     %% Save it all
