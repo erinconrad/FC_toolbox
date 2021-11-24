@@ -1,0 +1,46 @@
+function build_atlas_library
+
+%% Parameters
+atlas = 'aal';
+
+%% Get file locs
+locations = fc_toolbox_locs;
+atlas_folder = [locations.main_folder,'data/atlas/'];
+parcellation_folder = [atlas_folder,'atlas_localizations/'];
+
+% add script folder to path
+scripts_folder = locations.script_folder;
+addpath(genpath(scripts_folder));
+
+listing = dir([parcellation_folder,'*.csv']);
+
+nums = [];
+names = {};
+
+%% Loop over all atlas files
+for l = 1:length(listing)
+    T = readtable([parcellation_folder,listing(l).name]);
+    
+    %% Choose the atlas I want
+    switch which_atlas
+        case 'aal'
+            anum = T.AAL_region_number;
+            aname = T.AAL_label;        
+    end
+    
+    %% Find those that aren't in the library already
+    lia = ~ismember(anum,nums);
+    
+    %% Add those that aren't in the library
+    nums = [nums;anum(lia)];
+    names = [names;aname(lia)];
+    
+end
+
+%% Sort by number
+[nums,I] = sort(nums);
+names = names(I);
+
+T = table(nums,nam
+
+end

@@ -1,10 +1,5 @@
 function build_fc_atlas
 
-%% To do
-%{
-- Add something to remove SOZ
-%}
-
 %% Parameters
 atlas = 'aal';
 net_m = 2;
@@ -83,39 +78,14 @@ for p = 1:npts
     
     % Loop over n_parcels
     for inp = 1:n_parcels
-        
-        % get the atlas identifier
-        which_enum_i = atlas_nums(inp);
-        
-        % which elecs for this patient belong to that
-        which_elecs_i = enum == which_enum_i;
-        
-        % Loop over again
-        for jnp = 1:inp-1
-            
-            % get the atlas identifier
-            which_enum_j = atlas_nums(jnp);
-
-            % which elecs for this patient belong to that
-            which_elecs_j = enum == which_enum_j;
-            
-            % Assign the average of all the functional connectivities
-            % matching these to be the fc edge
-            fc_atlas_space(inp,jnp) = nanmean(fc(which_elecs_i,which_elecs_j),'all');
-            fc_atlas_space(jnp,inp) = nanmean(fc(which_elecs_i,which_elecs_j),'all');
-            
-        end
+        which_enum = atlas_nums(inp);
+        which_elecs = enu
         
     end
-    
-    atlas(:,:,p) = fc_atlas_space;
     
 end
 
 %% Save the atlas
-out.atlas = atlas;
-out.atlas_nums = atlas_nums;
-out.atlas_names = atlas_names;
-save([out_folder,atlas,'.mat'],'out');
+save([out_folder,atlas,'.mat'],'atlas');
 
 end
