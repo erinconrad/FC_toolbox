@@ -111,6 +111,9 @@ for l = 1:npts
     %ge = ge_over_blocks(fc); % this takes a long time.
     ns = ns_over_blocks(fc);
     
+    % rewrap it
+    fc = wrap_or_unwrap_adjacency_fc_toolbox(fc);
+    
     % Clean the labels
     clean_labels = decompose_labels(labels,name);   
     
