@@ -277,6 +277,11 @@ xticks([1 2])
 ylabel('Score')
 xticklabels({'Temporal','Extra-temporal'})
 
+if do_save
+print([out_folder,'Fig3'],'-dpng')
+close(gcf)
+end
+
 %{
 %% Bonus test - SOZ ranking sw
 figure
