@@ -5,10 +5,16 @@ xlabels = varargin{2};
 ytext = varargin{3};
 p_or_unp = varargin{4};
 
-if length(varargin) == 5
+if length(varargin) >= 5
     plot_type = varargin{5};
 else
     plot_type = 'errorbar';
+end
+
+if length(varargin) == 6
+    is_ranking = strcmp('ranking',varargin{6});
+else
+    is_ranking = 0;
 end
 
 %(data,xlabels,ytext,p_or_unp,plot_type)
@@ -43,8 +49,13 @@ switch plot_type
         pcolor = [0.4660, 0.6740, 0.1880];
         ncolor = [0.6350, 0.0780, 0.1840];
         ecolor = [0, 0.4470, 0.7410];
-        pos_diff = data(2,:) > data(1,:);
-        neg_diff = data(1,:) > data(2,:);
+        if is_ranking
+            pos_diff = data(1,:) > data(2,:);
+            neg_diff = data(2,:) > data(1,:);
+        else
+            pos_diff = data(2,:) > data(1,:);
+            neg_diff = data(1,:) > data(2,:);
+        end
         equal_diff = data(1,:) == data(2,:);
         pp = plot(data(1,pos_diff),data(2,pos_diff),'+','color',pcolor,'linewidth',2);
         hold on

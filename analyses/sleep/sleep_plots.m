@@ -1,8 +1,11 @@
-function sleep_plots(out)
+function sleep_plots(out,do_save)
 
 %% Parameters
 plot_type = 'scatter';
 nblocks = 6;
+myColours = [0 0.4470 0.7410;...
+    0.8500 0.3250 0.0980;...
+    0.9290 0.6940 0.1250];
 
 %% Unpack substructures
 unpack_any_struct(out);
@@ -18,7 +21,7 @@ iqr_psd = circ_out.iqr_psd;
 periods = circ_out.periods;
 
 nexttile
-shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
+shaded_error_bars(periods,median_psd,iqr_psd,[]);
 xlim([0 100])
 xlabel('Period (hours)')
 ylabel({'Spike rate', 'normalized power spectrum'});
@@ -30,11 +33,11 @@ roc = roc_out.roc;
 auc = roc_out.auc;
 disc_I = roc_out.disc_I;
 nexttile
-plot(roc(:,1),roc(:,2),'k','linewidth',2)
+plot(roc(:,1),roc(:,2),'linewidth',2)
 hold on
 plot([0 1],[0 1],'k--')
-plot(roc(disc_I,1),roc(disc_I,2),'r*','markersize',15,'linewidth',2);
-text(roc(disc_I,1)+0.01,roc(disc_I,2)-0.05,'Sleep-wake cutoff','fontsize',15,'color','r');
+plot(roc(disc_I,1),roc(disc_I,2),'*','markersize',15,'linewidth',2,'color',myColours(2,:));
+text(roc(disc_I,1)+0.01,roc(disc_I,2)-0.05,'Sleep-wake cutoff','fontsize',15,'color',myColours(2,:));
 xlabel('False positive rate')
 ylabel('True positive rate')
 legend(sprintf('AUC %1.2f',auc),'location','southeast')
@@ -53,8 +56,14 @@ times = linspace(-12,12,length(median_spikes));
 ylabels = ["Spike rate","% asleep"];
 s = stackedplot(times,[median_spikes',mean_sleep'],'linewidth',2,...
     "DisplayLabels",ylabels);
+
+for k = 1:length(s.LineProperties)
+    if k <= size(myColours,1)
+        s.LineProperties(k).Color = myColours(k,:);
+    end
+end
 ax = findobj(s.NodeChildren, 'Type','Axes');
-arrayfun(@(h)xline(h,0,'--r','LineWidth',2),ax)
+arrayfun(@(h)xline(h,0,'--k','LineWidth',2),ax)
 pause(0.3)
 set([ax.YLabel],'Rotation',90,'HorizontalAlignment', 'Center', 'VerticalAlignment', 'Bottom')
 pause(0.3)
@@ -62,9 +71,6 @@ xlabel('Hours')
 xlim([-12 12])
 set(gca,'fontsize',15)
 %title('Spike rate surrounding sleep onset')
-
-print([out_folder,'Fig1'],'-dpng')
-close(gcf)
 
 
 %% D-F: sleep pca stuff
@@ -117,17 +123,22 @@ ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.1*(yl(2)-yl(1));
 newyl = [yl(1) yl(1) + 1.17*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,sprintf('p = %1.3f',p),'horizontalalignment','center','fontsize',15)
+text(1.5,ytext,get_p_text(p),'horizontalalignment','center','fontsize',15)
 title(sprintf('Component %d score by localization',c))
 set(gca,'fontsize',15)
 ylim(newyl)
 xticks([1 2])
+ylabel('Score')
 xticklabels({'Temporal','Extra-temporal'})
 
+if do_save
+print([out_folder,'Fig1'],'-dpng')
+close(gcf)
+end
 
 %% Fig 2 - exploring sleep analysis
 figure
-set(gcf,'position',[100 100 600 600])
+set(gcf,'position',[100 100 1400 600])
 tiledlayout(2,3,'tilespacing','tight','padding','tight')
 
 %% 2A overall spike rates
@@ -140,7 +151,7 @@ title('Overall spike rates')
 seq_sw = bin_out.seq_sw;
 nexttile
 plot_paired_data(seq_sw(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type)
-title('# independent spikes sources')
+title('# Independent spikes sources')
 
 %% 2C spike spread
 nexttile
@@ -150,24 +161,121 @@ title('Spike spread')
 %% 2D RL sleep-wake correlation across patients
 rl_sw_corr = bin_out.rl_sw_corr;
 nexttile
-plot(rl_sw_corr,'o')
+plot(rl_sw_corr,'o','linewidth',2)
 hold on
-plot(xlim,[0 0],'--')
+plot(xlim,[0 0],'k--','linewidth',2)
+ylabel('Correlation coefficient')
+xlabel('Patient')
+xticklabels([])
+ylim([-1 1])
+title('Sleep vs wake correlation in spike spread')
+set(gca,'fontsize',15)
 
 %% 2E NS
 ns_sw = bin_out.ns_sw;
 nexttile
-plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength','paired',plot_type)
+plot_paired_data(ns_sw',{'wake','sleep'},'Average node strength','paired',plot_type)
 
 %% 2F SOZ spike rate ranking
 nexttile
 soz_rank_sw = bin_out.soz_rank_sw;
-plot_paired_data(soz_rank_sw',{'Wake','Sleep'},'Rank in spike rate','paired',plot_type)
+plot_paired_data(soz_rank_sw',{'wake','sleep'},'Rank in spike rate','paired',plot_type,'ranking')
 title({'SOZ spike rate ranking','by wake vs sleep'})
 
+if do_save
 print([out_folder,'Fig2'],'-dpng')
 close(gcf)
+end
 
+%% Figure 3 - spikes tend to go up after seizures, depends on localization
+figure
+set(gcf,'position',[100 100 900 700])
+tiledlayout(2,2,'tilespacing','tight','padding','tight')
+
+%sig_bins = sz_out.sig_bins;
+all_pts_spikes_bins = sz_out.all_pts_spikes_bins;
+all_pts_sleep_bins = sz_out.all_pts_sleep_bins;
+surround_hours = sz_out.surround_hours;
+sp_bins = nanmean(all_pts_spikes_bins,1)';
+sleep_bins = nanmean(all_pts_sleep_bins,1)';
+times = linspace(-surround_hours,surround_hours,length(sp_bins));
+
+%% 3A: Seizure surge histogram with superimposed sleep
+nexttile
+yLabels = {'Spikes/elec/min','Proportion asleep'};
+h = stackedplot(times,[sp_bins,sleep_bins],'DisplayLabels',yLabels);
+ax = findobj(h.NodeChildren, 'Type','Axes');
+pause(0.1) % delete at your own risk
+set([ax.YLabel],'Rotation',90,'HorizontalAlignment', 'Center', 'VerticalAlignment', 'Bottom')
+h.LineWidth = 2;
+for k = 1:length(h.LineProperties)
+    if k <= size(myColours,1)
+        h.LineProperties(k).Color = myColours(k,:);
+    end
+end
+arrayfun(@(h)xline(h,0,'k--','LineWidth',2),ax) % plot line at 0
+%plot(ax(1),times(sig_bins),sp_bins(sig_bins)+0.05,'r*','markersize',15,'linewidth',2); % sig times
+set(gca,'fontsize',15)
+xlabel('Hours')
+title('Spikes and sleep surrounding seizures')
+
+%% PCA stuff
+% Subtract mean
+sp_bins = all_pts_spikes_bins;
+sp_bins = (sp_bins - nanmean(sp_bins,2))./nanstd(sp_bins,[],2);
+[coeff,score,latent] = pca(sp_bins,'Rows','complete');
+locs = out.circ_out.all_locs;
+% Top scorers
+[~,top] = max(score,[],1);
+% Bottom scorers
+[~,bottom] = min(score,[],1);
+top_12 = [top(1:2),bottom(1:2)];
+
+%% 3B: Variances
+nexttile
+stem(latent,'linewidth',2)
+title('Principal component variances')
+set(gca,'fontsize',15)
+xlabel('Component')
+ylabel('Variance')
+
+%% 3C: First two principal components
+nexttile
+p1= plot(times,coeff(:,1),'linewidth',2);
+hold on
+p2 = plot(times,coeff(:,2),'linewidth',2);
+plot([0 0],ylim,'k--','linewidth',2)
+%p3 = plot(times,coeff(:,3),'linewidth',2);
+ylabel('Coefficients')
+title('Top principal components')
+legend([p1 p2],{'Component 1','Component 2'},'fontsize',15,'location','northwest')
+set(gca,'fontsize',15)
+xlabel('Hours')
+xlim([times(1) times(end)])
+
+%% 3D: First PCA score based on sz localization
+nexttile
+c = 1;
+tloc = strcmp(locs,'temporal');
+oloc = strcmp(locs,'other');
+plot(1+0.05*randn(sum(tloc),1),score(tloc,c),'o','linewidth',2)
+hold on
+plot(2+0.05*randn(sum(oloc),1),score(oloc,c),'o','linewidth',2)
+xlim([0.5 2.5])
+plot(xlim,[0 0],'k--','linewidth',2)
+p = ranksum(score(tloc,c),score(oloc,c));
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.1*(yl(2)-yl(1));
+newyl = [yl(1) yl(1) + 1.17*(yl(2)-yl(1))];
+plot([1 2],[ybar ybar],'k-','linewidth',2)
+text(1.5,ytext,get_p_text(p),'horizontalalignment','center','fontsize',15)
+title(sprintf('Component %d score by localization',c))
+set(gca,'fontsize',15)
+ylim(newyl)
+xticks([1 2])
+ylabel('Score')
+xticklabels({'Temporal','Extra-temporal'})
 
 %{
 %% Bonus test - SOZ ranking sw
