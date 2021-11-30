@@ -31,8 +31,8 @@ fprintf('\nDoing binary AD analyses\n');
 bin_out = binary_ad_analyses(disc);
 
 %% Do subnetwork wake/sleep analysis
-fprintf('\nDoing subnetwork analysis\n');
-subnet_out = subnetwork_analysis(disc);
+%fprintf('\nDoing subnetwork analysis\n');
+%subnet_out = subnetwork_analysis(disc);
 
 %% Do histogram analysis
 fprintf('\nDoing sleep histogram analysis\n');
@@ -52,7 +52,7 @@ sz_out = seizure_time_histogram(rm_cluster,do_avg,disc);
 %% Put together
 out.circ_out = circ_out;
 out.roc_out = roc_out;
-out.subnet_out = subnet_out;
+%out.subnet_out = subnet_out;
 out.sleep_hist_out = sleep_hist_out;
 out.bin_out = bin_out;
 out.sz_out = sz_out;

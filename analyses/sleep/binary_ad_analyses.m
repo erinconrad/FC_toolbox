@@ -2,6 +2,8 @@ function out = binary_ad_analyses(disc)
 
 
 %% Parameters
+min_spikes = 0.1;
+
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
 main_lats = {'Left','Right'};
 main_soz = {'SOZ','Not SOZ'};
@@ -71,6 +73,9 @@ n_sleep_wake = nan(npts,2);
 names = cell(npts,1);
 seq_sw = nan(npts,4);
 soz_rank_sw = nan(npts,2);
+soz_rank_sw_rl = nan(npts,2);
+rl_sw_corr = nan(npts,1);
+nspikey = nan(npts,2);
 
 %% Loop over patients
 for p = 1:npts
@@ -176,6 +181,14 @@ for p = 1:npts
     %}
     %
     
+    %% Correlation between sleep and wake RL
+    sleep_rl = nanmean(rl(:,sleep),2);
+    wake_rl = nanmean(rl(:,wake),2);
+    spikey = nanmean(spikes,2) > min_spikes;
+    nspikey(p,1) = sum(spikey);
+    nspikey(p,2) = length(spikey);
+    rl_sw_corr(p) = corr(sleep_rl(spikey),wake_rl(spikey),'type','spearman','rows','pairwise');
+    
     %% Rank for soz electrodes in sleep and wake
     spikes_for_rank = spikes;
     spikes_for_rank(isnan(spikes_for_rank)) = 0; % make nan - inf so not to screw up sort
@@ -189,6 +202,20 @@ for p = 1:npts
     end
     soz_median_ranking = nanmedian(ranking(is_soz,:),1);
     soz_rank_sw(p,:) = [nanmean(soz_median_ranking(wake)),nanmean(soz_median_ranking(sleep))];
+    
+    %% Same ranking but RL
+    rl_for_rank = rl;
+    rl_for_rank(isnan(rl_for_rank)) = inf; % make nan inf so not to screw up sort
+    ranking = nan(size(rl_for_rank));
+    % Loop over times
+    for r = 1:size(rl_for_rank,2)
+        [~,I] = sort(rl_for_rank(:,r),'ascend');
+        curr_rank = 1:size(rl_for_rank,1);
+        curr_rank(I) = curr_rank;
+        ranking(:,r) = curr_rank;
+    end
+    soz_median_ranking = nanmedian(ranking(is_soz,:),1);
+    soz_rank_sw_rl(p,:) = [nanmean(soz_median_ranking(wake)),nanmean(soz_median_ranking(sleep))];
  
     %% Get spectral power for each group for locs and lats
     % Loop over loc vs lat
@@ -254,6 +281,10 @@ out.n_sleep_wake = n_sleep_wake;
 out.names = names;
 out.seq_sw = seq_sw;
 out.soz_rank_sw = soz_rank_sw;
+out.soz_rank_sw_rl = soz_rank_sw_rl;
+out.rl_sw_corr = rl_sw_corr;
+out.nspikey = nspikey;
+
 %% (No sleep) How does spike rate and timing vary across locations
 %{
 f1 = figure;

@@ -8,7 +8,7 @@ orig_bins = spike_bins;
 % Subtract mean
 spike_bins = (spike_bins - nanmean(spike_bins,2))./nanstd(spike_bins,[],2);
 
-[coeff,score,latent] = pca(spike_bins,'Rows','complete');
+[coeff,score,latent] = pca(spike_bins,'Rows','pairwise');
 
 % Top scorers
 [~,top] = max(score,[],1);

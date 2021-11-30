@@ -63,14 +63,10 @@ xlim([-12 12])
 set(gca,'fontsize',15)
 %title('Spike rate surrounding sleep onset')
 
-print([out_folder,'Fig1'],'-dpng')
-close(gcf)
-
 
 %% D-F: sleep pca stuff
 sleep_bins = out.sleep_hist_out.all_pts_spikes_bins;
-% Subtract mean
-sleep_bins = (sleep_bins - nanmean(sleep_bins,2))./nanstd(sleep_bins,[],2);
+sleep_times = out.sleep_hist_out.times;
 [coeff,score,latent] = pca(sleep_bins,'Rows','pairwise');
 locs = out.circ_out.all_locs;
 % Top scorers
@@ -133,14 +129,14 @@ tiledlayout(2,3,'tilespacing','tight','padding','tight')
 %% 2A overall spike rates
 all_rate = bin_out.all_rates;
 nexttile
-plot_paired_data(all_rate(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type)
+plot_paired_data(all_rate(:,1:2)',{'Wake','Sleep'},'Spike/elec/min','paired',plot_type)
 title('Overall spike rates')
 
 %% 2B independent spikes
 seq_sw = bin_out.seq_sw;
 nexttile
-plot_paired_data(seq_sw(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type)
-title('# independent spikes sources')
+plot_paired_data(seq_sw(:,1:2)',{'wake','sleep'},'Spike/elec/min','paired',plot_type)
+title('# Independent spikes sources')
 
 %% 2C spike spread
 nexttile
@@ -157,16 +153,9 @@ plot(xlim,[0 0],'--')
 %% 2E NS
 ns_sw = bin_out.ns_sw;
 nexttile
-plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength','paired',plot_type)
+plot_paired_data(ns_sw',{'Wake','Sleep'},'Average node strength','paired')
 
-%% 2F SOZ spike rate ranking
-nexttile
-soz_rank_sw = bin_out.soz_rank_sw;
-plot_paired_data(soz_rank_sw',{'Wake','Sleep'},'Rank in spike rate','paired',plot_type)
-title({'SOZ spike rate ranking','by wake vs sleep'})
-
-print([out_folder,'Fig2'],'-dpng')
-close(gcf)
+print(f2,[out_folder,'Fig2'],'-dpng')
 
 
 %{
