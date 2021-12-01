@@ -74,7 +74,7 @@ names = cell(npts,1);
 
 % start running count of which sleep transition
 trans_count = 0;
-for p = 9%1:npts
+for p = 1:npts
     
     
     
