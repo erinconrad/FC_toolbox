@@ -77,6 +77,8 @@ soz_rank_sw = nan(npts,2);
 soz_rank_sw_rl = nan(npts,2);
 rl_sw_corr = nan(npts,1);
 nspikey = nan(npts,2);
+all_is_soz = cell(npts,1);
+all_elec_rates = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -134,6 +136,10 @@ for p = 1:npts
     soz_text = cell(sum(~ekg),1);
     soz_text(is_soz) = {'SOZ'};
     soz_text(~is_soz) = {'Not SOZ'};
+    
+    %% All rates
+    all_is_soz{p} = is_soz;
+    all_elec_rates{p} = nanmean(spikes,2);
        
     %% Determine "wake" and "sleep" times
     % normalized ad
@@ -287,6 +293,8 @@ out.soz_rank_sw_rl = soz_rank_sw_rl;
 out.rl_sw_corr = rl_sw_corr;
 out.nspikey = nspikey;
 out.overall_rates = overall_rates;
+out.all_is_soz = all_is_soz;
+out.all_elec_rates = all_elec_rates;
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{
