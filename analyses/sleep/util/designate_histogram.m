@@ -1,5 +1,7 @@
-function [transitions,bins] = designate_histogram(sleep,n_periods,min_same,...
+function [transitions,bins] = designate_histogram(sleep,wake,n_periods,min_same,...
     later_search,time_to_take_spikes,rm_cluster,ad_norm,disc,name,out_folder)
+
+colors = [0, 0.4470, 0.7410;0.8500, 0.3250, 0.0980];
 
 % the transition is the first sleep period
 
@@ -21,7 +23,7 @@ while i < length(sleep) - time_to_take_spikes
     after = i:i+n_periods;
     
     % if enough before are awake and 
-    if sum(sleep(before) == 0)/n_periods > min_same && ...
+    if sum(wake(before) == 1)/n_periods > min_same && ...
             sum(sleep(after) == 1)/n_periods > min_same
         
         sum_appropriate = zeros(later_search+1,1);
@@ -33,7 +35,7 @@ while i < length(sleep) - time_to_take_spikes
             new_before = i+later - n_periods:i+later-1;
             new_after = i+later:i+later+n_periods;
             
-            sum_appropriate(later+1) = sum(sleep(new_before) == 0) + ...
+            sum_appropriate(later+1) = sum(wake(new_before) == 1) + ...
                 sum(sleep(new_after) == 1);
             
         end
@@ -94,9 +96,9 @@ if 1
     set(gca,'fontsize',15)
     
     nexttile
-    plot(times(sleep==0),sleep(sleep==0),'o','markersize',4)
+    plot(times(wake==1),0,'o','markersize',4,'color',colors(1,:))
     hold on
-    plot(times(sleep==1),sleep(sleep==1),'o','markersize',4)
+    plot(times(sleep==1),1,'o','markersize',4,'color',colors(2,:))
     yticks([0 1])
     ylim([-1 2])
     yticklabels({'Wake','Sleep'})

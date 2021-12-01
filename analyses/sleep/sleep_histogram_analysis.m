@@ -119,7 +119,7 @@ for p = 1:npts
     sleep = ad_norm <= disc;
     
     %% Find transition points and bins
-    [transitions,bins] = designate_histogram(sleep,n_periods,min_same,...
+    [transitions,bins] = designate_histogram(sleep,wake,n_periods,min_same,...
         later_search,time_to_take_spikes,rm_cluster,ad_norm,disc,name,ad_plot_folder);
     spikes_in_bins = nan(size(bins));
     sleep_in_bins = nan(size(bins));
