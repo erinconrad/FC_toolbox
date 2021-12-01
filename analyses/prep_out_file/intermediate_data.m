@@ -208,6 +208,7 @@ for l = 1:npts
     summ.rid = rid;
     summ.avg_fc = avg_fc;
     summ.seq_info = seq_info;
+    summ.clinical = pt(j).clinical;
     %summ.ge = ge;
 
     %% Save it all

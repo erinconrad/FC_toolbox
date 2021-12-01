@@ -10,10 +10,14 @@ myColours = [0 0.4470 0.7410;...
 %% Unpack substructures
 unpack_any_struct(out);
 
+locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+out_folder = [results_folder,'analysis/sleep/'];
+
 %% Fig 1 - circadian analysis
 figure
-set(gcf,'position',[100 100 1400 900])
-tiledlayout(3,3,'tilespacing','tight','padding','tight')
+set(gcf,'position',[100 100 1400 700])
+tiledlayout(2,3,'tilespacing','tight','padding','tight')
 
 %% A - PSD
 median_psd = circ_out.median_psd;
@@ -130,49 +134,6 @@ xticks([1 2])
 ylabel('Score')
 xticklabels({'Temporal','Extra-temporal'})
 
-% G: Component 1 top and bottom scorer
-nexttile
-sleep_bins = out.sleep_hist_out.all_pts_spikes_bins;
-top_scorer = top(1);
-bottom_scorer = bottom(1);
-s = stackedplot(times,[sleep_bins(top_scorer,:)',sleep_bins(bottom_scorer,:)'],'linewidth',2,...
-    "DisplayLabels",["Top","Bottom"]);
-for k = 1:length(s.LineProperties)
-    if k <= size(myColours,1)
-        s.LineProperties(k).Color = myColours(k,:);
-    end
-end
-ax = findobj(s.NodeChildren, 'Type','Axes');
-arrayfun(@(h)xline(h,0,'--k','LineWidth',2),ax)
-pause(0.3)
-set([ax.YLabel],'Rotation',90,'HorizontalAlignment', 'Center', 'VerticalAlignment', 'Bottom')
-pause(0.3)
-xlabel('Hours')
-xlim([-12 12])
-%title({'Spike rates for patients with','top and bottom Component 1 scores'})
-set(gca,'fontsize',15)
-
-% H: Component 2 top and bottom scorer
-nexttile
-sleep_bins = out.sleep_hist_out.all_pts_spikes_bins;
-top_scorer = top(2);
-bottom_scorer = bottom(2);
-s = stackedplot(times,[sleep_bins(top_scorer,:)',sleep_bins(bottom_scorer,:)'],'linewidth',2,...
-    "DisplayLabels",["Top","Bottom"]);
-for k = 1:length(s.LineProperties)
-    if k <= size(myColours,1)
-        s.LineProperties(k).Color = myColours(k,:);
-    end
-end
-ax = findobj(s.NodeChildren, 'Type','Axes');
-arrayfun(@(h)xline(h,0,'--k','LineWidth',2),ax)
-pause(0.3)
-set([ax.YLabel],'Rotation',90,'HorizontalAlignment', 'Center', 'VerticalAlignment', 'Bottom')
-pause(0.3)
-xlabel('Hours')
-xlim([-12 12])
-%title({'Spike rates for patients with','top and bottom Component 2 scores'})
-set(gca,'fontsize',15)
 
 
 if do_save
