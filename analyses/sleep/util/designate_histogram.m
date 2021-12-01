@@ -1,5 +1,5 @@
 function [transitions,bins] = designate_histogram(sleep,n_periods,min_same,...
-    later_search,time_to_take_spikes,rm_cluster)
+    later_search,time_to_take_spikes,rm_cluster,ad_norm,disc,name,out_folder)
 
 % the transition is the first sleep period
 
@@ -78,13 +78,41 @@ end
 % show it
 days_per_index = 1/6/24;
 times = linspace(0,length(sleep)*days_per_index,length(sleep));
-if 0
+if 1
     figure
-    plot(times,sleep,'o')
+    set(gcf,'position',[10 10 1400 600])
+    tt = tiledlayout(2,1,'padding','tight','tilespacing','tight');
+    
+    nexttile
+    plot(times,ad_norm,'linewidth',2)
+    hold on
+    plot(xlim,[disc disc],'k--','linewidth',2)
+    ylabel('Normalized alpha delta ratio')
+    xlabel('Days')
+    title('Alpha delta ratio')
+    
+    set(gca,'fontsize',15)
+    
+    nexttile
+    plot(times(sleep==0),sleep(sleep==0),'o','markersize',4)
+    hold on
+    plot(times(sleep==1),sleep(sleep==1),'o','markersize',4)
+    yticks([0 1])
+    ylim([-1 2])
+    yticklabels({'Wake','Sleep'})
     hold on
     for t = 1:length(transitions)
-        plot([transitions(t)*days_per_index transitions(t)*days_per_index],ylim,'r--')
+        plot([transitions(t)*days_per_index transitions(t)*days_per_index],ylim,...
+            'k--','linewidth',2)
     end
+    set(gca,'fontsize',15)
+    xlabel('Days')
+    title('Wake-sleep transition times')
+    
+    title(tt,name,'fontsize',20,'fontweight','bold')
+    
+    print([out_folder,name],'-dpng');
+    close(gcf)
 end
 
 bins = nan(length(transitions),time_to_take_spikes*2);

@@ -42,6 +42,9 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
+ad_plot_folder = [out_folder,'sleep_disc/'];
+if ~exist(ad_plot_folder,'dir'), mkdir(ad_plot_folder); end
+
 %% Load summary file
 %{
 summ = load([summ_folder,'summ.mat']);
@@ -71,9 +74,9 @@ names = cell(npts,1);
 
 % start running count of which sleep transition
 trans_count = 0;
-for p = 1:npts
+for p = 9%1:npts
     
-    fprintf('\nDoing patient %d of %d\n',p,npts);
+    
     
      %% Load
     summ = load([int_folder,listing(p).name]);
@@ -89,6 +92,8 @@ for p = 1:npts
     times = summ.times;
     
     names{p} = name;
+    
+    fprintf('\nDoing %s, patient %d of %d\n',name,p,npts);
     
     %% Get features for soz vs not
     soz = summ.soz.chs;
@@ -115,7 +120,7 @@ for p = 1:npts
     
     %% Find transition points and bins
     [transitions,bins] = designate_histogram(sleep,n_periods,min_same,...
-        later_search,time_to_take_spikes,rm_cluster);
+        later_search,time_to_take_spikes,rm_cluster,ad_norm,disc,name,ad_plot_folder);
     spikes_in_bins = nan(size(bins));
     sleep_in_bins = nan(size(bins));
     sp_counts_in_bins = nan(size(bins));
