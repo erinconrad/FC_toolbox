@@ -3,7 +3,7 @@ function plot_extreme_scores
 %% parameters
 ncomps = 2;
 npts = 5;
-which = 'sleep';
+which = 'seizure';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -29,13 +29,17 @@ switch which
         times = sleep_hist_out.times;
         bins = sleep_hist_out.all_pts_spikes_bins;
         names = sleep_hist_out.names;
+    case 'seizure'
+        times = sz_out.times;
+        bins = sz_out.all_pts_spikes_bins;
+        names = sz_out.names;
 end
 
 %% Normalize
 norm_bins = (bins - nanmean(bins,2))./nanstd(bins,[],2);
 
 %% PCA
-[coeff,score,latent] = pca(norm_bins,'Rows','pairwise');
+[coeff,score,latent] = pca(norm_bins,'Rows','complete');
 
 %% Prep figure
 for ic = 1:ncomps
@@ -69,7 +73,7 @@ for ic = 1:ncomps
         end
     end
 
-    print([out_folder,'Component_',num2str(ic),'_topscorers'],'-dpng')
+    print([out_folder,which,'_component_',num2str(ic),'_topscorers'],'-dpng')
     close(gcf)
 end
     
