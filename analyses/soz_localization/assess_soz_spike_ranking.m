@@ -1,16 +1,29 @@
 function assess_soz_spike_ranking
 
 %% Parameters
+which = 'rate';
 nb = 1e4;
 
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
+script_folder = locations.script_folder;
+addpath(genpath(script_folder))
+
 out_folder = [results_folder,'analysis/sleep/'];
 out = load([out_folder,'out.mat']);
 out = out.out;
 
 %% Get info
-rates = out.bin_out.all_elec_rates;
+switch which
+    case 'rate'
+        thing = out.bin_out.all_elec_rates;
+        thing_text = 'rate';
+        soz_rank_sw = out.bin_out.soz_rank_sw;
+    case 'rl'
+        thing = out.bin_out.all_elecs_rl;
+        thing_text = 'timing';
+        soz_rank_sw = out.bin_out.soz_rank_sw_rl;
+end
 soz = out.bin_out.all_is_soz;
 locs = out.circ_out.all_locs;
 is_temporal = cellfun(@(x) strcmp(x,'temporal'),locs);
@@ -19,7 +32,7 @@ is_temporal = cellfun(@(x) strcmp(x,'temporal'),locs);
 soz = cellfun(@find,soz,'uniformoutput',false);
 
 %% Do MC test
-mcout = test_ranking(rates,soz,nb);
+mcout = test_ranking(thing,soz,nb);
 median_ranking_mc = mcout.median_ranking_mc;
 median_ranking_true = mcout.median_ranking_true;
 all_rankings = mcout.all_rankings;
@@ -43,8 +56,8 @@ legend({'Random electrodes','True SOZ electrodes'},'Location','Northwest','fonts
 set(gca,'fontsize',15)
 xticklabels([])
 xlabel('Monte Carlo iteration')
-ylabel('Median spike rate ranking')
-title('Spike rate ranking of SOZ compared to chance')
+ylabel(sprintf('Median spike %s ranking',thing_text))
+title(sprintf('Spike %s ranking of SOZ compared to chance',thing_text))
 
 nexttile
 plot(1+randn(sum(is_temporal),1)*0.05,all_rankings(is_temporal),'o','linewidth',2)
@@ -60,13 +73,13 @@ text(1.5,ytext,get_p_text(pval),'horizontalalignment','center','fontsize',15)
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 set(gca,'fontsize',15)
-ylabel('Median SOZ spike rate ranking')
-title('Spike rate ranking of SOZ by seizure localization')
+ylabel(sprintf('Median SOZ spike %s ranking',thing_text))
+title(sprintf('Spike %s ranking of SOZ by seizure localization',thing_text))
 
 nexttile
-soz_rank_sw = out.bin_out.soz_rank_sw;
-plot_paired_data(soz_rank_sw',{'wake','sleep'},'Rank in spike rate','paired','scatter','ranking')
-title({'SOZ spike rate ranking','by wake vs sleep'})
+
+plot_paired_data(soz_rank_sw',{'wake','sleep'},sprintf('Rank in spike %s',thing_text),'paired','scatter','ranking')
+title(sprintf('SOZ spike %s ranking\nby wake vs sleep',thing_text))
 
 print([out_folder,'Fig4'],'-dpng')
 

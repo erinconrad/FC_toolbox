@@ -1,0 +1,3 @@
+function test_ns_ranking
+
+end
