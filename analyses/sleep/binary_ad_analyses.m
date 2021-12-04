@@ -80,6 +80,7 @@ nspikey = nan(npts,2);
 all_is_soz = cell(npts,1);
 all_elec_rates = cell(npts,1);
 all_elecs_rl = cell(npts,1);
+all_elecs_names = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -127,7 +128,7 @@ for p = 1:npts
     lat = lat(~ekg);
     spikes = spikes(~ekg,:); % spike rate #spikes/elec/one minute block (spikes/elec/min)
     rl = rl(~ekg,:);
-    
+    labels = labels(~ekg);
     % dont remove channels from ns because don't know mapping for bipolar
     % montage
     %ns = ns(~ekg,:);
@@ -142,6 +143,7 @@ for p = 1:npts
     all_is_soz{p} = is_soz;
     all_elec_rates{p} = nanmean(spikes,2);
     all_elecs_rl{p} = nanmean(rl,2);
+    all_elecs_names{p} = labels;
        
     %% Determine "wake" and "sleep" times
     % normalized ad
@@ -169,27 +171,6 @@ for p = 1:npts
     seq_sw(p,:) = [nanmean(seq_info(1,wake)) nanmean(seq_info(1,sleep)),...
         nanmean(seq_info(2,wake)) nanmean(seq_info(2,sleep))];
 
-  
-    %{
-    %% SOZ analysis
-    % average over all times, all soz (and separately for all non soz)
-    rate_soz(p,:) = [nanmean(spikes(is_soz,:),'all') nanmean(spikes(~is_soz,:),'all')];
-    rl_soz(p,:) = [nanmean(rl(is_soz,:),'all') nanmean(rl(~is_soz,:),'all')];
-    
-    % Now sleep vs wake
-    for sz = 1:2
-        % first SOZ
-        if sz == 1
-            rate_sw_soz(sz,p,:) = [nanmean(spikes(is_soz,wake),'all') nanmean(spikes(is_soz,sleep),'all')];
-            rl_sw_soz(sz,p,:) = [nanmean(rl(is_soz,wake),'all') nanmean(rl(is_soz,sleep),'all')];
-        else
-            % not soz
-            rate_sw_soz(sz,p,:) = [nanmean(spikes(~is_soz,wake),'all') nanmean(spikes(~is_soz,sleep),'all')];
-            rl_sw_soz(sz,p,:) = [nanmean(rl(~is_soz,wake),'all') nanmean(rl(~is_soz,sleep),'all')];
-        end
-    end
-    %}
-    %
     
     %% Correlation between sleep and wake RL
     sleep_rl = nanmean(rl(:,sleep),2);
@@ -298,6 +279,7 @@ out.overall_rates = overall_rates;
 out.all_is_soz = all_is_soz;
 out.all_elec_rates = all_elec_rates;
 out.all_elecs_rl = all_elecs_rl;
+out.all_elecs_names = all_elecs_names;
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{

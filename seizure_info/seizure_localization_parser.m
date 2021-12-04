@@ -1,6 +1,8 @@
 function [loc,lat] = seizure_localization_parser(soz_loc,soz_lat)
 
-if contains(soz_loc,'temporal')
+if isempty(soz_loc)
+    loc = nan;
+elseif contains(soz_loc,'temporal')
     loc = 'temporal';
 else
     loc = 'other';

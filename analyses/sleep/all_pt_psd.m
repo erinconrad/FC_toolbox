@@ -79,7 +79,7 @@ for p = 1:npts
     name = summ.name;
     
     
-    names{p} = name;;
+    names{p} = name;
     
     % parse SOZ localization
     [soz_loc,soz_lat] = seizure_localization_parser(soz_loc,soz_lat);

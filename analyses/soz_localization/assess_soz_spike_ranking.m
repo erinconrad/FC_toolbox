@@ -1,8 +1,9 @@
 function assess_soz_spike_ranking
 
 %% Parameters
-which = 'rate';
+which = 'rl';
 nb = 1e4;
+min_rate = 0.1;
 
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -14,13 +15,15 @@ out = load([out_folder,'out.mat']);
 out = out.out;
 
 %% Get info
+rate = out.bin_out.all_elec_rates;
+rl = out.bin_out.all_elecs_rl;
 switch which
     case 'rate'
-        thing = out.bin_out.all_elec_rates;
+        thing = rate;
         thing_text = 'rate';
         soz_rank_sw = out.bin_out.soz_rank_sw;
     case 'rl'
-        thing = out.bin_out.all_elecs_rl;
+        thing = rl;
         thing_text = 'timing';
         soz_rank_sw = out.bin_out.soz_rank_sw_rl;
 end
@@ -28,11 +31,33 @@ soz = out.bin_out.all_is_soz;
 locs = out.circ_out.all_locs;
 is_temporal = cellfun(@(x) strcmp(x,'temporal'),locs);
 
-% convert soz to elec nums rather than bin
+%% Correlate rate and rl
+rl_rate_corr = nan(length(rate),1);
+for ip = 1:length(rate)
+    curr_rate = rate{ip};
+    curr_rl = rl{ip};
+    spikey = curr_rate > min_rate;
+    rl_rate_corr(ip) = corr(curr_rate(spikey),curr_rl(spikey),'type','spearman','rows','pairwise');
+end
+
+% Plot it
+figure
+plot(rl_rate_corr,'o','linewidth',2)
+hold on
+plot(xlim,[0 0],'k--','linewidth',2)
+xticklabels([])
+xlabel('Patient')
+ylabel('Correlation coefficients');
+set(gca,'fontsize',15)
+title({'Correlation between spike rate and spike timing'})
+print([out_folder,'rate_rl_corr'],'-dpng')
+
+
+%% convert soz to elec nums rather than bin
 soz = cellfun(@find,soz,'uniformoutput',false);
 
 %% Do MC test
-mcout = test_ranking(thing,soz,nb);
+mcout = test_ranking(thing,soz,nb,which,rate,min_rate);
 median_ranking_mc = mcout.median_ranking_mc;
 median_ranking_true = mcout.median_ranking_true;
 all_rankings = mcout.all_rankings;
@@ -81,6 +106,6 @@ nexttile
 plot_paired_data(soz_rank_sw',{'wake','sleep'},sprintf('Rank in spike %s',thing_text),'paired','scatter','ranking')
 title(sprintf('SOZ spike %s ranking\nby wake vs sleep',thing_text))
 
-print([out_folder,'Fig4'],'-dpng')
+print([out_folder,'Fig4_',thing_text],'-dpng')
 
 end
