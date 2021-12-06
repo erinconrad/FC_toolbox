@@ -72,6 +72,7 @@ for ib = 0:nb
             
         end
         
+        % get ranks of SOZ electrodes
         soz_ranks = median(ranks(fake_soz));
         temp_all_rankings(ip) = soz_ranks;
         
@@ -79,6 +80,8 @@ for ib = 0:nb
             all_rankings(ip) = soz_ranks;
         end
     end
+
+    % remove patients who have no SOZ
     no_soz = logical(no_soz);
     median_ranking_all(ib+1) = median(temp_all_rankings(~no_soz));
     

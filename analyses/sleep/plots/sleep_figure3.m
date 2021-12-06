@@ -1,4 +1,4 @@
-function sleep_figure2
+function sleep_figure3
 
 %% Parameters
 plot_type = 'scatter';
@@ -29,15 +29,16 @@ set(gcf,'position',[100 100 900 700])
 tiledlayout(2,2,'tilespacing','tight','padding','tight')
 
 %% Sleep surge histogram
-all_pts_spikes_bins = sleep_hist_out.all_pts_spikes_bins;
-all_pts_sleep_bins = sleep_hist_out.all_pts_sleep_bins;
-sig_bins = sleep_hist_out.sig_bins;
+all_pts_spikes_bins = sz_out.all_pts_spikes_bins;
+all_pts_sleep_bins = sz_out.all_pts_sleep_bins;
+surround_hours = sz_out.surround_hours;
+
 
 ax1 = nexttile;
 median_spikes = nanmedian(all_pts_spikes_bins,1);
 mean_sleep = nanmean(all_pts_sleep_bins,1)*100;
 iqr_spikes = prctile(all_pts_spikes_bins,[25,75],1);
-times = linspace(-12,12,length(median_spikes));
+times = linspace(-surround_hours,surround_hours,length(median_spikes));
 ylabels = ["Spikes/elecs/min","% Asleep"];
 s = stackedplot(times,[median_spikes',mean_sleep'],'linewidth',2,...
     "DisplayLabels",ylabels);
@@ -50,32 +51,32 @@ end
 ax = findobj(s.NodeChildren, 'Type','Axes');
 arrayfun(@(h)xline(h,0,'--k','LineWidth',2),ax)
 set([ax.YLabel],'Rotation',90,'HorizontalAlignment', 'Center', 'VerticalAlignment', 'Bottom')
-xlabel('Hours relative to sleep onset')
-xlim([-12 12])
+xlabel('Hours relative to seizure')
+xlim([-surround_hours surround_hours])
 set(gca,'fontsize',15)
-title('Spike rate and proportion asleep around sleep onset')
+title('Spike rate and proportion asleep around seizures')
 
 %% sleep pca stuff
-sleep_bins = out.sleep_hist_out.all_pts_spikes_bins;
+sz_bins = sz_out.all_pts_spikes_bins;
 % Subtract mean
-sleep_bins = (sleep_bins - nanmean(sleep_bins,2))./nanstd(sleep_bins,[],2);
-[coeff,score,latent] = pca(sleep_bins,'Rows','pairwise');
+sz_bins = (sz_bins - nanmean(sz_bins,2))./nanstd(sz_bins,[],2);
+[coeff,score,latent] = pca(sz_bins,'Rows','complete');
 locs = out.circ_out.all_locs;
 % Top scorers
 [~,top] = max(score,[],1);
 % Bottom scorers
 [~,bottom] = min(score,[],1);
 
-if 1
+if 0
     f = figure;
-    turn_nans_gray(sleep_bins)
+    turn_nans_gray(sz_bins)
     xlabel('Time bins')
     ylabel('Patients')
     title('Normalized spike rates')
     colorbar
     set(gca,'fontsize',15)
-    print(f,[out_folder,'pca_fig'],'-dpng')
-    close(gcf)
+    %print(f,[out_folder,'pca_fig'],'-dpng')
+    %close(gcf)
 end
 
 %% Variances
@@ -99,8 +100,8 @@ axh = findobj(sh.NodeChildren, 'Type','Axes');
 arrayfun(@(h)xline(h,0,'--k','LineWidth',2),axh)
 %pause(0.5)
 set([axh.YLabel],'Rotation',90,'HorizontalAlignment', 'Center', 'VerticalAlignment', 'Bottom')
-xlabel('Hours relative to sleep onset')
-xlim([-12 12])
+xlabel('Hours relative to seizure')
+xlim([-surround_hours surround_hours])
 set(gca,'fontsize',15)
 title('Top 2 principal component coefficients')
 %}
@@ -135,6 +136,6 @@ set(ax2,'fontsize',15)
 xlabel(ax2,'Component')
 ylabel(ax2,'Variance')
 
-print([out_folder,'Fig2'],'-dpng')
+print([out_folder,'Fig3'],'-dpng')
 
 end

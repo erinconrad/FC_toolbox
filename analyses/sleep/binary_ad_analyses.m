@@ -82,6 +82,9 @@ all_elec_rates = cell(npts,1);
 all_elecs_rl = cell(npts,1);
 all_elecs_names = cell(npts,1);
 
+all_elecs_rates_sw = cell(npts,1);
+all_elecs_rl_sw = cell(npts,1);
+
 %% Loop over patients
 for p = 1:npts
     
@@ -159,6 +162,8 @@ for p = 1:npts
     mean_spikes = nanmean(spikes,1); % still spikes/elec/min
     overall_rates(p) = nanmean(spikes,'all');
     all_rates(p,:) = [nanmean(mean_spikes(wake)) nanmean(mean_spikes(sleep))];
+    all_elecs_rates_sw{p} = [nanmean(spikes(:,wake),2) nanmean(spikes(:,sleep),2)];
+    all_elecs_rl_sw{p} = [nanmean(rl(:,wake),2) nanmean(rl(:,sleep),2)];
     
     %% Wake vs sleep coi
     all_coi(p,:) = [nanmean(coi_global(wake)) nanmean(coi_global(sleep))];
@@ -280,6 +285,8 @@ out.all_is_soz = all_is_soz;
 out.all_elec_rates = all_elec_rates;
 out.all_elecs_rl = all_elecs_rl;
 out.all_elecs_names = all_elecs_names;
+out.all_elecs_rl_sw = all_elecs_rl_sw;
+out.all_elecs_rate_sw = all_elecs_rate_sw;
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{

@@ -4,18 +4,20 @@ thing1 = (1:10)';
 thing2 = (1:10)';
 
 figure
-tiledlayout(3,2,'tilespacing','tight','padding','tight')
+h = tiledlayout(1,3,'tilespacing','tight','padding','tight');
 
 nexttile
 stackedplot([thing1,thing2]);
 
-nexttile
+ax2 = nexttile;
 plot(thing1);
-xlabel('x') % if I comment this out the error goes away
+ % if I comment this out the error goes away
 
 nexttile
 stackedplot([thing1,thing2]);
-title('test 3') % error occurs here
+title('test 3') 
+
+xlabel(ax2,'x')
 %{
 Canvas update iteration limit exceeded. This can occur
 if the scene is marked dirty during a drawnow.
