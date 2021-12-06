@@ -286,7 +286,7 @@ out.all_elec_rates = all_elec_rates;
 out.all_elecs_rl = all_elecs_rl;
 out.all_elecs_names = all_elecs_names;
 out.all_elecs_rl_sw = all_elecs_rl_sw;
-out.all_elecs_rate_sw = all_elecs_rate_sw;
+out.all_elecs_rates_sw = all_elecs_rates_sw;
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{

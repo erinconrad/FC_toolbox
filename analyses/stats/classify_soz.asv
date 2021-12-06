@@ -29,20 +29,8 @@ soz = out.bin_out.all_is_soz;
 locs = out.circ_out.all_locs;
 pt_idx = (1:length(rate_sw))';
 
-%% Put data into friendly format
-vec_rate
-for ip = 1:length(pt_idx)
-    
-    
-end
-
 %% Divide into training and testing set
-training = randsample(length(pt_idx),floor(length(pt_idx)/2));
-training_idx = ismember(pt_idx,training);
-testing_idx = ~ismember(pt_idx,training);
-
-
-
+training = 
 
 
 end
