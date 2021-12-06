@@ -1,4 +1,4 @@
-function ad_rat = calc_ad(values,fs)
+function [ad_rat,P,freqs] = calc_ad(values,fs)
 
 nchs = size(values,2);
 ad_rat = zeros(nchs,1);

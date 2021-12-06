@@ -1,7 +1,7 @@
 function show_eeg_and_spikes(values,chLabels,gdf,fs)
 
-figure
-set(gcf,'position',[62 104 1145 701])
+%figure
+%set(gcf,'position',[62 104 1145 701])
 
 offset = 0;
 ch_offsets = zeros(size(values,2),1);
@@ -41,7 +41,7 @@ for s = 1:size(gdf,1)
 end
 
 
-pause
-close(gcf)
+%pause
+%close(gcf)
 
 end
