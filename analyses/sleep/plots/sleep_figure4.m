@@ -31,8 +31,8 @@ unpack_any_struct(out);
 out_folder = [results_folder,'analysis/sleep/'];
 
 figure
-set(gcf,'position',[100 100 900 700])
-tiledlayout(2,6,'tilespacing','tight','padding','tight')
+set(gcf,'position',[100 100 1300 700])
+tiledlayout(2,3,'tilespacing','tight','padding','tight')
 
 %% Get stuff
 rate = out.bin_out.all_elec_rates;
@@ -62,12 +62,12 @@ thing_text = 'rate';
 median_ranking_mc = median_ranking_mc_rate;
 median_ranking_true = median_ranking_true_rate;
 pval = pval_rate;
-nexttile([1 2])
+nexttile
 plot(sort(median_ranking_mc),'o','linewidth',2)
 hold on
 plot(xlim,[median_ranking_true median_ranking_true],'linewidth',2)
 xl = xlim;
-text(xl(1),median_ranking_true+2,...
+text(xl(1)+200,median_ranking_true+2,...
     sprintf('Median ranking: %1.1f, %s',median_ranking_true,get_p_text(pval)),...
     'verticalalignment','bottom','fontsize',15)
 legend({'Random electrodes','True SOZ electrodes'},'Location','Northwest','fontsize',15)
@@ -83,12 +83,12 @@ thing_text = 'timing';
 median_ranking_mc = median_ranking_mc_rl;
 median_ranking_true = median_ranking_true_rl;
 pval = pval_rl;
-nexttile([1 2])
+nexttile
 plot(sort(median_ranking_mc),'o','linewidth',2)
 hold on
 plot(xlim,[median_ranking_true median_ranking_true],'linewidth',2)
 xl = xlim;
-text(xl(1)+20,median_ranking_true+2,...
+text(xl(1)+200,median_ranking_true+0.5,...
     sprintf('Median ranking: %1.1f, %s',median_ranking_true,get_p_text(pval)),...
     'verticalalignment','bottom','fontsize',15)
 legend({'Random electrodes','True SOZ electrodes'},'Location','Northwest','fontsize',15)
@@ -109,7 +109,7 @@ for ip = 1:length(rate)
 end
 
 % Plot it
-nexttile([1 2])
+nexttile
 plot(rl_rate_corr,'o','linewidth',2)
 hold on
 plot(xlim,[0 0],'k--','linewidth',2)
@@ -120,13 +120,32 @@ set(gca,'fontsize',15)
 title({'Correlation between spike rate and spike timing'})
 
 %% Spike rate ranking sleep vs wake
-nexttile([1 3])
+nexttile
 plot_paired_data(soz_rank_sw_rate',{'wake','sleep'},sprintf('Rank in spike rate'),'paired','scatter','ranking')
 title(sprintf('SOZ spike rate ranking\nby wake vs sleep'))
 
 %% Spike timing ranking sleep vs wake
-nexttile([1 3])
+nexttile
 plot_paired_data(soz_rank_sw_rl',{'wake','sleep'},sprintf('Rank in spike timing'),'paired','scatter','ranking')
 title(sprintf('SOZ spike timing ranking\nby wake vs sleep'))
+
+%% Fancy model
+soz_roc_out = classify_soz;
+roc = soz_roc_out.roc;
+auc = soz_roc_out.auc;
+
+nexttile
+plot(roc(:,1),roc(:,2),'k-','linewidth',2)
+hold on
+plot([0 1],[0 1],'k--','linewidth',2)
+%plot(roc(disc_I,1),roc(disc_I,2),'*','markersize',15,'linewidth',2,'color',colors(5,:));
+%text(roc(disc_I,1)+0.01,roc(disc_I,2)-0.05,'SOZ cutoff','fontsize',15,'color',colors(5,:));
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend(sprintf('AUC %1.2f',auc),'location','southeast','fontsize',15)
+set(gca,'fontsize',15)
+title('SOZ identification accuracy')
+
+print([out_folder,'fig4'],'-dpng')
 
 end
