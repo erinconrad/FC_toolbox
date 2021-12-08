@@ -75,7 +75,7 @@ T1 = table(names,sex,age_onset,age_implant,nelecs,...
 % Get data
 nfemale = sum(cellfun(@(x) strcmp(x,'Female'),sex));
 median_range_age_onset = [nanmedian(age_onset),min(age_onset),max(age_onset)];
-median_range_age_implant = [nanmedian(age_implant),min(age_impkant),max(age_implant)];
+median_range_age_implant = [nanmedian(age_implant),min(age_implant),max(age_implant)];
 median_range_nelecs = [nanmedian(nelecs),min(nelecs),max(nelecs)];
 median_range_duration = [nanmedian(duration),min(duration),max(duration)];
 median_range_rate = [nanmedian(rate),min(rate),max(rate)];
