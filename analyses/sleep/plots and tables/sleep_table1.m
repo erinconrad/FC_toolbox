@@ -80,7 +80,7 @@ any_grid = 0;
 for i = 1:length(labels)
     curr = labels{i};
     if contains(curr,'G')
-        B = regexp(A,'\d*','Match');
+        B = regexp(curr,'\d*','Match');
         if isempty(B), continue; end
         B = str2num(B{1});
         if B > 12 % if it's *G13 or higher then it's a grid
