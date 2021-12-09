@@ -87,7 +87,7 @@ n_other = sum(cellfun(@(x) strcmp(x,'other'),loc));
 
 % Turn to table
 total_str = {'Total: N',sprintf('%d',npts)};
-female_str = {'Female: N (%)',sprintf('%d (%1.1f%%)',nfemale,nfemale/npts)};
+female_str = {'Female: N (%)',sprintf('%d (%1.1f%%)',nfemale,nfemale/npts*100)};
 age_onset_str = {'Age at onset in years: median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
     median_range_age_onset(1),median_range_age_onset(2),median_range_age_onset(3))};
 age_implant_str = {'Age at implant in years: median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
@@ -99,12 +99,12 @@ duration_str = {'Intracranial recording duration in days: median (range)',sprint
 rate_str = {'Spike rate (spikes/elecs/min): median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
     median_range_rate(1),median_range_rate(2),median_range_rate(3))};
 lat_str = {'Seizure laterality',''};
-left_str = {'Left: N (%)',sprintf('%d (%1.1f%%)',n_left,n_left/npts)};
-right_str = {'Right: N (%)',sprintf('%d (%1.1f%%)',n_right,n_right/npts)};
-bilateral_str = {'Bilateral: N (%)',sprintf('%d (%1.1f%%)',n_bilateral,n_bilateral/npts)};
+left_str = {'Left: N (%)',sprintf('%d (%1.1f%%)',n_left,n_left/npts*100)};
+right_str = {'Right: N (%)',sprintf('%d (%1.1f%%)',n_right,n_right/npts*100)};
+bilateral_str = {'Bilateral: N (%)',sprintf('%d (%1.1f%%)',n_bilateral,n_bilateral/npts*100)};
 loc_str = {'Seizure localization',''};
-temporal_str = {'Temporal: N (%)',sprintf('%d (%1.1f%%)',n_temporal,n_temporal/npts)};
-other_str = {'Extra-temporal: N (%)',sprintf('%d (%1.1f%%)',n_other,n_other/npts)};
+temporal_str = {'Temporal: N (%)',sprintf('%d (%1.1f%%)',n_temporal,n_temporal/npts*100)};
+other_str = {'Extra-temporal: N (%)',sprintf('%d (%1.1f%%)',n_other,n_other/npts*100)};
 
 all = [total_str;...
     female_str;...
