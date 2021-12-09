@@ -1,4 +1,4 @@
-function [roc,auc,disc,disc_I] = ad_validation
+function [roc,auc,disc,disc_I,swdes] = ad_validation
 
 %{
 This is the main validation function to test how well the alpha delta ratio
