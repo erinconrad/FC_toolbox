@@ -108,13 +108,20 @@ T_test = T(testing_idx,:);
 %% Train model with glme model
 if include_post
     glme = fitglme(T_train,...
-        'vec_soz ~ vec_rate_sleep + vec_rate_wake + vec_rate_post + (1|vec_pt_idx)',...
+        'vec_soz ~ vec_rate_sleep + vec_rate_wake + (1|vec_pt_idx)',...
         'Distribution','Poisson','Link','log');
 else
     glme = fitglme(T_train,...
         'vec_soz ~ vec_rate_sleep + vec_rate_wake + (1|vec_pt_idx)',...
         'Distribution','Poisson','Link','log');
+
+elseif ~include_sw 
+    glme = fitglme(T_train,...
+        'vec_soz ~ vec_rate_all + (1|vec_pt_idx)',...
+        'Distribution','Poisson','Link','log');
+
 end
+
 
 
 
@@ -143,7 +150,7 @@ soz_roc_out.auc = auc;
 soz_roc_out.glme = glme;
 
 %% ROC
-if 1
+if 0
 figure
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
