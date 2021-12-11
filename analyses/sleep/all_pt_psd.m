@@ -84,7 +84,7 @@ for p = 1:npts
     sex{p} = summ.clinical.sex;
     age_implant(p) = summ.clinical.age_implant;
     age_onset(p) = summ.clinical.age_onset;
-    duration(p) = age_implant-age_onset;
+    duration(p) = age_implant(p)-age_onset(p);
     
     
     names{p} = name;
