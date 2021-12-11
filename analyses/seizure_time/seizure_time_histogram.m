@@ -61,6 +61,7 @@ all_pts_bin_id_vec = [];
 all_pts_id_vec = [];
 all_pts_sleep_vec = [];
 missing_loc = zeros(npts,1);
+post_ictal_rates = cell(npts,1);
 
 spikes_strat = cell(3,1);
 for i = 1:length(spikes_strat)
@@ -147,7 +148,8 @@ for p = 1:npts
     sp_bins = nan(size(bins));
     sleep_in_bins = nan(size(bins));
     sp_count_bins = nan(size(bins));
-
+    sp_count_bins_all_elecs = nan(size(bins,1),size(spikes,1));
+    
     for s = 1:size(bins,1)
         
         curr_bins = bins(s,:);
@@ -162,13 +164,15 @@ for p = 1:npts
         sp_bins(s,:) = out_bins;
         
         sp_count_bins(s,:) = [nan(1,sum(too_early)),spike_counts(curr_bins(bins_in_range)),nan(1,sum(too_late))];
-        
+        sp_count_bins_all_elecs(s,:) = nanmean(spikes(:,curr_bins(bins_in_range)),2);
         
         % sleep bins
         sleep_in_bins(s,:) = [nan(1,sum(too_early)),...
             sleep(curr_bins(bins_in_range)),nan(1,sum(too_late))];
 
     end
+    
+    post_ictal_rates{p} = (nanmean(sp_count_bins_all_elecs,1))';
     
     %% Get spike rate in each bin for each group for locs and lats
     % Loop over loc vs lat vs soz
@@ -336,6 +340,7 @@ out.T = T;
 out.spikes_strat = spikes_strat;
 out.main = main;
 out.names = names;
+out.post_ictal_rates = post_ictal_rates;
 
 %{
 figure

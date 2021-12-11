@@ -3,21 +3,23 @@ function info_on_designations
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-erin_des_folder = [results_folder,'analysis/sleep/erin_designations/'];
-spikes_folder = [results_folder,'all_out/'];
-%data_folder = [locations.main_folder,'data/'];
+out_folder = [results_folder,'analysis/sleep/'];
 
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-% Loop through all patients in the erin_designations folder
-listing = dir([erin_des_folder,'*.mat']);
+% Load out folder
+out = load([out_folder,'out.mat']);
+out = out.out;
 
-for l = 1:length(listing)
-    
-    
+swdes = out.roc_out.swdes;
+nawake = 0;
+nasleep = 0;
+
+for i = 1:length(swdes)
+    nawake = nawake + length(swdes(i).sw.wake);
+    nasleep = nasleep + length(swdes(i).sw.sleep);
 end
-
 
 end
