@@ -61,10 +61,6 @@ all_locs = cell(npts,1);
 all_lats = cell(npts,1);
 all_circ_P = nan(npts,1);
 names = cell(npts,1);
-sex = cell(npts,1);
-age_onset = nan(npts,1);
-age_implant = nan(npts,1);
-duration = nan(npts,1);
 
 %% Loop over patients and get psd per pt
 for p = 1:npts
@@ -81,10 +77,10 @@ for p = 1:npts
     soz_loc = summ.soz.loc;
     soz_lat = summ.soz.lat;
     name = summ.name;
-    sex{p} = summ.clinical.sex;
-    age_implant(p) = summ.clinical.age_implant;
-    age_onset(p) = summ.clinical.age_onset;
-    duration(p) = age_implant-age_onset;
+    sex = summ.clinical.sex;
+    age_implant = summ.clinical.age_implant;
+    age_onset = summ.clinical.age_onset;
+    duration = age_implant-age_onset;
     
     
     names{p} = name;
@@ -174,10 +170,6 @@ out.all_circ_P = all_circ_P;
 out.all_locs = all_locs;
 out.skip_pts = skip_pts;
 out.names = names;
-out.sex = sex;
-out.age_onset = age_onset;
-out.age_implant = age_implant;
-out.duration = duration;
 
 %{
 %% Initialize figure

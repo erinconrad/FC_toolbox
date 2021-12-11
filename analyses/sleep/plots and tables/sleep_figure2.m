@@ -135,6 +135,17 @@ set(ax2,'fontsize',15)
 xlabel(ax2,'Component')
 ylabel(ax2,'Variance')
 
+%% Correlate other things with PCA score
+sex = circ_out.sex;
+age_onset = circ_out.age_onset;
+age_implant = circ_out.age_implant;
+duration = circ_out.duration;
+
+% Sex
+male = strcmp(sex,'Male');
+female = strcmp(sex,'Female');
+
+
 print([out_folder,'Fig2'],'-dpng')
 
 end

@@ -136,6 +136,12 @@ set(ax2,'fontsize',15)
 xlabel(ax2,'Component')
 ylabel(ax2,'Variance')
 
+%% Check (no figure yet): is pre-to-post change higher in temporal?
+pre_to_post_change = sz_out.pre_to_post_change;
+fprintf(['\nPre-to-post change is %1.1f for temporal and %1.1f for extratemporal,\n'...
+    'p = %1.3f\n'],pre_to_post_change(tloc),pre_to_post_change(oloc),...
+    ranksum(pre_to_post_change(tloc),pre_to_post_change(oloc)));
+
 print([out_folder,'Fig3'],'-dpng')
 
 end
