@@ -4,6 +4,7 @@
 %% Parameters
 rm_cluster = 0;
 do_avg = 0;
+exc = 1:288; % number of blocks to exclude, 2 days -> 2*24*6 10-minute blocks = 288
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -20,7 +21,7 @@ circ_out = all_pt_psd;
 
 %% Do alpha delta ratio validation
 fprintf('\nDoing alpha delta ratio validation\n');
-[roc,auc,disc,disc_I,swdes] = ad_validation;
+[roc,auc,disc,disc_I,swdes] = ad_validation(exc);
 roc_out.roc = roc;
 roc_out.auc = auc;
 roc_out.disc = disc;
@@ -29,7 +30,7 @@ roc_out.swdes = swdes;
 
 %% Do binary ad analyses
 fprintf('\nDoing binary AD analyses\n');
-bin_out = binary_ad_analyses(disc);
+bin_out = binary_ad_analyses(disc,exc);
 
 %% Do subnetwork wake/sleep analysis
 %fprintf('\nDoing subnetwork analysis\n');
@@ -37,7 +38,7 @@ bin_out = binary_ad_analyses(disc);
 
 %% Do histogram analysis
 fprintf('\nDoing sleep histogram analysis\n');
-sleep_hist_out = sleep_histogram_analysis(rm_cluster,disc);
+sleep_hist_out = sleep_histogram_analysis(rm_cluster,disc,exc);
 
 % Stats on amount of wake and sleep
 n_sleep_wake = bin_out.n_sleep_wake;

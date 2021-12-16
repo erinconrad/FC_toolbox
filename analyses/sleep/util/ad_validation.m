@@ -1,4 +1,4 @@
-function [roc,auc,disc,disc_I,swdes] = ad_validation
+function [roc,auc,disc,disc_I,swdes] = ad_validation(exc)
 
 %{
 This is the main validation function to test how well the alpha delta ratio
@@ -17,8 +17,14 @@ for j = 1:npts_val
     wake_ad = swdes(j).sw.wake;
     ad_val = swdes(j).ad;
 
+    %{
     sleep_norm = (sleep_ad-nanmedian(ad_val))./iqr(ad_val);
     wake_norm = (wake_ad-nanmedian(ad_val))./iqr(ad_val);
+    %}
+    sleep_norm = norm_exc(sleep_ad,ad_val,exc);
+    wake_norm = norm_exc(wake_ad,ad_val,exc);
+    
+    
     ad_norm(j,:) = [nanmean(sleep_norm),nanmean(wake_norm)]; 
     
     % note that for generating the roc curve, I combine ALL values (rather

@@ -1,4 +1,4 @@
-function out = binary_ad_analyses(disc)
+function out = binary_ad_analyses(disc,exc)
 
 
 %% Parameters
@@ -150,9 +150,12 @@ for p = 1:npts
        
     %% Determine "wake" and "sleep" times
     % normalized ad
+    %{
     ad_norm = (ad - nanmedian(ad))./iqr(ad);
     wake = ad_norm > disc;
     sleep = ad_norm <= disc;
+    %}
+    [sleep,wake] = find_sleep_wake(ad,exc,disc);
        
     n_sleep_wake(p,1) = sum(sleep);
     n_sleep_wake(p,2) = sum(wake);

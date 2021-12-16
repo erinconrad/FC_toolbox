@@ -136,16 +136,59 @@ xlabel(ax2,'Component')
 ylabel(ax2,'Variance')
 
 %% Correlate other things with PCA score
+c = 1;
 sex = circ_out.sex;
 age_onset = circ_out.age_onset;
 age_implant = circ_out.age_implant;
 duration = circ_out.duration;
 
+%{
 % Sex
 male = strcmp(sex,'Male');
 female = strcmp(sex,'Female');
+fprintf('\nScore males: %1.1f, females: %1.1f, p = %1.3f\n',...
+    nanmedian(score(male,c)),nanmedian(score(female,c)),...
+    ranksum(nanmedian(score(male,c)),nanmedian(score(female,c))));
+
+% Age onset
+[r,p] = corr(score(:,c),age_onset,'rows','pairwise');
+fprintf('\nCorrelation between age onset and score: r = %1.2f, p = %1.3f\n',...
+    r,p);
+
+% Age implant
+[r,p] = corr(score(:,c),age_implant,'rows','pairwise');
+fprintf('\nCorrelation between age implant and score: r = %1.2f, p = %1.3f\n',...
+    r,p);
+plot(age_implant,score(:,c),'o')
+% Positive correlation! Should check whether older people really have a
+% higher rise
+
+[r,p] = corr(score(:,c),duration,'rows','pairwise');
+fprintf('\nCorrelation between duration and score: r = %1.2f, p = %1.3f\n',...
+    r,p);
+%}
 
 
 print([out_folder,'Fig2'],'-dpng')
+
+%% Do age correlation
+c = 1;
+figure
+thing = age_implant;
+[r,p] = corr(score(:,c),thing,'rows','pairwise');
+plot(thing,score(:,c),'o','linewidth',2)
+xlabel('Age at implant (years)')
+ylabel(sprintf('Component %d score',c))
+xl = xlim;
+yl = ylim;
+text(xl(1),yl(2),sprintf('r = %1.2f, %s',r,get_p_text(p)),'fontsize',15,'verticalalignment','top')
+set(gca,'fontsize',15)
+title('Correlation between age and spike pattern surrounding sleep')
+print([out_folder,'age'],'-dpng')
+
+%{
+ns_sw = bin_out.ns_sw;
+plot(ns_sw(:,2)./ns_sw(:,1),age_implant,'o')
+%}
 
 end

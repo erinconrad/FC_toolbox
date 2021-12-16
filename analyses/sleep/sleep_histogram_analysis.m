@@ -1,4 +1,4 @@
-function out = sleep_histogram_analysis(rm_cluster,disc)
+function out = sleep_histogram_analysis(rm_cluster,disc,exc)
 
 %{
 I need to do a linear rather than a poisson model because I don't have
@@ -70,6 +70,7 @@ all_pts_bin_id_vec = [];
 all_pts_id_vec = [];
 all_pts_trans_id_vec = [];
 
+
 names = cell(npts,1);
 
 % start running count of which sleep transition
@@ -105,6 +106,7 @@ for p = 1:npts
     
     ad = ad(~ekg,:);
     ad = nanmean(ad,1);
+
     spikes = spikes(~ekg,:);
     loc = loc(~ekg,:);
     is_soz = is_soz(~ekg);
@@ -114,9 +116,13 @@ for p = 1:npts
     
     %% Determine "wake" and "sleep" times
     % normalized ad
+    [sleep,wake,ad_norm] = find_sleep_wake(ad,exc,disc);
+    %{
     ad_norm = (ad - nanmedian(ad))./iqr(ad);
     wake = ad_norm > disc;
     sleep = ad_norm <= disc;
+    %}
+    
     
     %% Find transition points and bins
     [transitions,bins] = designate_histogram(sleep,wake,n_periods,min_same,...
@@ -138,6 +144,12 @@ for p = 1:npts
     % Add to list of patients
     all_pts_spikes_bins(p,:) = spikes_in_bins;
     all_pts_sleep_bins(p,:) = sleep_in_bins;
+    
+    %% Calculate the pre-to-post change in ad ratio and ns
+    pre_bins = 1:nbins/2;
+    post_bins = nbins/2+1:nbins;
+
+    
     
     %% bin seizure times into this framework
     if ~isempty(sz_times)
