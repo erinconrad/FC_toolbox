@@ -64,6 +64,6 @@ out.out_folder = out_folder;
 save([out_folder,'out.mat'],'out')
 
 %% Do plots
-fprintf('\nDoing other plots\n');
-sleep_plots(out,1)
+%fprintf('\nDoing other plots\n');
+%sleep_plots(out,1)
 
