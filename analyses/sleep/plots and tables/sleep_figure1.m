@@ -23,8 +23,8 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 
 figure
-set(gcf,'position',[100 100 900 1100])
-tiledlayout(3,2,'tilespacing','tight','padding','tight')
+set(gcf,'position',[100 100 1300 1100])
+tiledlayout(3,3,'tilespacing','tight','padding','tight')
 
 %% A - PSD
 median_psd = circ_out.median_psd;

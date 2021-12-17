@@ -4,7 +4,7 @@
 %% Parameters
 rm_cluster = 0;
 do_avg = 0;
-exc = 1:288; % number of blocks to exclude, 2 days -> 2*24*6 10-minute blocks = 288
+exc = []; % number of blocks to exclude, 2 days -> 2*24*6 10-minute blocks = 288
 
 %% Get file locs
 locations = fc_toolbox_locs;
