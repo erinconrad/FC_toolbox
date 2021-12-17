@@ -23,15 +23,15 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 
 figure
-set(gcf,'position',[100 100 1300 1100])
-tiledlayout(3,3,'tilespacing','tight','padding','tight')
+set(gcf,'position',[100 100 1100 1100])
+tiledlayout(3,6,'tilespacing','tight','padding','tight')
 
 %% A - PSD
 median_psd = circ_out.median_psd;
 iqr_psd = circ_out.iqr_psd;
 periods = circ_out.periods;
 
-nexttile
+nexttile([1 3])
 shaded_error_bars(periods,median_psd,iqr_psd,[]);
 xlim([0 100])
 xlabel('Period (hours)')
@@ -41,24 +41,24 @@ title('Spike rate power spectral density')
 
 %% 2A overall spike rates
 all_rate = bin_out.all_rates;
-nexttile
+nexttile([1 3])
 plot_paired_data(all_rate(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type)
 title('Overall spike rate')
 
 %% 2B independent spikes
 seq_sw = bin_out.seq_sw;
-nexttile
-plot_paired_data(seq_sw(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type)
+nexttile([1 2])
+plot_paired_data(seq_sw(:,1:2)',{'wake','sleep'},'# Spike sequences','paired',plot_type)
 title('Independent spikes')
 
 %% 2C spike spread
-nexttile
+nexttile([1 2])
 plot_paired_data(seq_sw(:,3:4)',{'wake','sleep'},'# Spikes/sequence','paired',plot_type)
 title('Spike spread')
 
 %% 2D RL sleep-wake correlation across patients
 rl_sw_corr = bin_out.rl_sw_corr;
-nexttile
+nexttile([1 2])
 plot(rl_sw_corr,'o','linewidth',2)
 hold on
 plot(xlim,[0 0],'k--','linewidth',2)
@@ -66,7 +66,7 @@ ylabel('Correlation coefficient')
 xlabel('Patient')
 xticklabels([])
 ylim([-1 1])
-title('Sleep-wake spike spread pattern correlation')
+title('Sleep-wake spike spread consistency')
 set(gca,'fontsize',15)
 xl = xlim;
 yl = ylim;
@@ -75,9 +75,39 @@ text(xl(2),yl(1),sprintf('Median r = %1.2f',nanmedian(rl_sw_corr)),...
 
 %% 2E NS
 ns_sw = bin_out.ns_sw;
-nexttile
+nexttile([1 3])
 plot_paired_data(ns_sw',{'wake','sleep'},'Average node strength','paired',plot_type)
 title('Functional connectivity')
+
+%% 2F Localization
+rate_sw = bin_out.all_rates;
+loc = circ_out.all_locs;
+temporal = contains(loc,'temporal');
+rate_diff = (rate_sw(:,2)-rate_sw(:,1));
+extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
+p = ranksum(rate_diff(temporal),rate_diff(extra));
+
+nexttile([1 3])
+plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(1,:))
+hold on
+plot([0.7 1.3],[nanmedian(rate_diff(temporal)) nanmedian(rate_diff(temporal))],...
+    'linewidth',2,'color',myColours(1,:))
+plot(2+randn(sum(extra),1)*0.05,rate_diff(extra),'o','linewidth',2,'color',myColours(2,:))
+plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
+    'linewidth',2,'color',myColours(2,:))
+xticks([1 2])
+xticklabels({'Temporal','Extra-temporal'})
+ylabel('Sleep-wake spikes/elec/min')
+title('Sleep-wake spike rate difference')
+set(gca,'fontsize',15);
+xlim([0 3])
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.13*(yl(2)-yl(1));
+ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+plot([1 2],[ybar ybar],'k-','linewidth',2)
+text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
+ylim(ylnew)
 
 print([out_folder,'Fig1'],'-dpng')
 
