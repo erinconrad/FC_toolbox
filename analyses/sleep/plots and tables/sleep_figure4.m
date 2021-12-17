@@ -58,6 +58,9 @@ pval_rl = mcout_rl.pval;
 
 
 %% SOZ spike rate ranking
+nexttile
+
+%{
 thing_text = 'rate';
 median_ranking_mc = median_ranking_mc_rate;
 median_ranking_true = median_ranking_true_rate;
@@ -76,6 +79,7 @@ xticklabels([])
 xlabel('Monte Carlo iteration')
 ylabel(sprintf('Median spike %s ranking',thing_text))
 title(sprintf('Spike %s ranking of SOZ compared to chance',thing_text))
+%}
 
 
 %% SOZ spike timing ranking

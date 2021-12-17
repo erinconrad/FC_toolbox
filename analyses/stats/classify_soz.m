@@ -7,7 +7,7 @@ Need to check this!!!
 
 %% Parameters
 include_sw = 1;
-include_post  = 1;
+include_post  = 0;
 prop_train = 2/3;
 do_norm = 1;
 
@@ -61,18 +61,18 @@ for ip = 1:length(pt_idx)
     curr_rate_post = rate_post{ip};
     
     if do_norm
-        curr_rate_sw = (curr_rate_sw - nanmedian(curr_rate_sw,1))./...
-            iqr(curr_rate_sw,1);
-        curr_rate_all = (curr_rate_all-nanmedian(curr_rate_all))./...
-            iqr(curr_rate_all);
+        curr_rate_sw = (curr_rate_sw - nanmean(curr_rate_sw,1))./...
+            nanstd(curr_rate_sw,[],1);
+        curr_rate_all = (curr_rate_all-nanmean(curr_rate_all))./...
+            nanstd(curr_rate_all);
         
-        curr_rl_sw = (curr_rl_sw - nanmedian(curr_rl_sw,1))./...
-            iqr(curr_rl_sw,1);
-        curr_rl_all = (curr_rl_all-nanmedian(curr_rl_all))./...
-            iqr(curr_rl_all);
+        curr_rl_sw = (curr_rl_sw - nanmean(curr_rl_sw,1))./...
+            nanstd(curr_rl_sw,[],1);
+        curr_rl_all = (curr_rl_all-nanmean(curr_rl_all))./...
+            nanstd(curr_rl_all);
         
-        curr_rate_post = (curr_rate_post - nanmedian(curr_rate_post))./...
-            iqr(curr_rate_post);
+        curr_rate_post = (curr_rate_post - nanmean(curr_rate_post))./...
+            nanstd(curr_rate_post);
     end
     
     vec_rate_sleep = [vec_rate_sleep;curr_rate_sw(:,2)];
@@ -104,6 +104,10 @@ testing_idx = ~ismember(vec_pt_idx,training);
 
 T_train = T(training_idx,:);
 T_test = T(testing_idx,:);
+
+%% Remove nan and inf rows
+nan_train = isnan(T_train.vec_rate_sleep) | isnan(T_train.vec_rate_wake) | isnan(T_train.vec_rate_post);
+T_train(nan_train,:) = [];
 
 %% Train model with glme model
 if include_post
@@ -143,7 +147,7 @@ soz_roc_out.auc = auc;
 soz_roc_out.glme = glme;
 
 %% ROC
-if 1
+if 0
 figure
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on

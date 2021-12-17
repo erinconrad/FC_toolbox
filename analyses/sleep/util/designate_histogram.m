@@ -98,6 +98,7 @@ if 1
     nexttile
     plot(times(wake==1),0,'o','markersize',4,'color',colors(1,:))
     hold on
+    
     plot(times(sleep==1),1,'o','markersize',4,'color',colors(2,:))
     yticks([0 1])
     ylim([-1 2])

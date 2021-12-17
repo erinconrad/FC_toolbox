@@ -20,7 +20,7 @@ for ib = 0:nb
         % Sozs for that patient
         curr_soz = soz{ip};
         chs = 1:length(things{ip});
-        curr_soz_bin = zeros(length(things{ip}),1);
+        curr_soz_bin = curr_soz;
         curr_soz_bin(ismember(chs,curr_soz)) = 1;
         
         % remove from thing and soz cases of nan values

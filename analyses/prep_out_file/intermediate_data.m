@@ -103,6 +103,7 @@ for l = 1:npts
     n_rm_ictal = out.montage(m).n_rm_ictal;
     sz_times = out.sz_times;
     seq_info = out.montage(m).seq_info;
+    leader = out.montage(m).leader_montage;
     
     % bipolar montage for networks
     fc = out.montage(net_m).net;
@@ -209,6 +210,7 @@ for l = 1:npts
     summ.avg_fc = avg_fc;
     summ.seq_info = seq_info;
     summ.clinical = pt(j).clinical;
+    summ.leader = leader;
     %summ.ge = ge;
 
     %% Save it all

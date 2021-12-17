@@ -47,6 +47,7 @@ for f = 1:nfiles
         ad_montage{m} = nan(nchs,nruns);
         coa_montage{m} = nan(nchs*(nchs-1)/2,nruns);
         rl_montage{m} = nan(nchs,nruns);
+        leader_montage{m} = nan(nchs,nruns);
         %coi_montage{m} = nan(nchs,nruns);
         coi_global_montage{m} = nan(nruns,1);
         seq_info{m} = nan(2,nruns);
@@ -91,6 +92,7 @@ for f = 1:nfiles
             coa = nan(nchs,nchs);
             nseq_and_length = nan(2,1);
             rl = nan(nchs,1);
+            leader = nan(nchs,1);
             
             %% Change defaults to zeros if we run it
             % this way I distinguish between zero spikes because we just
@@ -116,7 +118,7 @@ for f = 1:nfiles
                 
                 % Get spike coi
                 %[coi_ch,global_coi] = get_spike_coi(gdf,nchs,fs);
-                [coa,rl,global_coi,seq_lengths] = build_sequences(gdf,nchs,fs);
+                [coa,rl,global_coi,seq_lengths,leader] = build_sequences(gdf,nchs,fs);
                 nseq_and_length = [length(seq_lengths) mean(seq_lengths)];
             else
                
@@ -132,6 +134,7 @@ for f = 1:nfiles
             %coi_montage{m}(:,r) = coi_ch;
             coi_global_montage{m}(r) = global_coi;
             seq_info{m}(:,r) = nseq_and_length;
+            leader_montage{m}(:,r) = leader;
 
             
         end
@@ -150,6 +153,7 @@ for f = 1:nfiles
         %coi_montage{m}(:,all_adj_bad) = nan;
         coi_global_montage{m}(all_adj_bad) = nan;
         seq_info{m}(:,all_adj_bad) = nan;
+        leader_montage{m}(:,all_adj_bad) = nan;
         
          
     end
@@ -185,6 +189,7 @@ for f = 1:nfiles
         out.file(f).montage(m).n_rm_ictal = n_rm_ictal(m);
         out.file(f).montage(m).seq_info = seq_info{m};
         %out.file(f).montage(m).seq = seq{m};
+        out.file(f).montage(m).leader_montage = leader_montage{m};
         
     end
     out.file(f).run_center = run_center;

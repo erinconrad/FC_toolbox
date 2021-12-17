@@ -1,4 +1,4 @@
-function [coa,rl,global_coi,seq_lengths] = build_sequences(gdf,nchs,fs)
+function [coa,rl,global_coi,seq_lengths,leader] = build_sequences(gdf,nchs,fs)
 
 %% How close spikes need to be
 t2_seconds = 50e-3;
@@ -73,6 +73,19 @@ for s = 1:size(gdf,1)
 end
 
 seq_lengths = cellfun(@(x) size(x,1), seqs);
+
+%% Get the leader electrode for each sequence
+seq_leader = cellfun(@(x) x(1,1), seqs);
+
+
+% Convert this to an nchx1 vector, mostly zeros, with number of times the
+% electrode is the leader
+leader = zeros(nchs,1);
+for i = 1:length(seq_leader)
+    leader(seq_leader(i)) = leader(seq_leader(i)) + 1;
+end
+
+
 
 %% confirm coa symmetric
 %assert(issymmetric(coa))
