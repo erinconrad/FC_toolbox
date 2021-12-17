@@ -172,6 +172,7 @@ out.circ_P = circ_P;
 out.main_locs = main_locs;
 out.all_circ_P = all_circ_P;
 out.all_locs = all_locs;
+out.all_lats = all_lats;
 out.skip_pts = skip_pts;
 out.names = names;
 out.sex = sex;

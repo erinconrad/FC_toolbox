@@ -24,8 +24,8 @@ age = circ_out.age_implant;
 duration = circ_out.duration;
 
 %% Get main demographic info
-temporal = strcmp(loc,'temporal');
-extra = strcmp(loc,'other');
+temporal = contains(loc,'temporal');
+extra = strcmp(loc,'other cortex');
 female = strcmp(sex,'Female');
 male = strcmp(sex,'Male');
 
