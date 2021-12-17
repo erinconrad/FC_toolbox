@@ -90,7 +90,7 @@ for p = 1:npts
     names{p} = name;
     
     % parse SOZ localization
-    [soz_loc,soz_lat] = seizure_localization_parser(soz_loc,soz_lat);
+    %[soz_loc,soz_lat] = seizure_localization_parser(soz_loc,soz_lat);
     all_locs{p} = soz_loc;
     all_lats{p} = soz_lat;
     

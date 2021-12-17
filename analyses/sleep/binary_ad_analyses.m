@@ -78,12 +78,15 @@ soz_rank_sw_rl = nan(npts,2);
 rl_sw_corr = nan(npts,1);
 nspikey = nan(npts,2);
 all_is_soz = cell(npts,1);
-all_elec_rates = cell(npts,1);
+all_elecs_rates = cell(npts,1);
 all_elecs_rl = cell(npts,1);
 all_elecs_names = cell(npts,1);
 
 all_elecs_rates_sw = cell(npts,1);
 all_elecs_rl_sw = cell(npts,1);
+
+all_elecs_leader = cell(npts,1);
+all_elecs_leader_sw = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -105,6 +108,7 @@ for p = 1:npts
     ns = summ.ns;
     name = summ.name;
     seq_info = summ.seq_info;
+    leader = summ.leader;
     
     names{p} = name;
     
@@ -144,9 +148,10 @@ for p = 1:npts
     
     %% All rates and rl
     all_is_soz{p} = is_soz;
-    all_elec_rates{p} = nanmean(spikes,2);
+    all_elecs_rates{p} = nanmean(spikes,2);
     all_elecs_rl{p} = nanmean(rl,2);
     all_elecs_names{p} = labels;
+    all_elecs_leader{p} = nansum(leader,2);
        
     %% Determine "wake" and "sleep" times
     % normalized ad
@@ -167,6 +172,7 @@ for p = 1:npts
     all_rates(p,:) = [nanmean(mean_spikes(wake)) nanmean(mean_spikes(sleep))];
     all_elecs_rates_sw{p} = [nanmean(spikes(:,wake),2) nanmean(spikes(:,sleep),2)];
     all_elecs_rl_sw{p} = [nanmean(rl(:,wake),2) nanmean(rl(:,sleep),2)];
+    all_elecs_leader_sw{p} = [nansum(leader(:,wake),2) nansum(leader(:,sleep),2)];
     
     %% Wake vs sleep coi
     all_coi(p,:) = [nanmean(coi_global(wake)) nanmean(coi_global(sleep))];
@@ -285,11 +291,13 @@ out.rl_sw_corr = rl_sw_corr;
 out.nspikey = nspikey;
 out.overall_rates = overall_rates;
 out.all_is_soz = all_is_soz;
-out.all_elec_rates = all_elec_rates;
+out.all_elecs_rates = all_elec_rates;
+out.all_elecs_leader = all_elec_leader;
 out.all_elecs_rl = all_elecs_rl;
 out.all_elecs_names = all_elecs_names;
 out.all_elecs_rl_sw = all_elecs_rl_sw;
 out.all_elecs_rates_sw = all_elecs_rates_sw;
+out.all_elecs_leader_sw = all_elecs_leader_sw;
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{
