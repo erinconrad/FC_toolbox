@@ -77,6 +77,7 @@ for p = 1:npts
     [bin_counts,closest_bins] = bin_stuff(sz_times,time_bins);
     
     %% Preceding bin wake vs sleep
+    closest_bins = closest_bins(~isnan(closest_bins));
     pre_bins = closest_bins - 1;
     pre_wake = nan(length(closest_bins),1);
     pre_wake(wake(pre_bins)==1)=1;
