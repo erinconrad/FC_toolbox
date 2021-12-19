@@ -32,11 +32,12 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 figure
 set(gcf,'position',[100 100 1300 700])
-tiledlayout(2,3,'tilespacing','tight','padding','tight')
+tiledlayout(3,3,'tilespacing','tight','padding','tight')
 
 %% Get stuff
-rate = out.bin_out.all_elec_rates;
+rate = out.bin_out.all_elecs_rates;
 rl = out.bin_out.all_elecs_rl;
+leader = out.bin_out.all_elecs_leader;
 soz_rank_sw_rate = out.bin_out.soz_rank_sw;
 soz_rank_sw_rl = out.bin_out.soz_rank_sw_rl;
 soz = out.bin_out.all_is_soz;
@@ -50,15 +51,23 @@ median_ranking_true_rate = mcout_rate.median_ranking_true;
 all_rankings_rate = mcout_rate.all_rankings;
 pval_rate = mcout_rate.pval;
 
+mcout_leader = test_ranking(leader,soz,nb,'rate',rate,min_rate);
+
+
 mcout_rl = test_ranking(rl,soz,nb,'rl',rate,min_rate);
 median_ranking_mc_rl = mcout_rl.median_ranking_mc;
 median_ranking_true_rl = mcout_rl.median_ranking_true;
 all_rankings_rl = mcout_rl.all_rankings;
 pval_rl = mcout_rl.pval;
+%}
 
 
 %% SOZ spike rate ranking
-nexttile
+nexttile([1 3])
+plot_orders(rate,soz,rate,'rate',[])
+
+nexttile([1 3])
+plot_orders(rl,soz,rate,'rl',min_rate)
 
 %{
 thing_text = 'rate';
