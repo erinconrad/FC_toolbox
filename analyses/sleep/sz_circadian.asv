@@ -67,7 +67,7 @@ for p = 1:npts
     %% Bin sz times
     time_bins = times;
     for t = 1:length(times)
-        time_bins(t) = max(times(t),ceil(times(t)/block)*block);
+        time_bins(t)
     end
     [bin_counts,closest_bins] = bin_stuff(sz_times,time_bins);
     
