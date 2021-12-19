@@ -46,9 +46,14 @@ for p = 1:npts
     summ = load([int_folder,listing(p).name]);
     summ = summ.summ;
     
-    spikes = summ.spikes;
     times = summ.times;
     run_length = length(times);
+    
+    if isempty(summ.sz_times)
+        continue;
+        
+    end
+    
     sz_times = summ.sz_times(:,1);
     block = summ.block_dur;
     %time_bins = block:block:ceil(times(end)/block)*block;
