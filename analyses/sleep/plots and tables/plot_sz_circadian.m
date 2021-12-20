@@ -30,13 +30,14 @@ figure
 nexttile
 periods = sz_circ_out.periods;
 iqr_psd = sz_circ_out.iqr_psd;
-median_psd = sz_circ_out.median_psd;
+all_psd = sz_circ_out.all_psd;
+median_psd = nanmedian(all_psd,1);
 mp = shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
 
 nexttile
 pre_wake = sz_circ_out.pre_wake;
 for i = 1:length(pre_wake)
-    plot(i,sum(pre_wake==1)/(sum(pre_wake==1) + sum(pre_wake==0)),'o')
+    plot(i,sum(pre_wake{i}==1)/(sum(pre_wake{i}==1) + sum(pre_wake{i}==0)),'o')
     hold on
 end
 
