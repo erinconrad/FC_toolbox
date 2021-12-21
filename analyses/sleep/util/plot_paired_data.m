@@ -1,7 +1,12 @@
 function plot_paired_data(varargin)
 
 data = varargin{1};
-xlabels = varargin{2};
+xlabels = varargin{2}(1:2);
+if length(varargin{2})>2
+    legtext = varargin{2}{3};
+else
+    legtext = 'in sleep';
+end
 ytext = varargin{3};
 p_or_unp = varargin{4};
 
@@ -11,7 +16,7 @@ else
     plot_type = 'errorbar';
 end
 
-if length(varargin) == 6
+if length(varargin) >= 6
     is_ranking = strcmp('ranking',varargin{6});
 else
     is_ranking = 0;
@@ -73,7 +78,10 @@ switch plot_type
         pause(0.3)
         text(xl(1),yl(2),get_p_text(pval),'verticalalignment','top','fontsize',15)
         plot([all_min all_max],[all_min all_max],'k--','linewidth',2)
-        legend([pp;np;ep],{'Higher in sleep','Lower in sleep','Equal wake and sleep'},...
+        legtext1 = sprintf('Higher %s',legtext);
+        legtext2 = sprintf('Lower %s',legtext);
+        legtext3 = 'Equal';
+        legend([pp;np;ep],{legtext1,legtext2,legtext3},...
             'location','southeast','fontsize',15)
         
         

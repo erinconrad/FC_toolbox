@@ -1,5 +1,6 @@
 function sleep_figure3
 
+% does time of day localize epilepsy??
 
 %% Parameters
 plot_type = 'scatter';
@@ -27,37 +28,15 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 figure
 set(gcf,'position',[100 100 900 700])
-%tiledlayout(2,2,'tilespacing','tight','padding','tight')
+tiledlayout(2,2,'tilespacing','tight','padding','tight')
 
-%% Seizure timing PSD
-nexttile
-periods = sz_circ_out.periods;
-iqr_psd = sz_circ_out.iqr_psd;
-all_psd = sz_circ_out.all_psd;
-median_psd = nanmedian(all_psd,1);
-mp = shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
-
-%% Percent asleep
-nexttile
-pre_wake = sz_circ_out.pre_wake;
-n_sleep_wake = bin_out.n_sleep_wake;
-perc_sz_asleep = cellfun(@(x) prc_asleep(x),pre_wake);
-perc_all_asleep = 100*n_sleep_wake(:,1)./sum(n_sleep_wake,2);
-minp = min([perc_sz_asleep;perc_all_asleep]);
-maxp = max([perc_sz_asleep;perc_all_asleep]);
-plot(perc_all_asleep,perc_sz_asleep,'o','linewidth',2)
-hold on
-plot([0 100],[0 100],'k--')
-xlabel('Total time asleep (%)')
-ylabel('Seizures arising sleep (%)')
-set(gca,'fontsize',15)
-
-
-%% Post-ictal surge histogram
+%% Sleep surge histogram
 all_pts_spikes_bins = sz_out.all_pts_spikes_bins;
 all_pts_sleep_bins = sz_out.all_pts_sleep_bins;
 surround_hours = sz_out.surround_hours;
-nexttile;
+
+
+ax1 = nexttile;
 median_spikes = nanmedian(all_pts_spikes_bins,1);
 mean_sleep = nanmean(all_pts_sleep_bins,1)*100;
 iqr_spikes = prctile(all_pts_spikes_bins,[25,75],1);
@@ -79,6 +58,55 @@ xlim([-surround_hours surround_hours])
 set(gca,'fontsize',15)
 title('Spike rate and proportion asleep around seizures')
 
+%% sleep pca stuff
+sz_bins = sz_out.all_pts_spikes_bins;
+% Subtract mean
+sz_bins = (sz_bins - nanmean(sz_bins,2))./nanstd(sz_bins,[],2);
+[coeff,score,latent] = pca(sz_bins,'Rows','complete');
+locs = out.circ_out.all_locs;
+% Top scorers
+[~,top] = max(score,[],1);
+% Bottom scorers
+[~,bottom] = min(score,[],1);
+
+if 0
+    f = figure;
+    turn_nans_gray(sz_bins)
+    xlabel('Time bins')
+    ylabel('Patients')
+    title('Normalized spike rates')
+    colorbar
+    set(gca,'fontsize',15)
+    %print(f,[out_folder,'pca_fig'],'-dpng')
+    %close(gcf)
+end
+
+%% Variances
+%
+ax2 = nexttile;
+stem(latent,'k','linewidth',2);
+%}
+
+
+%% First two components
+ax3 = nexttile;
+ylabels = ["Component 1","Component 2"];
+sh = stackedplot(times,[coeff(:,1),coeff(:,2)],'linewidth',2,...
+    "DisplayLabels",ylabels);
+for k = 1:length(sh.LineProperties)
+    if k <= size(myColours,1)
+        sh.LineProperties(k).Color = myColours(k+2,:);
+    end
+end
+axh = findobj(sh.NodeChildren, 'Type','Axes');
+arrayfun(@(h)xline(h,0,'--k','LineWidth',2),axh)
+%pause(0.5)
+set([axh.YLabel],'Rotation',90,'HorizontalAlignment', 'Center', 'VerticalAlignment', 'Bottom')
+xlabel('Hours relative to seizure')
+xlim([-surround_hours surround_hours])
+set(gca,'fontsize',15)
+title('Top 2 principal component coefficients')
+%}
 
 %% F: Localization
 ax4 = nexttile;
@@ -117,11 +145,5 @@ fprintf(['\nPre-to-post change is %1.1f for temporal and %1.1f for extratemporal
     ranksum(pre_to_post_change(tloc),pre_to_post_change(oloc)));
 
 print([out_folder,'Fig3'],'-dpng')
-
-end
-
-function prc = prc_asleep(x)
-
-prc = 100 * sum(x==0)/(sum(x==1)+sum(x==0));
 
 end

@@ -6,8 +6,8 @@ Need to check this!!!
 %}
 
 %% Parameters
-include_sw = 1;
 include_post  = 0;
+include_rl = 0;
 prop_train = 2/3;
 do_norm = 1;
 
@@ -36,7 +36,7 @@ out_folder = [results_folder,'analysis/sleep/'];
 %% Get stuff
 rate_sw = out.bin_out.all_elecs_rates_sw; %rates wake and sleep
 rl_sw = out.bin_out.all_elecs_rl_sw;
-rate_all = out.bin_out.all_elec_rates;
+rate_all = out.bin_out.all_elecs_rates;
 rl_all = out.bin_out.all_elecs_rl;
 soz = out.bin_out.all_is_soz;
 pt_idx = (1:length(rate_sw))';
@@ -110,6 +110,16 @@ nan_train = isnan(T_train.vec_rate_sleep) | isnan(T_train.vec_rate_wake) | isnan
 T_train(nan_train,:) = [];
 
 %% Train model with glme model
+if include_rl
+    glme = fitglme(T_train,...
+        'vec_soz ~ vec_rate_sleep + vec_rate_wake + vec_rl_wake + vec_rl_sleep + (1|vec_pt_idx)',...
+        'Distribution','Poisson','Link','log');
+else
+    glme = fitglme(T_train,...
+        'vec_soz ~ vec_rate_sleep + vec_rate_wake + (1|vec_pt_idx)',...
+        'Distribution','Poisson','Link','log');
+end
+%{
 if include_post
     glme = fitglme(T_train,...
         'vec_soz ~ vec_rate_sleep + vec_rate_wake + vec_rate_post + (1|vec_pt_idx)',...
@@ -119,6 +129,7 @@ else
         'vec_soz ~ vec_rate_sleep + vec_rate_wake + (1|vec_pt_idx)',...
         'Distribution','Poisson','Link','log');
 end
+%}
 
 
 

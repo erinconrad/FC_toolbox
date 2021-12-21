@@ -32,7 +32,7 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 figure
 set(gcf,'position',[100 100 1300 700])
-tiledlayout(3,3,'tilespacing','tight','padding','tight')
+tiledlayout(4,2,'tilespacing','tight','padding','tight')
 
 %% Get stuff
 rate = out.bin_out.all_elecs_rates;
@@ -63,10 +63,10 @@ pval_rl = mcout_rl.pval;
 
 
 %% SOZ spike rate ranking
-nexttile([1 3])
+nexttile([1 2])
 plot_orders(rate,soz,rate,'rate',[])
 
-nexttile([1 3])
+nexttile([1 1])
 plot_orders(rl,soz,rate,'rl',min_rate)
 
 %{
@@ -92,11 +92,12 @@ title(sprintf('Spike %s ranking of SOZ compared to chance',thing_text))
 
 
 %% SOZ spike timing ranking
+%{
 thing_text = 'timing';
 median_ranking_mc = median_ranking_mc_rl;
 median_ranking_true = median_ranking_true_rl;
 pval = pval_rl;
-nexttile
+nexttile([1 3])
 plot(sort(median_ranking_mc),'o','linewidth',2)
 hold on
 plot(xlim,[median_ranking_true median_ranking_true],'linewidth',2)
@@ -110,6 +111,7 @@ xticklabels([])
 xlabel('Monte Carlo iteration')
 ylabel(sprintf('Median spike %s ranking',thing_text))
 title(sprintf('Spike %s ranking of SOZ compared to chance',thing_text))
+%}
 
 %% Correlate rate and rl
 rl_rate_corr = nan(length(rate),1);
@@ -122,7 +124,7 @@ for ip = 1:length(rate)
 end
 
 % Plot it
-nexttile
+nexttile([1 1])
 plot(rl_rate_corr,'o','linewidth',2)
 hold on
 plot(xlim,[0 0],'k--','linewidth',2)
@@ -147,7 +149,7 @@ soz_roc_out = classify_soz;
 roc = soz_roc_out.roc;
 auc = soz_roc_out.auc;
 
-nexttile
+nexttile([1 2])
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
