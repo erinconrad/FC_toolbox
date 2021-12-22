@@ -27,7 +27,7 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 figure
 set(gcf,'position',[100 100 1400 700])
-tiledlayout(4,3,'tilespacing','tight','padding','tight')
+tiledlayout(4,3,'tilespacing','compact','padding','compact')
 
 %% Seizure timing PSD
 nexttile([2 1])
@@ -38,8 +38,8 @@ median_psd = nanmedian(all_psd,1);
 mp = shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
 set(gca,'fontsize',15)
 xlabel('Period (hours)')
-ylabel('Power (uV^2)')
-title('Seizure periodogram')
+ylabel('Power index')
+title('Seizure time periodogram')
 
 %% Percent asleep
 nexttile([2 1])
@@ -54,14 +54,14 @@ hold on
 %plot([0 100],[0 100],'k--','linewidth',2)
 xlim([0 100])
 ylim([0 100])
-plot([nanmedian(perc_all_asleep) nanmedian(perc_all_asleep)],ylim,'color',myColours(1,:),'linewidth',2)
-text(nanmedian(perc_all_asleep),6,sprintf('\\leftarrow Median %1.1f%% asleep',nanmedian(perc_all_asleep)),...
-    'fontsize',15,'color',myColours(1,:))
+plot([nanmedian(perc_all_asleep) nanmedian(perc_all_asleep)],ylim,'--','color','k','linewidth',2)
+text(nanmedian(perc_all_asleep),91,sprintf('\\leftarrow Median %1.1f%% asleep',nanmedian(perc_all_asleep)),...
+    'fontsize',15,'color','k')
 
 xlabel('Total time asleep (%)')
 ylabel('Seizures arising from sleep (%)')
 set(gca,'fontsize',15)
-title('Percentage of all times and seizures in sleep')
+title('Percentage of all times and seizures from sleep')
 
 nexttile([2 1])
 loc = circ_out.all_locs;
@@ -77,7 +77,7 @@ plot([1.7 2.3],[nanmedian(perc_sz_asleep(extra)) nanmedian(perc_sz_asleep(extra)
     'linewidth',2,'color',myColours(2,:))
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
-ylabel('Percent of seizures arising from sleep')
+ylabel('Seizures arising from sleep (%)')
 title('Seizure state-dependence by localization')
 set(gca,'fontsize',15);
 xlim([0 3])
@@ -116,7 +116,7 @@ nbins = size(all_pts_spikes_bins,2);
 pre = 1:nbins/2;
 post = nbins/2+1:nbins;
 pre_post = [nanmean(all_pts_spikes_bins(:,pre),2),nanmean(all_pts_spikes_bins(:,post),2)];
-plot_paired_data(pre_post',{'pre-ictal','post-ictal','post-ictally'},'Spikes/elec/min','paired',plot_type)
+plot_paired_data(pre_post',{'pre-ictal state','post-ictal state','post-ictally'},'Spikes/elec/min','paired',plot_type)
 title('Pre- vs post-ictal spike rates')
 
 
@@ -136,8 +136,8 @@ plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
     'linewidth',2,'color',myColours(2,:))
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
-ylabel('Sleep-wake spikes/elec/min')
-title('Sleep-wake spike rate difference by localization')
+ylabel('Post-pre-ictal spikes/elec/min')
+title('Post-pre-ictal spike rate difference by localization')
 set(gca,'fontsize',15);
 xlim([0 3])
 yl = ylim;
@@ -157,6 +157,19 @@ set(gca,'fontsize',15)
 ylabel('% Classified asleep')
 title('Peri-ictal sleep classification')
 xlabel('Hours surrounding seizure')
+
+%% Add annotations
+annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.32 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.64 0.91 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.42 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.19 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0.32 0.42 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
+annotation('textbox',[0.64 0.42 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+
+
+
+print([out_folder,'Fig2'],'-dpng')
 
 end
 

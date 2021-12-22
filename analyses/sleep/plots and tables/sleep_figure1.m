@@ -24,7 +24,7 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 figure
 set(gcf,'position',[100 100 1100 1100])
-tiledlayout(3,6,'tilespacing','tight','padding','tight')
+tiledlayout(3,6,'tilespacing','compact','padding','compact')
 
 %% A - PSD
 median_psd = circ_out.median_psd;
@@ -35,15 +35,15 @@ nexttile([1 3])
 shaded_error_bars(periods,median_psd,iqr_psd,[]);
 xlim([0 100])
 xlabel('Period (hours)')
-ylabel({'Spike rate', 'normalized power spectrum'});
+ylabel({'Spike rate power index'});
 set(gca,'fontsize',15)
-title('Spike rate power spectral density')
+title('Spike rate periodogram')
 
 %% 2A overall spike rates
 all_rate = bin_out.all_rates;
 nexttile([1 3])
 plot_paired_data(all_rate(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type)
-title('Overall spike rate')
+title('Spike rate in wake and sleep')
 
 %% 2B independent spikes
 seq_sw = bin_out.seq_sw;
@@ -77,7 +77,7 @@ text(xl(2),yl(1),sprintf('Median r = %1.2f',nanmedian(rl_sw_corr)),...
 ns_sw = bin_out.ns_sw;
 nexttile([1 3])
 plot_paired_data(ns_sw',{'wake','sleep'},'Average node strength','paired',plot_type)
-title('Functional connectivity')
+title('Functional connectivity in wake and sleep')
 
 %% 2F Localization
 rate_sw = bin_out.all_rates;
@@ -108,6 +108,16 @@ ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
 text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
+
+%% Add annotations
+annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.48 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.58 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.32 0.58 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0.63 0.58 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.24 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
+annotation('textbox',[0.48 0.24 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+
 
 print([out_folder,'Fig1'],'-dpng')
 
