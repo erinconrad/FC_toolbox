@@ -31,8 +31,8 @@ unpack_any_struct(out);
 out_folder = [results_folder,'analysis/sleep/'];
 
 figure
-set(gcf,'position',[100 100 1300 700])
-tiledlayout(4,2,'tilespacing','tight','padding','tight')
+set(gcf,'position',[100 100 1000 700])
+tiledlayout(3,2,'tilespacing','compact','padding','compact')
 
 %% Get stuff
 rate = out.bin_out.all_elecs_rates;
@@ -45,6 +45,7 @@ locs = out.circ_out.all_locs;
 is_temporal = cellfun(@(x) strcmp(x,'temporal'),locs);
 
 %% Do MC tests
+%{
 mcout_rate = test_ranking(rate,soz,nb,'rate',rate,min_rate);
 median_ranking_mc_rate = mcout_rate.median_ranking_mc;
 median_ranking_true_rate = mcout_rate.median_ranking_true;
@@ -63,55 +64,33 @@ pval_rl = mcout_rl.pval;
 
 
 %% SOZ spike rate ranking
-nexttile([1 2])
-plot_orders(rate,soz,rate,'rate',[])
-
 nexttile([1 1])
-plot_orders(rl,soz,rate,'rl',min_rate)
-
-%{
-thing_text = 'rate';
-median_ranking_mc = median_ranking_mc_rate;
-median_ranking_true = median_ranking_true_rate;
-pval = pval_rate;
-nexttile
-plot(sort(median_ranking_mc),'o','linewidth',2)
+plot_orders(rate,soz,rate,'rate',[])
 hold on
-plot(xlim,[median_ranking_true median_ranking_true],'linewidth',2)
-xl = xlim;
-text(xl(1)+200,median_ranking_true+2,...
-    sprintf('Median ranking: %1.1f, %s',median_ranking_true,get_p_text(pval)),...
-    'verticalalignment','bottom','fontsize',15)
-legend({'Random electrodes','True SOZ electrodes'},'Location','Northwest','fontsize',15)
-set(gca,'fontsize',15)
 xticklabels([])
-xlabel('Monte Carlo iteration')
-ylabel(sprintf('Median spike %s ranking',thing_text))
-title(sprintf('Spike %s ranking of SOZ compared to chance',thing_text))
-%}
+xlabel('Patient')
+ylabel('SOZ spike rate rank')
+set(gca,'fontsize',15)
+title('Seizure onset zone - spike rate ranking')
 
+%% Spike rate ranking sleep vs wake
+nexttile
+plot_paired_data(soz_rank_sw_rate',{'wake','sleep'},sprintf('Spike rate rank'),'paired','scatter','ranking')
+title(sprintf('SOZ spike rate ranking by wake vs sleep'))
 
 %% SOZ spike timing ranking
-%{
-thing_text = 'timing';
-median_ranking_mc = median_ranking_mc_rl;
-median_ranking_true = median_ranking_true_rl;
-pval = pval_rl;
-nexttile([1 3])
-plot(sort(median_ranking_mc),'o','linewidth',2)
-hold on
-plot(xlim,[median_ranking_true median_ranking_true],'linewidth',2)
-xl = xlim;
-text(xl(1)+200,median_ranking_true+0.5,...
-    sprintf('Median ranking: %1.1f, %s',median_ranking_true,get_p_text(pval)),...
-    'verticalalignment','bottom','fontsize',15)
-legend({'Random electrodes','True SOZ electrodes'},'Location','Northwest','fontsize',15)
-set(gca,'fontsize',15)
+nexttile([1 1])
+plot_orders(rl,soz,rate,'rl',min_rate)
 xticklabels([])
-xlabel('Monte Carlo iteration')
-ylabel(sprintf('Median spike %s ranking',thing_text))
-title(sprintf('Spike %s ranking of SOZ compared to chance',thing_text))
-%}
+xlabel('Patient')
+ylabel('SOZ spike timing rank')
+set(gca,'fontsize',15)
+title('Seizure onset zone - spike timing ranking')
+
+%% Spike timing ranking sleep vs wake
+nexttile
+plot_paired_data(soz_rank_sw_rl',{'wake','sleep'},sprintf('Spike timing rank'),'paired','scatter','ranking')
+title(sprintf('SOZ spike timing ranking by wake vs sleep'))
 
 %% Correlate rate and rl
 rl_rate_corr = nan(length(rate),1);
@@ -128,28 +107,21 @@ nexttile([1 1])
 plot(rl_rate_corr,'o','linewidth',2)
 hold on
 plot(xlim,[0 0],'k--','linewidth',2)
+ylim([-1 1])
 xticklabels([])
 xlabel('Patient')
-ylabel('Correlation coefficients');
+ylabel('Correlation coefficient');
 set(gca,'fontsize',15)
 title({'Correlation between spike rate and spike timing'})
 
-%% Spike rate ranking sleep vs wake
-nexttile
-plot_paired_data(soz_rank_sw_rate',{'wake','sleep'},sprintf('Rank in spike rate'),'paired','scatter','ranking')
-title(sprintf('SOZ spike rate ranking\nby wake vs sleep'))
 
-%% Spike timing ranking sleep vs wake
-nexttile
-plot_paired_data(soz_rank_sw_rl',{'wake','sleep'},sprintf('Rank in spike timing'),'paired','scatter','ranking')
-title(sprintf('SOZ spike timing ranking\nby wake vs sleep'))
 
 %% Fancy model
 soz_roc_out = classify_soz;
 roc = soz_roc_out.roc;
 auc = soz_roc_out.auc;
 
-nexttile([1 2])
+nexttile([1 1])
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
@@ -160,6 +132,14 @@ ylabel('True positive rate')
 legend(sprintf('AUC %1.2f',auc),'location','southeast','fontsize',15)
 set(gca,'fontsize',15)
 title('SOZ identification accuracy')
+
+%% Add annotations
+annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',20,'linestyle','none')
+annotation('textbox',[0.49 0.91 0.1 0.1],'String','B','fontsize',20,'linestyle','none')
+annotation('textbox',[0 0.59 0.1 0.1],'String','C','fontsize',20,'linestyle','none')
+annotation('textbox',[0.49 0.59 0.1 0.1],'String','D','fontsize',20,'linestyle','none')
+annotation('textbox',[0 0.24 0.1 0.1],'String','E','fontsize',20,'linestyle','none')
+annotation('textbox',[0.49 0.24 0.1 0.1],'String','F','fontsize',20,'linestyle','none')
 
 print([out_folder,'fig4'],'-dpng')
 

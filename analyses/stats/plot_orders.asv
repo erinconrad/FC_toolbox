@@ -65,23 +65,8 @@ end
 
 chance = median(nchance);
 all = nanmedian(all);
-pval_binom = 2*binocdf(sum(successes==0),length(successes),0.5);
-ap = plot(xlim,[all all],'-','linewidth',2,'color',myColours(1,:));
-cp = plot(xlim,[chance chance],'--','linewidth',2,'color',myColours(2,:));
-xl = xlim;
-xbar = xl(1) + 1.01*(xl(2)-xl(1));
-xtext = xl(1) + 1.035*(xl(2)-xl(1));
-newxl = [xl(1) xl(1) + 1.07*(xl(2)-xl(1))];
-plot([xbar xbar],[all chance],'k-','linewidth',2)
-if pval_binom >= 0.05
-text(xtext-1,(all+chance)/2,get_asterisks(pval_binom,1),'rotation',90,...
-        'horizontalalignment','center','fontsize',16)
-
-else
-    text(xtext,(all+chance)/2,get_asterisks(pval_binom,1),'rotation',90,...
-        'horizontalalignment','center','fontsize',20)
-end
-xlim(newxl)
-legend([ap,cp],{'Median SOZ rank','Median chance rank'},'fontsize',15,'location','northeast')
+pval_binom = 2*binocdf(sum(successes==1),length(successes),0.5);
+plot(xlim,[all all],'-','linewidth',2,'color',myColours(1,:))
+plot(xlim,[chance chance],'--','linewidth',2,'color',myColours(2,:))
 
 end
