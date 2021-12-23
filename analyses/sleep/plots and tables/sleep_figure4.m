@@ -69,7 +69,7 @@ plot_orders(rate,soz,rate,'rate',[])
 hold on
 xticklabels([])
 xlabel('Patient')
-ylabel('SOZ spike rate rank')
+ylabel('Electrode spike rate rank')
 set(gca,'fontsize',15)
 title('Seizure onset zone - spike rate ranking')
 
@@ -83,7 +83,7 @@ nexttile([1 1])
 plot_orders(rl,soz,rate,'rl',min_rate)
 xticklabels([])
 xlabel('Patient')
-ylabel('SOZ spike timing rank')
+ylabel('Electrode spike timing rank')
 set(gca,'fontsize',15)
 title('Seizure onset zone - spike timing ranking')
 

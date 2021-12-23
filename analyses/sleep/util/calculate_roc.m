@@ -49,4 +49,6 @@ goodness = (ones(size(roc,1),1) - roc(:,1)) + roc(:,2); % 1-FPR + TPR;
 disc_I = disc;
 disc = test_vals(disc);
 
+
+
 end

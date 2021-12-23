@@ -44,6 +44,7 @@ for ir = 1:size(T,1)
                 error('what?');
             end
             pt(ip).clinical.age_onset = T.sz_hist_duration(ir);
+            pt(ip).clinical.stereo = T.ieeg_implanttype___4(ir);
         end
     end
     

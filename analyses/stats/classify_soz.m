@@ -157,8 +157,18 @@ soz_roc_out.roc = roc;
 soz_roc_out.auc = auc;
 soz_roc_out.glme = glme;
 
+%% Alt ROC method
+%{
+labels = cell(length(classification),1);
+labels(all_soz) = {'SOZ'};
+labels(all_no_soz) = {'Not SOZ'};
+posclass = 'SOZ';
+scores = classification;
+[X,Y,T,AUC,opt] = perfcurve(labels,scores,posclass);
+%}
+
 %% ROC
-if 0
+if 1
 figure
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
