@@ -98,8 +98,8 @@ age_implant_str = {'Age at implant in years: median (range)',sprintf('%1.1f (%1.
 nelecs_str = {'Number of electrodes: median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
     median_range_nelecs(1),median_range_nelecs(2),median_range_nelecs(3))};
 implant_str = {'Implant type',''};
-n_gs_str = {'Grids/strips/depths: N (%)',sprintf('%d (%1.1f%%)',sum(stereo==0)/length(stereo)*100)};
-n_stereo_str = {'Stereo-EEG: N (%)',sprintf('%d (%1.1f%%)',sum(stereo==1)/length(stereo)*100)};
+n_gs_str = {'Grids/strips/depths: N (%)',sprintf('%d (%1.1f%%)',sum(stereo==0),sum(stereo==0)/length(stereo)*100)};
+n_stereo_str = {'Stereo-EEG: N (%)',sprintf('%d (%1.1f%%)',sum(stereo==1),sum(stereo==1)/length(stereo)*100)};
 duration_str = {'Intracranial recording duration in days: median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
     median_range_duration(1),median_range_duration(2),median_range_duration(3))};
 rate_str = {'Spike rate (spikes/elecs/min): median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
