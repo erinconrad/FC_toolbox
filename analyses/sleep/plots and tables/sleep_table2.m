@@ -42,6 +42,9 @@ for p = 1:npts
     summ = summ.summ;
     name = summ.name;
     
+    
+    names{p} = summ.name;
+    clinical = summ.clinical;
     stereo(p) = clinical.stereo;
     
     %% Electrodes
