@@ -28,6 +28,7 @@ rate = nan(npts,1);
 duration = nan(npts,1);
 lat = cell(npts,1);
 loc = cell(npts,1);
+stereo = nan(npts,1);
 
 %% Loop over files
 for p = 1:npts
@@ -42,6 +43,7 @@ for p = 1:npts
     age_onset(p) = clinical.age_onset;
     sex{p} = clinical.sex;
     age_implant(p) = clinical.age_implant;
+    stereo(p) = clinical.stereo;
     
     %% Electrodes
     labels = summ.labels;
@@ -84,6 +86,7 @@ n_right = sum(cellfun(@(x) strcmp(x,'right'),lat));
 n_bilateral = sum(cellfun(@(x) strcmp(x,'bilateral'),lat));
 n_temporal = sum(cellfun(@(x) strcmp(x,'temporal'),loc));
 n_other = sum(cellfun(@(x) strcmp(x,'other'),loc));
+n_stereo = sum(stereo == 1);
 
 % Turn to table
 total_str = {'Total: N',sprintf('%d',npts)};
@@ -94,6 +97,9 @@ age_implant_str = {'Age at implant in years: median (range)',sprintf('%1.1f (%1.
     median_range_age_implant(1),median_range_age_implant(2),median_range_age_implant(3))};
 nelecs_str = {'Number of electrodes: median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
     median_range_nelecs(1),median_range_nelecs(2),median_range_nelecs(3))};
+implant_str = {'Implant type',''};
+n_gs_str = {'Grids/strips/depths: N (%)',sprintf('%d (%1.1f%%)',sum(stereo==0)/length(stereo)*100)};
+n_stereo_str = {'Stereo-EEG: N (%)',sprintf('%d (%1.1f%%)',sum(stereo==1)/length(stereo)*100)};
 duration_str = {'Intracranial recording duration in days: median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
     median_range_duration(1),median_range_duration(2),median_range_duration(3))};
 rate_str = {'Spike rate (spikes/elecs/min): median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
@@ -111,6 +117,9 @@ all = [total_str;...
     age_onset_str;...
     age_implant_str;...
     nelecs_str;...
+    implant_str;...
+    n_gs_str;...
+    n_stereo_str;...
     duration_str;...
     rate_str;...
     lat_str;...
