@@ -88,6 +88,8 @@ all_elecs_rl_sw = cell(npts,1);
 all_elecs_leader = cell(npts,1);
 all_elecs_leader_sw = cell(npts,1);
 
+all_elecs_ns_sw = cell(npts,1);
+
 %% Loop over patients
 for p = 1:npts
     
@@ -136,9 +138,7 @@ for p = 1:npts
     spikes = spikes(~ekg,:); % spike rate #spikes/elec/one minute block (spikes/elec/min)
     rl = rl(~ekg,:);
     labels = labels(~ekg);
-    % dont remove channels from ns because don't know mapping for bipolar
-    % montage
-    %ns = ns(~ekg,:);
+    ns = ns(~ekg,:);
     
     
     is_soz = is_soz(~ekg);
@@ -180,6 +180,7 @@ for p = 1:npts
     %% Wake vs sleep ns
     mean_ns = nanmean(ns,1); % node strength averaged across electrodes
     ns_sw(p,:) = [nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
+    all_elecs_ns_sw{p} = [nanmean(ns(:,wake),2) nanmean(ns(:,sleep),2)];
     
     %% Wake vs sleep seq info
     seq_sw(p,:) = [nanmean(seq_info(1,wake)) nanmean(seq_info(1,sleep)),...
@@ -298,6 +299,7 @@ out.all_elecs_names = all_elecs_names;
 out.all_elecs_rl_sw = all_elecs_rl_sw;
 out.all_elecs_rates_sw = all_elecs_rates_sw;
 out.all_elecs_leader_sw = all_elecs_leader_sw;
+out.all_elecs_ns_sw = all_elecs_ns_sw;
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{

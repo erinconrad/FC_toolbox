@@ -115,9 +115,16 @@ if include_rl
         'vec_soz ~ vec_rate_sleep + vec_rate_wake + vec_rl_wake + vec_rl_sleep + (1|vec_pt_idx)',...
         'Distribution','Poisson','Link','log');
 else
+    %{
     glme = fitglme(T_train,...
         'vec_soz ~ vec_rate_sleep + vec_rate_wake + (1|vec_pt_idx)',...
         'Distribution','Poisson','Link','log');
+    %}
+    %
+    glme = fitglm(T_train,...
+        'vec_soz ~ vec_rate_sleep + vec_rate_wake',...
+        'Distribution','Poisson','Link','log');
+    %}
 end
 %{
 if include_post
