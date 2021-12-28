@@ -43,6 +43,8 @@ title('Seizure time periodogram')
 
 %% Percent asleep
 nexttile([2 1])
+sz_rate_sw = sz_circ_out.sz_rate_sw;
+%{
 pre_wake = sz_circ_out.pre_wake;
 n_sleep_wake = bin_out.n_sleep_wake;
 perc_sz_asleep = cellfun(@(x) prc_asleep(x),pre_wake);
@@ -62,6 +64,7 @@ xlabel('Total time asleep (%)')
 ylabel('Seizures arising from sleep (%)')
 set(gca,'fontsize',15)
 title('Percentage of all times and seizures from sleep')
+%}
 
 nexttile([2 1])
 loc = circ_out.all_locs;

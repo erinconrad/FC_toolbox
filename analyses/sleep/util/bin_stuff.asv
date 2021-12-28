@@ -16,7 +16,7 @@ for i = 1:length(stuff)
     
         closest_bins(i) = closest;
         bin_counts(closest) = bin_counts(closest) + 1;
-        preceding_bin_counts(closest-1) = preceding_bin_counts(closest-1) + 1;
+        preceding_bin_counts(closest-1) = 
     
     end
         

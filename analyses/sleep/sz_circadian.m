@@ -75,10 +75,10 @@ for p = 1:npts
     for t = 1:length(times)
         time_bins(t) = max(times(t),ceil(times(t)/block)*block);
     end
-    [bin_counts,closest_bins] = bin_stuff(sz_times,time_bins);
+    [bin_counts,preceding_bin_counts,closest_bins] = bin_stuff(sz_times,time_bins);
     
     %% Get sz frequency in wake and sleep
-    sz_rate_sw(p,:) = [nanmean(bin_counts(wake)) nanmean(bin_counts(sleep))];
+    sz_rate_sw(p,:) = [nanmean(preceding_bin_counts(wake)) nanmean(preceding_bin_counts(sleep))];
     
     %% Preceding bin wake vs sleep
     closest_bins = closest_bins(~isnan(closest_bins));
