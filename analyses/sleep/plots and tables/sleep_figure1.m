@@ -79,6 +79,34 @@ nexttile([1 3])
 plot_paired_data(ns_sw',{'wake','sleep'},'Average node strength','paired',plot_type)
 title('Functional connectivity in wake and sleep')
 
+%{
+% Correlate increase in NS with increase in spike rate
+ns_inc = (ns_sw(:,2)-ns_sw(:,1))./ns_sw(:,1);
+rate_inc = (all_rate(:,2)-all_rate(:,1))./all_rate(:,1);
+[r,p] = corr(ns_inc,rate_inc,'type','spearman');
+plot(ns_inc,rate_inc,'o','linewidth',2)
+xlabel('Relative node strength increase in sleep')
+ylabel('Relative spike rate increase in sleep')
+xl = xlim;
+yl = ylim;
+text(xl(1),yl(2),sprintf('\\rho = %1.2f, %s',r,get_p_text(p)),...
+'verticalalignment','top','fontsize',15)
+set(gca,'fontsize',15)
+
+% Correlate electrode-specific increase in NS with increase in spike rate
+elecs_ns = bin_out.all_elecs_ns_sw;
+elecs_rate = bin_out.all_elecs_rates_sw;
+npts = length(elecs_ns);
+all_corr = nan(npts,1);
+for i = 1:npts
+    ns_change = elecs_ns{i}(:,2) - elecs_ns{i}(:,1);
+    rate_change = elecs_rate{i}(:,2) - elecs_rate{i}(:,1);
+    all_corr(i) = corr(ns_change,rate_change,'type','spearman','rows','pairwise');
+end
+plot(all_corr,'o')
+
+%}
+
 %% 2F Localization
 rate_sw = bin_out.all_rates;
 loc = circ_out.all_locs;

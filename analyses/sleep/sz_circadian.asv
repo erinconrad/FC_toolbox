@@ -78,7 +78,7 @@ for p = 1:npts
     [bin_counts,closest_bins] = bin_stuff(sz_times,time_bins);
     
     %% Get sz frequency in wake and sleep
-    sz_rate_sw(p,:) = [nanmean(bin_counts(wake)) nanmean(bin_counts(sleep))];
+    sz_rate_sw(p,:) = [nanmean(bin_counts(wake)) 
     
     %% Preceding bin wake vs sleep
     closest_bins = closest_bins(~isnan(closest_bins));
@@ -118,7 +118,6 @@ out.median_psd = median_psd;
 out.iqr_psd = iqr_psd;
 out.periods = periods;
 out.pre_wake = all_pre_wake;
-out.sz_rate_sw = sz_rate_sw;
 
 %mp = shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
 
