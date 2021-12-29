@@ -91,7 +91,7 @@ all_elecs_leader_sw = cell(npts,1);
 all_elecs_ns_sw = cell(npts,1);
 
 %% for mod midnight, get file size
-[~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(1000,1));
+[~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(5000,1),[]);
 all_tod_sw = nan(npts,n_tod_bins,2); %w, s
 
 %% Loop over patients
@@ -120,7 +120,7 @@ for p = 1:npts
     names{p} = name;
     
     % Bin the mod midnights
-    mod_midnight = bin_mod_midnight_times(mod_midnight);
+    mod_midnight = bin_mod_midnight_times(mod_midnight,tod_edges);
     
     % Fix lat thing
     for i = 1:length(lat)

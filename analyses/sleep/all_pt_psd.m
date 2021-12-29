@@ -67,7 +67,7 @@ age_implant = nan(npts,1);
 duration = nan(npts,1);
 
 %% for mod midnight, get file size
-[~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(1000,1));
+[~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(5000,1),[]);
 all_tod_rate = nan(npts,n_tod_bins); %w, s
 
 %% Loop over patients and get psd per pt
@@ -95,7 +95,7 @@ for p = 1:npts
     names{p} = name;
     
     % Bin the mod midnights
-    [mod_midnight,nbins,edges] = bin_mod_midnight_times(mod_midnight);
+    [mod_midnight,nbins,edges] = bin_mod_midnight_times(mod_midnight,tod_edges);
     
     % parse SOZ localization
     %[soz_loc,soz_lat] = seizure_localization_parser(soz_loc,soz_lat);
