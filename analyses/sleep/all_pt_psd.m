@@ -77,6 +77,7 @@ for p = 1:npts
     summ = load([int_folder,listing(p).name]);
     summ = summ.summ;
     
+    labels = summ.labels;
     spikes = summ.spikes;
     times = summ.times;
     loc = summ.ana_loc;
@@ -91,11 +92,26 @@ for p = 1:npts
     duration(p) = age_implant(p)-age_onset(p);
     mod_midnight = summ.mod_midnight;
     
+    %% Find and remove non-intracranial
+    %{
+    MUST REMEMBER TO ADD THIS FOR COA
+    %}
+    ekg = find_non_intracranial(labels);
+    spikes = spikes(~ekg,:);
+    
+    %% Get spike rate by time of day
+     % Bin the mod midnights
+    [mod_midnight,nbins,edges] = bin_mod_midnight_times(mod_midnight,tod_edges);
+    tod_rate = nan(n_tod_bins,1);
+    for t = 1:n_tod_bins
+        curr_bins = mod_midnight == t; % which runs match that time of day
+        tod_rate(t,:) = nanmean(spikes(:,curr_bins),'all'); % how many of those runs are wake and sleep
+    end
+    all_tod_rate(p,:) = tod_rate;
     
     names{p} = name;
     
-    % Bin the mod midnights
-    [mod_midnight,nbins,edges] = bin_mod_midnight_times(mod_midnight,tod_edges);
+   
     
     % parse SOZ localization
     %[soz_loc,soz_lat] = seizure_localization_parser(soz_loc,soz_lat);
@@ -117,15 +133,7 @@ for p = 1:npts
     % Get total circular power  
     all_circ_P(p) = get_circ_power(avg_spikes,fs);
     
-    %% Get spike rate by time of day
-    all_tod = 1:n_tod_bins;
-    tod_rate = nan(length(all_tod),1);
-    for t = 1:length(all_tod)
-        tt = all_tod(t); % get the time of day bin im considering
-        curr_bins = mod_midnight == tt; % which runs match that time of day
-        tod_rate(t,:) = nanmean(avg_spikes(curr_bins)); % how many of those runs are wake and sleep
-    end
-    all_tod_rate(p,:) = tod_rate;
+    
     
     %% Get spectral power for each group for locs and lats
     % Skip if all empty
