@@ -89,7 +89,7 @@ for p = 1:npts
     all_pre_wake{p} = pre_wake;
     
     %% pad spikes for PSD
-    bin_counts = [bin_counts,zeros(1,longest_run-run_length)];
+    bin_counts = [bin_counts;zeros(longest_run-run_length,1)];
     
     %% get psd
     [P,freqs] = power_by_freq(bin_counts,fs);
