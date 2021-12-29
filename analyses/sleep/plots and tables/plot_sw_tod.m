@@ -61,9 +61,9 @@ title('Spike rate by time of day')
 
 %{
 nexttile
-nine_pm_to_nine_am = tod_edges(2:end) < 5*3600 | tod_edges(2:end) > 23*3600;
-early_late_rate = [nanmedian(all_tod_rate(:,nine_pm_to_nine_am),2),...
-    nanmedian(all_tod_rate(:,~nine_pm_to_nine_am),2)];
+nine_pm_to_nine_am = tod_edges(2:end) < 6*3600 | tod_edges(2:end) > 23*3600;
+early_late_rate = [nanmean(all_tod_rate(:,nine_pm_to_nine_am),2),...
+    nanmean(all_tod_rate(:,~nine_pm_to_nine_am),2)];
 plot_paired_data(early_late_rate',{'Night','Day'},'Spike rate','paired',plot_type)
 %}
 

@@ -69,6 +69,8 @@ duration = nan(npts,1);
 %% for mod midnight, get file size
 [~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(5000,1),[]);
 all_tod_rate = nan(npts,n_tod_bins); %w, s
+eleven_to_five = nan(npts,2);
+
 
 %% Loop over patients and get psd per pt
 for p = 1:npts
@@ -108,9 +110,13 @@ for p = 1:npts
     for t = 1:n_tod_bins
         curr_bins = mod_midnight == t; % which runs match that time of day
         tod_rate(t,:) = nanmean(spikes(:,curr_bins),'all'); % how many of those runs are wake and sleep
+
+            
     end
     all_tod_rate(p,:) = tod_rate;
-    
+    eleven_pm_to_five_am = summ.mod_midnight < 5*3600 | summ.mod_midnight > 23*3600;
+    eleven_to_five(p,:) = [nanmean(spikes(:,eleven_pm_to_five_am),'all'),...
+    nanmean(spikes(:,~eleven_pm_to_five_am),'all')];
     names{p} = name;
     
    
@@ -209,6 +215,7 @@ out.age_implant = age_implant;
 out.duration = duration;
 out.all_tod_rate = all_tod_rate;
 out.tod_edges = tod_edges;
+out.eleven_to_five = eleven_to_five;
 
 %{
 %% Initialize figure

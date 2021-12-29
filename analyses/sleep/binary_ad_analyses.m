@@ -183,6 +183,8 @@ for p = 1:npts
     end
     all_tod_sw(p,:,:) = tod_sw;
     
+    
+    
     %% wake vs sleep spike rate
     % overall spike rate (averaged across electrodes)
     mean_spikes = nanmean(spikes,1); % still spikes/elec/min
