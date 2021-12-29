@@ -118,7 +118,7 @@ for p = 1:npts
     all_circ_P(p) = get_circ_power(avg_spikes,fs);
     
     %% Get spike rate by time of day
-    all_tod = unique(mod_midnight);
+    all_tod = 1:n_tod_bins;
     tod_rate = nan(length(all_tod),1);
     for t = 1:length(all_tod)
         tt = all_tod(t); % get the time of day bin im considering
