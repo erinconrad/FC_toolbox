@@ -21,6 +21,8 @@ out.all_labels = unique_labels;
 out.n_runs_total = n_runs_total;
 out.run_center = nan(n_runs_total,1);
 out.file_index = nan(n_runs_total,1);
+out.times = nan(n_runs_total,1);
+out.mod_midnight = nan(n_runs_total,1);
 
 for m  = 1:nmontages
     %out.montage(m).net = nan(nchs,nchs,n_runs_total);
@@ -63,6 +65,17 @@ for f = 1:nfiles
     run_center = out.file(f).run_center;
     nruns = length(run_center);
     sz_times = out.file(f).sz_times;
+    
+    % file start time
+    file_start_time = out.file(f).file_start_time;
+    file_start_time = convert_prop_day_to_seconds_from_midnight(file_start_time);
+    
+    % get times of runs relative to seconds from midnight
+    run_center_rel_midnight = run_center - file_start_time;
+    
+    % mod it
+    run_center_rel_midnight = mod_secs_rel_24hrs(run_center_rel_midnight);
+    out.mod_midnight(curr_run_idx:curr_run_idx+nruns-1,1) = run_center_rel_midnight;
     
     % run_center
     out.run_center(curr_run_idx:curr_run_idx+nruns-1,1) = run_center;

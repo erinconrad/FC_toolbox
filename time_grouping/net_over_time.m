@@ -31,6 +31,9 @@ for f = 1:nfiles
         sz_times = pt(j).ieeg.file(f).sz_times;
     end
     
+    % Get file start time
+    file_start_time = pt(j).ieeg.file(f).start_time;
+    
     % initialize cell arrays
     net_montage = cell(nmontages,1);
     spikes_montage = cell(nmontages,1);
@@ -195,6 +198,7 @@ for f = 1:nfiles
     out.file(f).run_center = run_center;
     out.file(f).clean_labels = clean_labels;
     out.file(f).sz_times = sz_times;
+    out.file(f).file_start_time = file_start_time;
     
     
     

@@ -75,9 +75,39 @@ text(xl(2),yl(1),sprintf('Median r = %1.2f',nanmedian(rl_sw_corr)),...
 
 %% 2E NS
 ns_sw = bin_out.ns_sw;
-nexttile([1 3])
+nexttile([1 2])
 plot_paired_data(ns_sw',{'wake','sleep'},'Average node strength','paired',plot_type)
-title('Functional connectivity in wake and sleep')
+title('Functional connectivity')
+
+%% Overall rate localization
+rate = bin_out.overall_rates;
+loc = circ_out.all_locs;
+temporal = contains(loc,'temporal');
+extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
+p = ranksum(rate(temporal),rate(extra));
+
+nexttile([1 2])
+plot(1+randn(sum(temporal),1)*0.05,rate(temporal),'o','linewidth',2,'color',myColours(1,:))
+hold on
+plot([0.7 1.3],[nanmedian(rate(temporal)) nanmedian(rate(temporal))],...
+    'linewidth',2,'color',myColours(1,:))
+plot(2+randn(sum(extra),1)*0.05,rate(extra),'o','linewidth',2,'color',myColours(2,:))
+plot([1.7 2.3],[nanmedian(rate(extra)) nanmedian(rate(extra))],...
+    'linewidth',2,'color',myColours(2,:))
+xticks([1 2])
+xticklabels({'Temporal','Extra-temporal'})
+ylabel('Spikes/elec/min')
+title('Average spike rate by localization')
+set(gca,'fontsize',15);
+xlim([0 3])
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.13*(yl(2)-yl(1));
+ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+plot([1 2],[ybar ybar],'k-','linewidth',2)
+text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
+ylim(ylnew)
+
 
 %{
 % Correlate increase in NS with increase in spike rate
@@ -115,7 +145,7 @@ rate_diff = (rate_sw(:,2)-rate_sw(:,1));
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
 p = ranksum(rate_diff(temporal),rate_diff(extra));
 
-nexttile([1 3])
+nexttile([1 2])
 plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(1,:))
 hold on
 plot([0.7 1.3],[nanmedian(rate_diff(temporal)) nanmedian(rate_diff(temporal))],...
@@ -142,9 +172,10 @@ annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','no
 annotation('textbox',[0.48 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.58 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0.32 0.58 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
-annotation('textbox',[0.63 0.58 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0.64 0.58 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.24 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
-annotation('textbox',[0.48 0.24 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+annotation('textbox',[0.32 0.24 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+annotation('textbox',[0.64 0.24 0.1 0.1],'String','H','fontsize',25,'linestyle','none')
 
 
 print([out_folder,'Fig1'],'-dpng')

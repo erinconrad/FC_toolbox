@@ -163,6 +163,39 @@ class_no_soz = classification(all_no_soz);
 soz_roc_out.roc = roc;
 soz_roc_out.auc = auc;
 soz_roc_out.glme = glme;
+soz_roc_out.T_test = T_test;
+soz_roc_out.T_train = T_train;
+
+%{
+%% Are patients with larger number of high probability classifications more likely to be multifocal or diffuse?
+asum = zeros(size(T,1),1);
+asum = asum + glme.Coefficients.Estimate(1);
+for p = 2:length(params)
+    est = glme.Coefficients.Estimate(p);
+    asum = asum +  T.(params{p})*est;
+end
+classification = logistic(asum);
+
+% Loop over patients
+
+pts = unique(T.vec_pt_idx);
+avg_class = nan(length(pts),1);
+for i = 1:length(pts)
+    p = pts(i);
+    rows = find(T.vec_pt_idx==p);
+    avg_class(i) = sum(classification(rows) > 0.1);
+    %avg_class(i) = nanmean(classification(rows));
+end
+locs = circ_out.all_locs;
+locs = locs(pts);
+diffuse = strcmp(locs,'multifocal') | strcmp(locs,'diffuse');
+if 1
+    figure
+    plot(1+0.05*randn(sum(diffuse),1),avg_class(diffuse),'o')
+    hold on
+    plot(2+0.05*randn(sum(~diffuse),1),avg_class(~diffuse),'o')
+end
+%}
 
 %% Alt ROC method
 %{
@@ -175,7 +208,7 @@ scores = classification;
 %}
 
 %% ROC
-if 1
+if 0
 figure
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on

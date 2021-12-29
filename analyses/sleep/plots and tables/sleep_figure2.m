@@ -44,11 +44,16 @@ title('Seizure time periodogram')
 %% Percent asleep
 nexttile([2 1])
 sz_rate_sw = sz_circ_out.sz_rate_sw;
-%{
+plot_paired_data(sz_rate_sw',{'wake','sleep','sleep'},'Seizures/min','paired',plot_type)
+title('Seizure frequency in wake and sleep')
+
+
 pre_wake = sz_circ_out.pre_wake;
 n_sleep_wake = bin_out.n_sleep_wake;
 perc_sz_asleep = cellfun(@(x) prc_asleep(x),pre_wake);
 perc_all_asleep = 100*n_sleep_wake(:,1)./sum(n_sleep_wake,2);
+%{
+
 minp = min([perc_sz_asleep;perc_all_asleep]);
 maxp = max([perc_sz_asleep;perc_all_asleep]);
 plot(perc_all_asleep,perc_sz_asleep,'ko','linewidth',2)
