@@ -66,6 +66,10 @@ age_onset = nan(npts,1);
 age_implant = nan(npts,1);
 duration = nan(npts,1);
 
+%% for mod midnight, get file size
+[~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(1000,1));
+all_tod_rate = nan(npts,n_tod_bins); %w, s
+
 %% Loop over patients and get psd per pt
 for p = 1:npts
     
@@ -85,9 +89,13 @@ for p = 1:npts
     age_implant(p) = summ.clinical.age_implant;
     age_onset(p) = summ.clinical.age_onset;
     duration(p) = age_implant(p)-age_onset(p);
+    mod_midnight = summ.mod_midnight;
     
     
     names{p} = name;
+    
+    % Bin the mod midnights
+    [mod_midnight,nbins,edges] = bin_mod_midnight_times(mod_midnight);
     
     % parse SOZ localization
     %[soz_loc,soz_lat] = seizure_localization_parser(soz_loc,soz_lat);
@@ -108,6 +116,16 @@ for p = 1:npts
     
     % Get total circular power  
     all_circ_P(p) = get_circ_power(avg_spikes,fs);
+    
+    %% Get spike rate by time of day
+    all_tod = unique(mod_midnight);
+    tod_rate = nan(length(all_tod),1);
+    for t = 1:length(all_tod)
+        tt = all_tod(t); % get the time of day bin im considering
+        curr_bins = mod_midnight == tt; % which runs match that time of day
+        tod_rate(t,:) = nanmean(avg_spikes(curr_bins)); % how many of those runs are wake and sleep
+    end
+    all_tod_rate(p,:) = tod_rate;
     
     %% Get spectral power for each group for locs and lats
     % Skip if all empty
@@ -179,6 +197,8 @@ out.sex = sex;
 out.age_onset = age_onset;
 out.age_implant = age_implant;
 out.duration = duration;
+out.all_tod_rate = all_tod_rate;
+out.tod_edges = tod_edges;
 
 %{
 %% Initialize figure

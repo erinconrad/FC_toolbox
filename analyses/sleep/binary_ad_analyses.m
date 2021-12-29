@@ -90,6 +90,10 @@ all_elecs_leader_sw = cell(npts,1);
 
 all_elecs_ns_sw = cell(npts,1);
 
+%% for mod midnight, get file size
+[~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(1000,1));
+all_tod_sw = nan(npts,n_tod_bins,2); %w, s
+
 %% Loop over patients
 for p = 1:npts
     
@@ -111,8 +115,12 @@ for p = 1:npts
     name = summ.name;
     seq_info = summ.seq_info;
     leader = summ.leader;
+    mod_midnight = summ.mod_midnight;
     
     names{p} = name;
+    
+    % Bin the mod midnights
+    mod_midnight = bin_mod_midnight_times(mod_midnight);
     
     % Fix lat thing
     for i = 1:length(lat)
@@ -164,6 +172,16 @@ for p = 1:npts
        
     n_sleep_wake(p,1) = sum(sleep);
     n_sleep_wake(p,2) = sum(wake);
+    
+    %% Get wake and sleep designations for times of day
+    all_tod = 1:n_tod_bins;
+    tod_sw = nan(length(all_tod),2);
+    for t = 1:length(all_tod)
+        tt = all_tod(t); % get the time of day bin im considering
+        curr_bins = mod_midnight == tt; % which runs match that time of day
+        tod_sw(t,:) = [sum(wake(curr_bins) == 1) sum(sleep(curr_bins) == 1)]; % how many of those runs are wake and sleep
+    end
+    all_tod_sw(p,:,:) = tod_sw;
     
     %% wake vs sleep spike rate
     % overall spike rate (averaged across electrodes)
@@ -300,6 +318,8 @@ out.all_elecs_rl_sw = all_elecs_rl_sw;
 out.all_elecs_rates_sw = all_elecs_rates_sw;
 out.all_elecs_leader_sw = all_elecs_leader_sw;
 out.all_elecs_ns_sw = all_elecs_ns_sw;
+out.all_tod_sw = all_tod_sw;
+out.tod_edges = tod_edges;
 
 %% (No sleep) How does spike rate and timing vary across locations
 %{
