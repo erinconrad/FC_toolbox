@@ -28,8 +28,8 @@ addpath(genpath(scripts_folder));
 
 
 %% Listing of available files
-%listing = dir([int_folder,'*.mat']);
-listing = dir([int_folder,'HUP209.mat']);
+listing = dir([int_folder,'*.mat']);
+%listing = dir([int_folder,'HUP209.mat']);
 npts = length(listing);
 
 %% Get the longest run (will pad the others with zeros)
