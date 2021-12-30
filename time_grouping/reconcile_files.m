@@ -71,7 +71,7 @@ for f = 1:nfiles
     file_start_time = convert_prop_day_to_seconds_from_midnight(file_start_time);
     
     % get times of runs relative to seconds from midnight
-    run_center_rel_midnight = run_center - file_start_time;
+    run_center_rel_midnight = run_center + file_start_time;
     
     % mod it
     run_center_rel_midnight = mod_secs_rel_24hrs(run_center_rel_midnight);

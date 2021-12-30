@@ -59,6 +59,10 @@ xlabel('Time of day')
 set(gca,'fontsize',15)
 title('Spike rate by time of day')
 
+
+nexttile
+eleven_to_five = circ_out.eleven_to_five;
+plot_paired_data(eleven_to_five',{'Night','Day'},'Spike rate','paired',plot_type)
 %{
 nexttile
 nine_pm_to_nine_am = tod_edges(2:end) < 6*3600 | tod_edges(2:end) > 23*3600;
