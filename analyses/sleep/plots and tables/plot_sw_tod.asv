@@ -37,6 +37,8 @@ nexttile
 all_tod_sw = bin_out.all_tod_sw;
 tod_edges = bin_out.tod_edges;
 
+
+
 nbins = size(all_tod_sw,2);
 hours_mins = convert_edges_to_hours_mins(tod_edges);
 tod_sw = squeeze(nansum(all_tod_sw,1));
@@ -44,13 +46,14 @@ ind_pt_prop = all_tod_sw(:,:,2)./(all_tod_sw(:,:,2)+all_tod_sw(:,:,1));
 prop_asleep = squeeze(nanmean(ind_pt_prop,1));
 
 polar = convert_times_to_polar(tod_edges,'radians');
+ax = polaraxes;
 polarhistogram('BinEdges',polar,'BinCounts',prop_asleep)
-set(gca,'ThetaDir','clockwise');
-set(gca,'ThetaZeroLocation','top');
+ax.ThetaDir = 'clockwise';
+ax.ThetaZeroLocation = 'top';
 thetaticks(polar(1:skip:nbins)*360/(2*pi))
 thetaticklabels(hours_mins(1:skip:nbins+1))
-set(gca,'fontsize',15)
-title('Proportion detected asleep')
+set(ax,'fontsize',15)
+title('Proportion detected asleep by time of day')
 
 %{
 plot(prop_asleep,'k','linewidth',2)
@@ -77,21 +80,9 @@ iqr_temporal = [prctile(norm_rate(temporal,:),25,1);prctile(norm_rate(temporal,:
 median_extra = nanmedian(norm_rate(extra,:),1);
 iqr_extra = [prctile(norm_rate(extra,:),25,1);prctile(norm_rate(extra,:),75,1)];
 
-%% Spike rate by time of day
-nexttile
-median_tod_rate = (nanmedian(norm_rate,1));
-
-polarhistogram('BinEdges',polar,'BinCounts',median_tod_rate+min(median_tod_rate)+1)
-set(gca,'ThetaDir','clockwise');
-set(gca,'ThetaZeroLocation','top');
-thetaticks(polar(1:skip:nbins)*360/(2*pi))
-thetaticklabels(hours_mins(1:skip:nbins+1))
-set(gca,'fontsize',15)
-title('Spike rate')
-
 
 %% Spike rate temporal
-nexttile([1 2])
+nexttile([2 1])
 %shaded_error_bars(1:length(median_temporal),median_temporal,iqr_temporal,myColours(1,:));
 plot(median_temporal,'linewidth',2);
 hold on
@@ -104,19 +95,18 @@ legend({'Temporal','Extra-temporal'},'fontsize',15)
 set(gca,'fontsize',15)
 title('Spike rate by seizure localization')
 
+%% Spike rate by time of day
+nexttile
 
-
-
-%{
+median_tod_rate = (nanmedian(norm_rate,1));
 shaded_error_bars(1:length(median_tod_rate),median_tod_rate,iqr_tod_rate,'k');
-plot(tod_rate,'linewidth',2)
+%plot(tod_rate,'linewidth',2)
 xticks(1:skip:nbins)
 xticklabels(hours_mins(1:skip:end))
 ylabel('Normalized spike rate')
 xlabel('Time of day')
 set(gca,'fontsize',15)
 title('Spike rate by time of day')
-%}
 
 
 

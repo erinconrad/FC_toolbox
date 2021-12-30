@@ -1,0 +1,10 @@
+function polar = convert_times_to_polar(times)
+
+%{
+I want midnight to be pi/2, 6 am to be 0, 12 pm to be -pi/2, 6 pm to be pi
+%}
+
+
+
+
+end
