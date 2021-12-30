@@ -31,7 +31,7 @@ median_psd = circ_out.median_psd;
 iqr_psd = circ_out.iqr_psd;
 periods = circ_out.periods;
 
-nexttile([1 3])
+nexttile([1 2])
 shaded_error_bars(periods,median_psd,iqr_psd,[]);
 xlim([0 100])
 xlabel('Period (hours)')
@@ -39,9 +39,42 @@ ylabel({'Spike rate power index'});
 set(gca,'fontsize',15)
 title('Spike rate periodogram')
 
+%% TOD
+all_tod_rate = circ_out.all_tod_rate;
+tod_edges = bin_out.tod_edges;
+counts = nansum(all_tod_rate,1);
+hours_mins = convert_edges_to_hours_mins(tod_edges);
+nbins = length(counts);
+skip = 18;
+norm_rate = (all_tod_rate - nanmedian(all_tod_rate,2))./iqr(all_tod_rate,2);
+nexttile([1 2])
+median_tod_rate = (nanmedian(norm_rate,1));
+polar = convert_times_to_polar(tod_edges,'radians');
+%
+polarhistogram('BinEdges',polar,'BinCounts',median_tod_rate+min(median_tod_rate)+1,...
+    'displayStyle','stairs','linewidth',2)
+%}
+%{
+polarhistogram('BinEdges',polar,'BinCounts',counts,...
+    'edgecolor','none')
+%}
+
+set(gca,'ThetaDir','clockwise');
+set(gca,'ThetaZeroLocation','top');
+set(gca,'rticklabels',[])
+thetaticks(polar(1:skip:nbins)*360/(2*pi))
+thetaticklabels(hours_mins(1:skip:nbins+1))
+set(gca,'fontsize',15)
+title('Normalized spike rate by time of day')
+
+observations = convert_counts_to_observations(counts,tod_edges);
+polar = convert_times_to_polar(observations,'radians');
+%circ_plot(polar,'hist',[],length(tod_edges),true,true,'linewidth',2,'color','r')
+[pval z] = circ_rtest(polar);
+
 %% 2A overall spike rates
 all_rate = bin_out.all_rates;
-nexttile([1 3])
+nexttile([1 2])
 plot_paired_data(all_rate(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type)
 title('Spike rate in wake and sleep')
 
@@ -169,13 +202,14 @@ ylim(ylnew)
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.48 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.58 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0.32 0.58 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
-annotation('textbox',[0.64 0.58 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.24 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
-annotation('textbox',[0.32 0.24 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
-annotation('textbox',[0.64 0.24 0.1 0.1],'String','H','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.65 0.91 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.58 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.58 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0.65 0.58 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.24 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.24 0.1 0.1],'String','H','fontsize',25,'linestyle','none')
+annotation('textbox',[0.65 0.24 0.1 0.1],'String','I','fontsize',25,'linestyle','none')
 
 
 print([out_folder,'Fig1'],'-dpng')

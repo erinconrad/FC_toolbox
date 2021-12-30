@@ -39,6 +39,11 @@ fs = 0.0017;%1/summ(1).block_dur;
 all_freqs = nan(npts,ceil(longest_run/2));
 all_pre_wake = cell(npts,1);
 sz_rate_sw = nan(npts,2);
+
+
+%% for mod midnight, get file size
+[~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(5000,1),[]);
+all_tod_rate = nan(npts,n_tod_bins); %w, s
     
 %% Loop over patients and get psd per pt
 for p = 1:npts
@@ -60,6 +65,7 @@ for p = 1:npts
     %time_bins = block:block:ceil(times(end)/block)*block;
     ad = summ.ad;
     labels = summ.labels;
+    mod_midnight = summ.mod_midnight;
     
     
     ekg = find_non_intracranial(labels);
@@ -76,6 +82,18 @@ for p = 1:npts
         time_bins(t) = max(times(t),ceil(times(t)/block)*block);
     end
     [bin_counts,preceding_bin_counts,closest_bins] = bin_stuff(sz_times,time_bins);
+    
+    %% Get sz rate by time of day
+     % Bin the mod midnights
+    [mod_midnight,nbins,edges] = bin_mod_midnight_times(mod_midnight,tod_edges);
+    tod_rate = nan(n_tod_bins,1);
+    for t = 1:n_tod_bins
+        curr_bins = mod_midnight == t; % which runs match that time of day
+        tod_rate(t,:) = nansum(bin_counts(curr_bins),'all');
+
+            
+    end
+    all_tod_rate(p,:) = tod_rate;
     
     %% Get sz frequency in wake and sleep
     sz_rate_sw(p,:) = [nanmean(preceding_bin_counts(wake)) nanmean(preceding_bin_counts(sleep))];
@@ -119,6 +137,7 @@ out.iqr_psd = iqr_psd;
 out.periods = periods;
 out.pre_wake = all_pre_wake;
 out.sz_rate_sw = sz_rate_sw;
+out.all_tod_rate = all_tod_rate;
 
 %mp = shaded_error_bars(periods,median_psd,iqr_psd,[0 0 0]);
 

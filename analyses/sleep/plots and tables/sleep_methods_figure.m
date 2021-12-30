@@ -183,6 +183,7 @@ set(gca,'fontsize',15)
 title('Sleep/wake classification')
 
 %% Percent detected asleep per time of day
+skip = 6;
 nexttile([1 3])
 all_tod_sw = out.bin_out.all_tod_sw;
 tod_edges = out.bin_out.tod_edges;
