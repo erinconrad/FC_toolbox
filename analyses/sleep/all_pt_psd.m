@@ -110,7 +110,7 @@ for p = 1:npts
     tod_rate = nan(n_tod_bins,1);
     for t = 1:n_tod_bins
         curr_bins = mod_midnight == t; % which runs match that time of day
-        tod_rate(t,:) = nanmean(spikes(:,curr_bins),'all'); % how many of those runs are wake and sleep
+        tod_rate(t,:) = nansum(spikes(:,curr_bins),'all');
 
             
     end
