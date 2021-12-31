@@ -15,8 +15,7 @@ exc = []; % number of blocks to exclude (should be empty)
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 scripts_folder = locations.script_folder;
-int_folder = [results_folder,'analysis/intermediate/'];
-out_folder = [scripts_folder,'analysis/sleep/data/'];
+out_folder = [scripts_folder,'analyses/sleep/data/'];
 
 addpath(genpath(scripts_folder))
 

@@ -18,12 +18,14 @@ myColours = [0, 0.4470, 0.7410;...
 
 
 locations = fc_toolbox_locs;
+script_folder = locations.script_folder;
 addpath(genpath(locations.script_folder))
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/sleep/'];
+%out_folder = [results_folder,'analysis/sleep/'];
+out_folder1 = [script_folder,'analyses/sleep/data/'];
 
 %% Load out file and get roc stuff
-out = load([out_folder,'out.mat']);
+out = load([out_folder1,'out.mat']);
 out = out.out;
 
 %% Unpack substructures
@@ -35,11 +37,13 @@ set(gcf,'position',[100 100 1000 700])
 tiledlayout(3,2,'tilespacing','compact','padding','compact')
 
 %% Get stuff
+rate_sw = out.bin_out.all_elecs_rates_sw;
+rl_sw = out.bin_out.all_elecs_rl_sw;
 rate = out.bin_out.all_elecs_rates;
 rl = out.bin_out.all_elecs_rl;
 leader = out.bin_out.all_elecs_leader;
-soz_rank_sw_rate = out.bin_out.soz_rank_sw;
-soz_rank_sw_rl = out.bin_out.soz_rank_sw_rl;
+%soz_rank_sw_rate = out.bin_out.soz_rank_sw;
+%soz_rank_sw_rl = out.bin_out.soz_rank_sw_rl;
 soz = out.bin_out.all_is_soz;
 locs = out.circ_out.all_locs;
 is_temporal = cellfun(@(x) strcmp(x,'temporal'),locs);
@@ -55,6 +59,13 @@ set(gca,'fontsize',15)
 title('Seizure onset zone - spike rate ranking')
 
 %% Spike rate ranking sleep vs wake
+wake_rate = cellfun(@(x) x(:,1), rate_sw,'uniformoutput',false);
+sleep_rate = cellfun(@(x) x(:,2), rate_sw,'uniformoutput',false);
+[~,wake_soz_ranks] = get_ranks(wake_rate,soz,rate,'rate',min_rate);
+wake_soz_ranks = cellfun(@nanmedian,wake_soz_ranks);
+[~,sleep_soz_ranks] = get_ranks(sleep_rate,soz,rate,'rate',min_rate);
+sleep_soz_ranks = cellfun(@nanmedian,sleep_soz_ranks);
+soz_rank_sw_rate = [wake_soz_ranks,sleep_soz_ranks];
 nexttile
 plot_paired_data(soz_rank_sw_rate',{'wake','sleep'},sprintf('Spike rate rank'),'paired','scatter','ranking')
 title(sprintf('SOZ spike rate ranking by wake vs sleep'))
@@ -69,6 +80,13 @@ set(gca,'fontsize',15)
 title('Seizure onset zone - spike timing ranking')
 
 %% Spike timing ranking sleep vs wake
+wake_rl = cellfun(@(x) x(:,1), rl_sw,'uniformoutput',false);
+sleep_rl = cellfun(@(x) x(:,2), rl_sw,'uniformoutput',false);
+[~,wake_soz_ranks] = get_ranks(wake_rl,soz,rate,'rl',min_rate);
+wake_soz_ranks = cellfun(@nanmedian,wake_soz_ranks);
+[~,sleep_soz_ranks] = get_ranks(sleep_rl,soz,rate,'rl',min_rate);
+sleep_soz_ranks = cellfun(@nanmedian,sleep_soz_ranks);
+soz_rank_sw_rl = [wake_soz_ranks,sleep_soz_ranks];
 nexttile
 plot_paired_data(soz_rank_sw_rl',{'wake','sleep'},sprintf('Spike timing rank'),'paired','scatter','ranking')
 title(sprintf('SOZ spike timing ranking by wake vs sleep'))

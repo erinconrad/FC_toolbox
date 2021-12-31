@@ -12,13 +12,14 @@ end
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
+out_folder1 = [script_folder,'analyses/sleep/data/'];
 
 %% Load validation file
 val_T = readtable(['Manual validation.xlsx']);
 
 
 %% Load out file
-out = load([out_folder,'out.mat']);
+out = load([out_folder1,'out.mat']);
 out = out.out;
 n_sleep_wake = out.bin_out.n_sleep_wake;
 

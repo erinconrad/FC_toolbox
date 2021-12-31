@@ -13,12 +13,13 @@ myColours = [0, 0.4470, 0.7410;...
 
 locations = fc_toolbox_locs;
 addpath(genpath(locations.script_folder))
+script_folder = locations.script_folder;
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/sleep/'];
-
+%out_folder = [results_folder,'analysis/sleep/'];
+out_folder1 = [script_folder,'analyses/sleep/data/'];
 
 %% Load out file and get roc stuff
-out = load([out_folder,'out.mat']);
+out = load([out_folder1,'out.mat']);
 out = out.out;
 
 %% Unpack substructures
