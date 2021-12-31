@@ -1,6 +1,7 @@
 function sleep_figure1
 
 %% Parameters
+min_rate = 0.1;
 plot_type = 'scatter';
 nblocks = 6;
 myColours = [0 0.4470 0.7410;...
@@ -68,9 +69,13 @@ set(gca,'fontsize',15)
 title('Normalized spike rate by time of day')
 
 observations = convert_counts_to_observations(counts,tod_edges);
-polar = convert_times_to_polar(observations,'radians');
+polar2 = convert_times_to_polar(observations,'radians');
 %circ_plot(polar,'hist',[],length(tod_edges),true,true,'linewidth',2,'color','r')
-[pval z] = circ_rtest(polar);
+[pval z] = circ_rtest(polar2);
+
+[pval z all_mu] = test_pt_circular_means(all_tod_rate,polar,hours_mins);
+%circ_plot(all_mu,'hist',[],length(polar),true,true,'linewidth',2,'color','r')
+
 
 %% 2A overall spike rates
 all_rate = bin_out.all_rates;
@@ -90,7 +95,47 @@ plot_paired_data(seq_sw(:,3:4)',{'wake','sleep'},'# Spikes/sequence','paired',pl
 title('Spike spread')
 
 %% 2D RL sleep-wake correlation across patients
-rl_sw_corr = bin_out.rl_sw_corr;
+%rl_sw_corr = bin_out.rl_sw_corr;
+
+% Get electrodes above minimum rate (for purpose of RL analysis)
+all_elecs_rates = bin_out.all_elecs_rates;
+npts = length(all_elecs_rates);
+min_rate_elecs = cell(npts,1);
+for i = 1:npts
+    curr = all_elecs_rates{i};
+    min_rate_elecs{i} = curr >= min_rate;
+end
+
+% SW consistency in spike rates
+all_elecs_rates_sw = bin_out.all_elecs_rates_sw;
+rates_sw_corr = cellfun(@(x) corr(x(:,1),x(:,2),'type','spearman','rows','pairwise'),...
+    all_elecs_rates_sw);
+
+% Sw consistency in spike spread (remove those with few spikes)
+all_elecs_rl_sw = bin_out.all_elecs_rl_sw;
+rl_sw_corr = nan(npts,1);
+for i = 1:npts
+    curr = all_elecs_rl_sw{i};
+    curr_min = min_rate_elecs{i};
+    curr = curr(curr_min,:);
+    rl_sw_corr(i) = corr(curr(:,1),curr(:,2),'type','spearman','rows','pairwise');
+end
+
+nexttile([1 2])
+plot(1+randn(npts,1)*0.05,rates_sw_corr,'o','linewidth',2,'color',myColours(1,:))
+hold on
+plot([0.75 1.25],[nanmedian(rates_sw_corr) nanmedian(rates_sw_corr)],'linewidth',2,'color',myColours(1,:))
+plot(2+randn(npts,1)*0.05,rl_sw_corr,'o','linewidth',2,'color',myColours(2,:))
+plot([1.75 2.25],[nanmedian(rl_sw_corr) nanmedian(rl_sw_corr)],'linewidth',2,'color',myColours(2,:))
+ylabel('Correlation coefficient')
+xlim([0.5 2.5])
+plot(xlim,[0 0],'k--','linewidth',2)
+xticks([1 2])
+xticklabels({'Spike rate','Spike spread'})
+ylim([-1 1])
+title('Consistency in spikes from wake-to-sleep')
+set(gca,'fontsize',15)
+%{
 nexttile([1 2])
 plot(rl_sw_corr,'o','linewidth',2)
 hold on
@@ -102,9 +147,12 @@ ylim([-1 1])
 title('Sleep-wake spike spread consistency')
 set(gca,'fontsize',15)
 xl = xlim;
-yl = ylim;
+yl = ylim'
+tV"
+t;
 text(xl(2),yl(1),sprintf('Median r = %1.2f',nanmedian(rl_sw_corr)),...
     'fontsize',15,'verticalalignment','bottom','horizontalalignment','right')
+%}
 
 %% 2E NS
 ns_sw = bin_out.ns_sw;

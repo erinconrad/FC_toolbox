@@ -44,25 +44,6 @@ soz = out.bin_out.all_is_soz;
 locs = out.circ_out.all_locs;
 is_temporal = cellfun(@(x) strcmp(x,'temporal'),locs);
 
-%% Do MC tests
-%{
-mcout_rate = test_ranking(rate,soz,nb,'rate',rate,min_rate);
-median_ranking_mc_rate = mcout_rate.median_ranking_mc;
-median_ranking_true_rate = mcout_rate.median_ranking_true;
-all_rankings_rate = mcout_rate.all_rankings;
-pval_rate = mcout_rate.pval;
-
-mcout_leader = test_ranking(leader,soz,nb,'rate',rate,min_rate);
-
-
-mcout_rl = test_ranking(rl,soz,nb,'rl',rate,min_rate);
-median_ranking_mc_rl = mcout_rl.median_ranking_mc;
-median_ranking_true_rl = mcout_rl.median_ranking_true;
-all_rankings_rl = mcout_rl.all_rankings;
-pval_rl = mcout_rl.pval;
-%}
-
-
 %% SOZ spike rate ranking
 nexttile([1 1])
 plot_orders(rate,soz,rate,'rate',[])

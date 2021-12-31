@@ -1,14 +1,44 @@
 %{
+This contains the script to run the sleep analysis. 
 
-To do:
-- add code to identify and track what happens to the different spike
-populations over time
-    - spike co-activation networks
-    - identify the leader of each network, see what happens to those with
-    sleep and after seizures
+The code for this analysis can be found at:
+https://github.com/erinconrad/FC_toolbox
 
-This contains the script to run the sleep analysis. A brief overview of
-the pipeline:
+%}
+
+%% To re-generate plots and tables and re-run statistical tests
+%{
+To run the code to regenerate the results plots and tables, perform the
+following steps:
+
+1) Download the codebase from https://github.com/erinconrad/FC_toolbox/
+2) Download CircStat, which the code calls:
+https://www.jstatsoft.org/article/view/v031i10
+3) Add a file named fc_toolbox_locs.m to your Matlab path. This points to
+various other paths. Here is an example of what it would look like:
+
+    function locations = fc_toolbox_locs
+
+        locations.main_folder = [path to where you will output results from the
+            analysis]
+        locations.script_folder = [path to this code base]
+
+    end
+4) Navigate to the analyses/sleep/plots and tables/ folder
+5) Run the following command:
+>> sleep_plots_and_tables
+
+This command take an intermediate dataset called out.mat which contains
+summary level information on spike rates for each patient and will execute
+the code to generate plots, tables, and perform statistical testing.
+
+%}
+
+%% To re-run the full data analysis from scratch
+%{
+This will require downloading the eeg data from ieeg.org.
+
+A brief overview of the full pipeline:
 
 0) You can add more ieeg.org patients as needed by running
 create_pt_struct/add_more_pts.m
@@ -51,4 +81,10 @@ analysis/sleep/binary_ad_analyses.m
   sleep/wake labels, and then selecting the optimal cut off point for the
   alpha delta ratio that best discriminates wake from sleep
 
+%}
+
+%{
+Erin Conrad
+University of Pennsylvania
+2021
 %}

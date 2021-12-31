@@ -26,10 +26,30 @@ unpack_any_struct(out);
 out_folder = [results_folder,'analysis/sleep/'];
 
 figure
-set(gcf,'position',[100 100 1400 700])
-tiledlayout(4,3,'tilespacing','compact','padding','compact')
+set(gcf,'position',[100 100 1200 700])
+tiledlayout(4,3,'tilespacing','tight','padding','tight')
 
 %% Seizure timing PSD
+nexttile([2 1])
+all_tod_rate = sz_circ_out.all_tod_rate;
+tod_edges = bin_out.tod_edges;
+counts = nansum(all_tod_rate,1);
+polar = convert_times_to_polar(tod_edges,'radians');
+
+hours_mins = convert_edges_to_hours_mins(tod_edges);
+nbins = length(counts);
+skip = 18;
+
+polarhistogram('BinEdges',polar,'BinCounts',counts,...
+    'displayStyle','stairs','linewidth',2)
+set(gca,'ThetaDir','clockwise');
+set(gca,'ThetaZeroLocation','top');
+thetaticks(polar(1:skip:nbins)*360/(2*pi))
+thetaticklabels(hours_mins(1:skip:nbins+1))
+set(gca,'fontsize',15)
+title('Seizure count')
+[pval z all_mu] = test_pt_circular_means(all_tod_rate,polar,hours_mins);
+%{
 nexttile([2 1])
 periods = sz_circ_out.periods;
 iqr_psd = sz_circ_out.iqr_psd;
@@ -40,6 +60,7 @@ set(gca,'fontsize',15)
 xlabel('Period (hours)')
 ylabel('Power index')
 title('Seizure time periodogram')
+%}
 
 %% Percent asleep
 nexttile([2 1])
@@ -86,7 +107,7 @@ plot([1.7 2.3],[nanmedian(perc_sz_asleep(extra)) nanmedian(perc_sz_asleep(extra)
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Seizures arising from sleep (%)')
-title('Seizure state-dependence by localization')
+title('Seizure state-dependence')
 set(gca,'fontsize',15);
 xlim([0 3])
 yl = ylim;
@@ -145,7 +166,7 @@ plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Post-pre-ictal spikes/elec/min')
-title('Post-pre-ictal spike rate difference by localization')
+title('Post-pre-ictal spike rate difference')
 set(gca,'fontsize',15);
 xlim([0 3])
 yl = ylim;
@@ -168,12 +189,12 @@ xlabel('Hours surrounding seizure')
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.32 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0.64 0.91 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.66 0.91 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.42 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.19 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
-annotation('textbox',[0.32 0.42 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
-annotation('textbox',[0.64 0.42 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.42 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
+annotation('textbox',[0.66 0.42 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
 
 
 
