@@ -9,42 +9,29 @@ data folder to be used for plots and statistical tests.
 %% Parameters to change
 doing_from_github = 0; % change to 1 if doing from github
 
-%% Parameters not to change
-rm_cluster = 0; % remove clustered seizures (should be no)
-do_avg = 0; % should be no
-exc = []; % number of blocks to exclude (should be empty)
-
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 scripts_folder = locations.script_folder;
 out_folder = [scripts_folder,'analyses/sleep/data/'];
-
 addpath(genpath(scripts_folder))
-
-if ~exist(out_folder,'dir')
-    mkdir(out_folder)
-end
-%}
 
 %% Do circadian analysis
 fprintf('\nDoing circadian analysis\n'); 
 circ_out = all_pt_psd;
 
-%% Do alpha delta ratio validation
+%% Do alpha delta ratio validation and get ADR cutoff for wake/sleep
 fprintf('\nDoing alpha delta ratio validation\n'); 
-[roc,auc,disc,disc_I,swdes] = ad_validation(exc);
+[roc,auc,disc,disc_I,swdes] = ad_validation;
 roc_out.roc = roc;
 roc_out.auc = auc;
 roc_out.disc = disc;
 roc_out.disc_I = disc_I;
 roc_out.swdes = swdes;
 
-
-
 %% Do binary ad analyses
 fprintf('\nDoing binary AD analyses\n');
-bin_out = binary_ad_analyses(disc,exc);
+bin_out = binary_ad_analyses(disc);
 
 % Stats on amount of wake and sleep
 n_sleep_wake = bin_out.n_sleep_wake;
@@ -54,13 +41,12 @@ fprintf('\nAcross all patients, a median of %1.1f%% (IQR %1.1f%% - %1.1f%%) of p
     nanmedian(perc_asleep),iqr_sleep(1),iqr_sleep(2));
 
 
-% verified through here
 %% Seizure circadian analysis
-sz_circ_out = sz_circadian(disc,exc);
+sz_circ_out = sz_circadian(disc);
 
 %% Do seizure time analyses
 fprintf('\nDoing seizure histogram analyses\n');
-sz_out = seizure_time_histogram(rm_cluster,do_avg,disc);
+sz_out = seizure_time_histogram(disc);
 
 %% Put together
 out.circ_out = circ_out;

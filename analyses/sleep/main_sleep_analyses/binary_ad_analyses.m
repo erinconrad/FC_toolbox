@@ -1,4 +1,4 @@
-function out = binary_ad_analyses(disc,exc)
+function out = binary_ad_analyses(disc)
 
 %{
 This is the function that does most analyses comparing what happens to
@@ -16,6 +16,7 @@ main_soz = {'SOZ','Not SOZ'};
 main{1} = main_locs;
 main{2} = main_lats;
 main{3} = main_soz;
+exc = []; % don't change
 
 %% Get file locs
 locations = fc_toolbox_locs;

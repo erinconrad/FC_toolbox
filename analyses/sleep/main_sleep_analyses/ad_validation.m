@@ -1,10 +1,13 @@
-function [roc,auc,disc,disc_I,swdes] = ad_validation(exc)
+function [roc,auc,disc,disc_I,swdes] = ad_validation
 
 %{
 This is the main validation function to test how well the alpha delta ratio
 distingiushes wake from sleep. I specifically use a normalized alpha delta
 ratio, where I take the ad and subtract the median and divide by the iqr.
 %}
+
+%% Parameter not to change
+exc = [];
 
 % get my manual sleep/wake designations
 swdes = sw_ad_erin_designations;

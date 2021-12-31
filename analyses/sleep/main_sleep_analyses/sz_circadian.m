@@ -1,8 +1,10 @@
-function out = sz_circadian(disc,exc)
+function out = sz_circadian(disc)
 
 %{
 This analysis obtains seizure counts as a function of time of day
 %}
+
+exc = []; % don't change
 
 %% Get file locs
 locations = fc_toolbox_locs;

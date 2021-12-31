@@ -1,4 +1,4 @@
-function out = seizure_time_histogram(rm_cluster,do_avg,disc)
+function out = seizure_time_histogram(disc)
 
 %{
 Build a model:
@@ -12,6 +12,7 @@ surround_hours = 6;
 surround_secs = surround_hours*3600; % convert to seconds
 surround = surround_hours*6; % convert to #bins (6 hours = 6*6 10 minute bins)
 nbins = surround*2;
+rm_cluster = 0;
 
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
 main_lats = {'Left','Right'};
@@ -27,11 +28,13 @@ else
     rm_cluster_text = '_keep_clust';
 end
 
+%{
 if do_avg == 1
     do_avg_text = '_avg';
 else
     do_avg_text = '_no_avg';
 end
+%}
 
 
 %% Get file locs
@@ -285,6 +288,7 @@ spikes_strat{1}(:,missing_loc,:) = [];
 
 
 %% Do model
+%{
 
 if do_avg
     % Make bin identifier
@@ -334,15 +338,16 @@ sig_bins = lme.Coefficients.pValue < 0.05/nbins; % Bonferroni correction
 sig_bins(1) = 0; % the first one is the intercept, ignore
 sig_bins = sig_bins(1:end-1); % the last one is the coefficient for sleep, remove
 sp_bins = nanmean(all_pts_spikes_bins,1);
+%}
 times = linspace(-surround_hours,surround_hours,length(sp_bins));
-out.lme = lme;
-out.sig_bins = sig_bins;
+%out.lme = lme;
+%out.sig_bins = sig_bins;
 out.all_pts_spikes_bins = all_pts_spikes_bins;
 out.all_pts_sleep_bins = all_pts_sleep_bins;
 out.times = times;
 out.surround_hours = surround_hours;
-out.xlim = [-surround_hours surround_hours];
-out.T = T;
+%out.xlim = [-surround_hours surround_hours];
+%out.T = T;
 out.spikes_strat = spikes_strat;
 out.main = main;
 out.names = names;
