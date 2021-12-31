@@ -188,8 +188,8 @@ for p = 1:npts
     %% wake vs sleep spike rate
     % overall spike rate (averaged across electrodes)
     mean_spikes = nanmean(spikes,1); % still spikes/elec/min
-    overall_rates(p) = nanmean(spikes,'all');
-    all_rates(p,:) = [nanmean(spike(wake)) nanmean(mean_spikes(sleep))];
+    overall_rates(p) = nanmean(spikes,'all'); % average over all electrodes and times
+    all_rates(p,:) = [nanmean(spikes(:,wake),'all') nanmean(spikes(:,sleep),'all')];
     
     % I used to do mean across electrodes first and then time
     %{
@@ -205,8 +205,12 @@ for p = 1:npts
     
     %% Wake vs sleep ns
     mean_ns = nanmean(ns,1); % node strength averaged across electrodes
-    ns_sw(p,:) = [nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
+    ns_sw(p,:) = [nanmean(ns(:,wake),'all') nanmean(ns(:,sleep),'all')];
     all_elecs_ns_sw{p} = [nanmean(ns(:,wake),2) nanmean(ns(:,sleep),2)];
+    % I used to do mean across electrodes first and then time
+    %{
+    ns_sw(p,:) = [nanmean(mean_ns(wake)) nanmean(mean_ns(sleep))];
+    %}
     
     %% Wake vs sleep seq info
     seq_sw(p,:) = [nanmean(seq_info(1,wake)) nanmean(seq_info(1,sleep)),...

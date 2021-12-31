@@ -16,10 +16,10 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 scripts_folder = locations.script_folder;
 int_folder = [results_folder,'analysis/intermediate/'];
-out_folder = [scripts_folder,'analysis/sleep/'];
+out_folder = [scripts_folder,'analysis/sleep/data/'];
 
 addpath(genpath(scripts_folder))
-%{
+
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end

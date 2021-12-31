@@ -188,7 +188,7 @@ for p = 1:npts
     %% wake vs sleep spike rate
     % overall spike rate (averaged across electrodes)
     mean_spikes = nanmean(spikes,1); % still spikes/elec/min
-    overall_rates(p) = nanmean(spikes,'all');
+    overall_rates(p) = nanmean(spikes,'all'); % average over all electrodes and times
     all_rates(p,:) = [nanmean(spikes(:,wake),'all') nanmean(spikes(:,sleep),'all')];
     
     % I used to do mean across electrodes first and then time
