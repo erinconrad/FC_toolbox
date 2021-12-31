@@ -71,12 +71,12 @@ end
 %}
 
 %% Initialize other stuff
-null_ps = nan(npts,1);
+%null_ps = nan(npts,1);
 ns_sw = nan(npts,2);
 all_rates = nan(npts,2);
 overall_rates = nan(npts,1);
 all_coi = nan(npts,2);
-missing_loc = zeros(npts,1);
+%missing_loc = zeros(npts,1);
 n_sleep_wake = nan(npts,2);
 names = cell(npts,1);
 seq_sw = nan(npts,4);

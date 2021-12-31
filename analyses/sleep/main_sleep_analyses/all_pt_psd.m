@@ -10,7 +10,6 @@ power by localization and spike location.
 %}
 
 %% Parameters
-m = 2; % do not change
 main_locs = {'mesial temporal','temporal neocortical','other cortex','white matter'};
 main_lats = {'Left','Right'};
 main{1} = main_locs;

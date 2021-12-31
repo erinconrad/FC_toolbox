@@ -34,7 +34,7 @@ name = pt(p).name;
 
 %% Load out file and get roc stuff
 %out = load([results_folder,'analysis/sleep/out.mat']);
-out = load([script_folder,'analyses/sleep/data/out.mat']);
+out = load([scripts_folder,'analyses/sleep/data/out.mat']);
 out = out.out;
 disc = out.roc_out.disc;
 roc = out.roc_out.roc;
