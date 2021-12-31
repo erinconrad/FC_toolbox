@@ -12,7 +12,7 @@ end
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
-out_folder1 = [script_folder,'analyses/sleep/data/'];
+out_folder1 = [scripts_folder,'analyses/sleep/data/'];
 
 %% Load validation file
 val_T = readtable(['Manual validation.xlsx']);
