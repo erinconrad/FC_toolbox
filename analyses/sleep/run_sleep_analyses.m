@@ -6,7 +6,10 @@ what happens to spikes, etc., with sleep. It output an out.mat into the
 data folder to be used for plots and statistical tests.
 %}
 
-%% Parameters
+%% Parameters to change
+doing_from_github = 0; % change to 1 if doing from github
+
+%% Parameters not to change
 rm_cluster = 0; % remove clustered seizures (should be no)
 do_avg = 0; % should be no
 exc = []; % number of blocks to exclude (should be empty)
@@ -73,6 +76,18 @@ out.out_folder = out_folder;
 save([out_folder,'out.mat'],'out')
 
 %% Do plots
-%fprintf('\nDoing other plots\n');
-%sleep_plots(out,1)
+fprintf('\nDoing plots\n');
+if ~doing_from_github
+    sleep_methods_figure % this needs a raw data file to run (which is large)
+end
+
+sleep_figure1
+
+sleep_figure2
+
+sleep_figure4
+
+sleep_table1
+
+sleep_table2
 
