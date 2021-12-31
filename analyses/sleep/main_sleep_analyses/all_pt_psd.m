@@ -1,9 +1,12 @@
 function out = all_pt_psd
 
-%% To do
+%% Summary
 %{
-- add annotations
-- add patient-level analyses
+This function calculates the FFT of spike rates to see how circadian spikes
+are. It also looks at spike rates as a function of time of day.
+
+It also does some vestigial code to compare the relative circadian
+power by localization and spike location.
 %}
 
 %% Parameters
@@ -29,7 +32,6 @@ addpath(genpath(scripts_folder));
 
 %% Listing of available files
 listing = dir([int_folder,'*.mat']);
-%listing = dir([int_folder,'HUP209.mat']);
 npts = length(listing);
 
 %% Get the longest run (will pad the others with zeros)
@@ -70,7 +72,7 @@ duration = nan(npts,1);
 %% for mod midnight, get file size
 [~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(5000,1),[]);
 all_tod_rate = nan(npts,n_tod_bins); %w, s
-eleven_to_five = nan(npts,2);
+%eleven_to_five = nan(npts,2);
 
 
 %% Loop over patients and get psd per pt
@@ -80,6 +82,7 @@ for p = 1:npts
     summ = load([int_folder,listing(p).name]);
     summ = summ.summ;
     
+    %% Get patient info
     labels = summ.labels;
     spikes = summ.spikes;
     times = summ.times;
@@ -95,10 +98,7 @@ for p = 1:npts
     duration(p) = age_implant(p)-age_onset(p);
     mod_midnight = summ.mod_midnight;
     
-    %% Find and remove non-intracranial
-    %{
-    MUST REMEMBER TO ADD THIS FOR COA
-    %}
+    %% Find and remove non-intracranial electrodes (ekg and scalp)
     ekg = find_non_intracranial(labels);
     spikes = spikes(~ekg,:);
     loc = loc(~ekg,:);
@@ -106,18 +106,21 @@ for p = 1:npts
     
     %% Get spike rate by time of day
      % Bin the mod midnights
-    [mod_midnight,nbins,edges] = bin_mod_midnight_times(mod_midnight,tod_edges);
+    [mod_midnight] = bin_mod_midnight_times(mod_midnight,tod_edges); % says which of the 144 bins the current time is in
     tod_rate = nan(n_tod_bins,1);
+    
+    % Loops over bins
     for t = 1:n_tod_bins
+        
+        % find the times in that time of day bin
         curr_bins = mod_midnight == t; % which runs match that time of day
-        tod_rate(t,:) = nansum(spikes(:,curr_bins),'all');
-
-            
+        tod_rate(t,:) = nansum(spikes(:,curr_bins),'all'); % sum up all spikes across all electrodes and all times in that bin
+          
     end
     all_tod_rate(p,:) = tod_rate;
-    eleven_pm_to_five_am = summ.mod_midnight < 5*3600 | summ.mod_midnight > 23*3600;
-    eleven_to_five(p,:) = [nanmean(spikes(:,eleven_pm_to_five_am),'all'),...
-    nanmean(spikes(:,~eleven_pm_to_five_am),'all')];
+    %eleven_pm_to_five_am = summ.mod_midnight < 5*3600 | summ.mod_midnight > 23*3600;
+    %eleven_to_five(p,:) = [nanmean(spikes(:,eleven_pm_to_five_am),'all'),...
+    %nanmean(spikes(:,~eleven_pm_to_five_am),'all')];
     names{p} = name;
     
    
@@ -177,15 +180,11 @@ for p = 1:npts
     end
 end
 
-%% Remove nan rows
-%all_psd(skip_pts,:) = [];
-%all_freqs(skip_pts,:)= [];
-
 %% confirm freqs same across patients
 sum_diff_freqs = sum(abs(sum(abs(diff(all_freqs,1,1)))));
 assert(sum_diff_freqs < 1e-3);
 
-%% Stuff
+%% Stuff for PSD
 periods = 1./freqs/3600;
 low_period = periods <= 100;
 periods = periods(low_period);
@@ -216,7 +215,7 @@ out.age_implant = age_implant;
 out.duration = duration;
 out.all_tod_rate = all_tod_rate;
 out.tod_edges = tod_edges;
-out.eleven_to_five = eleven_to_five;
+%out.eleven_to_five = eleven_to_five;
 
 %{
 %% Initialize figure

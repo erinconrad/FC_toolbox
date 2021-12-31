@@ -1,5 +1,8 @@
 function out = sz_circadian(disc,exc)
 
+%{
+This analysis obtains seizure counts as a function of time of day
+%}
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -76,7 +79,7 @@ for p = 1:npts
     %% Determine wake and sleep
     [sleep,wake] = find_sleep_wake(ad,exc,disc);
     
-    %% Bin sz times
+    %% Bin sz times to get counts per bin (in the original time bins)
     time_bins = times;
     for t = 1:length(times)
         time_bins(t) = max(times(t),ceil(times(t)/block)*block);
@@ -89,7 +92,7 @@ for p = 1:npts
     tod_rate = nan(n_tod_bins,1);
     for t = 1:n_tod_bins
         curr_bins = mod_midnight == t; % which runs match that time of day
-        tod_rate(t,:) = nansum(bin_counts(curr_bins),'all');
+        tod_rate(t,:) = nansum(bin_counts(curr_bins),'all'); % how many seizures are in that time of day bin
 
             
     end

@@ -6,7 +6,9 @@ distingiushes wake from sleep. I specifically use a normalized alpha delta
 ratio, where I take the ad and subtract the median and divide by the iqr.
 %}
 
+% get my manual sleep/wake designations
 swdes = sw_ad_erin_designations;
+
 npts_val = length(swdes);
 ad_norm = nan(npts_val,2); %1 = sleep, 2 = wake
 all_wake = [];
@@ -21,7 +23,7 @@ for j = 1:npts_val
     sleep_norm = (sleep_ad-nanmedian(ad_val))./iqr(ad_val);
     wake_norm = (wake_ad-nanmedian(ad_val))./iqr(ad_val);
     %}
-    sleep_norm = norm_exc(sleep_ad,ad_val,exc);
+    sleep_norm = norm_exc(sleep_ad,ad_val,exc); % If exc is [], which it should be, this is the same as the above commented out thing
     wake_norm = norm_exc(wake_ad,ad_val,exc);
     
     
@@ -39,6 +41,5 @@ end
 % Calculate roc
 [roc,auc,disc,disc_I] = calculate_roc(all_sleep,all_wake,1e3);
 
-% Get number of sleep and wake
 
 end
