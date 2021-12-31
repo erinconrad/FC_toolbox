@@ -12,3 +12,9 @@ add_elec_locs
 % define run times
 fprintf('\nGetting run times\n');
 define_run_times
+
+% add file start times
+add_file_start_times
+
+% add demographics
+add_demographics

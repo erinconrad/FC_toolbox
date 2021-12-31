@@ -1,5 +1,7 @@
+%% Summary
+
 %{
-This contains the script to run the sleep analysis. 
+This contains the script to run the spikes and sleep analysis. 
 
 The code for this analysis can be found at:
 https://github.com/erinconrad/FC_toolbox
@@ -36,15 +38,18 @@ the code to generate plots, tables, and perform statistical testing.
 
 %% To re-run the full data analysis from scratch
 %{
-This will require downloading the eeg data from ieeg.org.
+This will take days-to-weeks to run the spike detector on all patients'
+data.
 
-A brief overview of the full pipeline:
+To re-run the full pipeline:
 
 0) You can add more ieeg.org patients as needed by running
 create_pt_struct/add_more_pts.m
    - you must specify in the code which patients to add
-   - it will find them, add their electrode locations, and then pick run
-   times
+   - it will find them, add their electrode locations, pick run
+   times, and add file start times and demographics
+   - note that the latter two will require digging into the chart and so
+   require tables that must be added manually
 1) detect spikes, do network and alpha delta ratio calculations by running
 do_run/long_run.m
    - specify which patients to run
@@ -55,7 +60,7 @@ automatically update a column in this sheet containing the HUP IDs of the
 good spike detection patients
 4) Download this updated spreadsheet and put it in the SCRIPT folder
 spike_detector/ (it's in a script folder so that it will automatically sync
-over to borel).
+over to borel, the server Erin used to run the analysis).
 5) Finish adding seizure times for patients with missing data in the google
 spreadsheet seizure times.xlsx. Download this into the DATA folder
 data/sz_times/
@@ -74,15 +79,22 @@ spikes in seizures.
    - analyses/sleep/get_sleep_labels/scalp_gui.m: this takes the saved EEG
    data above and plots the data. Erin went through and manually labeled
    the sleep state.
-10) To do circadian analysis, run analysis/sleep/all_pt_psd.m
-11) To do analyses related to sleep, run
-analysis/sleep/binary_ad_analyses.m
+10) To do analyses related to sleep, run
+analysis/sleep/run_sleep_analyses.m
   - this begins by validating the alpha delta ratio against Erin's manual
   sleep/wake labels, and then selecting the optimal cut off point for the
   alpha delta ratio that best discriminates wake from sleep
+  - It then does various things looking at spikes and seizures related to
+  sleep
+  - This generates an out.mat file, which you should move to the
+  scripts/analuses/sleep/data folder
+11) Run analysis/sleep/plots and tables/sleep_plots_and_tables.m
+  - This will take the out.mat file and run scripts to generate plots and
+  do statistical tests
 
 %}
 
+%% Info
 %{
 Erin Conrad
 University of Pennsylvania
