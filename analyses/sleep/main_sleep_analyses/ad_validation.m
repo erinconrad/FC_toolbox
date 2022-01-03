@@ -1,4 +1,4 @@
-function [roc,auc,disc,disc_I,swdes] = ad_validation
+function roc_out = ad_validation
 
 %{
 This is the main validation function to test how well the alpha delta ratio
@@ -16,6 +16,9 @@ npts_val = length(swdes);
 ad_norm = nan(npts_val,2); %1 = sleep, 2 = wake
 all_wake = [];
 all_sleep = [];
+
+all_vals = [];
+all_labels = {};
 for j = 1:npts_val
     if isempty(swdes(j).sw), continue; end
     sleep_ad = swdes(j).sw.sleep;
@@ -39,10 +42,34 @@ for j = 1:npts_val
     % unreasonable).
     all_wake = [all_wake;wake_norm];
     all_sleep = [all_sleep;sleep_norm];
+    
+    all_vals = [all_vals;wake_norm;sleep_norm];
+    wake_label = cell(length(wake_norm),1);
+    wake_label(:) = {'Wake'};
+    sleep_label = cell(length(sleep_norm),1);
+    sleep_label(:) = {'Sleep'};
+    all_labels = [all_labels;wake_label;sleep_label];
 end
 
 % Calculate roc
 [roc,auc,disc,disc_I] = calculate_roc(all_sleep,all_wake,1e3);
+
+% alternate approach to roc
+labels = all_labels;
+scores = all_vals;
+[X,Y,T,AUC,OPTROCPT] = perfcurve(labels,scores,'Wake');
+
+
+roc_out.roc = roc;
+roc_out.auc = auc;
+roc_out.disc = disc;
+roc_out.disc_I = disc_I;
+roc_out.swdes = swdes;
+roc_out.alt_auc = AUC;
+roc_out.X = X;
+roc_out.Y = Y;
+roc_out.T = T;
+roc_out.OPTROCPT = OPTROCPT;
 
 
 end

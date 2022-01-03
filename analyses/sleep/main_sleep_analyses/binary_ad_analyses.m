@@ -126,7 +126,7 @@ for p = 1:npts
     
     names{p} = name;
     
-    % Bin the mod midnights
+    % Bin the mod midnights 1-144 10-minute bins
     mod_midnight = bin_mod_midnight_times(mod_midnight,tod_edges);
     
     % Fix lat thing
@@ -175,10 +175,8 @@ for p = 1:npts
     n_sleep_wake(p,2) = sum(wake);
     
     %% Get wake and sleep designations for times of day
-    %all_tod = 1:n_tod_bins;
     tod_sw = nan(n_tod_bins,2);
     for t = 1:n_tod_bins
-        %tt = all_tod(t); % get the time of day bin im considering
         curr_bins = mod_midnight == t; % which runs match that time of day
         tod_sw(t,:) = [sum(wake(curr_bins) == 1) sum(sleep(curr_bins) == 1)]; % how many of those runs are wake and sleep
     end

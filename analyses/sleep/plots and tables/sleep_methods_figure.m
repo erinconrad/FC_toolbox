@@ -184,7 +184,7 @@ set(gca,'fontsize',15)
 title('Sleep/wake classification')
 
 %% Percent detected asleep per time of day
-skip = 6;
+skip = 18;
 nexttile([1 3])
 all_tod_sw = out.bin_out.all_tod_sw;
 tod_edges = out.bin_out.tod_edges;
@@ -196,7 +196,7 @@ prop_asleep = squeeze(nanmean(ind_pt_prop,1));
 
 polar = convert_times_to_polar(tod_edges,'radians');
 polarhistogram('BinEdges',polar,'BinCounts',prop_asleep,...
-    'edgecolor','none','facealpha',0.5)%'displaystyle','stairs')
+    'displayStyle','stairs','linewidth',2)
 set(gca,'ThetaDir','clockwise');
 set(gca,'ThetaZeroLocation','top');
 rlabs = get(gca,'rticklabel');
@@ -219,6 +219,11 @@ ylabel('True positive rate')
 legend(sprintf('AUC %1.2f',auc),'location','southeast','fontsize',15)
 set(gca,'fontsize',15)
 title('Classification accuracy')
+
+%{
+% double checking ROC curve
+
+%}
 
 print([results_folder,'analysis/sleep/methods_fig'],'-dpng')
 
