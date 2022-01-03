@@ -1,6 +1,6 @@
 function [p z all_mu] = test_pt_circular_means(thing,polar_edges,hours_mins)
 
-% Get circular mean for each patient
+%% Get circular mean for each patient
 npts = size(thing,1);
 nbins = size(thing,2);
 

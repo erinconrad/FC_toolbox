@@ -185,7 +185,7 @@ title('Sleep/wake classification')
 
 %% Percent detected asleep per time of day
 skip = 18;
-nexttile([1 3])
+nexttile([1 2])
 all_tod_sw = out.bin_out.all_tod_sw;
 tod_edges = out.bin_out.tod_edges;
 
@@ -208,7 +208,7 @@ set(gca,'fontsize',15)
 title('Percent detected asleep')
 
 %% ROC
-nexttile([1 3])
+nexttile([1 4])
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
@@ -222,6 +222,14 @@ title('Classification accuracy')
 
 %{
 % double checking ROC curve
+X = out.roc_out.X;
+Y = out.roc_out.Y;
+alt_auc = out.roc_out.alt_auc;
+figure
+plot(X,Y)
+hold on
+plot(roc(:,1),roc(:,2))
+
 
 %}
 

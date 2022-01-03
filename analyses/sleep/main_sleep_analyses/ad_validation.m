@@ -54,7 +54,7 @@ end
 % Calculate roc
 [roc,auc,disc,disc_I] = calculate_roc(all_sleep,all_wake,1e3);
 
-% alternate approach to roc
+% alternate approach to roc (double checking AUC)
 labels = all_labels;
 scores = all_vals;
 [X,Y,T,AUC,OPTROCPT] = perfcurve(labels,scores,'Wake');

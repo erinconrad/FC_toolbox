@@ -26,7 +26,7 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 
 figure
-set(gcf,'position',[100 100 1100 1100])
+set(gcf,'position',[100 100 1200 1100])
 tiledlayout(3,6,'tilespacing','compact','padding','compact')
 
 %% A - PSD
@@ -86,7 +86,7 @@ plot_paired_data(all_rate(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',pl
 title('Spike rate in wake and sleep')
 
 %% 2B independent spikes
-seq_sw = bin_out.seq_sw;
+seq_sw = bin_out.seq_sw; %1,2,3,4 are #seq wake, #seq sleep, seq length wake, seq length sleep, respectively
 nexttile([1 2])
 plot_paired_data(seq_sw(:,1:2)',{'wake','sleep'},'# Spike sequences','paired',plot_type)
 title('Independent spikes')
@@ -108,7 +108,8 @@ for i = 1:npts
     min_rate_elecs{i} = curr >= min_rate;
 end
 
-% SW consistency in spike rates
+% SW consistency in spike rates (spearman correlation between rates in wake
+% and rates in sleep)
 all_elecs_rates_sw = bin_out.all_elecs_rates_sw;
 rates_sw_corr = cellfun(@(x) corr(x(:,1),x(:,2),'type','spearman','rows','pairwise'),...
     all_elecs_rates_sw);
@@ -227,6 +228,20 @@ temporal = contains(loc,'temporal');
 rate_diff = (rate_sw(:,2)-rate_sw(:,1));
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
 p = ranksum(rate_diff(temporal),rate_diff(extra));
+
+%{
+mesial_temporal = strcmp(loc,'mesial temporal');
+neocortical = strcmp(loc,'temporal neocortical') | strcmp(loc,'other cortex');
+diffuse = strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
+nmt = sum(mesial_temporal);
+nn = sum(neocortical);
+nd = sum(diffuse);
+
+plot(1+randn(nmt,1)*0.05,rate_diff(mesial_temporal),'o')
+hold on
+plot(2+randn(nn,1)*0.05,rate_diff(neocortical),'o')
+plot(3+randn(nd,1)*0.05,rate_diff(diffuse),'o')
+%}
 
 nexttile([1 2])
 plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(1,:))

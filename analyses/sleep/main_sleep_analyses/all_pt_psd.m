@@ -117,9 +117,6 @@ for p = 1:npts
           
     end
     all_tod_rate(p,:) = tod_rate;
-    %eleven_pm_to_five_am = summ.mod_midnight < 5*3600 | summ.mod_midnight > 23*3600;
-    %eleven_to_five(p,:) = [nanmean(spikes(:,eleven_pm_to_five_am),'all'),...
-    %nanmean(spikes(:,~eleven_pm_to_five_am),'all')];
     names{p} = name;
     
    

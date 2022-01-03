@@ -30,7 +30,7 @@ figure
 set(gcf,'position',[100 100 1200 700])
 tiledlayout(4,3,'tilespacing','tight','padding','tight')
 
-%% Seizure timing PSD
+%% Seizure time of day
 nexttile([2 1])
 all_tod_rate = sz_circ_out.all_tod_rate;
 tod_edges = bin_out.tod_edges;

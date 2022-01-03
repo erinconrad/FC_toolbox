@@ -65,7 +65,7 @@ for l = 1:length(listing)
             labels = pc.file(f).run(blocks(ib)).data.clean_labels;
             ekg = find_non_intracranial(labels);
             
-            % Get alpha delta ratio
+            % Get alpha delta ratio for that block
             alpha_delta = (pc.file(f).run(blocks(ib)).data.montage(2).ad);
             alpha_delta = nanmean(alpha_delta(~ekg)); % ignore ekg and scalp channels
             
@@ -101,6 +101,13 @@ for l = 1:length(listing)
     summ(l).sw.wake = ad(wake_idx);
     summ(l).name = name;
     summ(l).ad = all_ad;
+    
+    if 0
+        figure
+        plot(1+randn(sum(sleep_idx),1)*0.05,ad(sleep_idx),'o')
+        hold on
+        plot(2+randn(sum(wake_idx),1)*0.05,ad(wake_idx),'o')
+    end
     
 end
 

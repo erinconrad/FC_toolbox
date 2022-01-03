@@ -18,8 +18,7 @@ for i = 1:npts
     nan_things = isnan(curr_things) | isnan(curr_rates);
     curr_things(nan_things) = [];
     curr_soz(nan_things) = [];
-    curr_soz = logical(curr_soz);
-    
+    curr_soz = logical(curr_soz);    
     curr_rates(nan_things) = [];
     
     % get rank of soz
