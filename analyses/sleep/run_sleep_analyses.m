@@ -23,6 +23,7 @@ circ_out = all_pt_psd;
 %% Do alpha delta ratio validation and get ADR cutoff for wake/sleep
 fprintf('\nDoing alpha delta ratio validation\n'); 
 roc_out = ad_validation;
+disc = roc_out.disc;
 
 %% Do binary ad analyses
 fprintf('\nDoing binary AD analyses\n');
