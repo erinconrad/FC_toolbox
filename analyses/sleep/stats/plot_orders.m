@@ -1,4 +1,4 @@
-function plot_orders(things,sozs,rates,which,min_rate)
+function plot_orders(rates,sozs)
 
 myColours = [0, 0.4470, 0.7410;...
     0.8500, 0.3250, 0.0980;...
@@ -7,18 +7,17 @@ myColours = [0, 0.4470, 0.7410;...
     0.6350, 0.0780, 0.1840];
 grayColor = 0.75*[1 1 1];
 markersize = 2;
-npts = length(things);
+npts = length(rates);
 
 
-
-[all_ranks,all_soz_ranks,nchance,all,successes] = get_ranks(things,sozs,rates,which,min_rate);
+%[all_ranks,all_soz_ranks,nchance,all,successes] = get_ranks(things,sozs,rates,which,min_rate);
+[all_ranks,all_soz_ranks,successes] = simple_rate_rank(rates,sozs);
 
 %% Re-order by # of electrodes
 num_elecs = cellfun(@length,all_ranks);
 [num_elecs,I] = sort(num_elecs);
 all_ranks = all_ranks(I);
 all_soz_ranks = all_soz_ranks(I);
-
 
 
 %% Plot stuff
@@ -30,11 +29,9 @@ for i = 1:npts
     
 end
 
-chance = median(nchance);
-all = nanmedian(all);
+
 pval_binom = 2*binocdf(sum(successes==0),length(successes),0.5);
-%ap = plot(xlim,[all all],'-','linewidth',2,'color',myColours(1,:));
-%cp = plot(xlim,[chance chance],'--','linewidth',2,'color',myColours(2,:));
+
 xlim([0 npts])
 xl = xlim;
 xbar = xl(1) + 1.03*(xl(2)-xl(1));

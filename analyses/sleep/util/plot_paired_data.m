@@ -1,4 +1,4 @@
-function plot_paired_data(varargin)
+function stats_out = plot_paired_data(varargin)
 
 data = varargin{1};
 xlabels = varargin{2}(1:2);
@@ -69,7 +69,8 @@ switch plot_type
         
         xlabel(sprintf('%s in %s',ytext,sprintf(xlabels{1})))
         ylabel(sprintf('%s in %s',ytext,sprintf(xlabels{2})))
-        pval = signrank(data(1,:)',data(2,:)');
+        [pval,~,stats] = signrank(data(1,:)',data(2,:)');
+        Tpos =stats.signedrank; % Tpos = positive-rank sum = sum of positive ranks
         pause(0.3)
         xl = xlim;
         yl = ylim;
@@ -84,7 +85,11 @@ switch plot_type
         legend([pp;np;ep],{legtext1,legtext2,legtext3},...
             'location','southeast','fontsize',15)
         
-        
+        stats_out.medians = [nanmedian(data(1,:)) nanmedian(data(2,:))];
+        stats_out.iqrs = [iqr(data(1,:))  iqr(data(2,:))];
+        stats_out.Tpos = Tpos;
+        stats_out.pval = pval;
+        stats_out.nhigher_n = [sum(data(1,:) < data(2,:)) size(data,2)];
         
 end
 
@@ -98,5 +103,7 @@ if ~strcmp(plot_type,'scatter')
     [p,post_hoc_p,which_groups]=get_and_plot_non_para_stats(yl,data,p_or_unp);
 end
 set(gca,'fontsize',15)
+
+
 
 end

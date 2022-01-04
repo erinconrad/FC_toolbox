@@ -1,13 +1,14 @@
 function soz_roc_out = classify_soz
 
 %{
-mixed effects Logistic regression model
-Need to check this!!!
+Logistic regression model. I confirmed that when I take the training and
+testing data and put them into Matlab's classification learner with an LR
+model it gives the same AUC
+
 %}
 
 %% Parameters
 include_post  = 0;
-include_rl = 0;
 prop_train = 2/3;
 do_norm = 1;
 
@@ -17,27 +18,30 @@ colors = [0, 0.4470, 0.7410;...
     0.4940, 0.1840, 0.5560;...
     0.6350, 0.0780, 0.1840];
 
-%% Seed rng (because it's a MC test)
+%% Seed rng (for splitting testing and training data)
+% If I don't seed this the AUC usually bounces around 0.73-0.82
 rng(0)
 
 locations = fc_toolbox_locs;
 addpath(genpath(locations.script_folder))
+script_folder = locations.script_folder;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/sleep/'];
+out_folder1 = [script_folder,'analyses/sleep/data/'];
 
 %% Load out file and get roc stuff
-out = load([out_folder,'out.mat']);
+out = load([out_folder1,'out.mat']);
 out = out.out;
 
 %% Unpack substructures
 unpack_any_struct(out);
-out_folder = [results_folder,'analysis/sleep/'];
+
 
 %% Get stuff
 rate_sw = out.bin_out.all_elecs_rates_sw; %rates wake and sleep
-rl_sw = out.bin_out.all_elecs_rl_sw;
+%rl_sw = out.bin_out.all_elecs_rl_sw;
 rate_all = out.bin_out.all_elecs_rates;
-rl_all = out.bin_out.all_elecs_rl;
+%rl_all = out.bin_out.all_elecs_rl;
 soz = out.bin_out.all_is_soz;
 pt_idx = (1:length(rate_sw))';
 rate_post = out.sz_out.post_ictal_rates;
@@ -47,29 +51,33 @@ vec_rate_sleep = [];
 vec_rate_wake = [];
 vec_rate_all =[];
 vec_rate_post = [];
-vec_rl_sleep = [];
-vec_rl_wake = [];
-vec_rl_all = [];
+%vec_rl_sleep = [];
+%vec_rl_wake = [];
+%vec_rl_all = [];
 vec_pt_idx = [];
 vec_soz = [];
 for ip = 1:length(pt_idx)
     
     curr_rate_sw = rate_sw{ip};
     curr_rate_all = rate_all{ip};
-    curr_rl_sw = rl_sw{ip};
-    curr_rl_all = rl_all{ip};
+    %curr_rl_sw = rl_sw{ip};
+    %curr_rl_all = rl_all{ip};
     curr_rate_post = rate_post{ip};
     
     if do_norm
+        % normalize the rate across electrodes (this is so that patients
+        % with higher spike rates in general will get the same weight as
+        % patients with lower spike rates)
         curr_rate_sw = (curr_rate_sw - nanmean(curr_rate_sw,1))./...
             nanstd(curr_rate_sw,[],1);
         curr_rate_all = (curr_rate_all-nanmean(curr_rate_all))./...
             nanstd(curr_rate_all);
-        
+        %{
         curr_rl_sw = (curr_rl_sw - nanmean(curr_rl_sw,1))./...
             nanstd(curr_rl_sw,[],1);
         curr_rl_all = (curr_rl_all-nanmean(curr_rl_all))./...
             nanstd(curr_rl_all);
+            %}
         
         curr_rate_post = (curr_rate_post - nanmean(curr_rate_post))./...
             nanstd(curr_rate_post);
@@ -80,11 +88,11 @@ for ip = 1:length(pt_idx)
     vec_rate_all = [vec_rate_all;curr_rate_all];
     vec_rate_post = [vec_rate_post;curr_rate_post];
     
-    vec_rl_sleep = [vec_rl_sleep;curr_rl_sw(:,2)];
-    vec_rl_wake = [vec_rl_wake;curr_rl_sw(:,1)];
-    vec_rl_all = [vec_rl_all;curr_rl_all];
+    %vec_rl_sleep = [vec_rl_sleep;curr_rl_sw(:,2)];
+    %vec_rl_wake = [vec_rl_wake;curr_rl_sw(:,1)];
+    %vec_rl_all = [vec_rl_all;curr_rl_all];
     
-    vec_pt_idx = [vec_pt_idx;repmat(pt_idx(ip),length(rl_sw{ip}(:,2)),1)];
+    vec_pt_idx = [vec_pt_idx;repmat(pt_idx(ip),length(rate_sw{ip}(:,2)),1)];
     
     vec_soz = [vec_soz;soz{ip}'];
     
@@ -93,8 +101,12 @@ end
 
 
 %% Make table
+%{
 T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,...
     vec_rl_sleep,vec_rl_wake,vec_rate_all,vec_rl_all,vec_rate_post);
+%}
+T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,...
+    vec_rate_all,vec_rate_post);
 T.vec_pt_idx = nominal(T.vec_pt_idx);
 
 %% Divide into training and testing set
@@ -110,22 +122,11 @@ nan_train = isnan(T_train.vec_rate_sleep) | isnan(T_train.vec_rate_wake) | isnan
 T_train(nan_train,:) = [];
 
 %% Train model with glme model
-if include_rl
-    glme = fitglme(T_train,...
-        'vec_soz ~ vec_rate_sleep + vec_rate_wake + vec_rl_wake + vec_rl_sleep + (1|vec_pt_idx)',...
-        'Distribution','Poisson','Link','log');
-else
-    %{
-    glme = fitglme(T_train,...
-        'vec_soz ~ vec_rate_sleep + vec_rate_wake + (1|vec_pt_idx)',...
-        'Distribution','Poisson','Link','log');
-    %}
-    %
-    glme = fitglm(T_train,...
-        'vec_soz ~ vec_rate_sleep + vec_rate_wake',...
-        'Distribution','Poisson','Link','log');
-    %}
-end
+
+glme = fitglm(T_train,...
+    'vec_soz ~ vec_rate_sleep + vec_rate_wake',...
+    'Distribution','Poisson','Link','log');
+
 %{
 if include_post
     glme = fitglme(T_train,...
@@ -198,13 +199,14 @@ end
 %}
 
 %% Alt ROC method
-%{
+%
 labels = cell(length(classification),1);
 labels(all_soz) = {'SOZ'};
 labels(all_no_soz) = {'Not SOZ'};
 posclass = 'SOZ';
 scores = classification;
 [X,Y,T,AUC,opt] = perfcurve(labels,scores,posclass);
+soz_roc_out.alt_auc = AUC;
 %}
 
 %% ROC

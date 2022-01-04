@@ -1,4 +1,4 @@
-%sleep_methods_figure % this needs a raw data file to run (which is large)
+sleep_methods_figure % this needs a raw data file to run (which is large)
 
 sleep_figure1
 
