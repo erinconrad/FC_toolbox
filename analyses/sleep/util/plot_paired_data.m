@@ -74,10 +74,11 @@ switch plot_type
         pause(0.3)
         xl = xlim;
         yl = ylim;
+        px = xl(1) + 0.01*(xl(2)-xl(1));
         all_min = min([ylim,xlim]);
         all_max = max([xlim,ylim]);
         pause(0.3)
-        text(xl(1),yl(2),get_p_text(pval),'verticalalignment','top','fontsize',15)
+        text(px,yl(2),get_p_text(pval),'verticalalignment','top','fontsize',15)
         plot([all_min all_max],[all_min all_max],'k--','linewidth',2)
         legtext1 = sprintf('Higher %s',legtext);
         legtext2 = sprintf('Lower %s',legtext);

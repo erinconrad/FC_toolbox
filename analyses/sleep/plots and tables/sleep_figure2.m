@@ -26,6 +26,9 @@ out = out.out;
 unpack_any_struct(out);
 out_folder = [results_folder,'analysis/sleep/'];
 
+%% Prep output text file
+fid = fopen([out_folder,'results.html'],'a');
+
 figure
 set(gcf,'position',[100 100 1200 700])
 tiledlayout(4,3,'tilespacing','tight','padding','tight')
@@ -63,11 +66,23 @@ ylabel('Power index')
 title('Seizure time periodogram')
 %}
 
+fprintf(fid,['<p>We asked whether patients demonstrated a circadian rhythm '...
+    'in their seizure times. The distribution of seizure counts by time of day '...
+    'was not significantly different from a uniform distribution (Rayleigh test '...
+    'of patients'' circular means: z = %1.1f, %s) (Figure 3A).'],...
+    z,get_p_html(pval));
+
+
 %% Percent asleep
 nexttile([2 1])
 sz_rate_sw = sz_circ_out.sz_rate_sw;
-plot_paired_data(sz_rate_sw',{'wake','sleep','sleep'},'Seizures/min','paired',plot_type)
+stats = plot_paired_data(sz_rate_sw',{'wake','sleep','sleep'},'Seizures/min','paired',plot_type);
 title('Seizure frequency in wake and sleep')
+
+% Results text
+fprintf(fid,[' Seizure rates were not significantly different between sleep (median %1.1f seizures/min)'...
+    ' and wake (median %1.3f seizures/min) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.3f, %s) (Figure 3B).'],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
 
 pre_wake = sz_circ_out.pre_wake;
@@ -97,7 +112,7 @@ nexttile([2 1])
 loc = circ_out.all_locs;
 temporal = contains(loc,'temporal');
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
-p = ranksum(perc_sz_asleep(temporal),perc_sz_asleep(extra));
+[p,~,stats] = ranksum(perc_sz_asleep(temporal),perc_sz_asleep(extra));
 plot(1+randn(sum(temporal),1)*0.05,perc_sz_asleep(temporal),'o','linewidth',2,'color',myColours(1,:))
 hold on
 plot([0.7 1.3],[nanmedian(perc_sz_asleep(temporal)) nanmedian(perc_sz_asleep(temporal))],...
@@ -118,6 +133,21 @@ ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
 text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
+
+W = stats.ranksum;
+nt = sum(temporal);
+ne = sum(extra);
+ns = min([sum(temporal),sum(extra)]);
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+fprintf(fid,[' The proportion of seizures arising from sleep was similar '...
+    'between patients with temporal lobe epilepsy (median = %1.1f) and extra-temporal'...
+    ' lobe epilepsy (median = %1.1f) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
+    ' %1.1f, %s) (Figure 3C).<p>'],nanmedian(perc_sz_asleep(temporal)),nanmedian(perc_sz_asleep(extra)),...
+    nt,ne,U,get_p_html(p));
+
 
 
 %% Post-ictal surge
@@ -140,14 +170,24 @@ title('Peri-ictal spike rates')
 set(gca,'fontsize',15)
 xlabel('Hours surrounding seizure')
 
+fprintf(fid,['<p>We next looked at spike rates surrounding seizures. '...
+    'Visually, there was an increase in spike rates after seizures that '...
+    'tracked with a postictal increase in sleep classification (Figure 3D and 3E).']);
+
 %% Pre vs post ictal
 nexttile([2 1])
 nbins = size(all_pts_spikes_bins,2);
 pre = 1:nbins/2;
 post = nbins/2+1:nbins;
 pre_post = [nanmean(all_pts_spikes_bins(:,pre),2),nanmean(all_pts_spikes_bins(:,post),2)];
-plot_paired_data(pre_post',{'pre-ictal state','post-ictal state','post-ictally'},'Spikes/elec/min','paired',plot_type)
+stats = plot_paired_data(pre_post',{'pre-ictal state','post-ictal state','post-ictally'},'Spikes/elec/min','paired',plot_type);
 title('Pre- vs post-ictal spike rates')
+
+% Results text
+fprintf(fid,[' Across all patients, the median spike rate post-ictally (median %1.1f spikes/elecs/min)'...
+    ' was higher than that pre-ictally (median %1.1f spikes/elecs/min) '...
+    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Figure 3F).'],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
 
 %% Temporal vs extratemporal
@@ -156,7 +196,7 @@ loc = circ_out.all_locs;
 temporal = contains(loc,'temporal');
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
 rate_diff = (pre_post(:,2)-pre_post(:,1));
-p = ranksum(rate_diff(temporal),rate_diff(extra));
+[p,~,stats] = ranksum(rate_diff(temporal),rate_diff(extra));
 plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(1,:))
 hold on
 plot([0.7 1.3],[nanmedian(rate_diff(temporal)) nanmedian(rate_diff(temporal))],...
@@ -177,6 +217,23 @@ ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
 text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
+
+% text
+W = stats.ranksum;
+nt = sum(temporal);
+ne = sum(extra);
+ns = min([sum(temporal),sum(extra)]);
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+fprintf(fid,[' Patients with temporal lobe epilepsy had a greater '...
+    'pre-to-postictal increase in spike rates '...
+    '(median = %1.1f) relative to those with extra-temporal'...
+    ' lobe epilepsy (median = %1.1f) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
+    ' %1.1f, %s) (Figure 3G).<p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    nt,ne,U,get_p_html(p));
+
 
 %% Percent detected asleep
 nexttile([1 1])

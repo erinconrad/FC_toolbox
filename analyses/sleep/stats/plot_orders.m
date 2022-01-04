@@ -1,4 +1,4 @@
-function plot_orders(rates,sozs)
+function out = plot_orders(rates,sozs)
 
 myColours = [0, 0.4470, 0.7410;...
     0.8500, 0.3250, 0.0980;...
@@ -31,6 +31,19 @@ end
 
 
 pval_binom = 2*binocdf(sum(successes==0),length(successes),0.5);
+
+% Get median across all patients
+all_all_soz_ranks = [];
+for i = 1:npts
+    all_all_soz_ranks = [all_all_soz_ranks;(all_soz_ranks{i})'];
+    
+end
+median_rank = median(all_all_soz_ranks);
+
+out.n = length(successes);
+out.nsuc = sum(successes==1);
+out.pval = pval_binom;
+out.median_rank = median_rank;
 
 xlim([0 npts])
 xl = xlim;
