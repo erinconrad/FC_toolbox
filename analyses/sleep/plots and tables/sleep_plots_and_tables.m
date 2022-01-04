@@ -4,7 +4,7 @@ sleep_figure1
 
 sleep_figure2
 
-sleep_figure4
+sleep_figure3
 
 sleep_table1
 
