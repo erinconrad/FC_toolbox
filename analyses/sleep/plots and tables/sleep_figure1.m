@@ -78,13 +78,20 @@ thetaticklabels(hours_mins(1:skip:nbins+1))
 set(gca,'fontsize',15)
 title('Normalized spike rate by time of day')
 
+
 observations = convert_counts_to_observations(counts,tod_edges);
 polar2 = convert_times_to_polar(observations,'radians');
 %circ_plot(polar,'hist',[],length(tod_edges),true,true,'linewidth',2,'color','r')
 %[pval z] = circ_rtest(polar2);
 
+
 [pval z all_mu] = test_pt_circular_means(all_tod_rate,polar,hours_mins);
 %circ_plot(all_mu,'hist',[],length(polar),true,true,'linewidth',2,'color','r')
+
+
+tl = thetalim;
+rl = rlim;
+text(pi,1,get_p_text(pval),'fontsize',15,'horizontalalignment','center');
 
 fprintf(fid,[' Examination of spike rates by time of day revealed a non-uniform distribution'...
     ' (Rayleigh test of patients'' circular means: z = %1.1f, %s). Visual analysis demonstrated '...
