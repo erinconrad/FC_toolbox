@@ -156,6 +156,22 @@ nll = NLL(T_test.vec_soz,classification);
 pred_nll = log(2)*length(classification);
 fprintf('\nTest data log likelihood: %1.1f\npredicted by chance: %1.1f\n',nll,pred_nll);
 
+% Calculate odds ratios and CI for odds ratios of each predictor
+sleep_beta = glme.Coefficients{2,1};
+wake_beta = glme.Coefficients{3,1};
+sleep_se = glme.Coefficients{2,2};
+wake_se = glme.Coefficients{3,2};
+sleep_t = glme.Coefficients{2,3};
+wake_t = glme.Coefficients{3,3};
+sleep_p = glme.Coefficients{2,4};
+wake_p = glme.Coefficients{3,4};
+
+
+sleep_or = exp(sleep_beta);
+wake_or = exp(wake_beta);
+sleep_ci95 = [exp(sleep_beta - 1.96*sleep_se),exp(sleep_beta + 1.96*sleep_se)];
+wake_ci95 = [exp(wake_beta - 1.96*wake_se),exp(wake_beta + 1.96*wake_se)];
+
 all_soz = T_test.vec_soz==1;
 all_no_soz = T_test.vec_soz==0;
 class_soz = classification(all_soz);
@@ -166,6 +182,15 @@ soz_roc_out.auc = auc;
 soz_roc_out.glme = glme;
 soz_roc_out.T_test = T_test;
 soz_roc_out.T_train = T_train;
+soz_roc_out.sleep_or = sleep_or;
+soz_roc_out.wake_or = wake_or;
+soz_roc_out.sleep_ci95 = sleep_ci95;
+soz_roc_out.wake_ci95 = wake_ci95;
+soz_roc_out.sleep_p = sleep_p;
+soz_roc_out.wake_p = wake_p;
+soz_roc_out.sleep_t = sleep_t;
+soz_roc_out.wake_t = wake_t;
+
 
 %{
 %% Are patients with larger number of high probability classifications more likely to be multifocal or diffuse?

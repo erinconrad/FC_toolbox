@@ -33,6 +33,7 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 %% Prep output text file
 fid = fopen([out_folder,'results.html'],'a');
+fprintf(fid,'<br><i>Changes in spikes with seizures</i><br>');
 
 figure
 set(gcf,'position',[100 100 1200 700])
@@ -76,26 +77,25 @@ title('Seizure time periodogram')
 fprintf(fid,['<p>We asked whether patients demonstrated a circadian rhythm '...
     'in their seizure times. The distribution of seizure counts by time of day '...
     'was not significantly different from a uniform distribution (Rayleigh test '...
-    'of patients'' circular means: z = %1.1f, %s) (Figure 3A).'],...
+    'of patients'' circular means: z = %1.1f, %s) (Fig. 3A).'],...
     z,get_p_html(pval));
 
 
 %% Percent asleep
 nexttile([2 1])
 sz_rate_sw = sz_circ_out.sz_rate_sw;
+pause(0.3)
 stats = plot_paired_data(sz_rate_sw',{'wake','sleep','sleep'},'Seizures/min','paired',plot_type);
+pause(0.3)
 title('Seizure frequency in wake and sleep')
 
 % Results text
-fprintf(fid,[' Seizure rates were not significantly different between sleep (median %1.1f seizures/min)'...
-    ' and wake (median %1.3f seizures/min) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.3f, %s) (Figure 3B).'],...
+fprintf(fid,[' Seizure rates were not significantly different between sleep (median %1.3f seizures/min)'...
+    ' and wake (median %1.3f seizures/min) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3B).'],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
 
-pre_wake = sz_circ_out.pre_wake;
-n_sleep_wake = bin_out.n_sleep_wake;
-perc_sz_asleep = cellfun(@(x) prc_asleep(x),pre_wake);
-perc_all_asleep = 100*n_sleep_wake(:,1)./sum(n_sleep_wake,2);
+
 %{
 
 minp = min([perc_sz_asleep;perc_all_asleep]);
@@ -116,6 +116,10 @@ title('Percentage of all times and seizures from sleep')
 %}
 
 nexttile([2 1])
+pre_wake = sz_circ_out.pre_wake;
+n_sleep_wake = bin_out.n_sleep_wake;
+perc_sz_asleep = cellfun(@(x) prc_asleep(x),pre_wake);
+
 loc = circ_out.all_locs;
 temporal = contains(loc,'temporal');
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
@@ -130,7 +134,7 @@ plot([1.7 2.3],[nanmedian(perc_sz_asleep(extra)) nanmedian(perc_sz_asleep(extra)
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Seizures arising from sleep (%)')
-title('Seizure state-dependence')
+title('Seizures arising from sleep')
 set(gca,'fontsize',15);
 xlim([0 3])
 yl = ylim;
@@ -142,9 +146,9 @@ text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
 
 W = stats.ranksum;
-nt = sum(temporal);
-ne = sum(extra);
-ns = min([sum(temporal),sum(extra)]);
+nt = sum(~(isnan(perc_sz_asleep(temporal))));
+ne = sum(~(isnan(perc_sz_asleep(extra))));
+%ns = min([sum(temporal),sum(extra)]);
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
@@ -152,7 +156,7 @@ fprintf(fid,[' The proportion of seizures arising from sleep was similar '...
     'between patients with temporal lobe epilepsy (median = %1.1f) and extra-temporal'...
     ' lobe epilepsy (median = %1.1f) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Figure 3C).<p>'],nanmedian(perc_sz_asleep(temporal)),nanmedian(perc_sz_asleep(extra)),...
+    ' %1.1f, %s) (Fig. 3C).<p>'],nanmedian(perc_sz_asleep(temporal)),nanmedian(perc_sz_asleep(extra)),...
     nt,ne,U,get_p_html(p));
 
 
@@ -177,9 +181,9 @@ title('Peri-ictal spike rates')
 set(gca,'fontsize',15)
 xlabel('Hours surrounding seizure')
 
-fprintf(fid,['<p>We next looked at spike rates surrounding seizures. '...
+fprintf(fid,['<br><p>We next looked at spike rates surrounding seizures. '...
     'Visually, there was an increase in spike rates after seizures that '...
-    'tracked with a postictal increase in sleep classification (Figure 3D and 3E).']);
+    'tracked with a postictal increase in sleep classification (Figs. 3D and 3E).']);
 
 %% Pre vs post ictal
 nexttile([2 1])
@@ -191,9 +195,9 @@ stats = plot_paired_data(pre_post',{'pre-ictal state','post-ictal state','post-i
 title('Pre- vs post-ictal spike rates')
 
 % Results text
-fprintf(fid,[' Across all patients, the median spike rate post-ictally (median %1.1f spikes/elecs/min)'...
-    ' was higher than that pre-ictally (median %1.1f spikes/elecs/min) '...
-    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Figure 3F).'...
+fprintf(fid,[' Across all patients, the median spike rate post-ictally (median %1.2f spikes/elecs/min)'...
+    ' was higher than that pre-ictally (median %1.2f spikes/elecs/min) '...
+    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3F).'...
     ' This was also true when the pre- and post-ictal windows were defined to be 3 hours each '...
     'and when they were defined to be 12 hours each (p < 0.001 for each of the '...
     'alternative peri-ictal time windows PLEASE CHECK).'],...
@@ -230,9 +234,8 @@ ylim(ylnew)
 
 % text
 W = stats.ranksum;
-nt = sum(temporal);
-ne = sum(extra);
-ns = min([sum(temporal),sum(extra)]);
+nt = sum(~(isnan(rate_diff(temporal))));
+ne = sum(~(isnan(rate_diff(extra))));
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
@@ -241,7 +244,7 @@ fprintf(fid,[' Patients with temporal lobe epilepsy had a greater '...
     '(median = %1.1f spikes/elecs/min) relative to those with extra-temporal'...
     ' lobe epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Figure 3G). This was also true when the pre- and post-ictal'...
+    ' %1.1f, %s) (Fig. 3G). This was also true when the pre- and post-ictal'...
     ' windows were defined to be 3 hours each (p = 0.035) and when they '...
     'were defined to be 12 hours each (p < 0.001) DOUBLE CHECK.<p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
     nt,ne,U,get_p_html(p));
@@ -267,7 +270,7 @@ annotation('textbox',[0.33 0.42 0.1 0.1],'String','F','fontsize',25,'linestyle',
 annotation('textbox',[0.66 0.42 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
 
 
-
+fclose(fid);
 print([out_folder,'Fig2'],'-dpng')
 
 end
