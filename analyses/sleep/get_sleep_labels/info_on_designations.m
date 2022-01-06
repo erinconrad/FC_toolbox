@@ -18,7 +18,7 @@ out = out.out;
 swdes = out.roc_out.swdes;
 nawake = 0;
 nasleep = 0;
-nuncertain = nuncertain = 0;
+nuncertain = 0;
 
 for i = 1:length(swdes)
     nawake = nawake + length(swdes(i).sw.wake);

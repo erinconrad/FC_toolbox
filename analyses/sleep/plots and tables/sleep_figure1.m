@@ -27,7 +27,7 @@ out_folder = [results_folder,'analysis/sleep/'];
 %% Prep output text file
 fid = fopen([out_folder,'results.html'],'a');
 
-fprintf(fid,'<p><i>Changes in spikes with sleep</i><br>');
+fprintf(fid,'<p><b>Changes in spikes with sleep</b><br>');
 
 figure
 set(gcf,'position',[100 100 1200 1100])
