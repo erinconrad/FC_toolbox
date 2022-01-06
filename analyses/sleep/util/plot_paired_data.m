@@ -72,17 +72,29 @@ switch plot_type
         [pval,~,stats] = signrank(data(1,:)',data(2,:)');
         Tpos =stats.signedrank; % Tpos = positive-rank sum = sum of positive ranks
         pause(0.3)
-        xl = xlim;
-        yl = ylim;
-        px = xl(1) + 0.01*(xl(2)-xl(1));
+        
         all_min = min([ylim,xlim]);
         all_max = max([xlim,ylim]);
-        pause(0.3)
-        text(px,yl(2),get_p_text(pval),'verticalalignment','top','fontsize',15)
+        
+        
+        
         plot([all_min all_max],[all_min all_max],'k--','linewidth',2)
+        
+        
+        xlim([all_min all_max])
+        ylim([all_min all_max])
+        xl = xlim;
+        yl = ylim;
+        
+        px = xl(1) + 0.01*(xl(2)-xl(1));
+        py = yl(1) + 0.99*(yl(2)-yl(1));
+        %ylim
+        text(px,py,get_p_text(pval),'verticalalignment','top','fontsize',15)
+        %ylim
         legtext1 = sprintf('Higher %s',legtext);
         legtext2 = sprintf('Lower %s',legtext);
         legtext3 = 'Equal';
+        
         legend([pp;np;ep],{legtext1,legtext2,legtext3},...
             'location','southeast','fontsize',15)
         
@@ -91,6 +103,7 @@ switch plot_type
         stats_out.Tpos = Tpos;
         stats_out.pval = pval;
         stats_out.nhigher_n = [sum(data(1,:) < data(2,:)) size(data,2)];
+        
         
 end
 

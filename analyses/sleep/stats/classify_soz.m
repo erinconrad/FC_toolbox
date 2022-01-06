@@ -117,6 +117,12 @@ testing_idx = ~ismember(vec_pt_idx,training);
 T_train = T(training_idx,:);
 T_test = T(testing_idx,:);
 
+% Confirm that I separated by patients
+train_pts = unique(T_train.vec_pt_idx);
+test_pts = unique(T_test.vec_pt_idx);
+assert(isempty(intersect(train_pts,test_pts)))
+assert(isequal(str2double(string(sort([train_pts;test_pts]))),(1:96)'))
+
 %% Remove nan and inf rows
 nan_train = isnan(T_train.vec_rate_sleep) | isnan(T_train.vec_rate_wake) | isnan(T_train.vec_rate_post);
 T_train(nan_train,:) = [];

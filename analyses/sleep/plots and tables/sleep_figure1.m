@@ -27,7 +27,7 @@ out_folder = [results_folder,'analysis/sleep/'];
 %% Prep output text file
 fid = fopen([out_folder,'results.html'],'a');
 
-fprintf(fid,'<i>Changes in spikes with sleep</i><br>');
+fprintf(fid,'<p><i>Changes in spikes with sleep</i><br>');
 
 figure
 set(gcf,'position',[100 100 1200 1100])
@@ -46,7 +46,7 @@ ylabel({'Spike rate power index'});
 set(gca,'fontsize',15)
 title('Spike rate periodogram')
 
-fprintf(fid,['<p>We asked how spike rates changed with sleep.'...
+fprintf(fid,['We asked how spike rates changed with sleep.'...
     ' Our analysis of the circadian power of spike rates demonstrated a '...
     'clear visual peak at 24 hours, consistent with the hypothesis that '...
     'spike rates demonstrate a circadian rhythm (Fig. 2A).']); 
@@ -63,13 +63,20 @@ nexttile([1 2])
 median_tod_rate = (nanmedian(norm_rate,1));
 polar = convert_times_to_polar(tod_edges,'radians');
 %
-polarhistogram('BinEdges',polar,'BinCounts',median_tod_rate+min(median_tod_rate)+1,...
-    'displayStyle','stairs','linewidth',2)
+pspikes = polarhistogram('BinEdges',polar,'BinCounts',median_tod_rate+min(median_tod_rate)+1,...
+    'displayStyle','stairs','linewidth',2);
+hold on
 %}
 %{
 polarhistogram('BinEdges',polar,'BinCounts',counts,...
     'edgecolor','none')
 %}
+% Add in sw
+all_tod_sw = out.bin_out.all_tod_sw;
+ind_pt_prop = all_tod_sw(:,:,2)./(all_tod_sw(:,:,2)+all_tod_sw(:,:,1));
+prop_asleep = squeeze(nanmean(ind_pt_prop,1))*3.5;
+psleep = polarhistogram('BinEdges',polar,'BinCounts',prop_asleep,...
+    'displayStyle','stairs','linewidth',2);
 
 set(gca,'ThetaDir','clockwise');
 set(gca,'ThetaZeroLocation','top');
@@ -77,7 +84,9 @@ set(gca,'rticklabels',[])
 thetaticks(polar(1:skip:nbins)*360/(2*pi))
 thetaticklabels(hours_mins(1:skip:nbins+1))
 set(gca,'fontsize',15)
-title('Normalized spike rate by time of day')
+title('Normalized spike rate and % asleep')
+lp = legend({'Spike rates','% asleep'},'fontsize',15,...
+    'Position',[0.3360 0.8300 0.1333 0.0550]);
 
 
 observations = convert_counts_to_observations(counts,tod_edges);
@@ -119,7 +128,7 @@ stats = plot_paired_data(seq_sw(:,1:2)',{'wake','sleep'},'# Spike sequences','pa
 title('Independent spikes')
 
 % Results text
-fprintf(fid,['<br><p>We next asked whether the higher spike rate in sleep was '...
+fprintf(fid,['<p>We next asked whether the higher spike rate in sleep was '...
     'driven by an increase in the number of independent spike sequences or a'...
     ' greater spread of individual spike sequences (each spike sequence involving more electrodes).']);
 fprintf(fid,[' The number of independent spike sequences was higher in sleep (median %1.1f spike sequences/min)'...
@@ -214,7 +223,7 @@ ns_sw = bin_out.ns_sw;
 nexttile([1 2])
 stats = plot_paired_data(ns_sw',{'wake','sleep'},'Average node strength','paired',plot_type);
 title('Functional connectivity')
-fprintf(fid,['<br><p>To test a potential mechanism for the increased spike rates in sleep,'...
+fprintf(fid,['<p>To test a potential mechanism for the increased spike rates in sleep,'...
     ' we compared functional connectivity between wake and sleep. The functional connectivity'...
     ' as measured by the average node strength was higher in sleep (median %1.1f)'...
     ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 2G).'],...
@@ -316,7 +325,7 @@ fprintf(fid,[' There was also no significant difference in sleep-wake spike rate
     ' with temporal lobe epilepsy (median = %1.1f spikes/elecs/min) and patients with extra-temporal'...
     ' lobe epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig. 2I).<p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    ' %1.1f, %s) (Fig. 2I).</p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
     nt,ne,U,get_p_html(p));
 %{
 mesial_temporal = strcmp(loc,'mesial temporal');
@@ -366,6 +375,6 @@ annotation('textbox',[0.33 0.24 0.1 0.1],'String','H','fontsize',25,'linestyle',
 annotation('textbox',[0.65 0.24 0.1 0.1],'String','I','fontsize',25,'linestyle','none')
 
 fclose(fid);
-print([out_folder,'Fig1'],'-dpng')
+print([out_folder,'Fig2'],'-depsc')
 
 end

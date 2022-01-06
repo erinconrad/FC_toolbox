@@ -29,11 +29,11 @@ out_folder = [results_folder,'analysis/sleep/'];
 
 %% Prep output text file
 fid = fopen([out_folder,'results.html'],'a');
-fprintf(fid,'<br><i>Localizing the seizure onset zone with spikes</i><br>');
+fprintf(fid,'<p><i>Localizing the seizure onset zone with spikes</i><br>');
 
 figure
-set(gcf,'position',[100 100 1000 700])
-tiledlayout(3,3,'tilespacing','compact','padding','compact')
+set(gcf,'position',[100 100 800 700])
+tiledlayout(3,2,'tilespacing','compact','padding','compact')
 
 %% Get stuff
 rate_sw = out.bin_out.all_elecs_rates_sw;
@@ -54,8 +54,34 @@ for i = 1:npts
     non_soz_rate_sw(i,:) = nanmean(curr_rate_sw(~curr_soz,:),1);
 end
 
+%% Plot SOZ spike rate wake and sleep
+nexttile([1 1])
+stats = plot_paired_data(soz_rate_sw',{'wake','sleep'},sprintf('Spikes/elecs/min'),'paired','scatter');
+title(sprintf('SOZ spike rate'))
+
+% Results text
+fprintf(fid,['We next compared the ability of spikes to localize the SOZ '...
+    'in wake versus in sleep. The spike rate of SOZ electrodes was higher '...
+    ' in sleep (median %1.1f spikes/elecs/min)'...
+    ' than wake (median %1.1f spikes/elecs/min) '...
+    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 4A).'],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+
+%% Plot non SOZ spike rate wake and sleep
+nexttile([1 1])
+stats = plot_paired_data(non_soz_rate_sw',{'wake','sleep'},sprintf('Spikes/elecs/min'),'paired','scatter');
+title(sprintf('Non-SOZ spike rate'))
+
+% Results text
+fprintf(fid,[' The spike rate of non-SOZ electrodes was also higher '...
+    ' in sleep (median %1.1f spikes/elecs/min)'...
+    ' than wake (median %1.1f spikes/elecs/min) '...
+    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 4B).</p>'],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+
+
 %% SOZ spike rate ranking
-nexttile([1 3])
+nexttile([1 2])
 stats_out = plot_orders(rate,soz);
 hold on
 xticklabels([])
@@ -64,7 +90,9 @@ ylabel('Electrode spike rate rank')
 set(gca,'fontsize',15)
 title('Seizure onset zone - spike rate ranking')
 
-fprintf(fid,['<p>We first examined whether SOZ electrodes '...
+fprintf(fid,['<p>To determine whether sleep disproportionately increased spikes '...
+    'in the SOZ relative to non-SOZ electrodes, we examined the ranking of electrodes'...
+    ' by spike rates. We first examined whether SOZ electrodes '...
     'had a higher spike rate than expected by chance. We compared the median '...
     'spike rate rank of the SOZ electrodes against the median '...
     'rank of all electrodes. The median SOZ electrode '...
@@ -72,35 +100,12 @@ fprintf(fid,['<p>We first examined whether SOZ electrodes '...
     'non-SOZ electrodes tended to have higher spike rates than the SOZ electrodes. '...
     'The median SOZ rank was higher (closer to 1) than the median overall electrode rank '...
     'in %d of %d patients, which is more than expected by chance '...
-    '(Binomial test, %s) (Fig. 4A). These findings imply that the SOZ has '...
-    'more frequent spikes than expected by chance.</p>'],stats_out.median_rank,stats_out.median_rank-1,...
+    '(Binomial test, %s) (Fig. 4C). These findings imply that the SOZ has '...
+    'more frequent spikes than expected by chance.'],stats_out.median_rank,stats_out.median_rank-1,...
     stats_out.nsuc,...
     stats_out.n,get_p_html(stats_out.pval));
 
-%% Plot SOZ spike rate wake and sleep
-nexttile
-stats = plot_paired_data(soz_rate_sw',{'wake','sleep'},sprintf('Spikes/elecs/min'),'paired','scatter');
-title(sprintf('SOZ spike rate'))
 
-% Results text
-fprintf(fid,['<br><p>We next compared the ability of spikes to localize the SOZ '...
-    'in wake versus in sleep. The spike rate of SOZ electrodes was higher '...
-    ' in sleep (median %1.1f spikes/elecs/min)'...
-    ' than wake (median %1.1f spikes/elecs/min) '...
-    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 4B).'],...
-    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
-
-%% Plot non SOZ spike rate wake and sleep
-nexttile
-stats = plot_paired_data(non_soz_rate_sw',{'wake','sleep'},sprintf('Spikes/elecs/min'),'paired','scatter');
-title(sprintf('Non-SOZ spike rate'))
-
-% Results text
-fprintf(fid,[' The spike rate of non-SOZ electrodes was also higher '...
-    ' in sleep (median %1.1f spikes/elecs/min)'...
-    ' than wake (median %1.1f spikes/elecs/min) '...
-    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 4C).'],...
-    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
 %% Spike rate ranking sleep vs wake
 
@@ -140,13 +145,12 @@ sleep_soz_ranks = cellfun(@nanmedian,sleep_soz_ranks);
 soz_rank_sw_rate = [wake_soz_ranks,sleep_soz_ranks];
 
 % Plot it
-nexttile
+nexttile([1 1])
 stats = plot_paired_data(soz_rank_sw_rate',{'wake','sleep'},sprintf('Spike rate rank'),'paired','scatter','ranking');
 title(sprintf('SOZ spike rate ranking'))
 
 % Results text
-fprintf(fid,[' To determine whether sleep disproportionately increased spikes '...
-    'in the SOZ relative to non-SOZ electrodes, we compared the ranking of SOZ electrodes '...
+fprintf(fid,[' We next compared the ranking of SOZ electrodes '...
     'by spike rate in wake versus sleep. The spike rate ranking of SOZ electrodes was higher '...
     ' (closer to 1) in sleep (median rank %1.1f)'...
     ' than in wake (median rank %1.1f) '...
@@ -175,7 +179,7 @@ wake_p= soz_roc_out.wake_p;
 sleep_or = (sleep_or - 1)*100;
 wake_or = (wake_or - 1)*100;
 
-nexttile([1 3])
+nexttile([1 1])
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
@@ -185,7 +189,8 @@ legend(sprintf('AUC %1.2f',auc),'location','southeast','fontsize',15)
 set(gca,'fontsize',15)
 title('SOZ identification accuracy')
 
-fprintf(fid,['<br><p>Finally, we tested how accurately spike rates could '...
+%% ROC text
+fprintf(fid,['<p>Finally, we tested how accurately spike rates could '...
     'classify electrodes as SOZ versus non-SOZ. We trained a logistic regression'...
     ' classifier on a randomly chosen two-thirds of the patients, using the normalized '...
     'electrode-specific average spike rate in each of the sleep and wake states as predictor variables '...
@@ -206,13 +211,13 @@ fprintf(fid,['<br><p>Finally, we tested how accurately spike rates could '...
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',20,'linestyle','none')
-annotation('textbox',[0 0.59 0.1 0.1],'String','B','fontsize',20,'linestyle','none')
-annotation('textbox',[0.3 0.59 0.1 0.1],'String','C','fontsize',20,'linestyle','none')
-annotation('textbox',[0.6 0.59 0.1 0.1],'String','D','fontsize',20,'linestyle','none')
-annotation('textbox',[0 0.24 0.1 0.1],'String','E','fontsize',20,'linestyle','none')
+annotation('textbox',[0.49 0.91 0.1 0.1],'String','B','fontsize',20,'linestyle','none')
+annotation('textbox',[0 0.59 0.1 0.1],'String','C','fontsize',20,'linestyle','none')
+annotation('textbox',[0 0.245 0.1 0.1],'String','D','fontsize',20,'linestyle','none')
+annotation('textbox',[0.49 0.245 0.1 0.1],'String','E','fontsize',20,'linestyle','none')
 %annotation('textbox',[0.49 0.24 0.1 0.1],'String','F','fontsize',20,'linestyle','none')
 
 fclose(fid);
-print([out_folder,'fig4'],'-dpng')
+print([out_folder,'fig4'],'-depsc')
 
 end

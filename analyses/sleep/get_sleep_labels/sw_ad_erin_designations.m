@@ -10,6 +10,7 @@ alpha delta ratios (for the purpose of normalization).
 %% Parameters
 sleep_names = {'1','2','3'}; % these labels mean sleep
 wake_names = {'a'}; % this label means awake
+uncertain_names = {'u'};
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -95,10 +96,12 @@ for l = 1:length(listing)
     % find those matching my designated wake and sleep labels
     sleep_idx = ismember(sleep_state,sleep_names);
     wake_idx = ismember(sleep_state,wake_names);
+    uncertain_idx = ismember(sleep_state,uncertain_names);
     
     % put the corresponding ad ratios into the right bins
     summ(l).sw.sleep = ad(sleep_idx);
     summ(l).sw.wake = ad(wake_idx);
+    summ(l).sw.uncertain = ad(uncertain_idx);
     summ(l).name = name;
     summ(l).ad = all_ad;
     

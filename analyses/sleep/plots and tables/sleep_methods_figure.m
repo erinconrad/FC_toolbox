@@ -218,7 +218,7 @@ xlabel('False positive rate')
 ylabel('True positive rate')
 legend(sprintf('AUC %1.2f',auc),'location','southeast','fontsize',15)
 set(gca,'fontsize',15)
-title('Classification accuracy')
+title('Sleep-wake classification accuracy')
 
 %{
 % double checking ROC curve
@@ -233,7 +233,15 @@ plot(roc(:,1),roc(:,2))
 
 %}
 
-print([results_folder,'analysis/sleep/methods_fig'],'-dpng')
+%% Add annotations
+annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.34 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.66 0.91 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.4 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0.34 0.4 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+
+
+print([results_folder,'analysis/sleep/fig1'],'-depsc')
 
 end
 

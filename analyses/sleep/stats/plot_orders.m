@@ -6,7 +6,7 @@ myColours = [0, 0.4470, 0.7410;...
     0.4940, 0.1840, 0.5560;...
     0.6350, 0.0780, 0.1840];
 grayColor = 0.75*[1 1 1];
-markersize = 2;
+markersize = 3;
 npts = length(rates);
 
 
@@ -47,9 +47,9 @@ out.median_rank = median_rank;
 
 xlim([0 npts])
 xl = xlim;
-xbar = xl(1) + 1.03*(xl(2)-xl(1));
-xtext = xl(1) + 1.06*(xl(2)-xl(1));
-newxl = [xl(1) xl(1) + 1.08*(xl(2)-xl(1))];
+xbar = xl(1) + 1.02*(xl(2)-xl(1));
+xtext = xl(1) + 1.04*(xl(2)-xl(1));
+newxl = [xl(1) xl(1) + 1.05*(xl(2)-xl(1))];
 plot([xbar xbar],[1 num_elecs(end)],'k-','linewidth',2)
 if pval_binom >= 0.05
 text(xtext-1,(1+num_elecs(end))/2,get_asterisks(pval_binom,1),'rotation',90,...
