@@ -15,6 +15,16 @@ npts = length(rates);
 
 %% Re-order by # of electrodes
 num_elecs = cellfun(@length,all_ranks);
+
+% remove those with no elecs
+no_elecs = num_elecs == 0;
+all_ranks(no_elecs) = [];
+all_soz_ranks(no_elecs) = [];
+successes(no_elecs) = [];
+
+num_elecs = cellfun(@length,all_ranks);
+npts = length(num_elecs);
+
 [num_elecs,I] = sort(num_elecs);
 all_ranks = all_ranks(I);
 all_soz_ranks = all_soz_ranks(I);

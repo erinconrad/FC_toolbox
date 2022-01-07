@@ -6,8 +6,7 @@ function build_fc_atlas
 %}
 
 %% Parameters
-atlas = 'aal';
-net_m = 2;
+atlas = 'mni';
 
 %% Get file locs
 locations = fc_toolbox_locs;

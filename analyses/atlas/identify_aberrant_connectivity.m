@@ -8,7 +8,7 @@ function identify_aberrant_connectivity
 
 %% Parameters
 which_atlas = 'aal';
-normalize_edges = 1;
+normalize_edges = 0;
 rm_soz = 0;
 
 %% Get file locs
@@ -33,6 +33,18 @@ sozs = out.sozs;
 
 npts = size(atlas,3);
 pt_names = out.pt_names;
+
+%% Confirm soz atlas names seem reasonable
+if 1
+    soz_names = cell(npts,1);
+    for i = 1:npts
+        curr_soz = unique(sozs{i});
+        curr_soz_nums = ismember(atlas_nums,curr_soz);
+        curr_soz_names = atlas_names(curr_soz_nums);
+        soz_names{i} = curr_soz_names;
+    end
+    
+end
 
 %% Remove cerebellar and not in atlas
 %
@@ -83,11 +95,26 @@ else
 end
 
 
-ns_ranking_soz(z_score_ns,sozs,atlas_nums,atlas_names,pt_names)
+%ns_ranking_soz(z_score_ns,sozs,atlas_nums,atlas_names,pt_names)
+
+%% Show orders of sozs
+% Convert z_score_ns to cell
+zscore_C = (num2cell(z_score_ns,1))';
+
+% convert sozs to binary
+sozs_bin = cell(npts,1);
+nregions = size(z_score_ns,1);
+for i = 1:npts
+    chs = atlas_nums;
+    sozs_bin{i} = ismember(chs,sozs{i});
+end
+
+figure
+plot_orders(zscore_C,sozs_bin);
 
 
 %% Show individual networks
-if 0
+if 1
 figure
 set(gcf,'position',[10 10 1400 1400])
 for ip = 1:npts

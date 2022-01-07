@@ -1,7 +1,7 @@
 function build_atlas_library
 
 %% Parameters
-atlas = 'aal';
+atlas = 'mni';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -25,7 +25,10 @@ for l = 1:length(listing)
     switch atlas
         case 'aal'
             anum = T.AAL_region_number;
-            aname = T.AAL_label;        
+            aname = T.AAL_label;
+        case 'mni'
+            anum = T.mni_icbm152_CerebrA_tal_nlin_sym_09c_region_number;
+            aname = T.mni_icbm152_CerebrA_tal_nlin_sym_09c_label;
     end
     
     %% Find those that aren't in the library already
