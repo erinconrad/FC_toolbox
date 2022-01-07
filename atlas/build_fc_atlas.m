@@ -2,7 +2,7 @@ function build_fc_atlas
 
 %% To do
 %{
-- Add something to remove SOZ
+- Add something to remove SOZ?
 %}
 
 %% Parameters

@@ -106,21 +106,8 @@ for l = 1:npts
     leader = out.montage(m).leader_montage;
     mod_midnight = out.mod_midnight;
     
-    %% Bipolar networks
     % car montage for networks
-    fc_bi = out.montage(1).net;
-    fc_bi = wrap_or_unwrap_adjacency_fc_toolbox(fc_bi);
-    
-    % Get global efficiency and avg node strength over time
-    %ge = ge_over_blocks(fc); % this takes a long time.
-    ns_bi = ns_over_blocks(fc_bi);
-    
-    % Get avg fc
-    avg_fc_bi = nanmean(fc_bi,3);
-    
-    %% CAR networks
-    % car montage for networks
-    fc_car = out.montage(2).net;
+    fc_car = out.montage(net_m).net;
     fc_car = wrap_or_unwrap_adjacency_fc_toolbox(fc_car);
     
     % Get global efficiency and avg node strength over time
@@ -129,16 +116,6 @@ for l = 1:npts
     
     % Get avg fc
     avg_fc_car = nanmean(fc_car,3);
-    
-    %% make main metrics
-    if net_m == 1
-        ns = ns_bi;
-        avg_fc = avg_fc_bi;
-    elseif net_m == 2
-        ns = ns_car;
-        avg_fc = avg_fc_car;
-    end
-        
     
     % Clean the labels
     clean_labels = decompose_labels(labels,name);   
@@ -216,7 +193,7 @@ for l = 1:npts
     summ.spikes = spikes;
     summ.coi_global = coi_global;
     summ.rl = rl;
-    %summ.coa = coa;
+    summ.coa = coa;
     summ.labels = clean_labels;
     summ.locs = spike_locs;
     summ.anatomy = spike_anatomy;
@@ -236,10 +213,6 @@ for l = 1:npts
     summ.clinical = pt(j).clinical;
     summ.leader = leader;
     summ.mod_midnight = mod_midnight;
-    summ.ns_car = ns_car;
-    summ.avg_fc_car = avg_fc_car;
-    summ.ns_bi = ns_bi;
-    summ.avg_fc_bi = avg_fc_bi;
     %summ.ge = ge;
 
     %% Save it all
