@@ -41,6 +41,9 @@ npts = length(listing);
 names = cell(npts,1);
 sozs = cell(npts,1);
 
+%% Missing pts
+missing_names = {};
+
 %% Initialize atlas
 atlas_mat = nan(n_parcels,n_parcels,npts);
 
@@ -73,6 +76,7 @@ for p = 1:npts
     
     %% Skip if empty
     if isempty(out.enum)
+        missing_names = [missing_names;name];
         continue
     end
     
@@ -125,6 +129,8 @@ out.atlas_nums = atlas_nums;
 out.atlas_names = atlas_names;
 out.pt_names = names;
 out.sozs = sozs;
+out.missing_names = missing_names;
 save([out_folder,atlas,'.mat'],'out');
+
 
 end
