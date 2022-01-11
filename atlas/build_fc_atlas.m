@@ -6,7 +6,7 @@ function build_fc_atlas
 %}
 
 %% Parameters
-atlas = 'aal';
+atlas = 'aal_bernabei';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -114,6 +114,7 @@ for p = 1:npts
     sozs{p} = soz_num;
     %}
     soz = summ.soz.chs;
+    soz(soz==0) = [];
     soz_num = out.enum(soz);
     sozs{p} = soz_num;
     
