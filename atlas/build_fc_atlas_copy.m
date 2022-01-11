@@ -1,8 +1,8 @@
-function build_fc_atlas
+function build_fc_atlas_copy
 
 %% To do
 %{
-- Adding ability to get both bipolar and CAR networks
+- Add something to remove SOZ?
 %}
 
 %% Parameters

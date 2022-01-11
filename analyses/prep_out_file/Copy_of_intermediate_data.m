@@ -93,7 +93,6 @@ for l = 1:npts
     times = out.times;
     spikes = out.montage(m).spikes;
     labels = out.montage(m).labels;
-    bipolar_labels = out.montage(1).labels;
     coa = out.montage(m).coa;
     rl = out.montage(m).rl;
     %coi_ch = out.montage(m).coi_ch;
@@ -142,8 +141,7 @@ for l = 1:npts
         
     
     % Clean the labels
-    clean_labels = decompose_labels(labels,name); 
-    
+    clean_labels = decompose_labels(labels,name);   
     
     % Get number of electrode localizations
     ne = length(pt(j).elecs);
@@ -153,20 +151,13 @@ for l = 1:npts
     % labels
     spike_anatomy = cell(length(labels),1);
     spike_locs = nan(length(labels),3);
-    bipolar_locs = nan(length(labels),3);
     already_filled = zeros(length(labels),1);
     
     for e = 1:ne
         % Get loc/anatomy names and labels
-        elec_names = pt(j).elecs(e).elec_names;
-        ana_name = decompose_labels(elec_names,name);
+        ana_name = decompose_labels(pt(j).elecs(e).elec_names,name);
         locs = pt(j).elecs(e).locs;
         anatomy = pt(j).elecs(e).anatomy;
-        
-        % Get bipolar labels and locs
-        which_chs = 1:length(elec_names);
-        [~,~,~,~,~,mid_locs] = ...
-    bipolar_montage(nan(100,length(elec_names)),elec_names,which_chs,locs,[],name);
 
         % Indices of the loc/anatomy names that match the spike labels
         [lia,locb] = ismember(clean_labels,ana_name);
@@ -181,7 +172,6 @@ for l = 1:npts
         end
         %spike_locs(lia~=0 & already_filled == 0,:) = locs(locb(lia~=0 & already_filled == 0),:);
         spike_locs(lia~=0,:) = locs(locb(lia~=0),:);
-        bipolar_locs(lia~=0,:) = mid_locs(locb(lia~=0),:);
         
         % set already filled
         %already_filled(lia~=0 & already_filled == 0) = 1;
@@ -221,10 +211,6 @@ for l = 1:npts
     summ(count).block_dur = block_dur;
     %}
     
-    if 0
-        table(clean_labels,spike_locs,bipolar_labels,bipolar_locs) 
-    end
-    
     summ.name = name;
     summ.times = times;
     summ.spikes = spikes;
@@ -232,9 +218,7 @@ for l = 1:npts
     summ.rl = rl;
     %summ.coa = coa;
     summ.labels = clean_labels;
-    summ.bipolar_labels = bipolar_labels;
     summ.locs = spike_locs;
-    summ.bipolar_locs = bipolar_locs;
     summ.anatomy = spike_anatomy;
     summ.bad_anatomy_flag = bad_anatomy_flag;
     summ.ana_loc = loc;
