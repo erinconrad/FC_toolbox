@@ -6,7 +6,7 @@ function build_fc_atlas
 %}
 
 %% Parameters
-atlas = 'aal_bernabei';
+atlas = 'aal';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -107,9 +107,14 @@ for p = 1:npts
     fc = summ.avg_fc;
     
     %% Soz
+    %{
     soz = decompose_labels(summ.soz.labels,name);
     soz_out = get_atlas_parcellations(rid,soz,name);
     soz_num = soz_out.enum;
+    sozs{p} = soz_num;
+    %}
+    soz = summ.soz.chs;
+    soz_num = out.enum(soz);
     sozs{p} = soz_num;
     
     %% Put into atlas space
