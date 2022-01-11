@@ -78,6 +78,7 @@ for p = 1:npts
         elabels = summ.bipolar_labels;
         locs = summ.bipolar_locs;
         fc = summ.avg_fc_bi;
+        bipolar_pair = summ.bipolar_pair;
     else
         elabels = summ.labels;
         locs = summ.locs;
@@ -121,6 +122,20 @@ for p = 1:npts
     %}
     soz = summ.soz.chs;
     soz(soz==0) = [];
+    
+    if contains(atlas,'bipolar')
+        soz_bipolar = [];
+        % find bipolar channels that contain these contacts
+        for ib = 1:size(bipolar_pair,1)
+            if any(ismember(soz,bipolar_pair(ib,:)))
+                soz_bipolar = [soz_bipolar;ib];
+            end
+        end
+        soz_bipolar = unique(soz_bipolar);
+        soz = soz_bipolar;
+    end
+    
+    
     soz_num = out.enum(soz);
     sozs{p} = soz_num;
     

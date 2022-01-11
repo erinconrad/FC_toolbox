@@ -20,7 +20,9 @@ natlases = length(atlases);
 atlas_names_ns = cell(natlases,2);
 
 for in = 1:natlases
-    [ns,names] = show_atlas(atlases{in},0);
+    out = show_atlas(atlases{in},0);
+    ns = out.ns;
+    names = out.names;
     atlas_names_nums{in,2} = ns;
     atlas_names_nums{in,1} = names;
     

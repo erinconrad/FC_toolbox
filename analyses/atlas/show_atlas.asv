@@ -1,4 +1,4 @@
-function out = show_atlas(which_atlas,do_plot)
+function [ns,names] = show_atlas(which_atlas,do_plot)
 
 %% Parameters
 %which_atlas = 'aal_bernabei';
@@ -27,7 +27,7 @@ if size(names,1) < size(names,2)
 end
 
 %% Count how many patients actually contribute to the atlas (have some non nan components)
-n_non_nan = sum(any(~isnan(atlas),[1 2]));
+n_non_nan = sum(any(~isnan(atlas),[
 
 %% Remove cerebellar and not in atlas
 cerebellar = contains(names,'Cerebelum');
@@ -48,13 +48,6 @@ avg_atlas(isnan(avg_atlas)) = 0;
 
 %% Node strength
 ns = nansum(avg_atlas,2);
-
-%% OUtput
-clear out
-out.ns = ns;
-out.avg_atlas = avg_atlas;
-out.names = names;
-out.n_non_nan = n_non_nan;
 
 %% Plot it
 if do_plot
