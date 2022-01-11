@@ -71,16 +71,16 @@ for p = 1:npts
     end
     if ~found_it, error('what'); end
     
-    %% get rid and labels
+    %% get rid and labels and locs
     rid = pt(ip).rid;
     elabels = summ.labels;
-    
+    locs = summ.locs;
+        
     %% Get atlas
-    
     if strcmp(atlas,'aal_bernabei')
         
         % John's method (convert loc in MNI space to AAL atlas) 
-        locs = summ.locs;
+        
         [~, mni_roi, ~] = nifti_values_erin(locs,[atlas_folder,'AAL116_WM.nii']);
         aal_names = aal_region_to_name([atlas_folder,'AAL116_WM.txt'],mni_roi);
         out.enum = mni_roi;
