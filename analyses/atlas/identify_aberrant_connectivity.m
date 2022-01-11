@@ -7,7 +7,7 @@ function identify_aberrant_connectivity
 
 
 %% Parameters
-which_atlas = 'aal';
+which_atlas = 'aal_bernabei';
 normalize_edges = 0;
 rm_soz = 0;
 
@@ -114,7 +114,7 @@ plot_orders(zscore_C,sozs_bin);
 
 
 %% Show individual networks
-if 1
+if 0
 figure
 set(gcf,'position',[10 10 1400 1400])
 for ip = 1:npts

@@ -6,7 +6,7 @@ function build_fc_atlas
 %}
 
 %% Parameters
-atlas = 'aal_bernabei';
+atlas = 'aal_bernabei_bipolar';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -25,7 +25,7 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Load atlas library
-if strcmp(atlas,'aal_bernabei')
+if contains(atlas,'aal_bernabei')
     [atlas_names,atlas_nums] = aal_region_to_name([atlas_folder,'AAL116_WM.txt'],[]);
 else
     library = readtable([atlas_folder,atlas,'_library.csv']);
@@ -71,13 +71,21 @@ for p = 1:npts
     end
     if ~found_it, error('what'); end
     
-    %% get rid and labels and locs
+    %% get stuff
     rid = pt(ip).rid;
-    elabels = summ.labels;
-    locs = summ.locs;
+    
+    if contains(atlas,'bipolar')
+        elabels = summ.bipolar_labels;
+        locs = summ.bipolar_locs;
+        fc = summ.avg_fc_bi;
+    else
+        elabels = summ.labels;
+        locs = summ.locs;
+        fc = summ.avg_fc;
+    end
         
     %% Get atlas
-    if strcmp(atlas,'aal_bernabei')
+    if contains(atlas,'aal_bernabei')
         
         % John's method (convert loc in MNI space to AAL atlas) 
         
@@ -103,9 +111,7 @@ for p = 1:npts
         continue
     end
     
-    %% Get avg fc
-    fc = summ.avg_fc;
-    
+
     %% Soz
     %{
     soz = decompose_labels(summ.soz.labels,name);

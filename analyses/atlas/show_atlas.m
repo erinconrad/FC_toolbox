@@ -1,7 +1,7 @@
-function show_atlas
+function [ns,names] = show_atlas(which_atlas,do_plot)
 
 %% Parameters
-which_atlas = 'aal';
+%which_atlas = 'aal_bernabei';
 gamma = 1; % for community detection
 
 %% Get file locs
@@ -22,6 +22,10 @@ out = out.out;
 atlas = out.atlas;
 names = out.atlas_names;
 
+if size(names,1) < size(names,2)
+    names = names';
+end
+
 %% Remove cerebellar and not in atlas
 cerebellar = contains(names,'Cerebelum');
 not_in_atlas = strcmp(names,'NotInAtlas');
@@ -40,16 +44,18 @@ names(nan_rows) =[];
 avg_atlas(isnan(avg_atlas)) = 0;
 
 %% Plot it
-figure
-set(gcf,'position',[10 10 900 900])
-turn_nans_gray(avg_atlas)
-xticks(1:length(names))
-yticks(1:length(names))
-xticklabels(names)
-yticklabels(names)
-colorbar
+if do_plot
+    figure
+    set(gcf,'position',[10 10 900 900])
+    turn_nans_gray(avg_atlas)
+    xticks(1:length(names))
+    yticks(1:length(names))
+    xticklabels(names)
+    yticklabels(names)
+    colorbar
+end
 
-%% Node strength, sort
+%% Node strength
 ns = nansum(avg_atlas,2);
 [ns,I] = sort(ns,'descend');
 table(ns,names(I))
@@ -63,5 +69,6 @@ for i = 1:length(unique(Ci))
     fprintf('\nCommunity %d:\n',i);
     table(names(curr_community))
 end
+%}
 
 end
