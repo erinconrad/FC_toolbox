@@ -55,7 +55,7 @@ loc_labels = temp_out.elec_names;
 locs = temp_out.locs;
 anatomy = temp_out.anatomy;
 clear temp_out
-clean_loc_labels = decompose_labels(loc_labels);
+clean_loc_labels = decompose_labels(loc_labels,pt_name);
 
 %% Get ieeg data
 data = download_ieeg_data(file_name,login_name,pwfile,times,1); % 1 means get lots of data
@@ -65,7 +65,7 @@ raw_values = values;
 fs = data.fs;
 
 %% Cleaned labels
-clean_labels = decompose_labels(chLabels);
+clean_labels = decompose_labels(chLabels,pt_name);
 
 %% Reconcile locs and anatomy with ieeg labels
 [ieeg_locs,ieeg_anatomy] = reconcile_locs_ieeg(clean_labels,clean_loc_labels,locs,anatomy);
@@ -93,7 +93,7 @@ which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 
 %% Bipolar montage
 [bipolar_values,~,bipolar_labels,chs_in_bipolar,which_chs_bipolar,mid_locs,mid_anatomy] = ...
-    bipolar_montage(values,chLabels,which_chs,locs,anatomy);
+    bipolar_montage(values,chLabels,which_chs,locs,anatomy,pt_name);
 
 %% Table of channels
 is_run_car = ismember((1:length(clean_labels))',which_chs);
@@ -133,6 +133,7 @@ for im = 1:2
     
     % make non run channels nans
     values(:,~is_run) = nan;
+    skip = find(~is_run);
     
     % filters
     values = notch_filter(values,fs);
@@ -159,6 +160,10 @@ for im = 1:2
             case 'inv_dist'
                 curr_net = inverse_dist(curr_locs);
         end
+        
+        % Get spikes
+        gdf = detector_alt(values,fs);
+        fprintf('\nDetected %d spikes\n',size(gdf,1));
 
         % save
         out.montage(im).name = montage;
@@ -168,6 +173,9 @@ for im = 1:2
         out.montage(im).locs = curr_locs;
         out.montage(im).anatomy = curr_anatomy;
         out.montage(im).is_run = is_run;
+        out.montage(im).spikes = gdf;
+        out.montage(im).values = values;
+        out.fs = fs;
 
     end
     
@@ -189,6 +197,7 @@ out.chs_in_bipolar = chs_in_bipolar;
 out.bad = bad;
 out.bad_details = details;
 out.non_intracranial = non_intracranial;
+out.tout = tout;
 if do_save == 1
     save([out_folder,out_name],'out');
 end
@@ -196,9 +205,11 @@ end
 %% Show data
 if 1
     %ex_chs = {'LA1','LA2','LA3','LA4'};
-    ex_chs = [];
     
-    simple_plot(tout,out,ex_chs,plot_montage)
+    ex_chs = [];
+    only_run = 0;
+    simple_plot(tout,out,ex_chs,plot_montage,out.montage(plot_montage).spikes,...
+        only_run,skip)
     
 end
 

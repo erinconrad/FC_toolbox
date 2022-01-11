@@ -1,6 +1,6 @@
 function add_elec_locs
 
-overwrite = 0;
+overwrite = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -24,12 +24,19 @@ for p = 1:length(pt)
             ~isempty(pt(p).elecs)
         if overwrite == 0
             fprintf('\nskipping %s\n',pt(p).name);
+            continue
         end
-        continue
+        
     end
     
-    out = return_elec_locs(pt_name,elec_path);
-    pt(p).elecs = out;
+    out_native = return_elec_locs(pt_name,elec_path);
+    out_mni = return_mni_locs(pt_name,elec_path);
+    
+    for i = 1:length(out_mni)
+        out_mni(i).anatomy = out_native(i).anatomy;
+    end
+    
+    pt(p).elecs = out_mni;
     save([data_folder,'pt.mat'],'pt');
 end
 

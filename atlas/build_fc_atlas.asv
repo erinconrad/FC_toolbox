@@ -25,14 +25,9 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Load atlas library
-if strcmp(atlas,'aal_bernabei')
-    [atlas_names,atlas_nums] = aal_region_to_name([atlas_folder,'AAL116_WM.txt'],[]);
-else
-    library = readtable([atlas_folder,atlas,'_library.csv']);
-    atlas_nums = library.nums;
-    atlas_names = library.names;
-    
-end
+library = readtable([atlas_folder,atlas,'_library.csv']);
+atlas_nums = library.nums;
+atlas_names = library.names;
 n_parcels = length(atlas_nums);
 
 %% Load pt folder
@@ -76,25 +71,28 @@ for p = 1:npts
     elabels = summ.labels;
     
     %% Get atlas
-    
+    % Andy method (table with parcellations for each electrode)
     if strcmp(atlas,'aal_bernabei')
-        
+
         % John's method (convert loc in MNI space to AAL atlas) 
+    
         locs = summ.locs;
         [~, mni_roi, ~] = nifti_values_erin(locs,[atlas_folder,'AAL116_WM.nii']);
         aal_names = aal_region_to_name([atlas_folder,'AAL116_WM.txt'],mni_roi);
-        out.enum = mni_roi;
-        out.ename = aal_names;
         
     else
-        % Andy method (table with parcellations for each electrode)
+        
         out = get_atlas_parcellations(rid,elabels,name);
-      
+        enum = out.enum;
+    
+    
+        
+        
     end
     
     if 0
-        table(elabels,out.ename)
-    end
+            table(elabels,out.ename,aal_names)
+        end
         
     
     %% Skip if empty
@@ -122,7 +120,7 @@ for p = 1:npts
         which_enum_i = atlas_nums(inp);
         
         % which elecs for this patient belong to that
-        which_elecs_i = out.enum == which_enum_i;
+        which_elecs_i = enum == which_enum_i;
         
         % Loop over again
         for jnp = 1:inp-1
@@ -131,7 +129,7 @@ for p = 1:npts
             which_enum_j = atlas_nums(jnp);
 
             % which elecs for this patient belong to that
-            which_elecs_j = out.enum == which_enum_j;
+            which_elecs_j = enum == which_enum_j;
             
             % Assign the average of all the functional connectivities
             % matching these to be the fc edge
