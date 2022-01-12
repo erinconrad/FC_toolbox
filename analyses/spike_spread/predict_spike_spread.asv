@@ -4,10 +4,6 @@ function predict_spike_spread
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 int_folder = [results_folder,'analysis/intermediate/'];
-out_folder = [results_folder,'spike_spread/'];
-if ~exist(out_folder,'dir')
-    mkdir(out_folder)
-end
 
 % add script folder to path
 scripts_folder = locations.script_folder;
@@ -74,18 +70,9 @@ for p = 1:npts
     pt_idx = p*ones(length(coaw),1);
     
     all_coaw = [all_coaw;coaw];
-    all_fcw = [all_fcw;fcw];
-    all_distw = [all_distw;distw];
-    all_pt_idx = [all_pt_idx;pt_idx];
+    all_fcw = [a
     
     %T = table(coaw,fcw,distw);
     %mdl = fitlm(T,'coaw~fcw+distw');
     
-end
-
-
-T = table(all_coaw,all_fcw,all_distw,all_pt_idx);
-out.T = T;
-save([out_folder,'out.mat'],'out');
-
 end
