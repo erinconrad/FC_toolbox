@@ -7,7 +7,7 @@ function identify_aberrant_connectivity
 
 
 %% Parameters
-which_atlas = 'aal_bernabei';
+which_atlas = 'aal_bernabei_bipolar';
 normalize_edges = 0;
 rm_soz = 0;
 

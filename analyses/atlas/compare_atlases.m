@@ -1,7 +1,7 @@
 function compare_atlases
 
 %% Parameters
-atlases = {'aal','aal_bernabei'};
+atlases = {'aal','aal_bernabei','aal_bernabei_bipolar'};
 
 
 %% Get file locs
@@ -39,6 +39,7 @@ for in = 1:natlases
     end
 end
 
+% Correlate
 for ip = 1:npairs
     
    
