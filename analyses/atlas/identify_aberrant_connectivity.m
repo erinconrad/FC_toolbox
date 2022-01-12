@@ -114,7 +114,7 @@ plot_orders(zscore_C,sozs_bin);
 
 
 %% Show individual networks
-if 0
+if 1
 figure
 set(gcf,'position',[10 10 1400 1400])
 for ip = 1:npts

@@ -75,12 +75,15 @@ if do_plot
     [Ci,Q]=modularity_und(avg_atlas,gamma);
 
     % Show communities
+    %
     for i = 1:length(unique(Ci))
         curr_community = Ci == i;
         fprintf('\nCommunity %d:\n',i);
         table(names(curr_community))
     end
+    %}
 
+    
     
 end
 

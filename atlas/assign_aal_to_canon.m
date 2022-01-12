@@ -1,4 +1,4 @@
-function assign_aal_to_canon
+function out = assign_aal_to_canon
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -17,7 +17,7 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% Load aal image
+%% Load aal image and labels
 V_aal=niftiinfo([atlas_folder,'AAL116_WM.nii']); % get header
 atlas_aal = niftiread(V_aal); % get 3D matrix
 T_aal=V_aal.Transform.T; % get transformation matrix
@@ -60,7 +60,6 @@ unique_yeo = unique(yeo_assignments);
 n_yeo = length(unique_yeo);
 
 %% Get all yeo assignments corresponding to each aal assignenment
-%
 unique_aal = unique(aal_assignments);
 n_aal = length(unique_aal);
 aal_to_yeo = nan(n_aal,n_yeo);
@@ -78,6 +77,58 @@ for i = 1:n_aal
     
 end
 %}
+
+%% Get aal and yeo labels
+% AAL labels
+aal_names = aal_region_to_name([atlas_folder,'AAL116_WM.txt'],unique_aal);
+
+% Yeo labels and colors
+T = readtable([yeo_canon_networks,'Yeo2011_7Networks_ColorLUT.txt'],'ReadVariableNames',false);
+yeo_names = cell(n_yeo,1);
+yeo_colors = nan(n_yeo,3);
+for i = 1:n_yeo
+    yeo_names{i} = T.Var2{i};
+    yeo_colors(i,:) = [T.Var3(i) T.Var4(i) T.Var5(i)];
+end
+
+% remove empty aal
+empty_aal = cellfun(@isempty,aal_names);
+aal_to_yeo(empty_aal,:) = [];
+aal_names(empty_aal) = [];
+
+out.aal_to_yeo = aal_to_yeo;
+out.yeo_names = yeo_names;
+out.aal_names = aal_names;
+
+%% Show assignments
+if 0
+figure
+imagesc(aal_to_yeo)
+xticks(1:n_yeo)
+yticks(1:n_aal)
+xticklabels(yeo_names)
+yticklabels(aal_names)
+
+
+% Show top ranked things in DMN
+dmn = aal_to_yeo(:,end);
+rank = 1:size(aal_to_yeo,1);
+[~,I] = sort(dmn,'descend');
+rank = rank(I);
+fprintf('\nTop 10 AAL regions in DMN:\n');
+aal_names(rank(1:10))
+
+
+
+% Show top ranked things in limbic
+limbic = aal_to_yeo(:,6);
+rank = 1:size(aal_to_yeo,1);
+[~,I] = sort(limbic,'descend');
+rank = rank(I);
+fprintf('\nTop 10 AAL regions in limbic network:\n');
+aal_names(rank(1:10))
+
+end
 
 
 end
