@@ -27,10 +27,6 @@ addpath(genpath(scripts_folder));
 %% Load atlas library
 if contains(atlas,'aal_bernabei')
     [atlas_names,atlas_nums] = aal_region_to_name([atlas_folder,'AAL116_WM.txt'],[]);
-elseif contains(atlas,'brainnetome')
-    library = readtable([atlas_folder,atlas,'_library.xlsx']);
-    atlas_nums = library.nums;
-    atlas_names = library.names;
 else
     library = readtable([atlas_folder,atlas,'_library.csv'],'ReadVariableNames',false);
     atlas_nums = library.nums;

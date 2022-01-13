@@ -1,4 +1,4 @@
-function build_atlas_library
+function build_andy_atlas_library
 
 %% Parameters
 atlas = 'mni';
