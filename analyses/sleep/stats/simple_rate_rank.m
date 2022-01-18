@@ -1,4 +1,4 @@
-function [all_ranks,all_soz_ranks,successes] = simple_rate_rank(rates,sozs)
+function [all_ranks,all_soz_ranks,successes,soz_chance] = simple_rate_rank(rates,sozs)
 
 %% Initialize data things
 npts = length(rates);
@@ -8,9 +8,13 @@ nchance = nan(npts,1);
 all = nan(npts,1);
 successes = nan(npts,1);
 
+soz_chance = nan(npts,2);
+
 for i = 1:npts
     curr_soz = sozs{i};
     curr_rates = rates{i};
+    
+    soz_chance(i,:) = [nanmedian(curr_rates(curr_soz)),nanmedian(curr_rates)];
     
     % remove nans
     nan_things = isnan(curr_rates);

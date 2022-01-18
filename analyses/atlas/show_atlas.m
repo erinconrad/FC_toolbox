@@ -1,6 +1,10 @@
 function out = show_atlas(which_atlas,do_plot)
 
 %% Parameters
+if nargin == 0
+    which_atlas = 'aal_bernabei';
+    do_plot = 1;
+end
 %which_atlas = 'aal_bernabei';
 gamma = 1; % for community detection
 
@@ -36,6 +40,14 @@ not_in_atlas = strcmp(names,'NotInAtlas');
 atlas = atlas(~cerebellar & ~not_in_atlas,~cerebellar & ~not_in_atlas,:);
 names = names(~cerebellar & ~not_in_atlas);
 avg_atlas = nanmean(atlas,3);
+
+%% Measure sparsity
+atlasw = wrap_or_unwrap_adjacency_fc_toolbox(atlas);
+pts_per_edge = measure_sparsity(atlasw);
+if 1
+    histogram(pts_per_edge)
+    return
+end
 
 %% Remove all nan rows
 nan_rows = sum(isnan(avg_atlas),1) == size(avg_atlas,2);

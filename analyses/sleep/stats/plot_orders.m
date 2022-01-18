@@ -11,7 +11,15 @@ npts = length(rates);
 
 
 %[all_ranks,all_soz_ranks,nchance,all,successes] = get_ranks(things,sozs,rates,which,min_rate);
-[all_ranks,all_soz_ranks,successes] = simple_rate_rank(rates,sozs);
+[all_ranks,all_soz_ranks,successes,soz_chance] = simple_rate_rank(rates,sozs);
+
+if 1
+    soz_chance(any(isnan(soz_chance),2),:) = [];
+    npts_alt = size(soz_chance,1);
+    alt_successes = soz_chance(:,1) > soz_chance(:,2);
+    pval_binom_alt = 2*binocdf(sum(alt_successes==0),npts_alt,0.5);
+    
+end
 
 %% Re-order by # of electrodes
 num_elecs = cellfun(@length,all_ranks);

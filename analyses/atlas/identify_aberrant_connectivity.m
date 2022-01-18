@@ -2,6 +2,7 @@ function identify_aberrant_connectivity
 
 %% To do
 %{
+I SCREWED UP AND DIDN'T RESHIFT SOZ WHEN I DELETED STUFF
 - use john's atlas? Need his code to convert mni coordinates to AAL
 %}
 
@@ -34,20 +35,25 @@ sozs = out.sozs;
 npts = size(atlas,3);
 pt_names = out.pt_names;
 
+%% convert sozs to binary matrix
+all_regions = atlas_nums';
+bin_soz = cell2mat(cellfun(@(x) ismember(all_regions,x),sozs,'uniformoutput',false));
+bin_soz = bin_soz';
+
 %% Confirm soz atlas names seem reasonable
 if 1
     soz_names = cell(npts,1);
     for i = 1:npts
-        curr_soz = unique(sozs{i});
-        curr_soz_nums = ismember(atlas_nums,curr_soz);
-        curr_soz_names = atlas_names(curr_soz_nums);
+        %curr_soz = unique(sozs{i});
+        %curr_soz_nums = ismember(atlas_nums,curr_soz);
+        curr_soz_names = atlas_names(bin_soz(:,i));
         soz_names{i} = curr_soz_names;
     end
     
 end
 
 %% Remove cerebellar and not in atlas
-%
+%{
 cerebellar = contains(atlas_names,'Cerebelum');
 not_in_atlas = strcmp(atlas_names,'NotInAtlas');
 
@@ -96,8 +102,37 @@ end
 
 
 %ns_ranking_soz(z_score_ns,sozs,atlas_nums,atlas_names,pt_names)
+%% Plot all z scores
+%{
+figure
+all_z_score_diff = nan(npts,1);
+for i = 1:npts
+    curr_soz = bin_soz(:,i);
+    z_score_diff = nanmedian(z_score_ns(curr_soz,i))-nanmedian(z_score_ns(:,i));
+    all_z_score_diff(i) = z_score_diff;
+    %
+    plot(i,z_score_diff,'o')
+    hold on
+    plot(xlim,[0 0],'k--')
+    %
+    %
+    plot(i,nanmedian(z_score_ns(:,i)),'ko')
+    hold on
+    plot(i,nanmedian(z_score_ns(curr_soz,i)),'ro')
+    %
+end
+sum(all_z_score_diff>0)/sum(~isnan(all_z_score_diff))
+
+%}
+
+
+%% Plot orders
+plot_orders_mats(z_score_ns,bin_soz)
+
+
 
 %% Show orders of sozs
+%{
 % Convert z_score_ns to cell
 zscore_C = (num2cell(z_score_ns,1))';
 
@@ -111,10 +146,11 @@ end
 
 figure
 plot_orders(zscore_C,sozs_bin);
+%}
 
 
 %% Show individual networks
-if 1
+if 0
 figure
 set(gcf,'position',[10 10 1400 1400])
 for ip = 1:npts
