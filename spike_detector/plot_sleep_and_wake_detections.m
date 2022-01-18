@@ -1,4 +1,4 @@
-function plot_sleep_and_wake_detections(whichPts,overwrite)
+function plot_sleep_and_wake_detections(whichPts)
 
 %% General parameters
 n_sp = 50;
@@ -60,20 +60,8 @@ for l = 1:npts
     
     
     for im = 2
-        outname = [out_folder,sprintf('%s_montage%d.jpg',pt_name,im)];
-        if exist(outname,'file') ~= 0
-  
-            if overwrite == 0
-                fprintf('\nSkipping %s\n',pt_name);
-                continue
-            
-            else
-                fprintf('\nDoing %s\n',pt_name);
-            end
-        else
-            fprintf('\nDoing %s\n',pt_name);
-        end
-
+        
+        
         %% Load spike file
         out = load([spike_folder,sprintf('%s_pc.mat',pt_name)]);
         out = out.pc;
@@ -233,7 +221,7 @@ for l = 1:npts
 
 
             end
-
+            outname = [out_folder,sprintf('%s_montage%d_%s.jpg',pt_name,im,sleep_text)];
             print(outname,'-djpeg');
             close(gcf)
         end
