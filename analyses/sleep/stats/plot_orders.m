@@ -13,8 +13,16 @@ npts = length(rates);
 %[all_ranks,all_soz_ranks,nchance,all,successes] = get_ranks(things,sozs,rates,which,min_rate);
 [all_ranks,all_soz_ranks,successes,soz_chance] = simple_rate_rank(rates,sozs);
 
+% Alternate statistical test
+%{
+In this test, I see whether the median rate is higher for SOZ than chance
+for each patient (whereas in the prior I see if the median rate RANKING is
+higher for SOZ than chance). I think this is better because when I take
+ranks matlab will force equal things to have different ranks, and so this
+seems more accurate. The p values are slightly different but both <0.001
+%}
 if 1
-    soz_chance(any(isnan(soz_chance),2),:) = [];
+    soz_chance(any(isnan(soz_chance),2),:) = []; % remove nans
     npts_alt = size(soz_chance,1);
     alt_successes = soz_chance(:,1) > soz_chance(:,2);
     pval_binom_alt = 2*binocdf(sum(alt_successes==0),npts_alt,0.5);
@@ -60,7 +68,7 @@ median_rank = median(all_all_soz_ranks);
 
 out.n = length(successes);
 out.nsuc = sum(successes==1);
-out.pval = pval_binom;
+out.pval = pval_binom_alt;
 out.median_rank = median_rank;
 
 xlim([0 npts])
@@ -69,12 +77,12 @@ xbar = xl(1) + 1.02*(xl(2)-xl(1));
 xtext = xl(1) + 1.04*(xl(2)-xl(1));
 newxl = [xl(1) xl(1) + 1.05*(xl(2)-xl(1))];
 plot([xbar xbar],[1 num_elecs(end)],'k-','linewidth',2)
-if pval_binom >= 0.05
-text(xtext-1,(1+num_elecs(end))/2,get_asterisks(pval_binom,1),'rotation',90,...
+if pval_binom_alt >= 0.05
+text(xtext-1,(1+num_elecs(end))/2,get_asterisks(pval_binom_alt,1),'rotation',90,...
         'horizontalalignment','center','fontsize',16)
 
 else
-    text(xtext,(1+num_elecs(end))/2,get_asterisks(pval_binom,1),'rotation',90,...
+    text(xtext,(1+num_elecs(end))/2,get_asterisks(pval_binom_alt,1),'rotation',90,...
         'horizontalalignment','center','fontsize',20)
 end
 xlim(newxl)

@@ -1,4 +1,4 @@
-function soz_roc_out = classify_soz
+function soz_roc_out = classify_soz(for_bootstrap)
 
 %{
 Logistic regression model. I confirmed that when I take the training and
@@ -20,7 +20,9 @@ colors = [0, 0.4470, 0.7410;...
 
 %% Seed rng (for splitting testing and training data)
 % If I don't seed this the AUC usually bounces around 0.73-0.82
-rng(0)
+if for_bootstrap == 0 % if 0, I seed the rng to get the ORs. If 1, I don't seed to get stats
+    rng(0)
+end
 
 locations = fc_toolbox_locs;
 addpath(genpath(locations.script_folder))
@@ -105,14 +107,19 @@ end
 T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,...
     vec_rl_sleep,vec_rl_wake,vec_rate_all,vec_rl_all,vec_rate_post);
 %}
-T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,...
-    vec_rate_all,vec_rate_post);
-T.vec_pt_idx = nominal(T.vec_pt_idx);
+T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake);
+T.vec_pt_idx = (T.vec_pt_idx);
+
+%% Remove nan and inf rows
+nan_rows = isnan(T.vec_rate_sleep) | isnan(T.vec_rate_wake) | isnan(T.vec_soz) | isnan(T.vec_pt_idx);
+T(nan_rows,:) = [];
+%vec_pt_idx(nan_rows) = [];
+
 
 %% Divide into training and testing set
 training = randsample(length(pt_idx),floor(length(pt_idx)*prop_train));
-training_idx = ismember(vec_pt_idx,training);
-testing_idx = ~ismember(vec_pt_idx,training);
+training_idx = ismember(T.vec_pt_idx,training);
+testing_idx = ~ismember(T.vec_pt_idx,training);
 
 T_train = T(training_idx,:);
 T_test = T(testing_idx,:);
@@ -121,15 +128,14 @@ T_test = T(testing_idx,:);
 train_pts = unique(T_train.vec_pt_idx);
 test_pts = unique(T_test.vec_pt_idx);
 assert(isempty(intersect(train_pts,test_pts)))
-assert(isequal(str2double(string(sort([train_pts;test_pts]))),(1:96)'))
+%assert(isequal(str2double(string(sort([train_pts;test_pts]))),(1:96)'))
+% this above statement is not true because pt 7 has only one sleep period
+% (with all nans for spike rate, maybe bad time...)
+assert(sum(isnan(table2array(T)),'all')==0)
 
-%% Remove nan and inf rows
-nan_train = isnan(T_train.vec_rate_sleep) | isnan(T_train.vec_rate_wake) | isnan(T_train.vec_rate_post);
-T_train(nan_train,:) = [];
+%% Train model with glm model
 
-%% Train model with glme model
-
-glme = fitglm(T_train,...
+glm = fitglm(T_train,...
     'vec_soz ~ vec_rate_sleep + vec_rate_wake',...
     'Distribution','Poisson','Link','log');
 
@@ -144,15 +150,21 @@ else
         'Distribution','Poisson','Link','log');
 end
 %}
+%% For generating odds ratios, do a glme
+T_train_glme = T_train;
+T_train_glme.vec_pt_idx = nominal(T_train_glme.vec_pt_idx);
+glme = fitglme(T_train,...
+    'vec_soz ~ vec_rate_sleep + vec_rate_wake + (1|vec_pt_idx)',...
+    'Distribution','Poisson','Link','log');
 
 
 
 %% Test model on testing data
-params = glme.CoefficientNames;
+params = glm.CoefficientNames;
 asum = zeros(size(T_test,1),1);
-asum = asum + glme.Coefficients.Estimate(1);
+asum = asum + glm.Coefficients.Estimate(1);
 for p = 2:length(params)
-    est = glme.Coefficients.Estimate(p);
+    est = glm.Coefficients.Estimate(p);
     asum = asum +  T_test.(params{p})*est;
 end
 
@@ -160,17 +172,17 @@ end
 classification = logistic(asum);
 nll = NLL(T_test.vec_soz,classification);
 pred_nll = log(2)*length(classification);
-fprintf('\nTest data log likelihood: %1.1f\npredicted by chance: %1.1f\n',nll,pred_nll);
+%fprintf('\nTest data log likelihood: %1.1f\npredicted by chance: %1.1f\n',nll,pred_nll);
 
 % Calculate odds ratios and CI for odds ratios of each predictor
-sleep_beta = glme.Coefficients{2,1};
-wake_beta = glme.Coefficients{3,1};
-sleep_se = glme.Coefficients{2,2};
-wake_se = glme.Coefficients{3,2};
-sleep_t = glme.Coefficients{2,3};
-wake_t = glme.Coefficients{3,3};
-sleep_p = glme.Coefficients{2,4};
-wake_p = glme.Coefficients{3,4};
+sleep_beta = glme.Coefficients{2,2};
+wake_beta = glme.Coefficients{3,2};
+sleep_se = glme.Coefficients{2,3};
+wake_se = glme.Coefficients{3,3};
+sleep_t = glme.Coefficients{2,4};
+wake_t = glme.Coefficients{3,4};
+sleep_p = glme.Coefficients{2,6};
+wake_p = glme.Coefficients{3,6};
 
 
 sleep_or = exp(sleep_beta);
@@ -238,6 +250,8 @@ posclass = 'SOZ';
 scores = classification;
 [X,Y,T,AUC,opt] = perfcurve(labels,scores,posclass);
 soz_roc_out.alt_auc = AUC;
+soz_roc_out.X = X;
+soz_roc_out.Y = Y;
 %}
 
 %% ROC

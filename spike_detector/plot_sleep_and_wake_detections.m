@@ -1,4 +1,4 @@
-function plot_sleep_and_wake_detections(whichPts)
+function plot_sleep_and_wake_detections
 
 %% General parameters
 n_sp = 50;
@@ -103,12 +103,14 @@ for l = 1:npts
             end
         end
         
+        %{
         % Skip the patient if it's incomplete
         if length(out.file) < length(pt(j).ieeg.file) || ...
                 length(out.file(end).run) < size(pt(j).ieeg.file(end).run_times,1)
             fprintf('\n%s incomplete, skipping\n',pt_name);
             continue
         end
+        %}
         
 
         %% concatenate all spikes into one long thing
@@ -150,7 +152,34 @@ for l = 1:npts
         %% Some checks
         % confirm that sleep and wake sets are disjoint
         assert(isempty(intersect(sleep_spikes(:,end),wake_spikes(:,end))))
-               
+        
+        % plot fidx and bidx
+        if 0
+            figure
+            tiledlayout(2,1)
+            nexttile
+            plot(fidx)
+            nexttile
+            plot(bidx)
+        end
+        
+       % plot ADRs in sleep and wake
+       %{
+       I tested this for HUP 100, which has two files, and it pretty
+       convincingly separated the wake labeled spikes from the sleep
+       labeled spikes
+       %}
+       if 0
+           figure
+           nsleep = size(sleep_spikes,1);
+           sleep_idx = spikes_sw(spikes_sw(:,1)==1,3);
+           plot(randn(nsleep,1)*0.05+1,ad(sleep_idx),'o');
+           hold on
+           nwake = size(wake_spikes,1);
+           wake_idx = spikes_sw(spikes_sw(:,2)==1,3);
+           plot(randn(nwake,1)*0.05+2,ad(wake_idx),'o');
+           
+       end
 
         %% initialize figure
         for is = 1:2

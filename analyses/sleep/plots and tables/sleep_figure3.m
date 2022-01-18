@@ -164,9 +164,10 @@ fprintf(fid,[' We next compared the ranking of SOZ electrodes '...
 assert(isequal(cellfun(@length,wake_all_ranks),cellfun(@length,sleep_all_ranks)))
 
 %% Fancy model
-soz_roc_out = classify_soz;
-roc = soz_roc_out.roc;
-auc = soz_roc_out.auc;
+% Do it once for the purpose of generating my ORs
+soz_roc_out = classify_soz(0);
+%roc = soz_roc_out.roc;
+%auc = soz_roc_out.auc;
 sleep_or = soz_roc_out.sleep_or;
 wake_or = soz_roc_out.wake_or;
 sleep_ci95 = soz_roc_out.sleep_ci95;
@@ -179,13 +180,35 @@ wake_p= soz_roc_out.wake_p;
 sleep_or = (sleep_or - 1)*100;
 wake_or = (wake_or - 1)*100;
 
+nb = 1000;
+all_roc = nan(nb,1000,2);
+all_auc = nan(nb,1);
+% Now do it 1,000 times!!!
+for ib = 1:nb
+    soz_roc_out = classify_soz(1);
+    all_roc(ib,:,:) = soz_roc_out.roc;
+    all_auc(ib) = soz_roc_out.auc;
+end
+
 nexttile([1 1])
-plot(roc(:,1),roc(:,2),'k-','linewidth',2)
+median_auc = nanmedian(all_auc);
+auc_ci = [prctile(all_auc,2.5) prctile(all_auc,97.5)];
+
+% to get the shaded bits, need to do fancy interpolation to get the x's
+% into the same space
+[unify_x,unify_y] = unify_roc(all_roc);
+
+ym = median(unify_y,1);
+ly = prctile(unify_y,25,1);
+uy = prctile(unify_y,75,1);
+
+shaded_error_bars(unify_x,ym,[ly',uy'],'k');
+%plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
 xlabel('False positive rate')
 ylabel('True positive rate')
-legend(sprintf('AUC %1.2f',auc),'location','southeast','fontsize',15)
+legend(sprintf('Median AUC %1.2f',median_auc),'location','southeast','fontsize',15)
 set(gca,'fontsize',15)
 title('SOZ identification accuracy')
 
@@ -204,11 +227,11 @@ fprintf(fid,['<p>Finally, we tested how accurately spike rates could '...
     '<i>t</i> = %1.1f, %s). Applying this model to the remaining'...
     ' one-third of patients held as testing data accurately '...
     'classified electrodes as SOZ versus non-SOZ '...
-    '(AUC = %1.2f, Fig. 4E). This result implies that using '...
+    '(Median AUC across 1,000 random splits of testing and training data = %1.2f (95%% CI [%1.2f-%1.2f]), Fig. 4E). This result implies that using '...
     'spike rates and sleep/wake classification alone can accurately identify the SOZ.'...
     ' It also provides additional support that spikes in sleep particularly localize the SOZ.</p>'],...
     sleep_or,sleep_ci95(1),sleep_ci95(2),sleep_t,get_p_html(sleep_p),wake_or,...
-    wake_ci95(1),wake_ci95(2),wake_t,get_p_html(wake_p),auc);
+    wake_ci95(1),wake_ci95(2),wake_t,get_p_html(wake_p),median_auc,auc_ci(1),auc_ci(2));
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',20,'linestyle','none')
@@ -220,5 +243,28 @@ annotation('textbox',[0.49 0.245 0.1 0.1],'String','E','fontsize',20,'linestyle'
 
 fclose(fid);
 print([out_folder,'fig4'],'-depsc')
+
+end
+
+function [unify_x,unify_y] = unify_roc(all_roc)
+
+nx = 10000;
+unify_x = linspace(0,1,nx);
+unify_y = nan(size(all_roc,1),nx);
+
+for i = 1:size(all_roc,1)
+    curr_x = all_roc(i,:,1);
+    for ix = 1:nx
+        curr_ix = unify_x(ix);
+        
+        % find the curr x closest to this ix
+        [~,I] = min(abs(curr_ix-curr_x));
+        
+        % fill the y in with the corresponding y
+        corr_y = all_roc(i,I,2);
+        unify_y(i,ix) = corr_y;
+        
+    end
+end
 
 end
