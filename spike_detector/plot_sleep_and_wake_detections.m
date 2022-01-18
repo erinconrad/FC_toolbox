@@ -16,6 +16,8 @@ data_folder = [locations.main_folder,'data/'];
 int_folder = [results_folder,'analysis/intermediate/'];
 spike_folder = [results_folder,'all_out/'];
 out_folder = [results_folder,'sleep_wake_validation/'];
+scripts_folder = locations.script_folder;
+
 
 validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
 %% Get the indices of the patients with good spikes
