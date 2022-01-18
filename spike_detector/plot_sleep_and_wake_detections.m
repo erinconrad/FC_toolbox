@@ -17,6 +17,12 @@ int_folder = [results_folder,'analysis/intermediate/'];
 spike_folder = [results_folder,'all_out/'];
 out_folder = [results_folder,'sleep_wake_validation/'];
 
+validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
+%% Get the indices of the patients with good spikes
+T = readtable(validation_file);
+good_pts = T.Var13;
+good_pts = good_pts(~isnan(good_pts));
+npts = length(good_pts);
 
 if ~exist(out_folder,'dir'), mkdir(out_folder); end
 
@@ -24,7 +30,7 @@ if ~exist(out_folder,'dir'), mkdir(out_folder); end
 pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
 
-
+%{
 if isempty(whichPts)
 listing = dir([spike_folder,'*.mat']);
 for i = 1:length(listing)
@@ -40,12 +46,14 @@ for i = 1:length(listing)
     end
 end
 end
+%}
 
 %% Do AD validation in order to get ADR to discriminate wake from sleep
 roc_out = ad_validation;
 disc = roc_out.disc;
 
-for p = whichPts
+for l = 1:npts
+    p = good_pts(l);
     pt_name = pt(p).name;
     
     
