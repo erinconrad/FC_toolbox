@@ -61,6 +61,19 @@ for l = 1:npts
     
     for im = 2
         
+        outname1 = [out_folder,sprintf('%s_montage%d_%s.jpg',pt_name,im,'Sleep')];
+        outname2 = [out_folder,sprintf('%s_montage%d_%s.jpg',pt_name,im,'Wake')];
+        if exist(outname1,'file') ~= 0 && exist(outname2,'file') ~= 0 
+  
+            
+            fprintf('\nSkipping %s\n',pt_name);
+            continue
+            
+            
+        else
+            fprintf('\nDoing %s\n',pt_name);
+        end
+        
         
         %% Load spike file
         out = load([spike_folder,sprintf('%s_pc.mat',pt_name)]);
@@ -183,10 +196,7 @@ for l = 1:npts
 
         %% initialize figure
         for is = 1:2
-            figure
-            set(gcf,'position',[0 0 1400 1000])
-            tiledlayout(ceil(n_sp/5),5,'tilespacing','tight','padding','tight');
-
+            
             if is == 1
                 curr_spikes = sleep_spikes;
                 sleep_text = 'Sleep';
@@ -195,6 +205,15 @@ for l = 1:npts
                 sleep_text = 'Wake';
             end
             
+            if isempty(curr_spikes)
+                continue; 
+            end
+            
+            figure
+            set(gcf,'position',[0 0 1400 1000])
+            tiledlayout(ceil(n_sp/5),5,'tilespacing','tight','padding','tight');
+
+
             % Loop over spikes
             for i = 1:n_sp
 
