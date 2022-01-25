@@ -36,11 +36,11 @@ fid = fopen([out_folder,'results.html'],'a');
 fprintf(fid,'<p><b>Changes in spikes with seizures</b>');
 
 figure
-set(gcf,'position',[100 100 1200 700])
-tiledlayout(4,3,'tilespacing','tight','padding','tight')
+set(gcf,'position',[100 100 1200 1000])
+tiledlayout(3,3,'tilespacing','tight','padding','tight')
 
 %% Seizure time of day
-nexttile([2 1])
+nexttile([1 1])
 all_tod_rate = sz_circ_out.all_tod_rate;
 tod_edges = bin_out.tod_edges;
 counts = nansum(all_tod_rate,1);
@@ -82,7 +82,7 @@ fprintf(fid,['<br>We asked whether patients demonstrated a circadian rhythm '...
 
 
 %% Percent asleep
-nexttile([2 1])
+nexttile([1 1])
 sz_rate_sw = sz_circ_out.sz_rate_sw;
 pause(0.3)
 stats = plot_paired_data(sz_rate_sw',{'wake','sleep','sleep'},'Seizures/min','paired',plot_type);
@@ -115,7 +115,7 @@ set(gca,'fontsize',15)
 title('Percentage of all times and seizures from sleep')
 %}
 
-nexttile([2 1])
+nexttile([1 1])
 pre_wake = sz_circ_out.pre_wake;
 n_sleep_wake = bin_out.n_sleep_wake;
 perc_sz_asleep = cellfun(@(x) prc_asleep(x),pre_wake);
@@ -186,12 +186,12 @@ fprintf(fid,['<p>We next looked at spike rates surrounding seizures. '...
     'tracked with a postictal increase in sleep classification (Figs. 3D and 3E).']);
 
 %% Pre vs post ictal
-nexttile([2 1])
+nexttile([1 1])
 nbins = size(all_pts_spikes_bins,2);
 pre = 1:nbins/2;
 post = nbins/2+1:nbins;
 pre_post = [nanmean(all_pts_spikes_bins(:,pre),2),nanmean(all_pts_spikes_bins(:,post),2)];
-stats = plot_paired_data(pre_post',{'pre-ictal state','post-ictal state','post-ictally'},'Spikes/elec/min','paired',plot_type);
+stats = plot_paired_data(pre_post',{'preictal','postictal','postictally'},'Spikes/elec/min','paired',plot_type);
 title('Pre- vs post-ictal spike rates')
 
 % Results text
@@ -205,7 +205,7 @@ fprintf(fid,[' Across all patients, the median spike rate postictally (median %1
 
 
 %% Temporal vs extratemporal
-nexttile([2 1])
+nexttile([1 1])
 loc = circ_out.all_locs;
 temporal = contains(loc,'temporal');
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
@@ -220,8 +220,8 @@ plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
     'linewidth',2,'color',myColours(2,:))
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
-ylabel('Post-pre-ictal spikes/elec/min')
-title('Post-pre-ictal spike rate difference')
+ylabel('Post-pre spikes/elec/min')
+title('Post-preictal spike rate difference')
 set(gca,'fontsize',15);
 xlim([0 3])
 yl = ylim;
@@ -245,8 +245,8 @@ fprintf(fid,[' Patients with temporal lobe epilepsy had a greater '...
     ' lobe epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
     ' %1.1f, %s) (Fig. 3G). This was also true when the pre- and post-ictal'...
-    ' windows were defined to be 3 hours each (p = 0.035) and when they '...
-    'were defined to be 12 hours each (p < 0.001) DOUBLE CHECK.</p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    ' windows were defined to be 3 hours each (<i>p</i> = 0.035) and when they '...
+    'were defined to be 12 hours each (<i>p</i> < 0.001) DOUBLE CHECK.</p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
     nt,ne,U,get_p_html(p));
 
 
@@ -260,14 +260,83 @@ ylabel('% Classified asleep')
 title('Peri-ictal sleep classification')
 xlabel('Hours surrounding seizure')
 
+%% Pre-ictal
+nbins = size(all_pts_spikes_bins,2);
+early_pre = 1:nbins/4; % first quarter
+late_pre = nbins/4+1:nbins/2; % second quarter
+early_late = [nanmean(all_pts_spikes_bins(:,early_pre),2),nanmean(all_pts_spikes_bins(:,late_pre),2)];
+
+nexttile
+% Early vs late preictal spike rates
+stats = plot_paired_data(early_late',{'early preictal','late preictal','late'},'Spikes/elec/min','paired',plot_type);
+title('Early vs late preictal spike rates')
+
+% Results text
+fprintf(fid,['<p>Visually, there was no obvious preictal increase in spikes (Fig. 3D).'...
+    ' Across all patients, the median spike rate in the late preictal period (median %1.2f spikes/elecs/min)'...
+    ' was similar to that of the early preictal period when examining 6-hour preictal periods (median %1.2f spikes/elecs/min) '...
+    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s).'],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+
+% Secondary analyses
+fprintf(fid,[' However, spike rates were significantly higher in the late preictal period than'...
+    ' in the early preictal period when performing our secondary analysis of 3-hour pre-ictal windows (early median 0.49 spikes/elecs/min, '...
+    'late median 0.54 spikes/elecs/min, Wilcoxon signed-rank test: T+ = 1607.0, <i>p</i> = 0.018) '...
+    'and 12-hour preictal windows (early median 0.44 spikes/elecs/min, late median 0.55 spikes/elecs/min,'...
+    '<i>T<sup>+</sup></i> = 1615.0, <i>p</i> = 0.020).CHECK ME']); 
+
+%% Rate diff in preictal period by epilepsy localization
+nexttile
+rate_diff = early_late(:,2)-early_late(:,1);
+[p,~,stats] = ranksum(rate_diff(temporal),rate_diff(extra));
+plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(1,:))
+hold on
+plot([0.7 1.3],[nanmedian(rate_diff(temporal)) nanmedian(rate_diff(temporal))],...
+    'linewidth',2,'color',myColours(1,:))
+plot(2+randn(sum(extra),1)*0.05,rate_diff(extra),'o','linewidth',2,'color',myColours(2,:))
+plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
+    'linewidth',2,'color',myColours(2,:))
+xticks([1 2])
+xticklabels({'Temporal','Extra-temporal'})
+ylabel('Late-early spikes/elec/min')
+title('Late-early preictal spike rate difference')
+set(gca,'fontsize',15);
+xlim([0 3])
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.13*(yl(2)-yl(1));
+ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+plot([1 2],[ybar ybar],'k-','linewidth',2)
+text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
+ylim(ylnew)
+
+% text
+W = stats.ranksum;
+nt = sum(~(isnan(rate_diff(temporal))));
+ne = sum(~(isnan(rate_diff(extra))));
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+
+fprintf(fid,[' For the primary analysis of a 6-hour preictal period, the early-to-late'...
+    ' preictal spike rate change was similar between patients with temporal lobe epilepsy '...
+    '(median = %1.2f spikes/elecs/min) and those with extra-temporal lobe epilepsy'...
+    ' (median = %1.2f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
+    ' %1.1f, %s).'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    nt,ne,U,get_p_html(p));
+
+
 %% Add annotations
-annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.33 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0.66 0.91 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.42 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.19 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
-annotation('textbox',[0.33 0.42 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
-annotation('textbox',[0.66 0.42 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.9 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.66 0.9 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.545 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.545 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0.66 0.545 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.23 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.23 0.1 0.1],'String','H','fontsize',25,'linestyle','none')
+annotation('textbox',[0.66 0.23 0.1 0.1],'String','I','fontsize',25,'linestyle','none')
 
 
 
@@ -275,38 +344,37 @@ print([out_folder,'Fig3'],'-depsc')
 close(gcf)
 
 %% Bonus analysis (probably supplemental figure) looking for pre-ictal spike change
+%{
 figure
-set(gcf,'position',[440 463 992 334]);
-tiledlayout(1,2,'tilespacing','tight','padding','tight')
-nbins = size(all_pts_spikes_bins,2);
-early_pre = 1:nbins/4; % first quarter
-late_pre = nbins/4+1:nbins/2; % second quarter
-early_late = [nanmean(all_pts_spikes_bins(:,early_pre),2),nanmean(all_pts_spikes_bins(:,late_pre),2)];
+set(gcf,'position',[100 100 1200 334]);
+tiledlayout(1,3,'tilespacing','tight','padding','tight')
+
 
 nexttile
-stats = plot_paired_data(early_late',{'early pre-ictal period','late pre-ictal period','late pre-ictal period'},'Spikes/elec/min','paired',plot_type);
-title('Early vs late pre-ictal spike rates')
-
-% Results text
-fprintf(fid,[' Across all patients, the median spike rate in the late pre-ictal period (median %1.2f spikes/elecs/min)'...
-    ' was similar to that of the early pre-ictal period (median %1.2f spikes/elecs/min) '...
-    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3F).'...
-    ' This was also true when the full pre-ictal period was defined to be 3 hours '...
-    'and when it was defined to be 12 hours (p < 0.001 for each of the '...
-    'alternative peri-ictal time windows PLEASE CHECK).'],...
-    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
-
-nexttile
+% Early vs late preictal sleep
 early_late_sleep = [nanmean(all_pts_sleep_bins(:,early_pre),2),nanmean(all_pts_sleep_bins(:,late_pre),2)];
-stats = plot_paired_data(early_late_sleep',{'early pre-ictal period','late pre-ictal period','late pre-ictal period'},'Proportion asleep','paired',plot_type);
-title('Early vs late pre-ictal sleep')
+stats = plot_paired_data(early_late_sleep',{'early preictal period','late preictal period','late preictal period'},'Proportion asleep','paired',plot_type);
+title('Early vs late preictal sleep')
+
+    
+    
+    
+    There was a concomitant increase '...
+    'in the proportion of patients detected to be asleep preictally when studying the '...
+    '3-hour preictal window ('...
+    'early median 0.22 spikes/elecs/min, late median 0.23 spikes/elecs/min,'...
+    ' <i>T<sup>+</sup></i> = 1199, <i>p</i> = 0.043) but not when studying the 12-hour preictal window '...
+    '(early median 0.23 spikes/elecs/min, late median 0.23 spikes/elecs/min,'...
+    ' <i>T<sup>+</sup></i> = 1492.5, <i>p</i> = 0.074). This suggests the possibility that some of the '...
+    'apparent preictal increase in spike rates is related to a preictal tendency to '...
+    'be asleep.CHECK ME']);
+    %}
 
 
 
+%print([out_folder,'SuppFig1'],'-depsc')
 
-print([out_folder,'SuppFig1'],'-depsc')
 
-fclose(fid);
 
 end
 

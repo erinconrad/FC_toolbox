@@ -16,7 +16,7 @@ out_folder1 = [scripts_folder,'analyses/sleep/data/'];
 
 %% Load validation file
 val_T = readtable(['Manual validation.xlsx']);
-
+sw_val_T = readtable(['Manual validation.xlsx'],'Sheet','Validation Sw');
 
 %% Load out file
 out = load([out_folder1,'out.mat']);
@@ -34,6 +34,7 @@ duration = nan(npts,1);
 stereo = nan(npts,1);
 ppv = nan(npts,1);
 perc_asleep = n_sleep_wake(:,1)./sum(n_sleep_wake,2)*100;
+ws_ppv = nan(npts,2);
 
 %% Loop over files
 for p = 1:npts
@@ -67,6 +68,11 @@ for p = 1:npts
     assert(sum(row) == 1)
     ppv(p) = val_T.Var11(row);
     
+    %% Sleep wake PPV
+    row = strcmp(sw_val_T.name,name);
+    assert(sum(row) == 1)
+    ws_ppv(p,:) = [sw_val_T.x_Correct_outOf50_Wake/50, sw_val_T.x_Correct_outOf50_Sleep/50];
+    
 end
 
 %% Turn into summary stats
@@ -77,6 +83,9 @@ median_range_duration = [nanmedian(duration),min(duration),max(duration)];
 median_range_rate = [nanmedian(rate),min(rate),max(rate)];
 median_range_ppv = [nanmedian(ppv),min(ppv),max(ppv)];
 median_range_sleep = [nanmedian(perc_asleep),min(perc_asleep),max(perc_asleep)];
+median_range_wake_ppv = [nanmedian(ws_ppv(:,1)),min(ws_ppv(:,1)),max(ws_ppv(:,1))];
+median_range_sleep_ppv = [nanmedian(ws_ppv(:,2)),min(ws_ppv(:,2)),max(ws_ppv(:,2))];
+
 
 % Turn to table
 nelecs_str = {'Number of electrodes: median (range)',sprintf('%1.1f (%1.1f-%1.1f)',...
@@ -106,5 +115,14 @@ all = [nelecs_str;...
 
 T2 = cell2table(all);
 writetable(T2,[out_folder,'Table2.csv']);
+
+%% Results sentence comparing ws ppv
+[pval,~,stats] = signrank(ws_ppv(:,1),ws_ppv(:,2));
+Tpos =stats.signedrank;
+fprintf(['\nExamining a sample of 50 random spike detections from '...
+    'the wake- and sleep-classified periods from each patient demonstrated '...
+    'that the spike detector PPV was similar in wake (median PPV %1.1f%%) '...
+    'and sleep (median PPV %1.1f%%) time periods (T+ = %1.1f, '...
+    'p = %1.2f).\n'],nanmedian(ws_ppv(:,1))*100,nanmedian(ws_ppv(:,2))*100,Tpos,pval);
 
 end
