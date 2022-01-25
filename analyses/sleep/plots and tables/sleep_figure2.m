@@ -270,8 +270,31 @@ annotation('textbox',[0.33 0.42 0.1 0.1],'String','F','fontsize',25,'linestyle',
 annotation('textbox',[0.66 0.42 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
 
 
-fclose(fid);
+
 print([out_folder,'Fig3'],'-depsc')
+close(gcf)
+
+%% Bonus analysis (probably supplemental figure) looking for pre-ictal spike change
+figure
+nbins = size(all_pts_spikes_bins,2);
+early_pre = 1:nbins/4; % first quarter
+late_pre = nbins/4+1:nbins/2; % second quarter
+early_late = [nanmean(all_pts_spikes_bins(:,early_pre),2),nanmean(all_pts_spikes_bins(:,late_pre),2)];
+stats = plot_paired_data(early_late',{'early pre-ictal period','late pre-ictal period','late pre-ictal period'},'Spikes/elec/min','paired',plot_type);
+title('Early vs late pre-ictal spike rates')
+
+% Results text
+fprintf(fid,[' Across all patients, the median spike rate in the late pre-ictal period (median %1.2f spikes/elecs/min)'...
+    ' was similar to that of the early pre-ictal period (median %1.2f spikes/elecs/min) '...
+    '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3F).'...
+    ' This was also true when the full pre-ictal period was defined to be 3 hours '...
+    'and when it was defined to be 12 hours (p < 0.001 for each of the '...
+    'alternative peri-ictal time windows PLEASE CHECK).'],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+
+print([out_folder,'SuppFig1'],'-depsc')
+
+fclose(fid);
 
 end
 
