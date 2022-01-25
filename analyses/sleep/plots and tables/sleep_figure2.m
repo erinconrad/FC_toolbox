@@ -276,10 +276,14 @@ close(gcf)
 
 %% Bonus analysis (probably supplemental figure) looking for pre-ictal spike change
 figure
+set(gcf,'position',[440 463 992 334]);
+tiledlayout(1,2,'tilespacing','tight','padding','tight')
 nbins = size(all_pts_spikes_bins,2);
 early_pre = 1:nbins/4; % first quarter
 late_pre = nbins/4+1:nbins/2; % second quarter
 early_late = [nanmean(all_pts_spikes_bins(:,early_pre),2),nanmean(all_pts_spikes_bins(:,late_pre),2)];
+
+nexttile
 stats = plot_paired_data(early_late',{'early pre-ictal period','late pre-ictal period','late pre-ictal period'},'Spikes/elec/min','paired',plot_type);
 title('Early vs late pre-ictal spike rates')
 
@@ -291,6 +295,14 @@ fprintf(fid,[' Across all patients, the median spike rate in the late pre-ictal 
     'and when it was defined to be 12 hours (p < 0.001 for each of the '...
     'alternative peri-ictal time windows PLEASE CHECK).'],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+
+nexttile
+early_late_sleep = [nanmean(all_pts_sleep_bins(:,early_pre),2),nanmean(all_pts_sleep_bins(:,late_pre),2)];
+stats = plot_paired_data(early_late_sleep',{'early pre-ictal period','late pre-ictal period','late pre-ictal period'},'Proportion asleep','paired',plot_type);
+title('Early vs late pre-ictal sleep')
+
+
+
 
 print([out_folder,'SuppFig1'],'-depsc')
 
