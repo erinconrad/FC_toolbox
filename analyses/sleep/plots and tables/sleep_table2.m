@@ -71,7 +71,7 @@ for p = 1:npts
     %% Sleep wake PPV
     row = strcmp(sw_val_T.name,name);
     assert(sum(row) == 1)
-    ws_ppv(p,:) = [sw_val_T.x_Correct_outOf50_Wake/50, sw_val_T.x_Correct_outOf50_Sleep/50];
+    ws_ppv(p,:) = [sw_val_T.x_Correct_outOf50_Wake(row)/50, sw_val_T.x_Correct_outOf50_Sleep(row)/50];
     
 end
 
