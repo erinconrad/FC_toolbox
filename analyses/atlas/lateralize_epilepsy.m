@@ -1,6 +1,6 @@
 function lateralize_epilepsy
 
-which_atlas = 'brainnetome';
+which_atlas = 'aal_bernabei';%'brainnetome';
 plot_type = 'scatter';
 
 %% Get file locs
@@ -27,9 +27,11 @@ pt_names = out.pt_names;
 nregions = length(names);
 assert(nregions==size(atlas,1))
 
+if strcmp(which_atlas,'aal_bernabei'), names = names'; end
+
 %% Get locs and lats for atlas names
 [locs,lats,loc_nums] = lateralize_regions(names,which_atlas);
-assert(isequal(lats,repmat({'L';'R'},123,1)))
+
 
 %% Load soz lats
 soz_out = load('out.mat');
@@ -41,7 +43,47 @@ npts = length(pt_names);
 % check names match
 assert(isequal(pt_names,soz_pt_names))
 
+%% Check some of these (looked good)
+if 0
+    table(soz_lats,soz_pt_names)
+end
+
 %% Find regions in each patient that are bilaterally filled
+all_bilateral = nan(nregions,npts);
+
+% get left regions
+left_regions = strcmp(lats,'L');
+
+for ip = 1:npts
+    curr_atlas = atlas(:,:,ip);
+    bilateral_region = zeros(nregions,1);
+    
+    % Loop over regions
+    for ir = 1:nregions
+        
+        % skip if not a left region
+        if left_regions(ir) == 0, continue; end
+        
+        % find the row of the corresponding right region
+        curr_loc = locs{ir};
+        right_region = strcmp(locs,curr_loc) & strcmp(lats,'R');
+        
+        % Skip if there is no corresponding right region
+        if sum(right_region) == 0, continue; end
+        
+        % see if both the left and right region have non-empty elements in
+        % the atlas
+        if sum(~isnan(curr_atlas(ir,:))) > 0 && ...
+                sum(~isnan(curr_atlas(right_region,:))) > 0
+            bilateral_region(ir) = 1;
+            bilateral_region(right_region) = 1;
+        
+        end
+    end
+    all_bilateral(:,ip) = bilateral_region;
+end
+
+%{
 all_bilateral = nan(nregions,npts);
 for ip = 1:npts
     curr_atlas = atlas(:,:,ip);
@@ -57,22 +99,26 @@ for ip = 1:npts
     end
     all_bilateral(:,ip) = bilateral_region;
 end
+%}
 
 
 %% Find patients with any bilateral
-any_bilateral = (any(all_bilateral,1))';
+% Restrict to at least 4 bilateral so you can measure intrinsic
+% connectivity on each side
+%any_bilateral = (any(all_bilateral,1))';
+any_bilateral = (sum(all_bilateral,1) >= 4)';
 
 %% Go through and check the regions make sense
 % Look at a selection of patients and compare the regions that I think are
 % bilateral to electrode labels for those patients
-if 0
+if 1
     %pt_names(any_bilateral)
     %ex = 'HUP100';
     %pt_idx = strcmp(pt_names,ex);
     bilat_names = cell(npts,1);
     
     for p = 1:npts
-        bilat_names{p} = names(logical(all_bilateral(:,p)));
+        bilat_names{p} = (names(logical(all_bilateral(:,p))));
         %pt_names(p)
         %pause
     end
@@ -97,9 +143,14 @@ unilateral_soz = strcmp(soz_lats,'left') | strcmp(soz_lats,'right');
 
 %% Find patients for analysis: bilateral implants and unilateral epilepsy
 include = any_bilateral & unilateral_soz;
+fprintf('\nThere are %d patients with both bilateral symmetric coverage and unilateral epilepsy\n',sum(include));
 
 %% Calculate intra-hemispheric FC for those to include
-fc_lr = nan(npts,2);
+% Could separately check intrinsic and extrinsic connectivity?
+fc = cell(2,1);
+fc{1} = nan(npts,2); % intrinsix
+fc{2} = nan(npts,2); % extrinsic
+
 % Loop over patients to include
 for ip = 1:npts
     if include(ip) == 0, continue; end
@@ -108,49 +159,115 @@ for ip = 1:npts
     left = strcmp(lats,'L');
     right = strcmp(lats,'R');
     
-    % Get the average intra-hemispheric edge weights
-    left_fc = nanmean(curr_atlas(left,left),'all');
-    right_fc = nanmean(curr_atlas(right,right),'all');
+    % Restrict to those regions with symmetric coverage
+    curr_bilateral = logical(all_bilateral(:,ip));
     
-    fc_lr(ip,:) = [left_fc, right_fc];
+    % Nice little code to visually check the restricted atlas for the
+    % pateitn
+    if 0
+        
+        % for visualization purposes, re-order by left and then right
+        new_order = [find(left);find(right);find(~left&~right)];
+        reordered_atlas = curr_atlas(new_order,new_order);
+        reordered_names = names(new_order);
+        reordered_bilateral = curr_bilateral(new_order);
+        
+        figure
+        set(gcf,'position',[100 100 800 350])
+        tiledlayout(1,2)
+        nexttile
+        %imagesc(curr_atlas)
+        imagesc(reordered_atlas)
+        title(pt_names{ip})
+        
+        nexttile
+        imagesc(reordered_atlas(reordered_bilateral,reordered_bilateral))
+        %imagesc(curr_atlas(curr_bilateral,curr_bilateral))
+        xticks(1:sum(curr_bilateral))
+        yticks(1:sum(curr_bilateral))
+        xticklabels(reordered_names(reordered_bilateral))
+        yticklabels(reordered_names(reordered_bilateral))
+        pause
+        close(gcf)
+    end
+    
+    % Get the average intrinsic edge weights of the symmetric regions
+    %{
+    This is to say, how connnected is each symmetric region to other
+    symmetric regions on its same side? I think this is the most fair
+    possible test because then I am only looking at the L sided regions
+    that also have corresponding R sided regions.
+    %}
+    left_fc = nanmean(curr_atlas(left&curr_bilateral,left&curr_bilateral),'all');
+    right_fc = nanmean(curr_atlas(right&curr_bilateral,right&curr_bilateral),'all');
+    fc{1}(ip,:) = [left_fc, right_fc];
+    
+    % Get the average extrinsic edge weights of the symmetric regions
+    %{
+    This is to say, how connected is each symmetric region to all other
+    regions?
+    %}
+    left_fc = nanmean(curr_atlas(left&curr_bilateral,~(left&curr_bilateral)),'all');
+    right_fc = nanmean(curr_atlas(right&curr_bilateral,~(right&curr_bilateral)),'all');
+    fc{2}(ip,:) = [left_fc, right_fc];
+    
 end
 
 %% Convert lr to soz-not soz
-fc_soz_not = nan(npts,2);
-for ip = 1:npts
-    if include(ip) == 0, continue; end
-    
-    if strcmp(soz_lats{ip},'left')
-        fc_soz_not(ip,:) = [fc_lr(ip,1) fc_lr(ip,2)];
-    elseif strcmp(soz_lats{ip},'right')
-        fc_soz_not(ip,:) = [fc_lr(ip,2) fc_lr(ip,1)];
-    else
-        error('what')
+fc_soz = cell(length(fc),1);
+fc_soz{1} = nan(npts,2); % intrinsic
+fc_soz{2} = nan(npts,2); % extrinsic
+for i = 1:2
+    fc_lr = fc{i};
+    for ip = 1:npts
+        if include(ip) == 0, continue; end
+
+        if strcmp(soz_lats{ip},'left')
+            fc_soz{i}(ip,:) = [fc_lr(ip,1) fc_lr(ip,2)];
+        elseif strcmp(soz_lats{ip},'right')
+            fc_soz{i}(ip,:) = [fc_lr(ip,2) fc_lr(ip,1)];
+        else
+            error('what')
+        end
     end
 end
 
 %% remove nan rows
-assert(isequal(any(isnan(fc_lr),2),any(isnan(fc_soz_not),2)))
-any_nans = any(isnan(fc_lr),2);
-fc_lr(any_nans,:) = [];
-fc_soz_not(any_nans,:) = [];
-nfinal = size(fc_lr,1);
+for i = 1:2
+    assert(isequal(any(isnan(fc{i}),2),any(isnan(fc_soz{i}),2)))
+    any_nans = any(isnan(fc{i}),2);
+
+    fc{i}(any_nans,:) = [];
+    fc_soz{i}(any_nans,:) = [];
+
+end
 
 %% Do some plots
-p_soz = signrank(fc_soz_not(:,1),fc_soz_not(:,2));
-p_lr = signrank(fc_lr(:,1),fc_lr(:,2));
+p_soz_in = signrank(fc_soz{1}(:,1),fc_soz{1}(:,2));
+p_lr_in = signrank(fc{1}(:,1),fc{1}(:,2));
+p_soz_ex = signrank(fc_soz{2}(:,1),fc_soz{2}(:,2));
+p_lr_ex = signrank(fc{2}(:,1),fc{2}(:,2));
 
 figure
-set(gcf,'position',[10 10 1000 400])
+set(gcf,'position',[10 10 1000 350])
 tiledlayout(1,2)
 
 nexttile
-plot_paired_data(fc_lr',{'left','right','right'},'Intra-hemispheric connectivity','paired',plot_type);
-title('Left vs right connectivity')
+stats = plot_paired_data((fc{1})',{'left','right','right'},'Intrinsic connectivity','paired',plot_type);
+title('Left vs right intrinsic connectivity')
 
 nexttile
-plot_paired_data(fc_soz_not',{'SOZ','non-SOZ','non-SOZ'},'Intra-hemispheric connectivity','paired',plot_type);
-title('SOZ vs non-SOZ connectivity')
+stats = plot_paired_data((fc_soz{1})',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
+title('SOZ vs non-SOZ intrinsic connectivity')
+
+%% text
+fprintf(['\nThe intrinsic connectivity of the SOZ hemisphere (median %1.2f) was '...
+    'lower than that of the non-SOZ hemisphere (median %1.2f) (T+ = %1.2f, p = %1.3f).\n'],...
+    stats.medians(1),stats.medians(2),stats.Tpos,stats.pval);
+
+fprintf(['\nThe connectivity was higher in the non-SOZ for %d (%1.1f%%) of patients.\n'],...
+    sum(fc_soz{1}(:,1)-fc_soz{1}(:,2)<0),sum(fc_soz{1}(:,1)-fc_soz{1}(:,2)<0)/length(fc_soz{1})*100);
+
 
 print(gcf,[out_folder,'lat'],'-dpng')
 

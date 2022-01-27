@@ -1,5 +1,5 @@
 % Specify which hup nums to add
-first_and_last_ieeg_nums = [99 99];
+first_and_last_ieeg_nums = [219 225];
 
 % Get pt info from ieeg.org and add to pt struct
 fprintf('\nGetting ieeg.org info\n');
