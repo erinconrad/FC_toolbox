@@ -1,12 +1,7 @@
 function build_fc_atlas
 
-%% To do
-%{
-- Adding ability to get both bipolar and CAR networks
-%}
-
 %% Parameters
-atlas = 'aal_bernabei';
+atlas = 'brainnetome';
 
 %% Get file locs
 locations = fc_toolbox_locs;
