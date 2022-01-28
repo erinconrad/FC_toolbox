@@ -55,7 +55,6 @@ missing_names = {};
 
 %% Initialize atlas
 atlas_mat = nan(n_parcels,n_parcels,npts);
-n_elecs_all = nan(n_parcels,npts);
 
 %% Loop over patients
 for p = 1:npts
@@ -150,6 +149,7 @@ for p = 1:npts
     
     %% Put into atlas space
     fc_atlas_space = nan(n_parcels,n_parcels);
+    n_elecs_matrix = nan(n_parcels,n_parcels);
     n_elecs = nan(n_parcels,1);
     
     % Loop over n_parcels
@@ -160,9 +160,6 @@ for p = 1:npts
         
         % which elecs for this patient belong to that
         which_elecs_i = out.enum == which_enum_i;
-        
-        % Get number of electrodes contributing to parcel
-        n_elecs(inp) = sum(which_elecs_i);
         
         % Loop over again
         for jnp = 1:inp-1
@@ -178,14 +175,14 @@ for p = 1:npts
             fc_atlas_space(inp,jnp) = nanmean(fc(which_elecs_i,which_elecs_j),'all');
             fc_atlas_space(jnp,inp) = nanmean(fc(which_elecs_i,which_elecs_j),'all');
             
-            
+            % Get number of electrodes contributing to edge
+            n_elecs_matrix(inp,jnp) = sum
             
         end
         
     end
     
     atlas_mat(:,:,p) = fc_atlas_space;
-    n_elecs_all(:,p) = n_elecs;
     
 end
 
@@ -193,7 +190,6 @@ end
 out.atlas = atlas_mat;
 out.atlas_nums = atlas_nums;
 out.atlas_names = atlas_names;
-out.n_elecs_all = n_elecs_all;
 out.pt_names = names;
 out.sozs = sozs;
 out.missing_names = missing_names;

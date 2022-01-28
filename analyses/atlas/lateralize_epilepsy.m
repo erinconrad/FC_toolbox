@@ -1,6 +1,6 @@
 function lateralize_epilepsy
 
-which_atlas = 'aal_bernabei';%'brainnetome';
+which_atlas = 'brainnetome'; %'aal_bernabei'
 plot_type = 'scatter';
 
 %% Get file locs
@@ -111,7 +111,7 @@ any_bilateral = (sum(all_bilateral,1) >= 4)';
 %% Go through and check the regions make sense
 % Look at a selection of patients and compare the regions that I think are
 % bilateral to electrode labels for those patients
-if 1
+if 0
     %pt_names(any_bilateral)
     %ex = 'HUP100';
     %pt_idx = strcmp(pt_names,ex);

@@ -1,7 +1,7 @@
 function localize_epilepsy
 
 %% Parameters
-which_atlas = 'brainnetome';%'aal_bernabei'; %'aal';
+which_atlas = 'aal_bernabei'; %'aal';
 plot_type = 'scatter';
 broad_regions = {'left mesial temporal','right mesial temporal',...
     'left temporal neocortical','right temporal neocortical',...
@@ -102,24 +102,14 @@ for ib = 1:nb
     curr_text = broad_regions{ib};
     num_soz = sum(soz_broad(ib,:));
     fprintf('\n%d of %d (%1.1f%%) patients had SOZ in %s.\n',num_soz,npts,...
-        num_soz/npts*100,curr_text);
+        num_soz/npts*100,
 end
-fprintf('\n%d of %d (%1.1f%%) patients had SOZ that didn''t fit in above categories.\n',...
-    sum(sum(soz_broad,1)==0),npts,sum(sum(soz_broad,1)==0)/npts*100);
 
 %% Get normalized regional connectivity
-% For each patient and each region, I ask how intrinsically connected is
-% that region relative to the same region in other patients.
 zbroad = (broad_connectivity - nanmean(broad_connectivity,2))./nanstd(broad_connectivity,[],2);
 
-if 1
+if 0
     figure
-    set(gcf,'position',[100 100 1000 300])
-    tiledlayout(1,3)
-    
-    nexttile
-    turn_nans_gray(broad_connectivity)
-    
     nexttile
     turn_nans_gray(zbroad)
     
@@ -127,20 +117,20 @@ if 1
     turn_nans_gray(soz_broad)
 end
 
-%% For each patient, compare the normalized regional connectivity of SOZ region to non-SOZ regions
+%% For each patient, compare the regional connectivity of SOZ region to non-SOZ regions
 soz_not = nan(npts,2);
 soz_not_non_normalized = nan(npts,2);
 for ip = 1:npts
-    curr_soz_broad = soz_broad(:,ip); % get this patient's SOZ region
+    curr_soz_broad = soz_broad(:,ip);
     
-    if sum(curr_soz_broad) == 0 % skip if no SOZ (half the patients!)
+    if sum(curr_soz_broad) == 0
         continue;
     end
-    soz_not(ip,1) = (zbroad(curr_soz_broad,ip)); % get normalized connectivity of SOZ
-    soz_not(ip,2) = nanmean(zbroad(~curr_soz_broad,ip)); % normalized connectivity of other regions, averaged across regions
+    soz_not(ip,1) = (zbroad(curr_soz_broad,ip));
+    soz_not(ip,2) = nanmean(zbroad(~curr_soz_broad,ip));
     
     soz_not_non_normalized(ip,:) = [broad_connectivity(curr_soz_broad,ip),...
-        nanmean(broad_connectivity(~curr_soz_broad,ip))]; %same but not normalized connectivity (not controlling for normal anatomical differences)
+        nanmean(broad_connectivity(~curr_soz_broad,ip))];
 end
 
 
