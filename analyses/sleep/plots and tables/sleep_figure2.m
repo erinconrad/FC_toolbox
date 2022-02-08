@@ -8,11 +8,19 @@ hard coded in. IF I CHANGE THE ANALYSES I NEED TO CHANGE THE HARD CODING.
 %% Parameters
 plot_type = 'scatter';
 nblocks = 6;
+
+%{
 myColours = [0, 0.4470, 0.7410;...
     0.8500, 0.3250, 0.0980;...
     0.4660, 0.6740, 0.1880;...
     0.4940, 0.1840, 0.5560;...
     0.6350, 0.0780, 0.1840];
+%}
+
+myColours = [0.1660, 0.540, 0.1880;...
+0.4940, 0.1840, 0.5560;...    
+0.8500, 0.4250, 0.0980;...
+    0.9290 0.6940 0.1250];
 
 
 
@@ -51,7 +59,7 @@ nbins = length(counts);
 skip = 18;
 
 polarhistogram('BinEdges',polar,'BinCounts',counts,...
-    'displayStyle','stairs','linewidth',2)
+    'displayStyle','stairs','linewidth',2,'edgecolor',[0.2 0.2 0.2])
 set(gca,'ThetaDir','clockwise');
 set(gca,'ThetaZeroLocation','top');
 thetaticks(polar(1:skip:nbins)*360/(2*pi))
@@ -87,6 +95,8 @@ sz_rate_sw = sz_circ_out.sz_rate_sw;
 pause(0.3)
 stats = plot_paired_data(sz_rate_sw',{'wake','sleep','sleep'},'Seizures/min','paired',plot_type);
 pause(0.3)
+xlim([0 0.11])
+ylim([0 0.11])
 title('Seizure frequency in wake and sleep')
 
 % Results text
@@ -124,15 +134,16 @@ loc = circ_out.all_locs;
 temporal = contains(loc,'temporal');
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
 [p,~,stats] = ranksum(perc_sz_asleep(temporal),perc_sz_asleep(extra));
-plot(1+randn(sum(temporal),1)*0.05,perc_sz_asleep(temporal),'o','linewidth',2,'color',myColours(1,:))
+plot(1+randn(sum(temporal),1)*0.05,perc_sz_asleep(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
 plot([0.7 1.3],[nanmedian(perc_sz_asleep(temporal)) nanmedian(perc_sz_asleep(temporal))],...
-    'linewidth',2,'color',myColours(1,:))
-plot(2+randn(sum(extra),1)*0.05,perc_sz_asleep(extra),'o','linewidth',2,'color',myColours(2,:))
-plot([1.7 2.3],[nanmedian(perc_sz_asleep(extra)) nanmedian(perc_sz_asleep(extra))],...
     'linewidth',2,'color',myColours(2,:))
+plot(2+randn(sum(extra),1)*0.05,perc_sz_asleep(extra),'o','linewidth',2,'color',myColours(3,:))
+plot([1.7 2.3],[nanmedian(perc_sz_asleep(extra)) nanmedian(perc_sz_asleep(extra))],...
+    'linewidth',2,'color',myColours(3,:))
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
+
 ylabel('Seizures arising from sleep (%)')
 title('Seizures arising from sleep')
 set(gca,'fontsize',15);
@@ -144,6 +155,10 @@ ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
 text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
+yt = yticks;
+ytl = get(gca,'yticklabels');
+%yticks(yt(1:end-1));
+yticklabels(ytl(1:end-1))
 
 W = stats.ranksum;
 nt = sum(~(isnan(perc_sz_asleep(temporal))));
@@ -156,9 +171,27 @@ fprintf(fid,[' The proportion of seizures arising from sleep was similar '...
     'between patients with temporal lobe epilepsy (median = %1.1f%%) and extra-temporal'...
     ' lobe epilepsy (median = %1.1f%%) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig. 3C).</p>'],nanmedian(perc_sz_asleep(temporal)),nanmedian(perc_sz_asleep(extra)),...
+    ' %1.1f, %s) (Fig. 3C).'],nanmedian(perc_sz_asleep(temporal)),nanmedian(perc_sz_asleep(extra)),...
     nt,ne,U,get_p_html(p));
 
+%% Supplemental
+mt = contains(loc,'mesial temporal');
+nc = contains(loc,'cortical') | contains(loc,'other cortex'); % temporal neocortical and other cortex
+
+[p,~,stats] = ranksum(perc_sz_asleep(mt),perc_sz_asleep(nc));
+W = stats.ranksum;
+nt = sum(~(isnan(perc_sz_asleep(mt))));
+ne = sum(~(isnan(perc_sz_asleep(nc))));
+%ns = min([sum(temporal),sum(extra)]);
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+fprintf(fid,[' The proportion of seizures arising from sleep was also similar '...
+    'between patients with mesial temporal epilepsy (median = %1.1f%%) and neocortical'...
+    ' epilepsy (median = %1.1f%%) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
+    ' %1.1f, %s) (Fig. S1C).</p>'],nanmedian(perc_sz_asleep(mt)),nanmedian(perc_sz_asleep(nc)),...
+    nt,ne,U,get_p_html(p));
 
 
 %% Post-ictal surge
@@ -173,13 +206,13 @@ mean_sleep = nanmean(all_pts_sleep_bins,1)*100;
 iqr_spikes = prctile(all_pts_spikes_bins,[25,75],1);
 times = linspace(-surround_hours,surround_hours,length(median_spikes));
 %ylabels = ["Spikes/elecs/min","% Asleep"];
-shaded_error_bars(times,median_spikes,iqr_spikes,myColours(1,:));
+shaded_error_bars_fc(times,median_spikes,iqr_spikes,myColours(1,:));
 hold on
 plot([0 0],ylim,'k--','linewidth',3)
 ylabel('Spikes/elecs/min')
-title('Peri-ictal spike rates')
+title('Peri-ictal spike rates and % asleep')
 set(gca,'fontsize',15)
-xlabel('Hours surrounding seizure')
+%xlabel('Hours surrounding seizure')
 
 fprintf(fid,['<p>We next looked at spike rates surrounding seizures. '...
     'Visually, there was an increase in spike rates after seizures that '...
@@ -211,13 +244,13 @@ temporal = contains(loc,'temporal');
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
 rate_diff = (pre_post(:,2)-pre_post(:,1));
 [p,~,stats] = ranksum(rate_diff(temporal),rate_diff(extra));
-plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(1,:))
+plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
 plot([0.7 1.3],[nanmedian(rate_diff(temporal)) nanmedian(rate_diff(temporal))],...
-    'linewidth',2,'color',myColours(1,:))
-plot(2+randn(sum(extra),1)*0.05,rate_diff(extra),'o','linewidth',2,'color',myColours(2,:))
-plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
     'linewidth',2,'color',myColours(2,:))
+plot(2+randn(sum(extra),1)*0.05,rate_diff(extra),'o','linewidth',2,'color',myColours(3,:))
+plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
+    'linewidth',2,'color',myColours(3,:))
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Post-pre spikes/elec/min')
@@ -246,19 +279,37 @@ fprintf(fid,[' Patients with temporal lobe epilepsy had a greater '...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
     ' %1.1f, %s) (Fig. 3F). This was also true when the pre- and post-ictal'...
     ' windows were defined to be 3 hours each (<i>p</i> = 0.035) and when they '...
-    'were defined to be 12 hours each (<i>p</i> < 0.001) (Supplemental Table 1).</p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    'were defined to be 12 hours each (<i>p</i> < 0.001) (Supplemental Table 1).'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    nt,ne,U,get_p_html(p));
+
+%% Supplemental
+[p,~,stats] = ranksum(rate_diff(mt),rate_diff(nc));
+% text
+W = stats.ranksum;
+nt = sum(~(isnan(rate_diff(mt))));
+ne = sum(~(isnan(rate_diff(nc))));
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+fprintf(fid,[' Patients with mesial temporal epilepsy also had a greater '...
+    'pre-to-postictal increase in spike rates '...
+    '(median = %1.2f spikes/elecs/min) than those with neocortical'...
+    ' epilepsy (median = %1.2f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
+    ' %1.1f, %s) (Fig S1D).</p>'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
     nt,ne,U,get_p_html(p));
 
 
 %% Percent detected asleep
 nexttile([1 1])
-plot(times,mean_sleep,'color',myColours(2,:),'linewidth',2)
+plot(times,mean_sleep,'color',[0.9290, 0.6940, 0.1250],'linewidth',2)
 hold on
-plot([0 0],ylim,'k--','linewidth',3)
+
 set(gca,'fontsize',15)
 ylabel('% Classified asleep')
-title('Peri-ictal sleep classification')
+%title('Peri-ictal sleep classification')
 xlabel('Hours surrounding seizure')
+plot([0 0],ylim,'k--','linewidth',3)
 
 %% Pre-ictal
 nbins = size(all_pts_spikes_bins,2);
@@ -289,13 +340,13 @@ fprintf(fid,[' However, spike rates were significantly higher in the late preict
 nexttile
 rate_diff = early_late(:,2)-early_late(:,1);
 [p,~,stats] = ranksum(rate_diff(temporal),rate_diff(extra));
-plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(1,:))
+plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
 plot([0.7 1.3],[nanmedian(rate_diff(temporal)) nanmedian(rate_diff(temporal))],...
-    'linewidth',2,'color',myColours(1,:))
-plot(2+randn(sum(extra),1)*0.05,rate_diff(extra),'o','linewidth',2,'color',myColours(2,:))
-plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
     'linewidth',2,'color',myColours(2,:))
+plot(2+randn(sum(extra),1)*0.05,rate_diff(extra),'o','linewidth',2,'color',myColours(3,:))
+plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
+    'linewidth',2,'color',myColours(3,:))
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Late-early spikes/elec/min')
@@ -325,7 +376,26 @@ fprintf(fid,[' For the primary analysis of a 6-hour preictal period, the early-t
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
     ' %1.1f, %s) (Fig. 3I). There was also no significant difference in the preictal spike '...
     'rate change between epilepsy localizations when studying the 3-hour '...
-    '(<i>p</i> = 0.66) or 12-hour preictal windows (<i>p</i> = 0.42) (Supplemental Table 1).</p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    '(<i>p</i> = 0.66) or 12-hour preictal windows (<i>p</i> = 0.42) (Supplemental Table 1).'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    nt,ne,U,get_p_html(p));
+
+%% Supplemental
+[p,~,stats] = ranksum(rate_diff(mt),rate_diff(nc));
+W = stats.ranksum;
+nt = sum(~(isnan(rate_diff(mt))));
+ne = sum(~(isnan(rate_diff(nc))));
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+
+fprintf(fid,[' The early-to-late'...
+    ' preictal spike rate change was also similar between patients with mesial temporal epilepsy '...
+    '(median = %1.2f spikes/elecs/min) and those with neocortical epilepsy'...
+    ' (median = %1.2f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
+    ' %1.1f, %s) (Fig S1E). Overall, these results imply that there is no '...
+    'clear preictal spike rate change, and the preictal spike rate change does'...
+    ' not vary by epilepsy localization. </p>'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
     nt,ne,U,get_p_html(p));
 
 
@@ -336,11 +406,12 @@ annotation('textbox',[0.67 0.9 0.1 0.1],'String','C','fontsize',25,'linestyle','
 annotation('textbox',[0 0.545 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 annotation('textbox',[0.33 0.545 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
 annotation('textbox',[0.67 0.545 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.23 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
-annotation('textbox',[0.33 0.23 0.1 0.1],'String','H','fontsize',25,'linestyle','none')
-annotation('textbox',[0.67 0.23 0.1 0.1],'String','I','fontsize',25,'linestyle','none')
+%annotation('textbox',[0 0.23 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.23 0.1 0.1],'String','G','fontsize',25,'linestyle','none')
+annotation('textbox',[0.67 0.23 0.1 0.1],'String','H','fontsize',25,'linestyle','none')
 
-
+%% Add box around D
+annotation('rectangle',[0.001 0.001 0.32 0.65],'color','k','linewidth',2,'linestyle','--')
 
 print([out_folder,'Fig3'],'-depsc')
 close(gcf)

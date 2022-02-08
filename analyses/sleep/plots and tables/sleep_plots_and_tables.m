@@ -6,6 +6,8 @@ sleep_figure2
 
 sleep_figure3
 
+supplemental_fig1
+
 %sleep_table1
 
 %sleep_table2

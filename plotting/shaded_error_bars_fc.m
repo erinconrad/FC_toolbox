@@ -1,4 +1,4 @@
-function [mp,stp] = shaded_error_bars(times,m,st,color)
+function [mp,stp] = shaded_error_bars_fc(times,m,st,color)
 
 if isempty(color)
     color = [0,0.4470, 0.7410];

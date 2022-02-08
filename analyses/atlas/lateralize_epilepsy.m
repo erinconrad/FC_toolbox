@@ -1,6 +1,6 @@
 function lateralize_epilepsy
 
-which_atlas = 'brainnetome'; %'aal_bernabei'
+which_atlas = 'aal_bernabei';%'brainnetome'; %
 plot_type = 'scatter';
 
 %% Get file locs
@@ -173,20 +173,28 @@ for ip = 1:npts
         reordered_bilateral = curr_bilateral(new_order);
         
         figure
-        set(gcf,'position',[100 100 800 350])
+        set(gcf,'position',[100 100 1100 350])
         tiledlayout(1,2)
         nexttile
         %imagesc(curr_atlas)
-        imagesc(reordered_atlas)
+        turn_nans_gray(reordered_atlas)
         title(pt_names{ip})
+        set(gca,'fontsize',15)
+        xlabel('Parcels')
+        ylabel('Parcels')
+        %xticklabels([])
+        %yticklabels([])
         
         nexttile
-        imagesc(reordered_atlas(reordered_bilateral,reordered_bilateral))
+        turn_nans_gray(reordered_atlas(reordered_bilateral,reordered_bilateral))
         %imagesc(curr_atlas(curr_bilateral,curr_bilateral))
         xticks(1:sum(curr_bilateral))
         yticks(1:sum(curr_bilateral))
         xticklabels(reordered_names(reordered_bilateral))
         yticklabels(reordered_names(reordered_bilateral))
+        set(gca,'fontsize',15)
+        title('Symmetric parcellations')
+        print(gcf,[out_folder,'lat_methods_',which_atlas],'-dpng')
         pause
         close(gcf)
     end
@@ -269,6 +277,6 @@ fprintf(['\nThe connectivity was higher in the non-SOZ for %d (%1.1f%%) of patie
     sum(fc_soz{1}(:,1)-fc_soz{1}(:,2)<0),sum(fc_soz{1}(:,1)-fc_soz{1}(:,2)<0)/length(fc_soz{1})*100);
 
 
-print(gcf,[out_folder,'lat'],'-dpng')
+print(gcf,[out_folder,'lat_',which_atlas],'-dpng')
 
 end

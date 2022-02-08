@@ -51,9 +51,12 @@ switch plot_type
         violin_erin(data')
         hold on
     case 'scatter'
-        pcolor = [0.4660, 0.6740, 0.1880];
+        %pcolor = [0.4660, 0.6740, 0.1880];
+        pcolor = [0, 0.4470, 0.7410];
         ncolor = [0.6350, 0.0780, 0.1840];
-        ecolor = [0, 0.4470, 0.7410];
+        %ecolor = [0, 0.4470, 0.7410];
+        %ecolor = [0.4660, 0.6740, 0.1880]; 
+        ecolor = [0.9290, 0.6940, 0.1250];
         if is_ranking
             pos_diff = data(1,:) > data(2,:);
             neg_diff = data(2,:) > data(1,:);
@@ -62,10 +65,13 @@ switch plot_type
             neg_diff = data(1,:) > data(2,:);
         end
         equal_diff = data(1,:) == data(2,:);
-        pp = plot(data(1,pos_diff),data(2,pos_diff),'+','color',pcolor,'linewidth',2);
+        pp = plot(data(1,pos_diff),data(2,pos_diff),'o','markeredgecolor',pcolor,'linewidth',2,...
+            'MarkerFaceColor',pcolor);
         hold on
-        np = plot(data(1,neg_diff),data(2,neg_diff),'x','color',ncolor,'linewidth',2);
-        ep = plot(data(1,equal_diff),data(2,equal_diff),'o','color',ecolor,'linewidth',2);
+        np = plot(data(1,neg_diff),data(2,neg_diff),'^','markeredgecolor',...
+            ncolor,'MarkerFaceColor',ncolor,'linewidth',2);
+        ep = plot(data(1,equal_diff),data(2,equal_diff),'s','markeredgecolor',...
+            ecolor,'markerfacecolor',ecolor,'linewidth',2);
         
         xlabel(sprintf('%s in %s',ytext,sprintf(xlabels{1})))
         ylabel(sprintf('%s in %s',ytext,sprintf(xlabels{2})))
@@ -96,7 +102,7 @@ switch plot_type
         legtext3 = 'Equal';
         
         legend([pp;np;ep],{legtext1,legtext2,legtext3},...
-            'location','southeast','fontsize',15)
+            'location','southeast','fontsize',15,'box','off')
         
         stats_out.medians = [nanmedian(data(1,:)) nanmedian(data(2,:))];
         stats_out.iqrs = [iqr(data(1,:))  iqr(data(2,:))];

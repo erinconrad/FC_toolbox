@@ -4,10 +4,16 @@ function sleep_figure1
 min_rate = 0.1;
 plot_type = 'scatter';
 nblocks = 6;
+%{
 myColours = [0 0.4470 0.7410;...
     0.8500 0.3250 0.0980;...
     0.9290 0.6940 0.1250];
+%}
 
+myColours = [0.1660, 0.540, 0.1880;...
+0.4940, 0.1840, 0.5560;...    
+0.8500, 0.4250, 0.0980;...
+    0.9290 0.6940 0.1250];
 
 
 locations = fc_toolbox_locs;
@@ -39,7 +45,7 @@ iqr_psd = circ_out.iqr_psd;
 periods = circ_out.periods;
 
 nexttile([1 2])
-shaded_error_bars(periods,median_psd,iqr_psd,[]);
+shaded_error_bars_fc(periods,median_psd,iqr_psd,myColours(1,:));
 xlim([0 100])
 xlabel('Period (hours)')
 ylabel({'Spike rate power index'});
@@ -63,20 +69,30 @@ nexttile([1 2])
 median_tod_rate = (nanmedian(norm_rate,1));
 polar = convert_times_to_polar(tod_edges,'radians');
 %
-pspikes = polarhistogram('BinEdges',polar,'BinCounts',median_tod_rate+min(median_tod_rate)+1,...
-    'displayStyle','stairs','linewidth',2);
+all_tod_sw = out.bin_out.all_tod_sw;
+ind_pt_prop = all_tod_sw(:,:,2)./(all_tod_sw(:,:,2)+all_tod_sw(:,:,1));
+prop_asleep = squeeze(nanmean(ind_pt_prop,1))*3.5;
+psleep = polarhistogram('BinEdges',polar,'BinCounts',prop_asleep,...
+    'displayStyle','stairs','linewidth',1,'edgecolor',[0.9290, 0.6940, 0.1250],'linestyle','-');
 hold on
+% Plot median of spike rate over time
+mspikes = repmat(nanmedian(median_tod_rate+min(median_tod_rate)+1),1,length(median_tod_rate));
+%
+pm = polarhistogram('BinEdges',polar,'BinCounts',mspikes,...
+    'displayStyle','stairs','linewidth',1,'edgecolor',myColours(1,:),'linestyle','--');
+pspikes = polarhistogram('BinEdges',polar,'BinCounts',median_tod_rate+min(median_tod_rate)+1,...
+    'displayStyle','stairs','linewidth',2,'edgecolor',myColours(1,:));
+
+
+%}
 %}
 %{
 polarhistogram('BinEdges',polar,'BinCounts',counts,...
     'edgecolor','none')
 %}
 % Add in sw
-all_tod_sw = out.bin_out.all_tod_sw;
-ind_pt_prop = all_tod_sw(:,:,2)./(all_tod_sw(:,:,2)+all_tod_sw(:,:,1));
-prop_asleep = squeeze(nanmean(ind_pt_prop,1))*3.5;
-psleep = polarhistogram('BinEdges',polar,'BinCounts',prop_asleep,...
-    'displayStyle','stairs','linewidth',2);
+
+
 
 set(gca,'ThetaDir','clockwise');
 set(gca,'ThetaZeroLocation','top');
@@ -85,8 +101,8 @@ thetaticks(polar(1:skip:nbins)*360/(2*pi))
 thetaticklabels(hours_mins(1:skip:nbins+1))
 set(gca,'fontsize',15)
 title('Normalized spike rate and % asleep')
-lp = legend({'Spike rates','% asleep'},'fontsize',15,...
-    'Position',[0.3360 0.8300 0.1333 0.0550]);
+lp = legend([pspikes,pm,psleep],{'Spike rates','Median spike rate','% asleep'},'fontsize',15,...
+    'Position',[0.3360 0.8300 0.1333 0.0550],'box','off');
 
 
 observations = convert_counts_to_observations(counts,tod_edges);
@@ -177,8 +193,8 @@ nexttile([1 2])
 plot(1+randn(npts,1)*0.05,rates_sw_corr,'o','linewidth',2,'color',myColours(1,:))
 hold on
 plot([0.75 1.25],[nanmedian(rates_sw_corr) nanmedian(rates_sw_corr)],'linewidth',2,'color',myColours(1,:))
-plot(2+randn(npts,1)*0.05,rl_sw_corr,'o','linewidth',2,'color',myColours(2,:))
-plot([1.75 2.25],[nanmedian(rl_sw_corr) nanmedian(rl_sw_corr)],'linewidth',2,'color',myColours(2,:))
+plot(2+randn(npts,1)*0.05,rl_sw_corr,'o','linewidth',2,'color',[0.6350, 0.0780, 0.1840])
+plot([1.75 2.25],[nanmedian(rl_sw_corr) nanmedian(rl_sw_corr)],'linewidth',2,'color',[0.6350, 0.0780, 0.1840])
 ylabel('Correlation coefficient')
 xlim([0.5 2.5])
 plot(xlim,[0 0],'k--','linewidth',2)
@@ -197,7 +213,7 @@ fprintf(fid,[' We measured the consistency in the patterns of spike rates and sp
     ' rates less than 0.1 spikes/minute in order to prevent artifactual detections from'...
     ' contributing to the timing analysis. The spike rates and spread patterns '...
     'were highly consistent between'...
-    ' wake and sleep (median &#961 across patients: %1.2f for rate, %1.2f for spread) (Fig. 2F).</p>'],...
+    ' wake and sleep (median &#961 across patients: %1.2f for rate, %1.2f for spread) (Fig. 2F).'],...
     nanmedian(rates_sw_corr),nanmedian(rl_sw_corr));
 %{
 nexttile([1 2])
@@ -223,10 +239,10 @@ ns_sw = bin_out.ns_sw;
 nexttile([1 2])
 stats = plot_paired_data(ns_sw',{'wake','sleep'},'Average node strength','paired',plot_type);
 title('Functional connectivity')
-fprintf(fid,['<p>To test a potential mechanism for the increased spike rates in sleep,'...
+fprintf(fid,[' To test a potential mechanism for the increased spike rates in sleep,'...
     ' we compared functional connectivity between wake and sleep. The functional connectivity'...
     ' as measured by the average node strength was higher in sleep (median %1.1f)'...
-    ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 2G).'],...
+    ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 2G).</p>'],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
 %% Overall rate localization
@@ -242,13 +258,13 @@ end
 [p,~,stats] = ranksum(rate(temporal),rate(extra));
 
 nexttile([1 2])
-plot(1+randn(sum(temporal),1)*0.05,rate(temporal),'o','linewidth',2,'color',myColours(1,:))
+plot(1+randn(sum(temporal),1)*0.05,rate(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
 plot([0.7 1.3],[nanmedian(rate(temporal)) nanmedian(rate(temporal))],...
-    'linewidth',2,'color',myColours(1,:))
-plot(2+randn(sum(extra),1)*0.05,rate(extra),'o','linewidth',2,'color',myColours(2,:))
-plot([1.7 2.3],[nanmedian(rate(extra)) nanmedian(rate(extra))],...
     'linewidth',2,'color',myColours(2,:))
+plot(2+randn(sum(extra),1)*0.05,rate(extra),'o','linewidth',2,'color',myColours(3,:))
+plot([1.7 2.3],[nanmedian(rate(extra)) nanmedian(rate(extra))],...
+    'linewidth',2,'color',myColours(3,:))
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Spikes/elec/min')
@@ -270,42 +286,31 @@ ns = min([sum(temporal),sum(extra)]);
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
-fprintf(fid,[' Finally, we tested how overall spike rates and sleep-wake differences in spike'...
-    ' rates varied by epilepsy localization. There was no difference in overall spike rates between patients'...
+fprintf(fid,['<p>We next tested how overall spike rates varied by epilepsy localization. There was no difference in overall spike rates between patients'...
     ' with temporal lobe epilepsy (median = %1.1f spikes/elecs/min) and patients with extra-temporal'...
     ' lobe epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
     ' %1.1f, %s) (Fig. 2H).'],nanmedian(rate(temporal)),nanmedian(rate(extra)),...
     nt,ne,U,get_p_html(p));
 
+%% Add Supplemental Figure 1 result
+mt = contains(loc,'mesial temporal');
+nc = contains(loc,'cortical') | contains(loc,'other cortex'); % temporal neocortical and other cortex
+[p,~,stats] = ranksum(rate(mt),rate(nc));
+W = stats.ranksum;
+nt = sum(~isnan(rate(mt)));
+ne = sum(~isnan(rate(nc)));
+ns = min([sum(mt),sum(nc)]);
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+fprintf(fid,[' There was also no difference in overall spike rates between patients'...
+    ' with mesial temporal lobe epilepsy (median = %1.1f spikes/elecs/min) and patients with neocortical'...
+    ' epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
+    ' %1.1f, %s) (Fig. S1A).</p>'],nanmedian(rate(mt)),nanmedian(rate(nc)),...
+    nt,ne,U,get_p_html(p));
 
-%{
-% Correlate increase in NS with increase in spike rate
-ns_inc = (ns_sw(:,2)-ns_sw(:,1))./ns_sw(:,1);
-rate_inc = (all_rate(:,2)-all_rate(:,1))./all_rate(:,1);
-[r,p] = corr(ns_inc,rate_inc,'type','spearman');
-plot(ns_inc,rate_inc,'o','linewidth',2)
-xlabel('Relative node strength increase in sleep')
-ylabel('Relative spike rate increase in sleep')
-xl = xlim;
-yl = ylim;
-text(xl(1),yl(2),sprintf('\\rho = %1.2f, %s',r,get_p_text(p)),...
-'verticalalignment','top','fontsize',15)
-set(gca,'fontsize',15)
-
-% Correlate electrode-specific increase in NS with increase in spike rate
-elecs_ns = bin_out.all_elecs_ns_sw;
-elecs_rate = bin_out.all_elecs_rates_sw;
-npts = length(elecs_ns);
-all_corr = nan(npts,1);
-for i = 1:npts
-    ns_change = elecs_ns{i}(:,2) - elecs_ns{i}(:,1);
-    rate_change = elecs_rate{i}(:,2) - elecs_rate{i}(:,1);
-    all_corr(i) = corr(ns_change,rate_change,'type','spearman','rows','pairwise');
-end
-plot(all_corr,'o')
-
-%}
 
 %% 2F Localization
 rate_sw = bin_out.all_rates;
@@ -321,11 +326,12 @@ ne = sum(~isnan(rate_diff(extra)));
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
-fprintf(fid,[' There was also no significant difference in sleep-wake spike rate difference between patients'...
-    ' with temporal lobe epilepsy (median = %1.1f spikes/elecs/min) and patients with extra-temporal'...
+fprintf(fid,['<p>Finally, we tested whether the sleep-wake spike rate difference varied by epilepsy localization. '...
+    'There was a non-significant trend toward higher sleep-wake spike rate increase in patients'...
+    ' with temporal lobe epilepsy (median = %1.1f spikes/elecs/min) compared to patients with extra-temporal'...
     ' lobe epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig. 2I).</p>'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    ' %1.1f, %s) (Fig. 2I).'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
     nt,ne,U,get_p_html(p));
 %{
 mesial_temporal = strcmp(loc,'mesial temporal');
@@ -342,13 +348,13 @@ plot(3+randn(nd,1)*0.05,rate_diff(diffuse),'o')
 %}
 
 nexttile([1 2])
-plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(1,:))
+plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
 plot([0.7 1.3],[nanmedian(rate_diff(temporal)) nanmedian(rate_diff(temporal))],...
-    'linewidth',2,'color',myColours(1,:))
-plot(2+randn(sum(extra),1)*0.05,rate_diff(extra),'o','linewidth',2,'color',myColours(2,:))
-plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
     'linewidth',2,'color',myColours(2,:))
+plot(2+randn(sum(extra),1)*0.05,rate_diff(extra),'o','linewidth',2,'color',myColours(3,:))
+plot([1.7 2.3],[nanmedian(rate_diff(extra)) nanmedian(rate_diff(extra))],...
+    'linewidth',2,'color',myColours(3,:))
 xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Sleep-wake spikes/elec/min')
@@ -362,6 +368,23 @@ ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
 text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
+
+%% Add Supplemental result
+[p,~,stats] = ranksum(rate_diff(mt),rate_diff(nc));
+W = stats.ranksum;
+nt = sum(~isnan(rate_diff(mt)));
+ne = sum(~isnan(rate_diff(nc)));
+ns = min([sum(mt),sum(nc)]);
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+
+fprintf(fid,[' There was no significant difference in sleep-wake spike rate difference between patients'...
+    ' with mesial temporal lobe epilepsy (median = %1.1f spikes/elecs/min) and patients with neocortical'...
+    ' epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
+    ' %1.1f, %s) (Fig. S1B).</p>'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
+    nt,ne,U,get_p_html(p));
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')

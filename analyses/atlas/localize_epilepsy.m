@@ -1,7 +1,7 @@
 function localize_epilepsy
 
 %% Parameters
-which_atlas = 'brainnetome';%'aal_bernabei'; %'aal';
+which_atlas = 'brainnetome';% %'aal';'aal_bernabei';
 plot_type = 'scatter';
 broad_regions = {'left mesial temporal','right mesial temporal',...
     'left temporal neocortical','right temporal neocortical',...
@@ -114,22 +114,40 @@ zbroad = (broad_connectivity - nanmean(broad_connectivity,2))./nanstd(broad_conn
 
 if 1
     figure
-    set(gcf,'position',[100 100 1000 300])
-    tiledlayout(1,3)
+    set(gcf,'position',[100 100 1100 300])
+    tiledlayout(1,3,'padding','tight','tilespacing','compact')
     
     nexttile
     turn_nans_gray(broad_connectivity)
+    xlabel('Patient')
+    %ylabel('Region')
+    title('Raw intra-regional connectivity')
+    yticks(1:nb)
+    yticklabels(broad_regions)
+    set(gca,'fontsize',15)
     
     nexttile
     turn_nans_gray(zbroad)
+    xlabel('Patient')
+    %ylabel('Region')
+    yticklabels([])
+    title('Normalized intra-regional connectivity')
+    set(gca,'fontsize',15)
     
     nexttile
     turn_nans_gray(soz_broad)
+    xlabel('Patient')
+    %ylabel('Region')
+    title('SOZ')
+    yticklabels([])
+    set(gca,'fontsize',15)
+    print(gcf,[out_folder,'loc_methods_',which_atlas],'-dpng')
 end
 
 %% For each patient, compare the normalized regional connectivity of SOZ region to non-SOZ regions
 soz_not = nan(npts,2);
 soz_not_non_normalized = nan(npts,2);
+soz_lowest_n = nan(npts,2);
 for ip = 1:npts
     curr_soz_broad = soz_broad(:,ip); % get this patient's SOZ region
     
@@ -141,7 +159,20 @@ for ip = 1:npts
     
     soz_not_non_normalized(ip,:) = [broad_connectivity(curr_soz_broad,ip),...
         nanmean(broad_connectivity(~curr_soz_broad,ip))]; %same but not normalized connectivity (not controlling for normal anatomical differences)
+    
+    % get all zs for this patient
+    zcurr = zbroad(:,ip);
+    [~,I] = min(zcurr);
+    if I == find(curr_soz_broad)
+        soz_lowest_n(ip,1) = 1;
+    else
+        soz_lowest_n(ip,1) = 0;
+    end
+    soz_lowest_n(ip,2) = sum(~isnan(zcurr));
 end
+
+nan_rows = any(isnan(soz_lowest_n),2);
+soz_lowest_n(nan_rows,:) = [];
 
 
 figure
@@ -149,12 +180,18 @@ set(gcf,'position',[221 425 1220 372])
 tiledlayout(1,2)
 nexttile
 stats = plot_paired_data(soz_not_non_normalized',{'SOZ','non-SOZ','non-SOZ'},'Raw intrinsic connectivity','paired',plot_type);
+title('Raw regional connectivity by SOZ status')
 
 nexttile
 stats = plot_paired_data(soz_not',{'SOZ','non-SOZ','non-SOZ'},'Normalized intrinsic connectivity','paired',plot_type);
+title('Normalized regional connectivity by SOZ status')
 
+print(gcf,[out_folder,'loc_',which_atlas],'-dpng')
 
-
+out.broad_connectivity = broad_connectivity;
+out.soz_broad = soz_broad;
+out.broad_regions = broad_regions;
+save([out_folder,'broad_connectivity.mat'],'out');
 
 %% Test if on an atlas-region level, the NS is different for SOZ than others
 % Get node strengths (mean across edges for each node).

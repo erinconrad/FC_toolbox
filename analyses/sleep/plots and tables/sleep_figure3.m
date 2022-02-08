@@ -5,11 +5,11 @@ function sleep_figure3
 %% Parameters
 plot_type = 'scatter';
 nblocks = 6;
-myColours = [0, 0.4470, 0.7410;...
-    0.8500, 0.3250, 0.0980;...
-    0.4660, 0.6740, 0.1880;...
-    0.4940, 0.1840, 0.5560;...
-    0.6350, 0.0780, 0.1840];
+myColours = [0.1660, 0.540, 0.1880;...
+0.4940, 0.1840, 0.5560;...    
+0.8500, 0.4250, 0.0980;...
+    0.9290 0.6940 0.1250];
+
 
 
 locations = fc_toolbox_locs;
@@ -202,13 +202,13 @@ ym = median(unify_y,1);
 ly = prctile(unify_y,25,1);
 uy = prctile(unify_y,75,1);
 
-shaded_error_bars(unify_x,ym,[ly',uy'],'k');
+shaded_error_bars_fc(unify_x,ym,[ly',uy'],'k');
 %plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
 xlabel('False positive rate')
 ylabel('True positive rate')
-legend(sprintf('Median AUC %1.2f',median_auc),'location','southeast','fontsize',15)
+legend(sprintf('Median AUC %1.2f',median_auc),'location','southeast','fontsize',15,'box','off')
 set(gca,'fontsize',15)
 title('SOZ identification accuracy')
 

@@ -196,7 +196,7 @@ prop_asleep = squeeze(nanmean(ind_pt_prop,1));
 
 polar = convert_times_to_polar(tod_edges,'radians');
 polarhistogram('BinEdges',polar,'BinCounts',prop_asleep,...
-    'displayStyle','stairs','linewidth',2)
+    'displayStyle','stairs','linewidth',2,'edgecolor','k')
 set(gca,'ThetaDir','clockwise');
 set(gca,'ThetaZeroLocation','top');
 rlabs = get(gca,'rticklabel');
