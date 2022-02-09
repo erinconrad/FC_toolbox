@@ -50,8 +50,12 @@ all_soz_ranks = all_soz_ranks(I);
 for i = 1:npts
     plot(i,all_ranks{i},'o','color',grayColor,'markersize',markersize);
     hold on
-    sp = plot(i,nanmedian(all_soz_ranks{i}),'*','color',[0.2660 0.6440 0.2880],'linewidth',2,'markersize',markersize+2);
-    cp = plot(i,median(1:num_elecs(i)),'*','color',[0.3 0.3 0.3],'linewidth',2,'markersize',markersize+2);
+    sp = plot(i,nanmedian(all_soz_ranks{i}),'p',...
+        'markerfacecolor',[0.2660 0.6040 0.2880],'markeredgecolor',[0.2660 0.6040 0.2880],...
+        'linewidth',2,'markersize',markersize+5);
+    cp = plot(i,median(1:num_elecs(i)),'o','markeredgecolor',[0.3 0.3 0.3],...
+        'markerfacecolor',[0.25 0.25 0.25],...
+        'linewidth',2,'markersize',markersize+2);
     
 end
 
