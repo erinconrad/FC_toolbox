@@ -91,11 +91,13 @@ fprintf(fid,['<br>We asked whether patients demonstrated a circadian rhythm '...
 %% Percent asleep
 nexttile([1 1])
 sz_rate_sw = sz_circ_out.sz_rate_sw;
+sz_rate_sw = sz_rate_sw/10; % seizures per minute (was previously seizures per ten minutes)
+sz_rate_sw = sz_rate_sw*60*24; % seizures per day
 pause(0.3)
-stats = plot_paired_data(sz_rate_sw',{'wake','sleep','sleep'},'Seizures/min','paired',plot_type);
+stats = plot_paired_data(sz_rate_sw',{'wake','sleep','sleep'},'Seizures/day','paired',plot_type);
 pause(0.3)
-xlim([0 0.11])
-ylim([0 0.11])
+xlim([0 15])
+ylim([0 15])
 title('Seizure frequency in wake and sleep')
 xl = xlim;
 yl = ylim;
@@ -104,8 +106,8 @@ py = yl(1) + 0.99*(yl(2)-yl(1));
 text(px,py,get_p_text(stats.pval),'verticalalignment','top','fontsize',15)
 
 % Results text
-fprintf(fid,[' Seizure rates were not significantly different between sleep (median %1.3f seizures/min)'...
-    ' and wake (median %1.3f seizures/min) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3B).'],...
+fprintf(fid,[' Seizure rates were not significantly different between sleep (median %1.3f seizures/day)'...
+    ' and wake (median %1.3f seizures/day) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3B).'],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
 
