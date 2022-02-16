@@ -7,7 +7,6 @@ hard coded in. IF I CHANGE THE ANALYSES I NEED TO CHANGE THE HARD CODING.
 
 %% Parameters
 plot_type = 'scatter';
-nblocks = 6;
 
 %{
 myColours = [0, 0.4470, 0.7410;...
@@ -98,6 +97,11 @@ pause(0.3)
 xlim([0 0.11])
 ylim([0 0.11])
 title('Seizure frequency in wake and sleep')
+xl = xlim;
+yl = ylim;
+px = xl(1) + 0.01*(xl(2)-xl(1));
+py = yl(1) + 0.99*(yl(2)-yl(1));
+text(px,py,get_p_text(stats.pval),'verticalalignment','top','fontsize',15)
 
 % Results text
 fprintf(fid,[' Seizure rates were not significantly different between sleep (median %1.3f seizures/min)'...

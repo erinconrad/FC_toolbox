@@ -32,7 +32,10 @@ various other paths. Here is an example of what it would look like:
 
 This command take an intermediate dataset called out.mat which contains
 summary level information on spike rates for each patient and will execute
-the code to generate plots, tables, and perform statistical testing.
+the code to generate plots, tables, and perform statistical testing. It
+does not regenerate the Supplemental Table 1 because this requires using an
+alternate out.mat intermediate dataset calculated using different
+peri-ictal window definitions.
 
 %}
 

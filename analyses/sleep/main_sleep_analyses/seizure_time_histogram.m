@@ -141,6 +141,7 @@ for p = 1:npts
             plot([sz_times(s,1) sz_times(s,1)],ylim,'b-','linewidth',2)
         end
         for s = 1:size(bins,1)
+            if bins(s,1) < 1, continue; end
             plot([times(bins(s,1)) times(bins(s,1))],ylim,'g--','linewidth',1)
             plot([times(bins(s,end)) times(bins(s,end))],ylim,'r--','linewidth',1)
         end

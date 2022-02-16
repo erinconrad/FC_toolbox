@@ -213,7 +213,7 @@ for p = 1:npts
     
     %% Wake vs sleep seq info
     seq_sw(p,:) = [nanmean(seq_info(1,wake)) nanmean(seq_info(1,sleep)),...
-        nanmean(seq_info(2,wake)) nanmean(seq_info(2,sleep))];
+        nanmean(seq_info(2,wake)) nanmean(seq_info(2,sleep))]; % number of sequences and length of sequences, respectively
 
     
     %% Correlation between sleep and wake RL

@@ -3,12 +3,7 @@ function sleep_figure1
 %% Parameters
 min_rate = 0.1;
 plot_type = 'scatter';
-nblocks = 6;
-%{
-myColours = [0 0.4470 0.7410;...
-    0.8500 0.3250 0.0980;...
-    0.9290 0.6940 0.1250];
-%}
+
 
 myColours = [0.1660, 0.540, 0.1880;...
 0.4940, 0.1840, 0.5560;...    
@@ -110,7 +105,7 @@ polar2 = convert_times_to_polar(observations,'radians');
 %[pval z] = circ_rtest(polar2);
 
 
-[pval z all_mu] = test_pt_circular_means(all_tod_rate,polar,hours_mins);
+[pval,z,all_mu] = test_pt_circular_means(all_tod_rate,polar,hours_mins);
 %circ_plot(all_mu,'hist',[],length(polar),true,true,'linewidth',2,'color','r')
 
 

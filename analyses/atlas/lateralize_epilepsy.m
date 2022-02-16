@@ -279,4 +279,5 @@ fprintf(['\nThe connectivity was higher in the non-SOZ for %d (%1.1f%%) of patie
 
 print(gcf,[out_folder,'lat_',which_atlas],'-dpng')
 
+
 end
