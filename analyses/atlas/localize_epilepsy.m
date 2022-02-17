@@ -1,7 +1,7 @@
 function localize_epilepsy
 
 %% Parameters
-which_atlas = 'brainnetome';% %'aal';'aal_bernabei';
+which_atlas = 'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
 plot_type = 'scatter';
 broad_regions = {'left mesial temporal','right mesial temporal',...
     'left temporal neocortical','right temporal neocortical',...
@@ -129,277 +129,38 @@ fprintf('\n%d of %d (%1.1f%%) patients had SOZ that didn''t fit in above categor
 zbroad = (broad_connectivity - nanmean(broad_connectivity,3))./nanstd(broad_connectivity,[],3);
 
 
-%% Get some basic measurements of connectivity
-intrinsic = nan(nb,npts);
-intrinsic_raw = nan(nb,npts);
-extrinsic = nan(nb,npts);
-for ip = 1:npts
-    curr_pt = zbroad(:,:,ip);
-    curr_pt_raw = broad_connectivity(:,:,ip);
-    curr_intrinsic = curr_pt(logical(eye(size(curr_pt))));
-    curr_intrinsic_raw = curr_pt_raw(logical(eye(size(curr_pt))));
-    
-    curr_pt_for_extrinsic = curr_pt;
-    curr_pt_for_extrinsic(logical(eye(size(curr_pt)))) = nan;
-    curr_extrinsic = nanmean(curr_pt_for_extrinsic,2);
-    intrinsic(:,ip) = curr_intrinsic;
-    intrinsic_raw(:,ip) = curr_intrinsic_raw;
-    extrinsic(:,ip) = curr_extrinsic;
-end
 
+%% Reorder connectivity matrix by SOZ - non SOZ ipsi 1 - non SOZ ipsi 2 - contralateral for each
+znew = reorder_locs_soz(zbroad,soz_broad);
 if 1
-    figure
-    set(gcf,'position',[100 100 1400 300])
-    tiledlayout(1,5,'padding','tight','tilespacing','compact')
-    
-    nexttile
-    turn_nans_gray(nanmean(broad_connectivity,3))
-    %xlabel('Region')
-    %ylabel('Region')
-    title('Mean raw regional connectivity')
-    yticks(1:nb)
-    yticklabels(broad_regions)
-    xticks(1:nb)
-    xticklabels(broad_regions)
-    set(gca,'fontsize',15)
-    
-    nexttile
-    turn_nans_gray(nelecs_broad)
-    xlabel('Patient')
-    %ylabel('Region')
-    title('# Elecs')
-    yticklabels([])
-    set(gca,'fontsize',15)
-    
-    nexttile
-    turn_nans_gray(intrinsic)
-    xlabel('Patient')
-    %ylabel('Region')
-    yticklabels([])
-    title('Normalized intra-regional connectivity')
-    set(gca,'fontsize',15)
-    
-    nexttile
-    turn_nans_gray(extrinsic)
-    xlabel('Patient')
-    %ylabel('Region')
-    yticklabels([])
-    title('Normalized extra-regional connectivity')
-    set(gca,'fontsize',15)
-    
-    nexttile
-    turn_nans_gray(soz_broad)
-    xlabel('Patient')
-    %ylabel('Region')
-    title('SOZ')
-    yticklabels([])
-    set(gca,'fontsize',15)
-    
-    
-    
-    print(gcf,[out_folder,'loc_methods_',which_atlas],'-dpng')
-end
+figure
+turn_nans_gray(nanmean(znew,3))
+xticks(1:6)
+xticklabels({'SOZ','ipsi1','ipsi2','contra1','contra2','contra3'})
+yticks(1:6)
+yticklabels({'SOZ','ipsi1','ipsi2','contra1','contra2','contra3'})
 
-%% Get left/right connectivity
-lr_conn = nan(npts,2);
-left_idx = find(strcmp(broad_lat,'left'));
-right_idx = find(strcmp(broad_lat,'right'));
-soz_non_conn = nan(npts,2);
-for ip = 1:npts
-    % left conn
-    left_conns = [];
-    for ib = left_idx
-        for jb = left_idx
-            left_conns = [left_conns;(zbroad(ib,jb,ip))];
-        end
-    end
-    lr_conn(ip,1) = nanmean(left_conns);
-    
-    % right conn
-    right_conns = [];
-    for ib = right_idx
-        for jb = right_idx
-            right_conns = [right_conns;(zbroad(ib,jb,ip))];
-        end
-    end
-    lr_conn(ip,2) = nanmean(right_conns);
-    
-    curr_soz_broad = soz_broad(:,ip);
-    if sum(curr_soz_broad) == 0 % skip if no SOZ (half the patients!)
-        continue;
-    end
-    
-    if ismember(find(curr_soz_broad),[1 3 5]) % left laterality
-        soz_non_conn(ip,1) = lr_conn(ip,1);
-        soz_non_conn(ip,2) = lr_conn(ip,2);
-    elseif ismember(find(curr_soz_broad),[2 4 6]) % right laterality
-        soz_non_conn(ip,2) = lr_conn(ip,1);
-        soz_non_conn(ip,1) = lr_conn(ip,2);
-    end
 end
 
 
-%% For each patient, compare the normalized regional connectivity of SOZ region to non-SOZ regions
-soz_not = nan(npts,2,2); % first split for intrinsic vs extrinsic, second for soz vs not
-%soz_not_non_normalized = nan(npts,2);
-soz_lowest_n = nan(npts,2);
-percentile = nan(npts,1);
-for ip = 1:npts
-    curr_soz_broad = soz_broad(:,ip); % get this patient's SOZ region
-    
-    if sum(curr_soz_broad) == 0 % skip if no SOZ (half the patients!)
-        continue;
-    end
-    soz_not(ip,1,1) = (intrinsic(curr_soz_broad,ip)); % get normalized connectivity of SOZ
-    soz_not(ip,1,2) = nanmean(intrinsic(~curr_soz_broad,ip)); % normalized connectivity of other regions, averaged across regions
-    
-    soz_not(ip,2,1) = (extrinsic(curr_soz_broad,ip)); % get normalized connectivity of SOZ
-    soz_not(ip,2,2) = nanmean(extrinsic(~curr_soz_broad,ip)); % normalized connectivity of other regions, averaged across regions
-    
-    %{
-    soz_not_non_normalized(ip,:) = [broad_connectivity(curr_soz_broad,ip),...
-        nanmean(broad_connectivity(~curr_soz_broad,ip))]; %same but not normalized connectivity (not controlling for normal anatomical differences)
-    %}
-    
-    %% get all zs for this patient
-    %
-    zcurr = intrinsic(:,ip);
-    
-    %% Get percentile (amongst non-nans) of SOZ
-    zcurr_nans = isnan(zcurr);
-    
-    if sum(zcurr_nans) == length(zcurr), continue; end
-    
-    zcurr_non_nans = zcurr(~zcurr_nans);
-    curr_soz_broad_non_nans = curr_soz_broad(~zcurr_nans);
-    
-    if ~any(curr_soz_broad_non_nans) == 1, continue; end
-    
-    [~,I] = sort(zcurr_non_nans);
-    r = 1:length(zcurr_non_nans);
-    r(I) = r;
-    percentile(ip) = (r(curr_soz_broad_non_nans)+r(curr_soz_broad_non_nans)-1)/2/length(zcurr_non_nans);
-    %}
-    %% How often is SOZ lowest 
-    [~,I] = min(zcurr_non_nans);
-    if I == find(curr_soz_broad_non_nans)
-        soz_lowest_n(ip,1) = 1;
-    else
-        soz_lowest_n(ip,1) = 0;
-    end
-    soz_lowest_n(ip,2) = length(zcurr_non_nans);
-end
-
-nan_rows = any(isnan(soz_lowest_n),2) | soz_lowest_n(:,2) == 0;
-soz_lowest_n(nan_rows,:) = []; % note, I may be shooting myself in the foot by not removing those where soz is nan
-percentile(nan_rows) = [];
-
-%% Does soz have lowest connectivity more often than chance?
-succ_and_p = [soz_lowest_n(:,1),1./soz_lowest_n(:,2)];
-[pval,nchance] = general_binomial_test(succ_and_p);
-
-%% For each localization (non-laterlized), compare connectivity between side with most electrodes and side with least
-nbn = nb/2;
-agree_conn_nelecs = nan(nbn,npts);
-for ip = 1:npts
-    for ib = 1:nbn
-        curr_b = (ib-1)*2+1;
-        
-        if isnan(nelecs_broad(curr_b,ip)) || nelecs_broad(curr_b,ip) == nelecs_broad(curr_b+1,ip) || ...
-                isnan(intrinsic_raw(curr_b,ip)) || isnan(intrinsic_raw(curr_b+1,ip)) || ...
-                intrinsic_raw(curr_b,ip) == intrinsic_raw(curr_b+1,ip)
-            continue;
-        end
-        more_elecs_left = nelecs_broad(curr_b,ip) > nelecs_broad(curr_b+1,ip);
-        higher_conn_left = intrinsic_raw(curr_b,ip) > intrinsic_raw(curr_b+1,ip);
-        
-        if (more_elecs_left && higher_conn_left) || (~more_elecs_left && ~higher_conn_left)
-            agree_conn_nelecs(ib,ip) = 1;
-        else
-            agree_conn_nelecs(ib,ip) = 0;
-        end
-    end
-end
-
-perc_agree = sum(agree_conn_nelecs == 1,2)./sum(~isnan(agree_conn_nelecs),2)*100;
-new_ylabs = cell(3,1);
-for i = 1:3
-    new_ylabs{i} = sprintf('%s (%1.1f%%)',broad_non_lat{i},perc_agree(i));
-end
+%% Lateralize and localize epilepsy
+soz_lat_not = [nanmean(squeeze([znew(1,1,:),znew(2,2,:),znew(3,3,:)]),1)',...
+    nanmean(squeeze([znew(4,4,:),znew(5,5,:),znew(6,6,:)]),1)'];
+soz_loc_not = [squeeze(znew(1,1,:)),nanmean(squeeze([znew(2,2,:),znew(3,3,:)]),1)'];
 
 figure
-turn_nans_gray(agree_conn_nelecs)
-yticks(1:3)
-yticklabels(new_ylabs)
-xticklabels([])
-xlabel('Patient')
-title('Does side with more electrodes have higher intrinsic connectivity?')
-
-%% Localize epilepsy
-figure
-set(gcf,'position',[221 425 1220 372])
+set(gcf,'position',[221 425 1220 452])
 tiledlayout(1,2)
+nexttile
+stats = plot_paired_data(soz_lat_not',{'side of SOZ','side of non-SOZ','non-SOZ'},'Normalized intrinsic connectivity','paired',plot_type);
+title('Normalized intrinsic connectivity by SOZ laterality')
 
 nexttile
-stats = plot_paired_data(squeeze(soz_not(:,1,:))',{'SOZ','non-SOZ','non-SOZ'},'Normalized intrinsic connectivity','paired',plot_type);
-title('Normalized intrinsic connectivity by SOZ status')
+stats = plot_paired_data(soz_loc_not',{'SOZ','non-SOZ','non-SOZ'},'Normalized intrinsic connectivity','paired',plot_type);
+title({'Normalized intrinsic connectivity by SOZ localization','(within same laterality)'})
 
-nexttile
-stats = plot_paired_data(squeeze(soz_not(:,2,:))',{'SOZ','non-SOZ','non-SOZ'},'Normalized extrinsic connectivity','paired',plot_type);
-title('Normalized extrinsic connectivity by SOZ status')
+print(gcf,[out_folder,'localize'],'-dpng');
 
-print(gcf,[out_folder,'loc_',which_atlas],'-dpng')
-
-out.broad_connectivity = broad_connectivity;
-out.soz_broad = soz_broad;
-out.broad_regions = broad_regions;
-save([out_folder,'broad_connectivity.mat'],'out');
-
-
-%% Test if on an atlas-region level, the NS is different for SOZ than others
-% Get node strengths (mean across edges for each node).
-% I do mean instead of sum because nansum of all nans is 0, but nanmean of
-% all nans is nan
-if 0
-ns = squeeze(nanmean(atlas,1));
-
-% Convert ns to z-score, comparing each region to that of the same region in other patients
-z = (ns - nanmean(ns,2))./nanstd(ns,[],2);
-
-% For each patient, get the average z score of the SOZ electrodes and non-SOZ electrodes
-
-z_soz_no = nan(npts,2);
-for ip = 1:npts
-    curr_z = z(:,ip);
-    curr_sozs = sozs{ip};
-    is_soz = ismember(atlas_nums,curr_sozs);
-    z_soz = nanmean(curr_z(is_soz));
-    z_not = nanmean(curr_z(~is_soz));
-    z_soz_no(ip,:) = [z_soz z_not];
-    
-    
-    if 0
-        fprintf('\n%s SOZ:\n',pt_names{ip});
-        names(is_soz)
-        pause
-        
-    end
-    
-end
-
-% Remove rows with any nans
-any_nans = any(isnan(z_soz_no),2);
-z_soz_no(any_nans,:) = [];
-
-stats = plot_paired_data(z_soz_no',{'SOZ','Non-SOZ','non-SOZ'},'Node strength (z-score)','paired',plot_type);
-
-fprintf(['\nThe mean edge weights of the SOZ regions (median %1.2f) was '...
-    'lower than that of the non-SOZ regions (median %1.2f) (T+ = %1.2f, p = %1.3f).\n'],...
-    stats.medians(1),stats.medians(2),stats.Tpos,stats.pval);
-
-fprintf(['\nThe connectivity was higher in the non-SOZ for %d (%1.1f%%) of patients.\n'],...
-    sum(diff(z_soz_no,1,2)>0),sum(diff(z_soz_no,1,2)>0)/size(z_soz_no,1)*100);
-end
 
 
 end

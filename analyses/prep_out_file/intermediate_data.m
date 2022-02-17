@@ -259,6 +259,7 @@ for l = 1:npts
     summ.avg_fc_car = avg_fc_car;
     summ.ns_bi = ns_bi;
     summ.avg_fc_bi = avg_fc_bi;
+    summ.fc_car = fc_car;
     %summ.ge = ge;
 
     %% Save it all
