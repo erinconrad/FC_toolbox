@@ -2,7 +2,7 @@ function build_sw_atlas
 
 
 %% Parameters
-atlas = 'brainnetome';
+atlas = 'aal_bernabei';
 
 %% Get file locs
 locations = fc_toolbox_locs;

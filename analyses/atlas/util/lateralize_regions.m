@@ -26,7 +26,7 @@ switch atlas
             
         end
         
-        assert(isequal(lats,repmat({'L';'R'},123,1)))
+       % assert(isequal(lats,repmat({'L';'R'},123,1)))
         
     case 'aal'
         locs{1} = regions{1};

@@ -1,6 +1,7 @@
 function lateralize_epilepsy
 
-which_atlas = 'aal_bernabei';%'brainnetome'; %
+which_atlas = 'brainnetome';%'aal_bernabei';% %
+do_sw = 1;
 plot_type = 'scatter';
 
 %% Get file locs
@@ -17,7 +18,11 @@ addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
 %% Load atlas
-out = load([atlas_folder,which_atlas,'.mat']);
+if do_sw
+    out = load([atlas_folder,which_atlas,'_ws.mat']);
+else
+    out = load([atlas_folder,which_atlas,'.mat']);
+end
 out = out.out;
 
 
@@ -27,7 +32,7 @@ pt_names = out.pt_names;
 nregions = length(names);
 assert(nregions==size(atlas,1))
 
-if strcmp(which_atlas,'aal_bernabei'), names = names'; end
+if contains(which_atlas,'aal_bernabei'), names = names'; end
 
 %% Get locs and lats for atlas names
 [locs,lats,loc_nums] = lateralize_regions(names,which_atlas);
