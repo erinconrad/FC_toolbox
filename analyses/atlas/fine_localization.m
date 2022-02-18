@@ -9,7 +9,7 @@ regions?
 %% Parameters
 which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
 plot_type = 'scatter';
-coverage_limit = 20;
+coverage_limit = 10;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -27,6 +27,13 @@ addpath(genpath(bct_folder));
 %% Load atlas
 out = load([atlas_folder,which_atlas,'.mat']);
 out = out.out;
+
+%% Load soz lats
+soz_out = load('out.mat');
+soz_out = soz_out.out.circ_out;
+soz_lats = soz_out.all_lats;
+right_lat = strcmp(soz_lats,'right');
+left_lat = strcmp(soz_lats,'left');
 
 atlas = out.atlas;
 names = out.atlas_names;
@@ -83,11 +90,50 @@ end
 %% Get locs and lats for atlas names
 [locs,lats,loc_nums] = lateralize_regions(names,which_atlas);
 
+%% Come up with new order so that I can visualize network according to SOZ/non-SOZ
+% First, order by left and then right
+new_order = reorder_lr(locs,lats);
+reordered_lats = lats(new_order);
+new_order_left = strcmp(reordered_lats,'L');
+new_order_right = strcmp(reordered_lats,'R');
+new_order_neither = ~new_order_left & ~new_order_right;
+reordered_atlas = atlas(new_order,new_order,:);
+lat_labels = cell(size(atlas,1),1);
+
+soz_order_atlas = nan(size(atlas));
+for ip = 1:npts
+    curr_soz_right = right_lat(ip);
+    curr_soz_left = left_lat(ip);
+    
+    if curr_soz_right == 0 && curr_soz_left == 0, continue; end
+    
+    if curr_soz_left == 1
+        soz_order_atlas(:,:,ip) = reordered_atlas(:,:,ip);
+        lat_labels(1:sum(new_order_left)) = {'SOZ'};
+        lat_labels(sum(new_order_left)+1:end) = {'non-SOZ'};
+    elseif curr_soz_right == 1
+        soz_order_atlas(1:sum(new_order_right),1:sum(new_order_right),ip) = reordered_atlas(new_order_right,new_order_right,ip);
+        soz_order_atlas(sum(new_order_right)+1:sum(new_order_right)+sum(new_order_left),...
+            sum(new_order_right)+1:sum(new_order_right)+sum(new_order_left),ip) = reordered_atlas(new_order_left,new_order_left,ip);
+        soz_order_atlas(sum(new_order_right)+sum(new_order_left)+1:end,...
+            sum(new_order_right)+sum(new_order_left)+1:end,ip) = reordered_atlas(new_order_neither,new_order_neither,ip);
+        lat_labels(1:sum(new_order_right)) = {'SOZ'};
+        lat_labels(sum(new_order_right)+1:end) = {'non-SOZ'};
+    end
+    
+end
+
+if 1
+    turn_nans_gray(nanmean(soz_order_atlas,3))
+    yticks(1:size(soz_order_atlas,1))
+    yticklabels(lat_labels)
+end
+
 %% Ns
 ns = squeeze(nanmean(atlas,2));
 z = (ns-nanmean(ns,2))./nanstd(ns,[],2);
 
-if 1
+if 0
     figure
     nexttile
     turn_nans_gray(z)
@@ -98,6 +144,9 @@ if 1
     turn_nans_gray(bin_soz)
 end
 
+%% Plot orders
+%plot_orders_mats(ns,bin_soz);
+
 %% Z soz vs not
 soz_not = nan(npts,2);
 soz_not_raw = nan(npts,2);
@@ -107,6 +156,7 @@ for ip = 1:npts
     soz_not_raw(ip,:) = [nanmean((ns(curr_soz,ip))), nanmean((ns(~curr_soz,ip)))];
 end
 
+if 1
 figure
 nexttile
 stats = plot_paired_data((soz_not)',{'SOZ','non-SOZ','non-SOZ'},'Normalized connectivity','paired',plot_type);
@@ -114,5 +164,8 @@ stats = plot_paired_data((soz_not)',{'SOZ','non-SOZ','non-SOZ'},'Normalized conn
 nexttile
 
 stats = plot_paired_data((soz_not_raw)',{'SOZ','non-SOZ','non-SOZ'},'Raw connectivity','paired',plot_type);
+end
+
+
 
 end

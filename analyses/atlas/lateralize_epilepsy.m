@@ -1,6 +1,6 @@
 function lateralize_epilepsy
 
-which_atlas = 'brainnetome';%'aal_bernabei';% %
+which_atlas = 'aal_bernabei';%'brainnetome';%'aal_bernabei';% %
 do_sw = 1;
 plot_type = 'scatter';
 
@@ -27,6 +27,7 @@ out = out.out;
 
 
 atlas = out.atlas;
+atlas_ws = out.atlas_ws;
 names = out.atlas_names;
 pt_names = out.pt_names;
 nregions = length(names);
@@ -156,11 +157,16 @@ fc = cell(2,1);
 fc{1} = nan(npts,2); % intrinsix
 fc{2} = nan(npts,2); % extrinsic
 
+fc_ws = cell(2,1);
+fc_ws{1} = nan(npts,2,2);
+fc_ws{2} = nan(npts,2,2);
+
 % Loop over patients to include
 for ip = 1:npts
     if include(ip) == 0, continue; end
     
     curr_atlas = atlas(:,:,ip);
+    curr_atlas_ws = atlas_ws(:,:,:,ip);
     left = strcmp(lats,'L');
     right = strcmp(lats,'R');
     
@@ -224,21 +230,42 @@ for ip = 1:npts
     right_fc = nanmean(curr_atlas(right&curr_bilateral,~(right&curr_bilateral)),'all');
     fc{2}(ip,:) = [left_fc, right_fc];
     
+    % Intrinsic for ws
+    left_fc_sw = nanmean(curr_atlas_ws(left&curr_bilateral,left&curr_bilateral,:),[1 2]);
+    right_fc_sw = nanmean(curr_atlas_ws(right&curr_bilateral,right&curr_bilateral,:),[1 2]);
+    fc_ws{1}(ip,:,1) = squeeze(left_fc_sw);
+    fc_ws{1}(ip,:,2) = squeeze(right_fc_sw);
+    
+    % Extrinsic for ws
+    left_fc_sw = nanmean(curr_atlas_ws(left&curr_bilateral,~(left&curr_bilateral),:),[1 2]);
+    right_fc_sw = nanmean(curr_atlas_ws(right&curr_bilateral,~(right&curr_bilateral),:),[1 2]);
+    fc_ws{2}(ip,:,1) = squeeze(left_fc_sw);
+    fc_ws{2}(ip,:,2) = squeeze(right_fc_sw);
+    
 end
 
 %% Convert lr to soz-not soz
 fc_soz = cell(length(fc),1);
 fc_soz{1} = nan(npts,2); % intrinsic
 fc_soz{2} = nan(npts,2); % extrinsic
+
+fc_soz_ws = cell(length(fc),1);
+fc_soz_ws{1} = nan(npts,2,2);
+fc_soz_ws{2} = nan(npts,2,2);
 for i = 1:2
     fc_lr = fc{i};
+    fc_ws_lr = fc_ws{i};
     for ip = 1:npts
         if include(ip) == 0, continue; end
 
         if strcmp(soz_lats{ip},'left')
             fc_soz{i}(ip,:) = [fc_lr(ip,1) fc_lr(ip,2)];
+            fc_soz_ws{i}(ip,:,1) = squeeze(fc_ws_lr(ip,:,1));
+            fc_soz_ws{i}(ip,:,2) = squeeze(fc_ws_lr(ip,:,2));
         elseif strcmp(soz_lats{ip},'right')
             fc_soz{i}(ip,:) = [fc_lr(ip,2) fc_lr(ip,1)];
+            fc_soz_ws{i}(ip,:,1) = squeeze(fc_ws_lr(ip,:,2));
+            fc_soz_ws{i}(ip,:,2) = squeeze(fc_ws_lr(ip,:,1));
         else
             error('what')
         end
@@ -253,6 +280,30 @@ for i = 1:2
     fc{i}(any_nans,:) = [];
     fc_soz{i}(any_nans,:) = [];
 
+end
+
+%% Also remove nans from ws
+for i = 1:2
+    % Think about this
+end
+
+if do_sw
+    wake_fc_soz = squeeze(fc_soz_ws{1}(:,1,:));
+    sleep_fc_soz = squeeze(fc_soz_ws{1}(:,2,:));
+    
+    figure
+    set(gcf,'position',[10 10 1000 350])
+    tiledlayout(1,2)
+    nexttile
+    stats = plot_paired_data(wake_fc_soz',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
+    title('SOZ vs non-SOZ intrinsic connectivity: wake')
+    
+    nexttile
+    stats = plot_paired_data(sleep_fc_soz',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
+    title('SOZ vs non-SOZ intrinsic connectivity: sleep')
+    
+    
+    
 end
 
 %% Do some plots

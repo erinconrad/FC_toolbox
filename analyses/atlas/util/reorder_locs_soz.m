@@ -1,4 +1,4 @@
-function out = reorder_locs_soz(A,soz)
+function out = reorder_locs_soz(A,soz,do_sw)
 
 %{
 Goal: reorder the SOZ matrix to be in the form of SOZ-ipsi non SOZ 1-ipsi
@@ -15,7 +15,12 @@ code = {'L1','R1','L2','R2','L3','R3'};
 
 out = nan(size(A));
 all_orders = nan(size(soz));
-npts = size(A,3);
+
+if do_sw
+    npts = size(A,4);
+else
+    npts = size(A,3);
+end
 
 for ip = 1:npts
     % get soz
@@ -51,7 +56,11 @@ for ip = 1:npts
     end
     all_orders(:,ip) = new_order;
     
-    out(:,:,ip) = A(new_order,new_order,ip);
+    if do_sw
+        out(:,:,:,ip) = A(new_order,new_order,:,ip);
+    else
+        out(:,:,ip) = A(new_order,new_order,ip);
+    end
     
 end
 

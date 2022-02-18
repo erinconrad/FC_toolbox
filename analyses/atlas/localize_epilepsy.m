@@ -1,7 +1,8 @@
 function localize_epilepsy
 
 %% Parameters
-which_atlas = 'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
+do_sw = 1;
+which_atlas = 'brainnetome';%'aal_bernabei';%% %'aal';'aal_bernabei';
 plot_type = 'scatter';
 broad_regions = {'left mesial temporal','right mesial temporal',...
     'left temporal neocortical','right temporal neocortical',...
@@ -24,10 +25,16 @@ addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
 %% Load atlas
-out = load([atlas_folder,which_atlas,'.mat']);
+if do_sw
+    out = load([atlas_folder,which_atlas,'_ws.mat']);
+else
+    out = load([atlas_folder,which_atlas,'.mat']);
+end
+
 out = out.out;
 
 atlas = out.atlas;
+atlas_ws = out.atlas_ws;
 names = out.atlas_names;
 pt_names = out.pt_names;
 atlas_nums = out.atlas_nums;
@@ -78,6 +85,7 @@ atlas(:,ignore,:) = nan;
 %% Get the average connectivity of each of the broad regions to each other 
 % also getting SOZ and number of electrodes
 broad_connectivity = nan(nb,nb,npts);
+broad_connectivity_ws = nan(nb,nb,2,npts); % wake, sleep
 soz_broad = zeros(nb,npts);
 nelecs_broad = zeros(nb,npts);
 % Loop over broad regions (6 total)
@@ -96,6 +104,9 @@ for ib = 1:nb
             % get intrinsic connectivity of that region
             conn = nanmean(atlas(i_regions,j_regions,ip),'all');
             broad_connectivity(ib,jb,ip) = conn;
+            
+            conn_ws = squeeze(nanmean(atlas_ws(i_regions,j_regions,:,ip),[1 2]));
+            broad_connectivity_ws(ib,jb,:,ip) = conn_ws;
 
             % Get soz
             curr_soz = soz_lat_loc{ip};
@@ -127,12 +138,15 @@ fprintf('\n%d of %d (%1.1f%%) patients had SOZ that didn''t fit in above categor
 % For each element of the connectivity matrix and each patient, I ask how
 % strong that edge is relative to the patient average
 zbroad = (broad_connectivity - nanmean(broad_connectivity,3))./nanstd(broad_connectivity,[],3);
-
+zbroad_ws = (broad_connectivity_ws - nanmean(broad_connectivity_ws,4))./nanstd(broad_connectivity_ws,[],4);
 
 
 %% Reorder connectivity matrix by SOZ - non SOZ ipsi 1 - non SOZ ipsi 2 - contralateral for each
-znew = reorder_locs_soz(zbroad,soz_broad);
-if 1
+znew = reorder_locs_soz(zbroad,soz_broad,0);
+if do_sw
+    znew_ws = reorder_locs_soz(zbroad_ws,soz_broad,1);
+end
+if 0
 figure
 turn_nans_gray(nanmean(znew,3))
 xticks(1:6)
@@ -147,6 +161,39 @@ end
 soz_lat_not = [nanmean(squeeze([znew(1,1,:),znew(2,2,:),znew(3,3,:)]),1)',...
     nanmean(squeeze([znew(4,4,:),znew(5,5,:),znew(6,6,:)]),1)'];
 soz_loc_not = [squeeze(znew(1,1,:)),nanmean(squeeze([znew(2,2,:),znew(3,3,:)]),1)'];
+
+% WRITE THIS CODE
+soz_lat_not_wake = [nanmean(squeeze([znew_ws(1,1,1,:),znew_ws(2,2,1,:),znew_ws(3,3,1,:)]),1)',...
+    nanmean(squeeze([znew_ws(4,4,1,:),znew_ws(5,5,1,:),znew_ws(6,6,1,:)]),1)'];
+soz_loc_not_wake = [squeeze(znew_ws(1,1,1,:)),nanmean(squeeze([znew_ws(2,2,1,:),znew_ws(3,3,1,:)]),1)'];
+
+soz_lat_not_sleep = [nanmean(squeeze([znew_ws(1,1,2,:),znew_ws(2,2,2,:),znew_ws(3,3,2,:)]),1)',...
+    nanmean(squeeze([znew_ws(4,4,2,:),znew_ws(5,5,2,:),znew_ws(6,6,2,:)]),1)'];
+soz_loc_not_sleep = [squeeze(znew_ws(1,1,2,:)),nanmean(squeeze([znew_ws(2,2,2,:),znew_ws(3,3,2,:)]),1)'];
+
+
+%% Show sleep and wake
+if do_sw
+    figure
+    set(gcf,'position',[221 425 1220 800])
+    tiledlayout(2,2)
+    nexttile
+    stats = plot_paired_data(soz_lat_not_wake',{'side of SOZ','side of non-SOZ','non-SOZ'},'Normalized intrinsic connectivity','paired',plot_type);
+    title('Normalized intrinsic connectivity by SOZ laterality - wake')
+
+    nexttile
+    stats = plot_paired_data(soz_loc_not_wake',{'SOZ','non-SOZ','non-SOZ'},'Normalized intrinsic connectivity','paired',plot_type);
+    title({'Normalized intrinsic connectivity by SOZ localization - wake','(within same laterality)'})
+    
+    nexttile
+    stats = plot_paired_data(soz_lat_not_sleep',{'side of SOZ','side of non-SOZ','non-SOZ'},'Normalized intrinsic connectivity','paired',plot_type);
+    title('Normalized intrinsic connectivity by SOZ laterality - sleep')
+
+    nexttile
+    stats = plot_paired_data(soz_loc_not_sleep',{'SOZ','non-SOZ','non-SOZ'},'Normalized intrinsic connectivity','paired',plot_type);
+    title({'Normalized intrinsic connectivity by SOZ localization - sleep','(within same laterality)'})
+    
+end
 
 figure
 set(gcf,'position',[221 425 1220 452])

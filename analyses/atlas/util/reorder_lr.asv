@@ -12,8 +12,6 @@ right = strcmp(lats,'R');
 neither = ~left & ~right;
 
 % fill up left and then right and then remaining
-new_order(1:sum(left)) = find(left);
-new_order(sum(left)+1:sum(left)+sum(right)) = find(right);
-new_order(sum(left)+sum(right)+1:end) = find(neither);
+new_order(1:sum(left
 
 end
