@@ -224,7 +224,7 @@ out.n_elecs_all = n_elecs_all;
 out.pt_names = names;
 out.sozs = sozs;
 out.missing_names = missing_names;
-save([out_folder,atlas,'.mat'],'out');
+save([out_folder,atlas,'_ws.mat'],'out');
 
 
 end
