@@ -199,10 +199,10 @@ for p = 1:npts
             fc_atlas_space(jnp,inp) = nanmean(fc(which_elecs_j,which_elecs_i),'all');
             
             % Sleep wake
-            fc_atlas_space_ws(inp,jnp,1) = nanmean(fc(which_elecs_i,which_elecs_j,wake),'all');
-            fc_atlas_space_ws(jnp,inp,1) = nanmean(fc(which_elecs_j,which_elecs_i,wake),'all');
-            fc_atlas_space_ws(inp,jnp,2) = nanmean(fc(which_elecs_i,which_elecs_j,sleep),'all');
-            fc_atlas_space_ws(jnp,inp,2) = nanmean(fc(which_elecs_j,which_elecs_i,sleep),'all');
+            fc_atlas_space_ws(inp,jnp,1) = nanmean(fc_all(which_elecs_i,which_elecs_j,wake),'all');
+            fc_atlas_space_ws(jnp,inp,1) = nanmean(fc_all(which_elecs_j,which_elecs_i,wake),'all');
+            fc_atlas_space_ws(inp,jnp,2) = nanmean(fc_all(which_elecs_i,which_elecs_j,sleep),'all');
+            fc_atlas_space_ws(jnp,inp,2) = nanmean(fc_all(which_elecs_j,which_elecs_i,sleep),'all');
             
             
         end
