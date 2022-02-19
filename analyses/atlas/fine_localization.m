@@ -4,12 +4,22 @@ function fine_localization
 At individual region level, get node strength. Then normalize across
 patients. Do SOZ regions have higher or lower connectivity than non SOZ
 regions?
+
+Edit this to:
+- see if average intrinsic connectivity of Left different from right - no,
+same
+- see if average intrinsic connectivity of SOZ laterality different from
+that of non-SOZ (don't normalize)
+- then restrict to correct laterality.
+- then exclude regions without many patients to normalize
+- then normalize
+- see if node strength different for SOZ vs non SOZ locations
 %} 
 
 %% Parameters
-which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
+which_atlas = 'aal_bernabei';'brainnetome';%'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
 plot_type = 'scatter';
-coverage_limit = 10;
+coverage_limit = 30;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -47,125 +57,85 @@ sozs = out.sozs;
 bin_soz = (cell2mat(cellfun(@(x) ismember(atlas_nums',x),sozs,'uniformoutput',false)))';
 
 
-%% Indicate regions with low coverage
-any_coverage = squeeze(any(~isnan(atlas),2));
-
-% find regions with low coverage
-low_coverage = sum(any_coverage,2) < coverage_limit;
-
-
-if 0
-    figure
-    nexttile
-    turn_nans_gray(any_coverage)
-    
-    nexttile
-    turn_nans_gray(any_coverage(~low_coverage,:))
-    yticks(1:sum(~low_coverage))
-    yticklabels(names(~low_coverage))
-end
-
-%% Restrict atlas and soz
-atlas = atlas(~low_coverage,~low_coverage,:);
-bin_soz = bin_soz(~low_coverage,:);
-names = names(~low_coverage);
-
-%% Remove white matter
-if 1
-white_matter = ismember(names,'White_Matter');
-names = names(~white_matter);
-bin_soz = bin_soz(~white_matter,:);
-atlas = atlas(~white_matter,~white_matter,:);
-end
-
-if 0
-    figure
-    nexttile
-    turn_nans_gray(nanmean(atlas,3))
-    
-    nexttile
-    turn_nans_gray(bin_soz)
-end
-
 %% Get locs and lats for atlas names
 [locs,lats,loc_nums] = lateralize_regions(names,which_atlas);
+left = strcmp(lats,'L');
+right = strcmp(lats,'R');
 
-%% Come up with new order so that I can visualize network according to SOZ/non-SOZ
-% First, order by left and then right
-new_order = reorder_lr(locs,lats);
-reordered_lats = lats(new_order);
-new_order_left = strcmp(reordered_lats,'L');
-new_order_right = strcmp(reordered_lats,'R');
-new_order_neither = ~new_order_left & ~new_order_right;
-reordered_atlas = atlas(new_order,new_order,:);
-lat_labels = cell(size(atlas,1),1);
+%% Get left and right intrinsic connectivity
+left_intrinsic = squeeze(nanmean(atlas(left,left,:),[1 2]));
+right_intrinsic = squeeze(nanmean(atlas(right,right,:),[1 2]));
 
-soz_order_atlas = nan(size(atlas));
+%% Sanity check (I expect no): Is left intrinsic connectivity diff from right?
+% No
+if 0
+figure
+stats = plot_paired_data(([left_intrinsic right_intrinsic])',{'left','right','right'},'Intrinsic connectivity','paired',plot_type);
+title('Left vs right intrinsic connectivity')
+end
+
+%% Get SOZ and non-SOZ laterality intrinsic connectivity
+
+soz_non_intrinsic = nan(npts,2);
 for ip = 1:npts
     curr_soz_right = right_lat(ip);
     curr_soz_left = left_lat(ip);
     
-    if curr_soz_right == 0 && curr_soz_left == 0, continue; end
+    if ~curr_soz_right && ~curr_soz_left, continue; end
     
-    if curr_soz_left == 1
-        soz_order_atlas(:,:,ip) = reordered_atlas(:,:,ip);
-        lat_labels(1:sum(new_order_left)) = {'SOZ'};
-        lat_labels(sum(new_order_left)+1:end) = {'non-SOZ'};
-    elseif curr_soz_right == 1
-        soz_order_atlas(1:sum(new_order_right),1:sum(new_order_right),ip) = reordered_atlas(new_order_right,new_order_right,ip);
-        soz_order_atlas(sum(new_order_right)+1:sum(new_order_right)+sum(new_order_left),...
-            sum(new_order_right)+1:sum(new_order_right)+sum(new_order_left),ip) = reordered_atlas(new_order_left,new_order_left,ip);
-        soz_order_atlas(sum(new_order_right)+sum(new_order_left)+1:end,...
-            sum(new_order_right)+sum(new_order_left)+1:end,ip) = reordered_atlas(new_order_neither,new_order_neither,ip);
-        lat_labels(1:sum(new_order_right)) = {'SOZ'};
-        lat_labels(sum(new_order_right)+1:end) = {'non-SOZ'};
+    if curr_soz_right == 1
+        soz_non_intrinsic(ip,:) = [right_intrinsic(ip) left_intrinsic(ip)];
+    elseif curr_soz_left == 1
+        soz_non_intrinsic(ip,:) = [left_intrinsic(ip) right_intrinsic(ip)];
     end
-    
 end
 
-if 1
-    turn_nans_gray(nanmean(soz_order_atlas,3))
-    yticks(1:size(soz_order_atlas,1))
-    yticklabels(lat_labels)
-end
-
-%% Ns
-ns = squeeze(nanmean(atlas,2));
-z = (ns-nanmean(ns,2))./nanstd(ns,[],2);
-
+%% I expect yes: Is SOZ intrinsic connectivity diff from non-SOZ?
+% Yes
 if 0
-    figure
-    nexttile
-    turn_nans_gray(z)
-    yticks(1:size(z,1))
-    yticklabels(names)
-    
-    nexttile
-    turn_nans_gray(bin_soz)
+figure
+stats = plot_paired_data(soz_non_intrinsic',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
+title('SOZ vs non-SOZ intrinsic connectivity')
 end
 
-%% Plot orders
-%plot_orders_mats(ns,bin_soz);
-
-%% Z soz vs not
-soz_not = nan(npts,2);
-soz_not_raw = nan(npts,2);
+%% Confirmation of above test 1: for regions with symmetric coverage, is SOZ side intrinsic connectivity less?
+all_bilateral = find_symmetric_coverage(atlas,lats,locs);
+symm_soz_not = nan(npts,2);
 for ip = 1:npts
-    curr_soz = bin_soz(:,ip);
-    soz_not(ip,:) = [nanmean((z(curr_soz,ip))), nanmean((z(~curr_soz,ip)))];
-    soz_not_raw(ip,:) = [nanmean((ns(curr_soz,ip))), nanmean((ns(~curr_soz,ip)))];
+    curr_bilateral = logical(all_bilateral(:,ip));
+    if sum(curr_bilateral) == 0, continue; end
+    curr_atlas = atlas(:,:,ip);
+    curr_atlas(~curr_bilateral,:) = nan;
+    curr_atlas(:,~curr_bilateral) = nan;
+    curr_soz_right = right_lat(ip);
+    curr_soz_left = left_lat(ip);
+    
+    if ~curr_soz_right && ~curr_soz_left, continue; end
+    if curr_soz_right == 1
+        symm_soz_not(ip,:) = [nanmean(curr_atlas(right,right),'all') nanmean(curr_atlas(left,left),'all')];
+    elseif curr_soz_left == 1
+        symm_soz_not(ip,:) = [nanmean(curr_atlas(left,left),'all') nanmean(curr_atlas(right,right),'all')];
+    end
 end
+
+%% Confirmation of above test 2: is normalized SOZ intrinsic connectivity diff from non-SOZ?
 
 if 1
 figure
-nexttile
-stats = plot_paired_data((soz_not)',{'SOZ','non-SOZ','non-SOZ'},'Normalized connectivity','paired',plot_type);
-
-nexttile
-
-stats = plot_paired_data((soz_not_raw)',{'SOZ','non-SOZ','non-SOZ'},'Raw connectivity','paired',plot_type);
+stats = plot_paired_data(symm_soz_not',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
+title({'SOZ vs non-SOZ intrinsic connectivity','(Symmetric coverage only)'})
 end
 
+%% Remove regions with low coverage
+% find regions with low coverage
+low_coverage = sum(any_coverage,2) < coverage_limit;
+atlas = atlas(~low_coverage,~low_coverage,:);
+bin_soz = bin_soz(~low_coverage,:);
+names = names(~low_coverage);
 
+%% Normalize edges
+z = (z-nanmean(z,3))./nanstd(z,[],3);
+
+%% 
 
 end

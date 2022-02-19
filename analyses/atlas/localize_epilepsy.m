@@ -1,7 +1,7 @@
 function localize_epilepsy
 
 %% Parameters
-do_sw = 1;
+do_sw = 0;
 which_atlas = 'brainnetome';%'aal_bernabei';%% %'aal';'aal_bernabei';
 plot_type = 'scatter';
 broad_regions = {'left mesial temporal','right mesial temporal',...
@@ -34,7 +34,11 @@ end
 out = out.out;
 
 atlas = out.atlas;
-atlas_ws = out.atlas_ws;
+if do_sw
+    atlas_ws = out.atlas_ws;
+else
+    atlas_ws = nan(size(atlas,1),size(atlas,2),2,size(atlas,3));
+end
 names = out.atlas_names;
 pt_names = out.pt_names;
 atlas_nums = out.atlas_nums;
@@ -162,7 +166,8 @@ soz_lat_not = [nanmean(squeeze([znew(1,1,:),znew(2,2,:),znew(3,3,:)]),1)',...
     nanmean(squeeze([znew(4,4,:),znew(5,5,:),znew(6,6,:)]),1)'];
 soz_loc_not = [squeeze(znew(1,1,:)),nanmean(squeeze([znew(2,2,:),znew(3,3,:)]),1)'];
 
-% WRITE THIS CODE
+if do_sw
+    % WRITE THIS CODE
 soz_lat_not_wake = [nanmean(squeeze([znew_ws(1,1,1,:),znew_ws(2,2,1,:),znew_ws(3,3,1,:)]),1)',...
     nanmean(squeeze([znew_ws(4,4,1,:),znew_ws(5,5,1,:),znew_ws(6,6,1,:)]),1)'];
 soz_loc_not_wake = [squeeze(znew_ws(1,1,1,:)),nanmean(squeeze([znew_ws(2,2,1,:),znew_ws(3,3,1,:)]),1)'];
@@ -170,6 +175,7 @@ soz_loc_not_wake = [squeeze(znew_ws(1,1,1,:)),nanmean(squeeze([znew_ws(2,2,1,:),
 soz_lat_not_sleep = [nanmean(squeeze([znew_ws(1,1,2,:),znew_ws(2,2,2,:),znew_ws(3,3,2,:)]),1)',...
     nanmean(squeeze([znew_ws(4,4,2,:),znew_ws(5,5,2,:),znew_ws(6,6,2,:)]),1)'];
 soz_loc_not_sleep = [squeeze(znew_ws(1,1,2,:)),nanmean(squeeze([znew_ws(2,2,2,:),znew_ws(3,3,2,:)]),1)'];
+end
 
 
 %% Show sleep and wake

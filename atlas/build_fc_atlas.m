@@ -160,7 +160,7 @@ for p = 1:npts
         n_elecs(inp) = sum(which_elecs_i);
         
         % Loop over again
-        for jnp = 1:inp
+        for jnp = 1:inp-1
             
             % get the atlas identifier
             which_enum_j = atlas_nums(jnp);
