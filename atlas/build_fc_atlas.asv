@@ -97,7 +97,7 @@ for p = 1:npts
     ekg = find_non_intracranial(elabels);
     fc(ekg,:) = nan;
     fc(:,ekg) = nan;
-    spikes(ekg,:) = nan;
+    spikes = spikes(~ekg,:);
     
     %% Get average spikes over time
     spikes = nanmean(spikes,2);
@@ -179,7 +179,7 @@ for p = 1:npts
         n_elecs(inp) = sum(which_elecs_i);
         
         % Get average spikes
-        spikes_atlas(inp,p) = nanmean(spikes(which_elecs_i));
+        spikes_atlas(
         
         % Loop over again
         for jnp = 1:inp-1
@@ -218,7 +218,6 @@ out.sozs = sozs;
 out.missing_names = missing_names;
 out.elecs_atlas = elecs_atlas;
 out.elecs_labels = elecs_labels;
-out.spikes_atlas = spikes_atlas;
 save([out_folder,atlas,'.mat'],'out');
 
 
