@@ -1,7 +1,7 @@
 function build_fc_atlas
 
 %% Parameters
-atlas = 'aal_bernabei';%'brainnetome';
+atlas = 'brainnetome';%'aal_bernabei';
 
 %% Get file locs
 locations = fc_toolbox_locs;

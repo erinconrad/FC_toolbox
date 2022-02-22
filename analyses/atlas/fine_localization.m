@@ -71,6 +71,14 @@ sozs = out.sozs;
 bin_soz = (cell2mat(cellfun(@(x) ismember(atlas_nums',x),sozs,'uniformoutput',false)))';
 
 %% Get spike rates in each parcel
+%{
+% restrict elecs labels
+elecs_labels = out.elecs_labels;
+for ip = 1:npts
+    curr_labels = elecs_labels{ip};
+    ekg = find_non_intracranial(labels);
+    curr_labels = curr_labels
+end
 
 % Get electrodes in each parcel
 elecs_in_parcel = get_elecs_in_parcel(out.atlas_nums,out.elecs_atlas);
@@ -84,6 +92,7 @@ for ip = 1:npts
         rates(ir,ip) = nanmean(curr_rates(curr_elecs));
     end
 end
+%}
 
 
 %% Localize SOZ
