@@ -51,7 +51,8 @@ missing_names = {};
 %% Initialize atlas
 atlas_mat = nan(n_parcels,n_parcels,npts);
 n_elecs_all = nan(n_parcels,npts);
-elec_atlas = cell(npts,1);
+elecs_atlas = cell(npts,1);
+elecs_labels = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -85,6 +86,8 @@ for p = 1:npts
         locs = summ.locs;
         fc = summ.avg_fc;
     end
+    
+    elecs_labels{ip} = elabels;
         
     %% Get atlas
     if contains(atlas,'aal_bernabei')
@@ -197,6 +200,7 @@ out.pt_names = names;
 out.sozs = sozs;
 out.missing_names = missing_names;
 out.elecs_atlas = elecs_atlas;
+out.elecs_labels = elecs_labels;
 save([out_folder,atlas,'.mat'],'out');
 
 

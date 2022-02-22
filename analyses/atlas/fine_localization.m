@@ -42,10 +42,14 @@ addpath(genpath(bct_folder));
 sleep_data_folder = [scripts_folder,'analyses/sleep/data/'];
 spikes_out = load([sleep_data_folder,'out.mat']);
 spikes_out = spikes_out.out;
+all_elecs_rates = spikes_out.bin_out.all_elecs_rates;
 
 %% Load atlas
 out = load([atlas_folder,which_atlas,'.mat']);
 out = out.out;
+
+
+
 
 %% Load soz lats
 soz_out = load('out.mat');
@@ -65,6 +69,22 @@ npts = size(atlas,3);
 nelecs = out.n_elecs_all;
 sozs = out.sozs;
 bin_soz = (cell2mat(cellfun(@(x) ismember(atlas_nums',x),sozs,'uniformoutput',false)))';
+
+%% Get spike rates in each parcel
+
+% Get electrodes in each parcel
+elecs_in_parcel = get_elecs_in_parcel(out.atlas_nums,out.elecs_atlas);
+
+% Get spike rates in each parcel
+rates = nan(nregions,npts);
+for ip = 1:npts
+    for ir = 1:nregions
+        curr_elecs = elecs_in_parcel{ir,ip};
+        curr_rates = all_elecs_rates{ip};
+        rates(ir,ip) = nanmean(curr_rates(curr_elecs));
+    end
+end
+
 
 %% Localize SOZ
 mt = strcmp(soz_locs,'mesial temporal');

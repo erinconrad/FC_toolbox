@@ -27,8 +27,8 @@ coverage_limit = 0;
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-atlas_folder = [results_folder,'analyses/atlas/'];
-sleep_data_folder = [results_folder,'analysis/sleep/data/'];
+atlas_folder = [results_folder,'analysis/atlas/'];
+
 bct_folder= locations.bct;
 out_folder = [results_folder,'analysis/atlas/'];
 if ~exist(out_folder,'dir'), mkdir(out_folder); end
@@ -39,12 +39,15 @@ addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
 %% Get spikes
+sleep_data_folder = [scripts_folder,'analyses/sleep/data/'];
 spikes_out = load([sleep_data_folder,'out.mat']);
 spikes_out = spikes_out.out;
 
 %% Load atlas
 out = load([atlas_folder,which_atlas,'.mat']);
 out = out.out;
+
+elecs_in_parcel = get_elecs_in_parcel(atlas_nums,elecs_atlas)
 
 %% Load soz lats
 soz_out = load('out.mat');
