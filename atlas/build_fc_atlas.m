@@ -169,7 +169,7 @@ for p = 1:npts
 
             % which elecs for this patient belong to that
             which_elecs_j = out.enum == which_enum_j;
-            electrode_atlas_assignment(which_electrode_j) = which_enum_j;
+            electrode_atlas_assignment(which_elecs_j) = which_enum_j;
             
             % Assign the average of all the functional connectivities
             % matching these to be the fc edge
