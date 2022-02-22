@@ -51,6 +51,7 @@ missing_names = {};
 %% Initialize atlas
 atlas_mat = nan(n_parcels,n_parcels,npts);
 n_elecs_all = nan(n_parcels,npts);
+elec_atlas = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -146,6 +147,7 @@ for p = 1:npts
     %% Put into atlas space
     fc_atlas_space = nan(n_parcels,n_parcels);
     n_elecs = nan(n_parcels,1);
+    electrode_atlas_assignment = nan(size(fc,1),1);
     
     % Loop over n_parcels
     for inp = 1:n_parcels
@@ -167,6 +169,7 @@ for p = 1:npts
 
             % which elecs for this patient belong to that
             which_elecs_j = out.enum == which_enum_j;
+            electrode_atlas_assignment(which_electrode_j) = which_enum_j;
             
             % Assign the average of all the functional connectivities
             % matching these to be the fc edge
@@ -181,6 +184,7 @@ for p = 1:npts
     
     atlas_mat(:,:,p) = fc_atlas_space;
     n_elecs_all(:,p) = n_elecs;
+    elecs_atlas{p} = electrode_atlas_assignment;
     
 end
 
@@ -192,6 +196,7 @@ out.n_elecs_all = n_elecs_all;
 out.pt_names = names;
 out.sozs = sozs;
 out.missing_names = missing_names;
+out.elecs_atlas = elecs_atlas;
 save([out_folder,atlas,'.mat'],'out');
 
 
