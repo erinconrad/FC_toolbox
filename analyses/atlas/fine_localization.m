@@ -19,10 +19,11 @@ that of non-SOZ (don't normalize)
 %% Parameters
 norm_pca = 0;
 delete_nans = 1;
-do_plots = 0;
+norm_with_normal = 0;
+do_plots = 1;
 which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';%'aal_bernabei';%'brainnetome';%
 plot_type = 'scatter';
-coverage_limit = 0;
+coverage_limit = 20;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -62,6 +63,7 @@ right_lat = strcmp(soz_lats,'right');
 left_lat = strcmp(soz_lats,'left');
 
 atlas = out.atlas;
+atlas_norm = out.normal_atlas;
 names = out.atlas_names;
 pt_names = out.pt_names;
 atlas_nums = out.atlas_nums;
@@ -128,6 +130,7 @@ nbroad = length(broad_regions);
 left = left(lr_order);
 right = right(lr_order);
 atlas = atlas(lr_order,lr_order,:);
+atlas_norm = atlas_norm(lr_order,lr_order,:);
 names = names(lr_order);
 atlas_nums = atlas_nums(lr_order);
 bin_soz = bin_soz(lr_order,:);
@@ -137,6 +140,8 @@ broad_locs = broad_locs(lr_order);
 %% Get left and right intrinsic connectivity
 left_intrinsic = squeeze(nanmean(atlas(left,left,:),[1 2]));
 right_intrinsic = squeeze(nanmean(atlas(right,right,:),[1 2]));
+left_norm_intrinsic = squeeze(nanmean(atlas_norm(left,left,:),[1 2]));
+right_norm_intrinsic = squeeze(nanmean(atlas_norm(right,right,:),[1 2]));
 
 %% Sanity check (I expect no): Is left intrinsic connectivity diff from right?
 % No
@@ -148,6 +153,7 @@ end
 
 %% Get SOZ and non-SOZ laterality intrinsic connectivity
 soz_non_intrinsic = nan(npts,2);
+soz_non_intrinsic_norm = nan(npts,2);
 for ip = 1:npts
     curr_soz_right = right_lat(ip);
     curr_soz_left = left_lat(ip);
@@ -156,8 +162,10 @@ for ip = 1:npts
     
     if curr_soz_right == 1
         soz_non_intrinsic(ip,:) = [right_intrinsic(ip) left_intrinsic(ip)];
+        soz_non_intrinsic_norm(ip,:) = [right_norm_intrinsic(ip) left_norm_intrinsic(ip)];
     elseif curr_soz_left == 1
         soz_non_intrinsic(ip,:) = [left_intrinsic(ip) right_intrinsic(ip)];
+        soz_non_intrinsic_norm(ip,:) = [left_norm_intrinsic(ip) right_norm_intrinsic(ip)];
     end
 end
 
@@ -165,8 +173,14 @@ end
 % Yes
 if do_plots
 figure
+tiledlayout(1,2)
+nexttile
 stats = plot_paired_data(soz_non_intrinsic',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
 title('SOZ vs non-SOZ intrinsic connectivity')
+
+nexttile
+stats = plot_paired_data(soz_non_intrinsic_norm',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
+title('SOZ vs non-SOZ intrinsic connectivity (using normal data)')
 end
 
 %% Confirmation of above test 1: for regions with symmetric coverage, is SOZ side intrinsic connectivity less?
@@ -227,7 +241,11 @@ atlas(:,low_coverage,:) = nan;
 spikes(low_coverage) = nan;
 
 %% Normalize edges
-z = (atlas-nanmean(atlas,3))./nanstd(atlas,[],3);
+if norm_with_normal
+    z = (atlas - nanmean(atlas_norm,3))./nanstd(atlas_norm,[],3);
+else
+    z = (atlas-nanmean(atlas,3))./nanstd(atlas,[],3);
+end
 
 %% Confirmation of above test 2: is normalized SOZ intrinsic connectivity diff from non-SOZ?
 % Get left and right intrinsic connectivity
@@ -262,7 +280,7 @@ end
 if do_plots
 figure
 stats = plot_paired_data(soz_non_intrinsic_norm',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity (norm)','paired',plot_type);
-title('SOZ vs non-SOZ intrinsic connectivity (normalized)')
+title('SOZ vs non-SOZ side intrinsic connectivity (normalized)')
 end
 
 %% Restrict to SOZ laterality, get SOZ vs non SOZ normalized connectivity
@@ -304,7 +322,7 @@ end
 if do_plots
 figure
 stats = plot_paired_data(soz_non_total',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity (norm)','paired',plot_type);
-title('SOZ vs non-SOZ intrinsic connectivity (normalized)')
+title('SOZ vs non-SOZ intrinsic connectivity (normalized), same side')
 end
 
 %% Does NS correlate with spike rate?
@@ -325,7 +343,7 @@ if 0
     end
 end
 
-if 0
+if do_plots
 all_corrs = nan(npts,1);
 figure
 for ip = 1:npts
