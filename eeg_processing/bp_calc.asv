@@ -1,0 +1,18 @@
+function bp_calc(run_values,fs)
+
+freqs = [0.5 4;...
+    4 8;...
+    8 12;...
+    12 30;...
+    30 80];
+nfreqs = size(freqs,1);
+
+nchs = size(run_values,2);
+all_power = nan(nchs,nfreqs);
+
+for f = 1:nfreqs
+    curr_freq = freqs(f,:);
+end
+
+
+end

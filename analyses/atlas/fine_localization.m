@@ -19,9 +19,9 @@ that of non-SOZ (don't normalize)
 %% Parameters
 norm_pca = 0;
 delete_nans = 1;
-norm_with_normal = 0;
-do_plots = 1;
-which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';%'aal_bernabei';%'brainnetome';%
+norm_with_normal =1;
+do_plots = 0;
+which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';%
 plot_type = 'scatter';
 coverage_limit = 20;
 
@@ -234,9 +234,16 @@ end
 
 %% For future analyses, remove regions with low coverage
 % find regions with low coverage
-any_coverage = squeeze(any(~isnan(atlas),2));
+if norm_with_normal
+    any_coverage = squeeze(any(~isnan(atlas_norm),2));
+else
+    any_coverage = squeeze(any(~isnan(atlas),2));  
+end
+
 low_coverage = sum(any_coverage,2) < coverage_limit;
 atlas(low_coverage,:,:) = nan;
+atlas_norm(low_coverage,:,:) = nan;
+atlas_norm(:,low_coverage,:) = nan;
 atlas(:,low_coverage,:) = nan;
 spikes(low_coverage) = nan;
 
@@ -246,6 +253,8 @@ if norm_with_normal
 else
     z = (atlas-nanmean(atlas,3))./nanstd(atlas,[],3);
 end
+
+%z = abs(z);
 
 %% Confirmation of above test 2: is normalized SOZ intrinsic connectivity diff from non-SOZ?
 % Get left and right intrinsic connectivity
@@ -299,9 +308,9 @@ for ip = 1:npts
     
     % Make non-soz side all nans
     if curr_soz_right
-        curr_z(left,:) = nan; curr_z(:,left) = nan;
+        %curr_z(left,:) = nan; curr_z(:,left) = nan;
     elseif curr_soz_left
-        curr_z(right,:) = nan; curr_z(:,right) = nan;
+        %curr_z(right,:) = nan; curr_z(:,right) = nan;
     end
     
     % get SOZ regions
@@ -355,7 +364,7 @@ for ip = 1:npts
 end
 plot(xlim,[0 0],'k--','linewidth',2)
 xlabel('Patient')
-ylabel('Correlation between spike rate and normalized connectivity')
+ylabel('Correlation between spike rate and connectivity')
 end
 
 %% Logistic regression mixed effects model: controlling for spike rate, is connectivity lower in SOZ?
@@ -411,6 +420,23 @@ fc_conf = confusion_matrix(fc_lower_left,left_rm,0);
 
 %% Can I distinguish between bilateral and unilateral epilepsy?
 bilat = strcmp(soz_lats,'bilateral');
+temporal = contains(soz_locs,'temporal');
+
+% Get transitivity of all patients
+all_T = nan(npts,1);
+for ip = 1:npts
+    curr = atlas(:,:,ip);
+    curr(isnan(curr)) = nanmean(curr,'all');
+    all_T(ip)=transitivity_wu(curr);
+end
+
+% show transitivity of bilat vs unilat
+if 0
+    figure
+    plot(1+randn(sum(bilat&temporal),1)*0.05,all_T(bilat&temporal),'o','linewidth',2)
+    hold on
+    plot(2+randn(sum(~bilat&temporal),1)*0.05,all_T(~bilat&temporal),'o','linewidth',2)
+end
 
 %% LR model
 
