@@ -222,7 +222,7 @@ end
 
 % Multichannel requirements
 if ~isempty(gdf)
-    gdf =  multi_channel_requirements(gdf,nchs,fs);
+    %gdf =  multi_channel_requirements(gdf,nchs,fs);
 end
 
 

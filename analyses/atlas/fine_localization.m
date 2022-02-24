@@ -20,7 +20,7 @@ that of non-SOZ (don't normalize)
 norm_pca = 0;
 delete_nans = 1;
 do_plots = 0;
-which_atlas = 'aal_bernabei';%'brainnetome';%
+which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';%'aal_bernabei';%'brainnetome';%
 plot_type = 'scatter';
 coverage_limit = 0;
 
@@ -39,10 +39,12 @@ addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
 %% Get spikes
+%{
 sleep_data_folder = [scripts_folder,'analyses/sleep/data/'];
 spikes_out = load([sleep_data_folder,'out.mat']);
 spikes_out = spikes_out.out;
 all_elecs_rates = spikes_out.bin_out.all_elecs_rates;
+%}
 
 %% Load atlas
 out = load([atlas_folder,which_atlas,'.mat']);
@@ -71,6 +73,13 @@ sozs = out.sozs;
 bin_soz = (cell2mat(cellfun(@(x) ismember(atlas_nums',x),sozs,'uniformoutput',false)))';
 
 %% Get spike rates in each parcel
+spikes = out.spikes_atlas;
+if 0
+    figure
+    turn_nans_gray(spikes)
+    yticks(1:nregions)
+    yticklabels(names)
+end
 %{
 % restrict elecs labels
 elecs_labels = out.elecs_labels;
@@ -109,6 +118,12 @@ left = strcmp(lats,'L');
 right = strcmp(lats,'R');
 lr_order = reorder_lr(locs,lats);
 
+broad_locs = localize_regions(names,which_atlas);
+broad_regions = {'left mesial temporal','right mesial temporal',...
+    'left temporal neocortical','right temporal neocortical',...
+    'left other cortex','right other cortex'};
+nbroad = length(broad_regions);
+
 %% Change all orders to left and right
 left = left(lr_order);
 right = right(lr_order);
@@ -116,6 +131,8 @@ atlas = atlas(lr_order,lr_order,:);
 names = names(lr_order);
 atlas_nums = atlas_nums(lr_order);
 bin_soz = bin_soz(lr_order,:);
+spikes = spikes(lr_order,:);
+broad_locs = broad_locs(lr_order);
 
 %% Get left and right intrinsic connectivity
 left_intrinsic = squeeze(nanmean(atlas(left,left,:),[1 2]));
@@ -185,13 +202,29 @@ stats = plot_paired_data(symm_soz_not',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic co
 title({'SOZ vs non-SOZ intrinsic connectivity','(Symmetric coverage only)'})
 end
 
+%% Get average connectivity of broad regions
+broad_conn = nan(nbroad,npts);
+for ip = 1:npts
+    curr_atlas = atlas(:,:,ip);
+    for ib = 1:nbroad
+        broad_conn(ib,ip) = squeeze(nanmean(curr_atlas(strcmp(broad_locs,broad_regions{ib}),:),'all'));
+    end
+end
+
+% How does raw connectivity differ regionally?
+if 0
+    turn_nans_gray(broad_conn)
+    yticks(1:nbroad)
+    yticklabels(broad_regions)
+end
+
 %% For future analyses, remove regions with low coverage
 % find regions with low coverage
 any_coverage = squeeze(any(~isnan(atlas),2));
 low_coverage = sum(any_coverage,2) < coverage_limit;
 atlas(low_coverage,:,:) = nan;
 atlas(:,low_coverage,:) = nan;
-
+spikes(low_coverage) = nan;
 
 %% Normalize edges
 z = (atlas-nanmean(atlas,3))./nanstd(atlas,[],3);
@@ -274,9 +307,109 @@ stats = plot_paired_data(soz_non_total',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic c
 title('SOZ vs non-SOZ intrinsic connectivity (normalized)')
 end
 
+%% Does NS correlate with spike rate?
+% Yes! Higher average connectivity (raw or normalized) -> higher spike rate
+ns_norm = squeeze(nanmean(z,2));
+ns = squeeze(nanmean(atlas,2));
 
+if 0
+    figure
+    for ip = 1:npts
+        plot(ns(:,ip),spikes(:,ip),'wo')
+        hold on
+        text(ns(:,ip),spikes(:,ip),names,'horizontalalignment','center')
+        xlabel('Mean connectivity')
+        ylabel('Spike rate')
+        pause
+        hold off
+    end
+end
 
+if 0
+all_corrs = nan(npts,1);
+figure
+for ip = 1:npts
+    all_corrs(ip) = corr(ns(:,ip),spikes(:,ip),'type','spearman','rows','pairwise');
+    plot(ip,all_corrs(ip),'ko','linewidth',2)
+    hold on
+    
+end
+plot(xlim,[0 0],'k--','linewidth',2)
+xlabel('Patient')
+ylabel('Correlation between spike rate and normalized connectivity')
+end
 
+%% Logistic regression mixed effects model: controlling for spike rate, is connectivity lower in SOZ?
+% Yes, but only when using brainnetome atlas
+
+% Make matrix identifying patient
+which_pt = repmat(1:size(spikes,2),size(spikes,1),1);
+
+% Vectorize spikes and node strength and which_pt
+spike_vec = spikes(:);
+ns_vec = ns(:);
+ns_norm_vec = ns_norm(:);
+pt_vec = which_pt(:);
+soz_vec = bin_soz(:);
+
+T = table(soz_vec,spike_vec,ns_vec,ns_norm_vec,pt_vec);
+
+%% machine learning - can I improve localization of SOZ if I use FC rather than spikes alone? 
+% NO
+if 0
+all_auc = nan(1e3,1);
+for ib = 1:1e3
+    
+    all_auc(ib) = predict_soz_fc(T);
+end
+end
+
+%% Logistic regression - If I take intrinsic connectivity and spikes, can I lateralize epilepsy
+%% Get average spike rate by laterality
+spikes_lr = nan(npts,2);
+spikes_lr(:,1) = nanmean(spikes(left,:));
+spikes_lr(:,2) = nanmean(spikes(right,:));
+spikes_higher_left = diff(spikes_lr,[],2) < 0;
+
+%% Get connectivity by left and right
+fc_lr = nan(npts,2);
+fc_lr(:,1) = nanmean(atlas(left,left,:),[1 2]);
+fc_lr(:,2) = nanmean(atlas(right,right,:),[1 2]);
+fc_lower_left = diff(fc_lr,[],2) > 0;
+
+%% Remove patients without epilepsy lateralization or any nans
+no_lat = ~left_lat & ~right_lat;
+any_nans = any(isnan(spikes_lr),2) | any(isnan(fc_lr),2);
+to_remove = no_lat | any_nans;
+
+left_rm = left_lat(~to_remove);
+spikes_higher_left = spikes_higher_left(~to_remove);
+fc_lower_left = fc_lower_left(~to_remove);
+
+%% Confusion matrix for each
+spikes_conf = confusion_matrix(spikes_higher_left,left_rm,1);
+fc_conf = confusion_matrix(fc_lower_left,left_rm,1);
+
+%% LR model
+
+%{
+T.pt_vec = nominal(T.pt_vec);
+glme_raw = fitglme(T,'soz_vec ~ spike_vec + ns_vec + (1|pt_vec)',...
+    'Distribution','Poisson','Link','log');
+
+glme_norm = fitglme(T,'soz_vec ~ spike_vec + ns_norm_vec + (1|pt_vec)',...
+    'Distribution','Poisson','Link','log');
+
+glme_spikes = fitglme(T,'soz_vec ~ spike_vec + (1|pt_vec)',...
+    'Distribution','Poisson','Link','log');
+
+glme_ns_raw = fitglme(T,'soz_vec ~ ns_vec + (1|pt_vec)',...
+    'Distribution','Poisson','Link','log');
+
+glme_ns_norm = fitglme(T,'soz_vec ~ ns_norm_vec + (1|pt_vec)',...
+    'Distribution','Poisson','Link','log');
+
+%}
 %{
 
 %% Use normalized connectivity! (Because the biggest signal appears to be this non-normalized anatomical effect)

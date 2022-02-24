@@ -2,6 +2,7 @@ function build_fc_atlas
 
 %% Parameters
 atlas = 'brainnetome';%'aal_bernabei';
+too_many_spikes = 0.5; % 0.1 spikes/elecs/min
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -54,6 +55,8 @@ n_elecs_all = nan(n_parcels,npts);
 elecs_atlas = cell(npts,1);
 elecs_labels = cell(npts,1);
 spikes_atlas = nan(n_parcels,npts);
+normal_atlas_mat = nan(n_parcels,n_parcels,npts);
+normal_include = nan(n_parcels,npts);
 
 %% Loop over patients
 for p = 1:npts
@@ -157,6 +160,12 @@ for p = 1:npts
         soz = soz_bipolar;
     end
     
+    %% Find channels that I want to exclude from the normal atlas
+    % Specifically, SOZ channels and channels with too many spikes
+    nchs = length(spikes);
+    is_soz = zeros(nchs,1);
+    is_soz(soz) = 1;
+    exclude = is_soz | spikes > too_many_spikes;
     
     soz_num = out.enum(soz);
     sozs{p} = soz_num;
@@ -165,6 +174,7 @@ for p = 1:npts
     fc_atlas_space = nan(n_parcels,n_parcels);
     n_elecs = nan(n_parcels,1);
     electrode_atlas_assignment = nan(size(fc,1),1);
+    norm_fc_atlas_space = nan(n_parcels,n_parcels);
     
     % Loop over n_parcels
     for inp = 1:n_parcels
@@ -181,6 +191,8 @@ for p = 1:npts
         % Get average spikes
         spikes_atlas(inp,p) = nanmean(spikes(which_elecs_i));
         
+        normal_include(inp,p) = sum(which_elecs_i & ~exclude);
+        
         % Loop over again
         for jnp = 1:inp-1
             
@@ -196,6 +208,10 @@ for p = 1:npts
             fc_atlas_space(inp,jnp) = nanmean(fc(which_elecs_i,which_elecs_j),'all');
             fc_atlas_space(jnp,inp) = nanmean(fc(which_elecs_i,which_elecs_j),'all');
             
+            % Now, make a normal atlas where I exclude bad channels
+            norm_fc_atlas_space(inp,jnp) = nanmean(fc(which_elecs_i & ~exclude,which_elecs_j & ~ exclude),'all');
+            norm_fc_atlas_space(jnp,inp) = nanmean(fc(which_elecs_i & ~exclude,which_elecs_j & ~ exclude),'all');
+            
             
             
         end
@@ -205,14 +221,17 @@ for p = 1:npts
     atlas_mat(:,:,p) = fc_atlas_space;
     n_elecs_all(:,p) = n_elecs;
     elecs_atlas{p} = electrode_atlas_assignment;
+    normal_atlas_mat(:,:,p) = norm_fc_atlas_space;
     
 end
 
 %% Save the atlas
 out.atlas = atlas_mat;
+out.normal_atlas = normal_atlas_mat;
 out.atlas_nums = atlas_nums;
 out.atlas_names = atlas_names;
 out.n_elecs_all = n_elecs_all;
+out.normal_include = normal_include;
 out.pt_names = names;
 out.sozs = sozs;
 out.missing_names = missing_names;
