@@ -325,6 +325,7 @@ stats = plot_paired_data(soz_non_total',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic c
 title('SOZ vs non-SOZ intrinsic connectivity (normalized), same side')
 end
 
+
 %% Does NS correlate with spike rate?
 % Yes! Higher average connectivity (raw or normalized) -> higher spike rate
 ns_norm = squeeze(nanmean(z,2));
@@ -405,8 +406,11 @@ spikes_higher_left = spikes_higher_left(~to_remove);
 fc_lower_left = fc_lower_left(~to_remove);
 
 %% Confusion matrix for each
-spikes_conf = confusion_matrix(spikes_higher_left,left_rm,1);
-fc_conf = confusion_matrix(fc_lower_left,left_rm,1);
+spikes_conf = confusion_matrix(spikes_higher_left,left_rm,0);
+fc_conf = confusion_matrix(fc_lower_left,left_rm,0);
+
+%% Can I distinguish between bilateral and unilateral epilepsy?
+bilat = strcmp(soz_lats,'bilateral');
 
 %% LR model
 
