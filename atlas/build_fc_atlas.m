@@ -1,7 +1,7 @@
 function build_fc_atlas
 
 %% Parameters
-atlas = 'brainnetome';%'aal_bernabei';
+atlas = 'aal_bernabei';
 too_many_spikes = 0.5; % 0.1 spikes/elecs/min
 
 %% Get file locs
