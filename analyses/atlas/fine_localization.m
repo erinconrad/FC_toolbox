@@ -32,7 +32,9 @@ atlas_folder = [results_folder,'analysis/atlas/'];
 
 bct_folder= locations.bct;
 out_folder = [results_folder,'analysis/atlas/'];
+plot_folder = [results_folder,'analysis/atlas/plots/'];
 if ~exist(out_folder,'dir'), mkdir(out_folder); end
+if ~exist(plot_folder,'dir'), mkdir(plot_folder); end
 
 % add script folder to path
 scripts_folder = locations.script_folder;
@@ -50,9 +52,6 @@ all_elecs_rates = spikes_out.bin_out.all_elecs_rates;
 %% Load atlas
 out = load([atlas_folder,which_atlas,'.mat']);
 out = out.out;
-
-
-
 
 %% Load soz lats
 soz_out = load('out.mat');
@@ -82,29 +81,6 @@ if 0
     yticks(1:nregions)
     yticklabels(names)
 end
-%{
-% restrict elecs labels
-elecs_labels = out.elecs_labels;
-for ip = 1:npts
-    curr_labels = elecs_labels{ip};
-    ekg = find_non_intracranial(labels);
-    curr_labels = curr_labels
-end
-
-% Get electrodes in each parcel
-elecs_in_parcel = get_elecs_in_parcel(out.atlas_nums,out.elecs_atlas);
-
-% Get spike rates in each parcel
-rates = nan(nregions,npts);
-for ip = 1:npts
-    for ir = 1:nregions
-        curr_elecs = elecs_in_parcel{ir,ip};
-        curr_rates = all_elecs_rates{ip};
-        rates(ir,ip) = nanmean(curr_rates(curr_elecs));
-    end
-end
-%}
-
 
 %% Localize SOZ
 mt = strcmp(soz_locs,'mesial temporal');
@@ -112,7 +88,6 @@ tn = strcmp(soz_locs,'temporal neocortical');
 oc = strcmp(soz_locs,'other cortex');
 temporal = contains(soz_locs,'temporal');
 extra = strcmp(soz_locs,'other cortex') | strcmp(soz_locs,'diffuse') | strcmp(soz_locs,'multifocal');
-
 
 %% Get locs and lats for atlas names
 [locs,lats] = lateralize_regions(names,which_atlas);
@@ -143,11 +118,13 @@ right_intrinsic = squeeze(nanmean(atlas(right,right,:),[1 2]));
 left_norm_intrinsic = squeeze(nanmean(atlas_norm(left,left,:),[1 2]));
 right_norm_intrinsic = squeeze(nanmean(atlas_norm(right,right,:),[1 2]));
 
+bl_intrinsic = [left_intrinsic right_intrinsic];
+
 %% Sanity check (I expect no): Is left intrinsic connectivity diff from right?
 % No
 if do_plots
 figure
-stats = plot_paired_data(([left_intrinsic right_intrinsic])',{'left','right','right'},'Intrinsic connectivity','paired',plot_type);
+stats = plot_paired_data((bl_intrinsic)',{'left','right','right'},'Intrinsic connectivity','paired',plot_type);
 title('Left vs right intrinsic connectivity')
 end
 
@@ -184,6 +161,9 @@ title('SOZ vs non-SOZ intrinsic connectivity (using normal data)')
 end
 
 %% Confirmation of above test 1: for regions with symmetric coverage, is SOZ side intrinsic connectivity less?
+
+%% First, build symmetric coverage atlas
+symm_cov_atlas = nan(size(atlas));
 all_bilateral = find_symmetric_coverage(atlas,lats,locs);
 symm_soz_not = nan(npts,2);
 for ip = 1:npts
@@ -192,6 +172,7 @@ for ip = 1:npts
     curr_atlas = atlas(:,:,ip);
     curr_atlas(~curr_bilateral,:) = nan;
     curr_atlas(:,~curr_bilateral) = nan;
+    symm_cov_atlas(:,:,ip) = curr_atlas;
     curr_soz_right = right_lat(ip);
     curr_soz_left = left_lat(ip);
     
@@ -215,6 +196,221 @@ figure
 stats = plot_paired_data(symm_soz_not',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
 title({'SOZ vs non-SOZ intrinsic connectivity','(Symmetric coverage only)'})
 end
+
+%% For visualization, build a SOZ - non SOZ laterality ordered atlas
+% Both for main and for symmetric coverage
+soz_non_soz_ordered_atlas = nan(size(atlas));
+soz_non_soz_ordered_atlas_symm_cov = nan(size(atlas));
+for ip = 1:npts
+    curr_soz_right = right_lat(ip);
+    curr_soz_left = left_lat(ip);
+    curr_atlas = atlas(:,:,ip);
+    curr_symm = symm_cov_atlas(:,:,ip);
+    
+    if ~curr_soz_right && ~curr_soz_left, continue; end
+    
+    if curr_soz_right == 1
+        soz_order = [find(right);find(left)];
+    elseif curr_soz_left == 1
+        soz_order = [find(left);find(right)];
+    end
+    
+    soz_non_soz_ordered_atlas(:,:,ip) = curr_atlas(soz_order,soz_order);
+    soz_non_soz_ordered_atlas_symm_cov(:,:,ip) = curr_symm(soz_order,soz_order);
+    
+end
+
+names_minus_lat = cellfun(@(x) x(1:end-9),names,'uniformoutput',false);
+
+%% Show my SOZ-non SOZ ordered matrices
+if do_plots
+    figure
+    set(gcf,'position',[10 10 1000 500])
+    tiledlayout(1,2,'tilespacing','compact','padding','tight')
+    
+    nexttile
+    turn_nans_gray(nanmean(soz_non_soz_ordered_atlas,3))
+    yticks(1:5:length(names))
+    yticklabels(names_minus_lat(1:5:length(names)))
+    set(gca,'fontsize',15)
+    xticklabels([])
+    title('All regions')
+    
+    nexttile
+    turn_nans_gray(nanmean(soz_non_soz_ordered_atlas_symm_cov,3))
+    xticklabels([])
+    yticklabels([])
+    title('Symmetric coverage only')
+    set(gca,'fontsize',15)
+    
+end
+
+%% Show number of patients contributing to each area
+cov_map = nan(size(atlas,1),size(atlas,2));
+symm_cov_map = nan(size(atlas,1),size(atlas,2));
+
+for ir = 1:size(atlas,1)
+    for jr = 1:size(atlas,2)
+        cov_map(ir,jr) = sum(~isnan(soz_non_soz_ordered_atlas(ir,jr,:)));
+        symm_cov_map(ir,jr) = sum(~isnan(soz_non_soz_ordered_atlas_symm_cov(ir,jr,:)));
+    end
+end
+
+if 0
+    figure
+    set(gcf,'position',[10 10 1000 500])
+    tiledlayout(1,2,'tilespacing','compact','padding','tight')
+    
+    nexttile
+    turn_nans_gray((cov_map))
+    yticks(1:5:length(names))
+    yticklabels(names_minus_lat(1:5:length(names)))
+    set(gca,'fontsize',15)
+    xticklabels([])
+    title('All regions - coverage')
+    colorbar
+    
+    nexttile
+    turn_nans_gray(symm_cov_map)
+    xticklabels([])
+    yticklabels([])
+    title('Symmetric coverage only')
+    set(gca,'fontsize',15)
+    colorbar
+end
+
+%{
+%% Alt symm coverage test
+% I confirmed this gives the same result as the original  symm coverage
+% test above
+midpoint = size(atlas,1)/2;
+lu_square = soz_non_soz_ordered_atlas_symm_cov(1:midpoint,1:midpoint,:);
+rl_square = soz_non_soz_ordered_atlas_symm_cov(midpoint+1:end,midpoint+1:end,:);
+lu_mean = squeeze(nanmean(lu_square,[1 2]));
+rl_mean = squeeze(nanmean(rl_square,[1 2]));
+
+if 0
+    figure
+    stats = plot_paired_data(([lu_mean rl_mean])',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
+
+end
+%}
+
+%% Accuracy at lateralizing epilepsy
+% Get average spike rate by laterality
+spikes_lr = nan(npts,2);
+spikes_lr(:,1) = nanmean(spikes(left,:));
+spikes_lr(:,2) = nanmean(spikes(right,:));
+spikes_higher_left = diff(spikes_lr,[],2) < 0;
+
+% Get connectivity by left and right
+fc_lr = nan(npts,2);
+fc_lr(:,1) = nanmean(atlas(left,left,:),[1 2]);
+fc_lr(:,2) = nanmean(atlas(right,right,:),[1 2]);
+fc_lower_left = diff(fc_lr,[],2) > 0;
+
+% Remove patients without epilepsy lateralization or any nans
+no_lat = ~left_lat & ~right_lat;
+any_nans = any(isnan(spikes_lr),2) | any(isnan(fc_lr),2);
+to_remove = no_lat | any_nans;
+
+left_rm = left_lat(~to_remove);
+spikes_higher_left = spikes_higher_left(~to_remove);
+fc_lower_left = fc_lower_left(~to_remove);
+
+% Confusion matrix for each
+spikes_conf = confusion_matrix(spikes_higher_left,left_rm,0);
+fc_conf = confusion_matrix(fc_lower_left,left_rm,0);
+
+
+
+%% Can I distinguish between bilateral and unilateral epilepsy?
+bilat = strcmp(soz_lats,'bilateral');
+unilat = strcmp(soz_lats,'left') | strcmp(soz_lats,'right');
+temporal = contains(soz_locs,'temporal');
+
+% Get transitivity of all patients
+all_T = nan(npts,1);
+for ip = 1:npts
+    curr = symm_cov_atlas(:,:,ip);
+    curr(isnan(curr)) = nanmean(curr,'all');
+    all_T(ip)=transitivity_wu(curr);
+end
+
+% avg connectivity
+all_avg = nan(npts,1);
+all_intrinsic_avg = nan(npts,1);
+for ip = 1:npts
+    curr = symm_cov_atlas(:,:,ip);
+    all_avg(ip) = nanmean(curr,'all');
+    all_intrinsic_avg(ip) = nanmean([nanmean(curr(left,left),'all'),...
+        nanmean(curr(right,right),'all')]);
+    
+end
+
+% modularity
+all_Q = nan(npts,1);
+for ip = 1:npts
+    curr = symm_cov_atlas(:,:,ip);
+    curr(isnan(curr)) = nanmean(curr,'all');
+    if any(isnan(curr),'all'), continue; end
+    [~,all_Q(ip)]=modularity_und(curr,1);
+end
+
+% clust coeff
+all_C = nan(npts,1);
+for ip = 1:npts
+    curr = symm_cov_atlas(:,:,ip);
+    curr(isnan(curr)) = nanmean(curr,'all');
+    if any(isnan(curr),'all'), continue; end
+    C=clustering_coef_wu(curr);
+    all_C(ip) = nanmean(C);
+end
+
+
+if 0
+    figure
+    tiledlayout(1,2)
+    
+    nexttile
+    turn_nans_gray(nanmean(atlas(:,:,bilat),3))
+    
+    nexttile
+    turn_nans_gray(nanmean(soz_non_soz_ordered_atlas(:,:,~bilat),3))
+end
+
+% average INTRINSIC connectivity (L-L, R-R)
+% my rationale for doing this as opposed to overall avg connectivity is
+% that bilateral patients should have broader coverage and potentially
+% lower connectivity)
+
+% show transitivity of bilat vs unilat
+if 0
+    figure
+    plot(1+randn(sum(bilat),1)*0.05,all_Q(bilat),'o','linewidth',2)
+    hold on
+    plot(2+randn(sum(unilat),1)*0.05,all_Q(unilat),'o','linewidth',2)
+end
+
+%% prep stuff for lateralityfig
+lat_fig.atlas = atlas;
+lat_fig.soz_atlas = soz_non_soz_ordered_atlas;
+lat_fig.symm_soz_atlas = soz_non_soz_ordered_atlas_symm_cov;
+lat_fig.cov_map = cov_map;
+lat_fig.symm_cov = symm_cov_map;
+lat_fig.symm_soz_not = symm_soz_not;
+lat_fig.bl_intrinsic = bl_intrinsic;
+lat_fig.soz_non_intrinsic = soz_non_intrinsic;
+lat_fig.spikes_conf = spikes_conf;
+lat_fig.fc_conf = fc_conf;
+lat_fig.names_minus_lat = names_minus_lat;
+lat_fig.names = names;
+lat_fig.Q = all_Q;
+lat_fig.bilat = bilat;
+lat_fig.unilat = unilat;
+lat_fig.plot_folder = plot_folder;
+
+laterality_fig(lat_fig)
 
 %% Get average connectivity of broad regions
 broad_conn = nan(nbroad,npts);
@@ -393,50 +589,7 @@ end
 end
 
 %% Logistic regression - If I take intrinsic connectivity and spikes, can I lateralize epilepsy
-%% Get average spike rate by laterality
-spikes_lr = nan(npts,2);
-spikes_lr(:,1) = nanmean(spikes(left,:));
-spikes_lr(:,2) = nanmean(spikes(right,:));
-spikes_higher_left = diff(spikes_lr,[],2) < 0;
 
-%% Get connectivity by left and right
-fc_lr = nan(npts,2);
-fc_lr(:,1) = nanmean(atlas(left,left,:),[1 2]);
-fc_lr(:,2) = nanmean(atlas(right,right,:),[1 2]);
-fc_lower_left = diff(fc_lr,[],2) > 0;
-
-%% Remove patients without epilepsy lateralization or any nans
-no_lat = ~left_lat & ~right_lat;
-any_nans = any(isnan(spikes_lr),2) | any(isnan(fc_lr),2);
-to_remove = no_lat | any_nans;
-
-left_rm = left_lat(~to_remove);
-spikes_higher_left = spikes_higher_left(~to_remove);
-fc_lower_left = fc_lower_left(~to_remove);
-
-%% Confusion matrix for each
-spikes_conf = confusion_matrix(spikes_higher_left,left_rm,0);
-fc_conf = confusion_matrix(fc_lower_left,left_rm,0);
-
-%% Can I distinguish between bilateral and unilateral epilepsy?
-bilat = strcmp(soz_lats,'bilateral');
-temporal = contains(soz_locs,'temporal');
-
-% Get transitivity of all patients
-all_T = nan(npts,1);
-for ip = 1:npts
-    curr = atlas(:,:,ip);
-    curr(isnan(curr)) = nanmean(curr,'all');
-    all_T(ip)=transitivity_wu(curr);
-end
-
-% show transitivity of bilat vs unilat
-if 0
-    figure
-    plot(1+randn(sum(bilat&temporal),1)*0.05,all_T(bilat&temporal),'o','linewidth',2)
-    hold on
-    plot(2+randn(sum(~bilat&temporal),1)*0.05,all_T(~bilat&temporal),'o','linewidth',2)
-end
 
 %% LR model
 

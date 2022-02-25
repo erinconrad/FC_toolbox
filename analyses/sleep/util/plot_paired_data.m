@@ -73,8 +73,8 @@ switch plot_type
         ep = plot(data(1,equal_diff),data(2,equal_diff),'s','markeredgecolor',...
             ecolor,'markerfacecolor',ecolor,'linewidth',2);
         
-        xlabel(sprintf('%s in %s',ytext,sprintf(xlabels{1})))
-        ylabel(sprintf('%s in %s',ytext,sprintf(xlabels{2})))
+        xlabel(sprintf('%s %s',ytext,sprintf(xlabels{1})))
+        ylabel(sprintf('%s %s',ytext,sprintf(xlabels{2})))
         [pval,~,stats] = signrank(data(1,:)',data(2,:)');
         Tpos =stats.signedrank; % Tpos = positive-rank sum = sum of positive ranks
         pause(0.3)
