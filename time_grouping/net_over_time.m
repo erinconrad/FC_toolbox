@@ -91,7 +91,8 @@ for f = 1:nfiles
             end
             
             %% Get coherence and bandpower
-            if coherence_blocks(r) == 1 && m == 2 && isfield(pc.file(f).run(r),'cohere_out') % comment out last part when done
+            if coherence_blocks(r) == 1 && m == 2 && ...
+                    isfield(pc.file(f).run(r),'cohere_out') && ~isempty(pc.file(f).run(r).cohere_out) % comment out last part when done
                 coh = pc.file(f).run(r).cohere_out.montage(m).coh;
                 bp = pc.file(f).run(r).cohere_out.montage(m).bp;
             else
