@@ -157,8 +157,7 @@ for l = 1:npts
     avg_fc_car = nanmean(fc_car,3);
     
     %% Get fc car in sleep and wake
-    avg_fc_car_sleep = nanmean(fc_car(:,:,sleep),3);
-    avg_fc_car_wake = nanmean(fc_car(:,:,wake),3);
+    avg_fc_car_sleep = n
     
     %% make main metrics
     if net_m == 1
@@ -289,8 +288,6 @@ for l = 1:npts
     summ.ns_bi = ns_bi;
     summ.avg_fc_bi = avg_fc_bi;
     %summ.fc_car = fc_car;
-    summ.avg_fc_car_wake = avg_fc_car_wake;
-    summ.avg_fc_car_sleep = avg_fc_car_sleep;
     summ.bp = bp;
     summ.avg_coh = avg_coh;
     %summ.ge = ge;

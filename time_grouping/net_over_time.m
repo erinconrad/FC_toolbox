@@ -24,6 +24,13 @@ for f = 1:nfiles
     clean_labels = pc.file(f).run(1).data(1).clean_labels;
     run_center = nan(nruns,1);
     
+    % get coherence runs
+    coherence_blocks = pt(j).ieeg.file(f).coherence_blocks;
+    first_coh = find(coherence_blocks); first_coh = first_coh(1);
+    
+    % get nfreqs
+    nfreqs = size(pc.file(f).run(first_coh).cohere_out.montage(2).bp,2);
+    
     % Get seizure times
     if ~isfield(pt(j).ieeg.file(f),'sz_times')
         sz_times = [];
@@ -42,12 +49,16 @@ for f = 1:nfiles
     rl_montage = cell(nmontages,1);
     coi_global_montage = cell(nmontages,1);
     n_rm_ictal = zeros(nmontages,1);
+    coh_montage = cell(nmontages,1);
+    bp_montage = cell(nmontages,1);
     %seq = cell(nmontages,1);
     
     for m = 1:nmontages
         net_montage{m} = nan(nchs*(nchs-1)/2,nruns);
+        coh_montage{m} = nan(nchs*(nchs-1)/2,nfreqs,nruns);
         spikes_montage{m} = nan(nchs,nruns);
         ad_montage{m} = nan(nchs,nruns);
+        bp_montage{m} = nan(nchs,nfreqs,nruns);
         coa_montage{m} = nan(nchs*(nchs-1)/2,nruns);
         rl_montage{m} = nan(nchs,nruns);
         leader_montage{m} = nan(nchs,nruns);
@@ -77,6 +88,17 @@ for f = 1:nfiles
             else
                 ad = nan(nchs,1);
             end
+            
+            %% Get coherence and bandpower
+            if coherence_blocks(r) == 1 && m == 2 % I ONLY RAN FOR CAR
+                coh = pc.file(f).run(r).cohere_out.montage(m).coh;
+                bp = pc.file(f).run(r).cohere_out.montage(m).bp;
+            else
+                coh = nan(nchs,nchs,nfreqs);
+                bp = nan(nchs,nfreqs);
+            end
+            
+            
             
             %% Network
             % unwrap
@@ -130,6 +152,8 @@ for f = 1:nfiles
             % Fill up cell arrays
             net_montage{m}(:,r) = wrap_or_unwrap_adjacency_fc_toolbox(data_uw);
             coa_montage{m}(:,r) = wrap_or_unwrap_adjacency_fc_toolbox(coa);
+            coh_montage{m}(:,:,r) = wrap_or_unwrap_adjacency_fc_toolbox(coh);
+            bp_montage{m}(:,:,r) = bp;
             %seq{m} = [seq{m};seq_matrix];
             rl_montage{m}(:,r) = rl;
             spikes_montage{m}(:,r) = spikes;
@@ -157,6 +181,8 @@ for f = 1:nfiles
         coi_global_montage{m}(all_adj_bad) = nan;
         seq_info{m}(:,all_adj_bad) = nan;
         leader_montage{m}(:,all_adj_bad) = nan;
+        coh_montage{m}(:,:,all_adj_bad) = nan;
+        bp_montage{m}(:,:,all_adj_bad) = nan;
         
          
     end
@@ -193,6 +219,8 @@ for f = 1:nfiles
         out.file(f).montage(m).seq_info = seq_info{m};
         %out.file(f).montage(m).seq = seq{m};
         out.file(f).montage(m).leader_montage = leader_montage{m};
+        out.file(f).montage(m).coh = coh_montage{m};
+        out.file(f).montage(m).bp = bp_montage{m};
         
     end
     out.file(f).run_center = run_center;
