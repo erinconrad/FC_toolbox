@@ -29,7 +29,8 @@ for f = 1:nfiles
     first_coh = find(coherence_blocks); first_coh = first_coh(1);
     
     % get nfreqs
-    nfreqs = size(pc.file(f).run(first_coh).cohere_out.montage(2).bp,2);
+    %if exist(
+    nfreqs = 5;%size(pc.file(f).run(first_coh).cohere_out.montage(2).bp,2);
     
     % Get seizure times
     if ~isfield(pt(j).ieeg.file(f),'sz_times')
