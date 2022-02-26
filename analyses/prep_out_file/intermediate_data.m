@@ -27,6 +27,7 @@ validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
 data_folder = [locations.main_folder,'data/'];
 pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
+npts = length(pt);
 
 %% Get normalized ADR value that best discriminates sleep from wake
 sw_out = load([sw_disc_folder,'out.mat']);
@@ -37,17 +38,23 @@ sw_disc = sw_out.roc_out.disc;
 T = readtable(validation_file);
 good_pts = T.Var13;
 good_pts = good_pts(~isnan(good_pts));
-npts = length(good_pts);
+good_pt_names = T.Var14;
+%npts = length(good_pts);
 
 %% Also grab SOZ info
 szT = readtable(validation_file,'Sheet','SOZ');
 
 count = 0;
 % Loop over patients
-for l = 1:npts
-    j = good_pts(l);
+for j = 1:npts
+    %j = good_pts(l);
     name = pt(j).name;
     rid = pt(j).rid;
+    
+    %% See if it was one of the good spike ones
+    good_spikes = ismember(j,good_pts);
+    double_check_good_spikes = ismember(name,good_pt_names);
+    assert(good_spikes == double_check_good_spikes);
     
     %% Load the spike file
     fname = [spikes_folder,name,'_pc.mat'];
@@ -293,6 +300,7 @@ for l = 1:npts
     summ.avg_fc_car_sleep = avg_fc_car_sleep;
     summ.bp = bp;
     summ.avg_coh = avg_coh;
+    summ.good_spikes = good_spikes;
     %summ.ge = ge;
 
     %% Save it all
