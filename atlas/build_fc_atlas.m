@@ -57,6 +57,8 @@ elecs_labels = cell(npts,1);
 spikes_atlas = nan(n_parcels,npts);
 normal_atlas_mat = nan(n_parcels,n_parcels,npts);
 normal_include = nan(n_parcels,npts);
+all_soz_locs = cell(npts,1);
+all_soz_lats = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -152,6 +154,10 @@ for p = 1:npts
     %}
     soz = summ.soz.chs;
     soz(soz==0) = [];
+    soz_loc = summ.soz.loc;
+    soz_lat = summ.soz.lat;
+    all_soz_locs{p} = soz_loc;
+    all_soz_lats{p} = soz_lat;
     
     if contains(atlas,'bipolar')
         soz_bipolar = [];
@@ -243,6 +249,8 @@ out.missing_names = missing_names;
 out.elecs_atlas = elecs_atlas;
 out.elecs_labels = elecs_labels;
 out.spikes_atlas = spikes_atlas;
+out.all_soz_locs = all_soz_locs;
+out.all_soz_lats = all_soz_lats;
 save([out_folder,atlas,'.mat'],'out');
 
 
