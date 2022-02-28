@@ -21,7 +21,7 @@ norm_pca = 0;
 delete_nans = 1;
 norm_with_normal =1;
 do_plots = 0;
-which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';%
+which_atlas = 'brainnetome';%'aal_bernabei';%%
 plot_type = 'scatter';
 coverage_limit = 20;
 
@@ -54,10 +54,15 @@ out = load([atlas_folder,which_atlas,'.mat']);
 out = out.out;
 
 %% Load soz lats
+%{
 soz_out = load('out.mat');
 soz_out = soz_out.out.circ_out;
 soz_lats = soz_out.all_lats;
 soz_locs = soz_out.all_locs;
+%}
+soz_locs = out.all_soz_locs;
+soz_lats = out.all_soz_lats;
+
 right_lat = strcmp(soz_lats,'right');
 left_lat = strcmp(soz_lats,'left');
 
