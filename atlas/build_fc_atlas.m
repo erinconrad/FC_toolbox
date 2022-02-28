@@ -66,6 +66,7 @@ for p = 1:npts
     summ = summ.summ;
     name = summ.name;
     names{p} = name;
+    good_spikes = summ.good_spikes;
     
     %% Find corresponding pt index
     found_it = 0;
@@ -94,7 +95,11 @@ for p = 1:npts
     elecs_labels{ip} = elabels;
     
     %% Get spikes
-    spikes = summ.spikes;
+    if good_spikes
+        spikes = summ.spikes;
+    else
+        spikes = nan(size(summ.spikes));
+    end
     
     %% Find and remove non intracranial
     ekg = find_non_intracranial(elabels);
