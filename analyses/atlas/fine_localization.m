@@ -19,9 +19,9 @@ that of non-SOZ (don't normalize)
 %% Parameters
 norm_pca = 0;
 delete_nans = 1;
-norm_with_normal =1;
+norm_with_normal =0;
 do_plots = 0;
-which_atlas = 'brainnetome';%'aal_bernabei';%%
+which_atlas = 'aal_bernabei';%%'brainnetome';
 plot_type = 'scatter';
 coverage_limit = 20;
 
@@ -116,6 +116,8 @@ atlas_nums = atlas_nums(lr_order);
 bin_soz = bin_soz(lr_order,:);
 spikes = spikes(lr_order,:);
 broad_locs = broad_locs(lr_order);
+locs = locs(lr_order);
+lats = lats(lr_order);
 
 %% Get left and right intrinsic connectivity
 left_intrinsic = squeeze(nanmean(atlas(left,left,:),[1 2]));
@@ -189,6 +191,27 @@ for ip = 1:npts
     end
 end
 
+
+%% Double check symm cov atlas is what I think
+
+
+if strcmp(which_atlas,'brainnetome')
+top_bilat = all_bilateral(1:123,:);
+bot_bilat = all_bilateral(124:end,:);
+assert(isequal(top_bilat,bot_bilat))
+    
+for ip = 1:npts
+    curr = symm_cov_atlas(:,:,ip);
+    for ir = 1:size(curr,1)/2
+        if any(~isnan(curr(ir,:)))
+            if ~any(~isnan(curr(ir+size(curr,1)/2,:)))
+                error('what');
+            end
+        end
+    end
+end
+end
+
 if 0
     figure
     turn_nans_gray(all_bilateral)
@@ -201,6 +224,8 @@ figure
 stats = plot_paired_data(symm_soz_not',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
 title({'SOZ vs non-SOZ intrinsic connectivity','(Symmetric coverage only)'})
 end
+
+
 
 %% For visualization, build a SOZ - non SOZ laterality ordered atlas
 % Both for main and for symmetric coverage
@@ -220,8 +245,8 @@ for ip = 1:npts
         soz_order = [find(left);find(right)];
     end
     
-    soz_non_soz_ordered_atlas(:,:,ip) = curr_atlas(soz_order,soz_order);
-    soz_non_soz_ordered_atlas_symm_cov(:,:,ip) = curr_symm(soz_order,soz_order);
+    soz_non_soz_ordered_atlas(1:length(soz_order),1:length(soz_order),ip) = curr_atlas(soz_order,soz_order);
+    soz_non_soz_ordered_atlas_symm_cov(1:length(soz_order),1:length(soz_order),ip) = curr_symm(soz_order,soz_order);
     
 end
 
@@ -235,8 +260,8 @@ if do_plots
     
     nexttile
     turn_nans_gray(nanmean(soz_non_soz_ordered_atlas,3))
-    yticks(1:5:length(names))
-    yticklabels(names_minus_lat(1:5:length(names)))
+    yticks(1:3:length(names))
+    yticklabels(names_minus_lat(1:3:length(names)))
     set(gca,'fontsize',15)
     xticklabels([])
     title('All regions')
@@ -261,7 +286,7 @@ for ir = 1:size(atlas,1)
     end
 end
 
-if 0
+if do_plots
     figure
     set(gcf,'position',[10 10 1000 500])
     tiledlayout(1,2,'tilespacing','compact','padding','tight')
@@ -392,9 +417,9 @@ end
 % show transitivity of bilat vs unilat
 if 0
     figure
-    plot(1+randn(sum(bilat),1)*0.05,all_Q(bilat),'o','linewidth',2)
+    plot(1+randn(sum(bilat),1)*0.05,all_T(bilat),'o','linewidth',2)
     hold on
-    plot(2+randn(sum(unilat),1)*0.05,all_Q(unilat),'o','linewidth',2)
+    plot(2+randn(sum(unilat),1)*0.05,all_T(unilat),'o','linewidth',2)
 end
 
 %% prep stuff for lateralityfig
