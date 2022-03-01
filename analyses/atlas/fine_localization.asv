@@ -1,9 +1,29 @@
-function lateralize_epilepsy
+function fine_localization
+
+%{
+At individual region level, get node strength. Then normalize across
+patients. Do SOZ regions have higher or lower connectivity than non SOZ
+regions?
+
+Edit this to:
+- see if average intrinsic connectivity of Left different from right - no,
+same
+- see if average intrinsic connectivity of SOZ laterality different from
+that of non-SOZ (don't normalize)
+- then restrict to correct laterality.
+- then exclude regions without many patients to normalize
+- then normalize
+- see if node strength different for SOZ vs non SOZ locations
+%} 
 
 %% Parameters
+norm_pca = 0;
+delete_nans = 1;
+norm_with_normal =0;
 do_plots = 1;
-which_atlas = 'brainnetome';%'aal_bernabei';%%'brainnetome';
+which_atlas = 'aal_bernabei';%%'brainnetome';
 plot_type = 'scatter';
+coverage_limit = 20;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -21,32 +41,68 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
+%% Get spikes
+%{
+sleep_data_folder = [scripts_folder,'analyses/sleep/data/'];
+spikes_out = load([sleep_data_folder,'out.mat']);
+spikes_out = spikes_out.out;
+all_elecs_rates = spikes_out.bin_out.all_elecs_rates;
+%}
 
-%% Load atlas and get region names
+%% Load atlas
 out = load([atlas_folder,which_atlas,'.mat']);
 out = out.out;
-atlas = out.atlas;
-names = out.atlas_names;
-nregions = length(names);
-assert(nregions==size(atlas,1))
 
 %% Load soz lats
+%{
+soz_out = load('out.mat');
+soz_out = soz_out.out.circ_out;
+soz_lats = soz_out.all_lats;
+soz_locs = soz_out.all_locs;
+%}
+soz_locs = out.all_soz_locs;
 soz_lats = out.all_soz_lats;
+
 right_lat = strcmp(soz_lats,'right');
 left_lat = strcmp(soz_lats,'left');
+
+atlas = out.atlas;
+atlas_norm = out.normal_atlas;
+names = out.atlas_names;
+
+atlas_nums = out.atlas_nums;
+nregions = length(names);
+assert(nregions==size(atlas,1))
+npts = size(atlas,3);
+sozs = out.sozs;
+bin_soz = (cell2mat(cellfun(@(x) ismember(atlas_nums',x),sozs,'uniformoutput',false)))';
+
+%% Get spike rates in each parcel
+spikes = out.spikes_atlas;
+
+%% Localize SOZ
+mt = strcmp(soz_locs,'mesial temporal');
+tn = strcmp(soz_locs,'temporal neocortical');
+oc = strcmp(soz_locs,'other cortex');
+temporal = contains(soz_locs,'temporal');
+extra = strcmp(soz_locs,'other cortex') | strcmp(soz_locs,'diffuse') | strcmp(soz_locs,'multifocal');
 
 %% Get locs and lats for atlas names
 [locs,lats] = lateralize_regions(names,which_atlas);
 left = strcmp(lats,'L');
 right = strcmp(lats,'R');
 neither_lat = ~left & ~right;
-
-% confirm atlas has as many on right as left
-assert(sum(left)==sum(right));
-
-%% Re-order atlas to be left then right then neither
 lr_order = reorder_lr(locs,lats);
 
+assert(sum(left)==sum(right));
+
+broad_locs = localize_regions(names,which_atlas);
+broad_regions = {'left mesial temporal','right mesial temporal',...
+    'left temporal neocortical','right temporal neocortical',...
+    'left other cortex','right other cortex'};
+nbroad = length(broad_regions);
+
+%% Change all orders to left and right
 left = left(lr_order);
 right = right(lr_order);
 neither_lat = neither_lat(lr_order);
@@ -58,12 +114,25 @@ lats = lats(lr_order);
 %% First, build symmetric coverage atlas
 [symm_cov_atlas,all_bilateral] = build_symmetric_coverage_atlas(atlas,locs,lats);
 
+
 %% Build a SOZ - non SOZ laterality ordered atlas
 [soz_non_soz_ordered_atlas,soz,non_soz] = build_soz_ordered_atlas(atlas,left,right,right_lat,left_lat);
 soz_non_soz_ordered_atlas_symm_cov = build_soz_ordered_atlas(symm_cov_atlas,left,right,right_lat,left_lat);
 
 
-%% Get intrinsic connectivity of soz and non soz
+%% Get simple names for plotting
+names_minus_lat = cellfun(@(x) x(1:end-9),names,'uniformoutput',false);
+if strcmp(which_atlas,'aal_bernabei')
+    simple_names = cell(length(names),1);
+    for i = 1:length(names)
+        C = strsplit(names{i},'_');
+        simple_names{i} = C{1};
+    end
+else
+    simple_names = names;
+end
+
+%% symm coverage test
 lu_square = soz_non_soz_ordered_atlas_symm_cov(soz,soz,:);
 rl_square = soz_non_soz_ordered_atlas_symm_cov(non_soz,non_soz,:);
 lu_mean = squeeze(nanmean(lu_square,[1 2]));
@@ -95,12 +164,21 @@ if do_plots
 
     nexttile
     stats = plot_paired_data(soz_non_soz',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
-    title('Intrinisic connectivity in SOZ vs non-SOZ')
+    title('
     
 end
 
 print(gcf,[plot_folder,'lat_',which_atlas],'-dpng')
 
 
+%{
+
+
+if 0
+    figure
+    stats = plot_paired_data(([lu_mean rl_mean])',{'SOZ','non-SOZ','non-SOZ'},'Intrinsic connectivity','paired',plot_type);
+
+end
+%}
 
 end

@@ -1,4 +1,4 @@
-function fine_localization
+function fine_localization_old
 
 %{
 At individual region level, get node strength. Then normalize across
@@ -20,7 +20,7 @@ that of non-SOZ (don't normalize)
 norm_pca = 0;
 delete_nans = 1;
 norm_with_normal =0;
-do_plots = 0;
+do_plots = 1;
 which_atlas = 'aal_bernabei';%%'brainnetome';
 plot_type = 'scatter';
 coverage_limit = 20;
@@ -440,7 +440,7 @@ lat_fig.bilat = bilat;
 lat_fig.unilat = unilat;
 lat_fig.plot_folder = plot_folder;
 
-laterality_fig(lat_fig)
+%laterality_fig(lat_fig)
 
 %% Get average connectivity of broad regions
 broad_conn = nan(nbroad,npts);
