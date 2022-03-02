@@ -63,6 +63,15 @@ spikes = spikes(lr_order,:);
 bin_soz = bin_soz(lr_order,:);
 atlas_nums = atlas_nums(lr_order);
 
+%% index of contralateral
+contra_index = nan(size(left));
+contra_index(1:sum(left)) = ([1:sum(left)])'+sum(left);
+contra_index(sum(left)+1:sum(left)*2) = ([1:sum(left)])';
+
+% make sure first half locs are same as last half locs
+assert(isequal(locs(1:sum(left)),locs(sum(left)+1:sum(left)*2)))
+assert(isequal(locs(contra_index(1:sum(left))),locs(contra_index(sum(left)+1:sum(left)*2))))
+
 %% First, build symmetric coverage atlas
 [symm_cov_atlas,all_bilateral] = build_symmetric_coverage_atlas(atlas,locs,lats);
 
@@ -101,6 +110,33 @@ for ip = 1:npts
     soz_symm_bin_soz(1:length(soz_order),ip) = curr_bin_soz(soz_order);
 end
 
+%% Make a matrix with bilateral SOZ location (1s in soz AND contralateral to that
+soz_symm_bin_soz_bilat = nan(size(bin_soz));
+
+for ip = 1:npts
+    curr_soz = soz_symm_bin_soz(:,ip);
+    
+    % make it same as current
+    soz_symm_bin_soz_bilat(:,ip) = curr_soz;
+    
+    % find the contralateral ones
+    cont = contra_index(curr_soz == 1);
+    
+    soz_symm_bin_soz_bilat(cont,ip) = 1;
+     
+    
+end
+soz_symm_bin_soz_bilat(isnan(soz_symm_bin_soz_bilat)) = 0;
+
+%% Build atlas requiring symmetric coverage AND SOZ
+symm_and_soz_atlas = soz_non_soz_ordered_atlas_symm_cov;
+for ip = 1:npts
+    allowed = logical(soz_symm_bin_soz_bilat(:,ip));
+    
+    symm_and_soz_atlas(~allowed,:,ip) = nan;
+    symm_and_soz_atlas(:,~allowed,ip) = nan;
+end
+
 %% Get intrinsic connectivity of soz side and non soz side
 lu_square = soz_non_soz_ordered_atlas_symm_cov(soz,soz,:);
 rl_square = soz_non_soz_ordered_atlas_symm_cov(non_soz,non_soz,:);
@@ -112,6 +148,13 @@ soz_non_soz = [lu_mean rl_mean];
 soz_spike_avg = nanmean(soz_symm_spikes(soz,:),1);
 non_soz_spike_avg = nanmean(soz_symm_spikes(non_soz,:),1);
 spikes_soz_non = [soz_spike_avg' non_soz_spike_avg'];
+
+%% Get intrinsic connectivity of soz focus and non soz focus
+lu_square = symm_and_soz_atlas(soz,soz,:);
+rl_square = symm_and_soz_atlas(non_soz,non_soz,:);
+lu_mean = squeeze(nanmean(lu_square,[1 2]));
+rl_mean = squeeze(nanmean(rl_square,[1 2]));
+soz_non_soz_focus = [lu_mean rl_mean];    
 
 %% Show my SOZ-non SOZ ordered matrices
 if do_plots

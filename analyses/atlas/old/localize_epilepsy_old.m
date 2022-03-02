@@ -1,7 +1,7 @@
 function localize_epilepsy_old
 
 %% Parameters
-which_atlas = 'brainnetome';% %'aal';'aal_bernabei';
+which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
 plot_type = 'scatter';
 broad_regions = {'left mesial temporal','right mesial temporal',...
     'left temporal neocortical','right temporal neocortical',...
@@ -39,10 +39,17 @@ if strcmp(which_atlas,'aal_bernabei'), names = names'; end
 %sozs = out.sozs;
 
 %% Get soz loc-lat combos
+%{
 soz_out = load('out.mat');
 soz_out = soz_out.out.circ_out;
 soz_locs = soz_out.all_locs;
 soz_lats = soz_out.all_lats;
+%}
+soz_lats = out.all_soz_lats;
+soz_locs = out.all_soz_locs;
+right_lat = strcmp(soz_lats,'right');
+left_lat = strcmp(soz_lats,'left');
+
 soz_lat_loc = cellfun(@(x,y) [x,' ',y],soz_lats,soz_locs,'UniformOutput',false);
 if 0
     table(soz_locs,soz_lats)
@@ -61,7 +68,7 @@ end
 
 %% Localize regions into broad categories
 broad = localize_regions(names,which_atlas);
-if 1
+if 0
     table(names,broad)
 end
 
