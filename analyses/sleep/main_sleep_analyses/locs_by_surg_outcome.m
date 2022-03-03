@@ -1,5 +1,9 @@
 function out = locs_by_surg_outcome(disc)
 
+%% Parameters
+which_locs = {'temporal','other cortex'};
+which_lats = {'Left','Right'};
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -60,7 +64,7 @@ for p = 1:npts
     for i = 1:2 % temp, other cortex
         for j = 1:2 % left, right
             
-            idx = strcmp(loc,'temporal') & strcmp(lat,'left');
+            idx = strcmp(loc,which_locs{i}) & strcmp(lat,which_lats{j});
             
             spikes_loc(p,i,j) = nanmean(spikes(idx,:),'all');
             spikes_loc_ws(p,i,j,1) = nanmean(spikes(idx,wake),'all');
