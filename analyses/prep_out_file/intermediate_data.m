@@ -1,4 +1,4 @@
-function intermediate_data
+function intermediate_data(overwrite)
 
 %% Parameters
 m = 2; % do not change
@@ -50,6 +50,13 @@ for j = 1:npts
     %j = good_pts(l);
     name = pt(j).name;
     rid = pt(j).rid;
+    
+    if exist([out_folder,name,'.mat'],'file') ~= 0
+        fprintf('\nSkipping %s\n',name);
+        continue
+    else
+        fprintf('\nDoing %s\n',name);
+    end
     
     %% See if it was one of the good spike ones
     good_spikes = ismember(j,good_pts);
