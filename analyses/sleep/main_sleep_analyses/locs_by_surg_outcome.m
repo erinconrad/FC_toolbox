@@ -54,7 +54,7 @@ for p = 1:npts
     labels = labels(~ekg);
      
     %% Determine "wake" and "sleep" times
-    [sleep,wake] = find_sleep_wake(ad,exc,disc);
+    [sleep,wake] = find_sleep_wake(ad,[],disc);
      
     %% Bin spikes by loc
     for i = 1:2 % temp, other cortex
