@@ -1,7 +1,7 @@
-function T = spike_atlas
+function spike_atlas
 
 %% Parameters
-which_atlas = 'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
+which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
 plot_type = 'scatter';
 
 broad_locs = {'mesial temporal','temporal neocortical','other cortex'};
@@ -113,8 +113,81 @@ if 0
 end
 
 %% SOZ loc -> spike loc
-same_loc = soz_loc_predict_spike_loc(soz_broad,broad_locs,perc_spikes_broad,broad_regions);
-same_lat = soz_lat_predict_spike_lat(soz_broad,broad_lats,perc_spikes_broad,broad_regions);
+same_loc = soz_loc_predict_spike_loc(soz_broad,broad_locs,perc_spikes_broad)
+
+same_loc = nan(length(broad_locs),2);
+same_lat = nan(length(broad_lats),2);
+for i = 1:length(broad_locs)
+
+    % Get patients with that sz loc
+    pts_with_sz_loc = contains(soz_broad,broad_locs{i});
+    
+    % Get the indices for the other SPIKE locs (to compare spike rates)
+    alt_1 = mod(i+1,length(broad_locs))+1;
+    alt_2 = mod(i,length(broad_locs))+1;
+    
+    % get % of spikes in each region
+    curr_sp_region = contains(broad_regions,broad_locs{i});
+    alt_region_1 = contains(broad_regions,broad_locs{alt_1});
+    alt_region_2 = contains(broad_regions,broad_locs{alt_2});
+    
+    spikes_in_region = nanmean(perc_spikes_broad(curr_sp_region,:),1);
+    spikes_outside_region_1 = nanmean(perc_spikes_broad(alt_region_1,:),1);
+    spikes_outside_region_2 = nanmean(perc_spikes_broad(alt_region_2,:),1);
+    
+    any_isnot_nan = ~any(~isnan([spikes_in_region;spikes_outside_region_1;spikes_outside_region_2]),1);
+    
+    % For which patients is the % of spikes highest in this region?
+    most_spikes_in_region = (spikes_in_region > max([spikes_outside_region_1;spikes_outside_region_2],[],1));
+    
+    % % of patient with this sz loc meeting this criteria
+    same_loc(i,:) = [sum(most_spikes_in_region(pts_with_sz_loc & ~any_isnot_nan')),sum(pts_with_sz_loc & ~any_isnot_nan')];
+    
+    if 0
+        table(soz_broad(pts_with_sz_loc& ~any_isnot_nan'),...
+            (spikes_in_region(pts_with_sz_loc& ~any_isnot_nan'))',...
+            (spikes_outside_region_1(pts_with_sz_loc& ~any_isnot_nan'))',...
+            (spikes_outside_region_2(pts_with_sz_loc& ~any_isnot_nan'))')
+        
+        table(soz_broad(pts_with_sz_loc),...
+            (spikes_in_region(pts_with_sz_loc))',...
+            (spikes_outside_region_1(pts_with_sz_loc))',...
+            (spikes_outside_region_2(pts_with_sz_loc))')
+        
+    end
+    
+end
+
+for i = 1:length(broad_lats)
+
+    % Get patients with that sz loc
+    pts_with_sz_loc = contains(soz_broad,broad_lats{i});
+    
+    % Get the indices for the other SPIKE locs (to compare spike rates)
+    alt_1 = 3-i;
+    
+    % get % of spikes in each region
+    curr_sp_region = contains(broad_regions,broad_lats{i});
+    alt_region_1 = contains(broad_regions,broad_lats{alt_1});
+    
+    spikes_in_region = nanmean(perc_spikes_broad(curr_sp_region,:),1);
+    spikes_outside_region_1 = nanmean(perc_spikes_broad(alt_region_1,:),1);
+    
+    % For which patients is the % of spikes highest in this region?
+    most_spikes_in_region = (spikes_in_region > spikes_outside_region_1);
+    
+    any_nan = any(isnan([spikes_in_region;spikes_outside_region_1]),1);
+    
+    
+    if 0
+        table(soz_broad(pts_with_sz_loc& ~any_nan'),(spikes_in_region(pts_with_sz_loc& ~any_nan'))',(spikes_outside_region_1(pts_with_sz_loc& ~any_nan'))')
+        
+    end
+    
+    % % of patient with this sz loc meeting this criteria
+    same_lat(i,:) = [sum(most_spikes_in_region(pts_with_sz_loc & ~any_nan')),sum(pts_with_sz_loc& ~any_nan')];
+    
+end
 
 %% Pretty text
 fprintf(['Spikes were most frequent in the hemisphere of the SOZ in %d out of %d (%1.1f%%) patients.'...
@@ -193,10 +266,9 @@ end
 
 %% ML
 thing = perc_spikes_broad';
-z = (thing - nanmean(thing,1))./nanstd(thing,[],1);
+thing = (thing - nanmean(thing,1))./nanstd(thing,[],1);
 pt_idx = repmat((1:npts)',1,nb);
 soz_bin = nan(npts,nb);
-region_idx = repmat(1:6,npts,1);
 
 for ip = 1:npts
     curr_soz = soz_broad{ip};
@@ -207,30 +279,19 @@ unclear = sum(soz_bin,2) == 0;
 
 % remove any unclear
 thing(unclear,:) = [];
-z(unclear,:) = [];
 pt_idx(unclear,:) = [];
 soz_bin(unclear,:) = [];
-region_idx(unclear,:) = [];
 
 % vectorize
 thing_vec = thing(:);
 pt_vec = pt_idx(:);
 soz_vec = soz_bin(:);
-z_vec = z(:);
-region_vec = region_idx(:);
 
-T = table(soz_vec,pt_vec,thing_vec,z_vec,region_vec);
+T = table(soz_vec,pt_vec,thing_vec);
 T.pt_vec = nominal(T.pt_vec);
-T.region_vec = (nominal(T.region_vec));
 
-glme1 = fitglme(T,'soz_vec ~ thing_vec + (1|pt_vec)',...
+glme = fitglme(T,'soz_vec ~ thing_vec + (1|pt_vec)',...
     'Distribution','Poisson','Link','log');
-
-
-glme2 = fitglme(T,'soz_vec ~ thing_vec + (1|pt_vec) + (1|region_vec)',...
-    'Distribution','Poisson','Link','log');
-
-return
 
 %% Raw cluster without PCA
 %{

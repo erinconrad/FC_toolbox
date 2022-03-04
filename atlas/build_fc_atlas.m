@@ -55,6 +55,7 @@ n_elecs_all = nan(n_parcels,npts);
 elecs_atlas = cell(npts,1);
 elecs_labels = cell(npts,1);
 spikes_atlas = nan(n_parcels,npts);
+spike_leader_atlas = nan(n_parcels,npts);
 normal_atlas_mat = nan(n_parcels,n_parcels,npts);
 normal_include = nan(n_parcels,npts);
 all_soz_locs = cell(npts,1);
@@ -99,8 +100,10 @@ for p = 1:npts
     %% Get spikes
     if good_spikes
         spikes = summ.spikes;
+        leader = summ.leader;
     else
         spikes = nan(size(summ.spikes));
+        leader = nan(size(summ.leader));
     end
     
     %% Find and remove non intracranial
@@ -108,9 +111,11 @@ for p = 1:npts
     fc(ekg,:) = nan;
     fc(:,ekg) = nan;
     spikes(ekg,:) = nan;
+    leader(ekg,:) = nan;
     
     %% Get average spikes over time
     spikes = nanmean(spikes,2);
+    leader = nanmean(leader,2);
     
 
     %% Get atlas
@@ -199,8 +204,9 @@ for p = 1:npts
         % Get number of electrodes contributing to parcel
         n_elecs(inp) = sum(which_elecs_i);
         
-        % Get average spikes
+        % Get average spikes and leader
         spikes_atlas(inp,p) = nanmean(spikes(which_elecs_i));
+        spike_leader_atlas(inp,p) = nanmean(leader(which_elecs_i));
         
         normal_include(inp,p) = sum(which_elecs_i & ~exclude);
         
@@ -249,6 +255,7 @@ out.missing_names = missing_names;
 out.elecs_atlas = elecs_atlas;
 out.elecs_labels = elecs_labels;
 out.spikes_atlas = spikes_atlas;
+out.spike_leader_atlas = spike_leader_atlas;
 out.all_soz_locs = all_soz_locs;
 out.all_soz_lats = all_soz_lats;
 save([out_folder,atlas,'.mat'],'out');

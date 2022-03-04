@@ -1,17 +1,21 @@
-function SSE = find_optimal_k(thing)
+function [SSE,idx] = find_optimal_k(thing,ks_to_check)
 
-max_k = 10;
+nk = length(ks_to_check);
 nattempts = 30;
 
 
-SSE = zeros(max_k,1);
+SSE = zeros(nk,1);
+idx = cell(nk,1);
 
-for k = 1:max_k
+for ik = 1:nk
+    k = ks_to_check(ik);
     SSE_temp = zeros(nattempts,1);
+    idx_test_all = cell(nattempts,1);
     
     for j = 1:nattempts
         
         [idx_test,C_test] = kmeans(thing,k);
+        idx_test_all{j} = idx_test;
         
         % Get SSE
         for i = 1:k
@@ -33,7 +37,8 @@ for k = 1:max_k
     end
     
     % select the best
-    SSE(k) = min(SSE_temp);
+    [SSE(ik),I] = min(SSE_temp);
+    idx{ik} = idx_test_all{I};
     
 end
 
