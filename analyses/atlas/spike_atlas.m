@@ -1,7 +1,8 @@
 function T = spike_atlas
 
 %% Parameters
-which_atlas = 'aal_bernabei';%'brainnetome';% %'aal';'aal_bernabei';
+do_leader = 1;
+which_atlas = 'brainnetome';% %'aal';'aal_bernabei';
 plot_type = 'scatter';
 
 broad_locs = {'mesial temporal','temporal neocortical','other cortex'};
@@ -48,7 +49,11 @@ out = out.out;
 
 %% Get atlas info
 names = out.atlas_names;
-spikes = out.spikes_atlas;
+if do_leader
+    spikes = out.spike_leader_atlas;
+else
+    spikes = out.spikes_atlas;
+end
 
 
 %% Get soz loc-lat combos
@@ -88,6 +93,7 @@ end
 
 %% Also get percent of patient's spikes in that region
 perc_spikes_broad = spikes_broad./nansum(spikes_broad,1)*100;
+
 
 %% group patients across 9 groups and remake matrices
 soz_spikes = nan(nb,nsozs);
@@ -229,6 +235,30 @@ glme1 = fitglme(T,'soz_vec ~ thing_vec + (1|pt_vec)',...
 
 glme2 = fitglme(T,'soz_vec ~ thing_vec + (1|pt_vec) + (1|region_vec)',...
     'Distribution','Poisson','Link','log');
+
+%% Alt classifier
+% Predict 1 of 9 SOZ localizations using spike pattern
+thing = perc_spikes_broad';
+class = soz_broad;
+loc = soz_locs;
+lat = soz_lats;
+lat(~strcmp(lat,'left') & ~strcmp(lat,'right')) = {'bilateral'};
+loc(contains(loc,'temporal')) = {'temporal'};
+loc(~contains(loc,'temporal')) = {'other'};
+%loc(~strcmp(loc,'mesial temporal') & ~strcmp(loc,'temporal neocortical')) = {'other'};
+
+
+all_nan = sum(~isnan(thing),2) == 0;
+thing(all_nan,:) = [];
+class(all_nan) = [];
+loc(all_nan) = [];
+lat(all_nan) = [];
+thing(isnan(thing)) = 0;
+
+T = array2table(thing);
+T = addvars(T,class);
+T = addvars(T,lat);
+T = addvars(T,loc);
 
 return
 
