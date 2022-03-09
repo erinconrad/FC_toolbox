@@ -1,0 +1,8 @@
+function lat = parse_electrode_laterality(labels)
+
+first_letter = cellfun(@(x) x(1),labels,'uniformoutput',false);
+
+
+
+
+end
