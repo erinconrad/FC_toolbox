@@ -22,6 +22,12 @@ else
     is_ranking = 0;
 end
 
+if length(varargin) >= 7
+    do_plot = varargin{7};
+else
+    do_plot = 0;
+end
+
 %(data,xlabels,ytext,p_or_unp,plot_type)
 
 %errorbar(nanmean(data,2),nanstd(data,[],2),'o','linewidth',2);
@@ -64,45 +70,48 @@ switch plot_type
             pos_diff = data(2,:) > data(1,:);
             neg_diff = data(1,:) > data(2,:);
         end
-        equal_diff = data(1,:) == data(2,:);
-        pp = plot(data(1,pos_diff),data(2,pos_diff),'o','markeredgecolor',pcolor,'linewidth',2,...
-            'MarkerFaceColor',pcolor);
-        hold on
-        np = plot(data(1,neg_diff),data(2,neg_diff),'^','markeredgecolor',...
-            ncolor,'MarkerFaceColor',ncolor,'linewidth',2);
-        ep = plot(data(1,equal_diff),data(2,equal_diff),'s','markeredgecolor',...
-            ecolor,'markerfacecolor',ecolor,'linewidth',2);
-        
-        xlabel(sprintf('%s %s',ytext,sprintf(xlabels{1})))
-        ylabel(sprintf('%s %s',ytext,sprintf(xlabels{2})))
         [pval,~,stats] = signrank(data(1,:)',data(2,:)');
         Tpos =stats.signedrank; % Tpos = positive-rank sum = sum of positive ranks
-        pause(0.3)
-        
-        all_min = min([ylim,xlim]);
-        all_max = max([xlim,ylim]);
-        
-        
-        
-        plot([all_min all_max],[all_min all_max],'k--','linewidth',2)
-        
-        
-        xlim([all_min all_max])
-        ylim([all_min all_max])
-        xl = xlim;
-        yl = ylim;
-        
-        px = xl(1) + 0.01*(xl(2)-xl(1));
-        py = yl(1) + 0.99*(yl(2)-yl(1));
-        %ylim
-        text(px,py,get_p_text(pval),'verticalalignment','top','fontsize',15)
-        %ylim
-        legtext1 = sprintf('Higher %s',legtext);
-        legtext2 = sprintf('Lower %s',legtext);
-        legtext3 = 'Equal';
-        
-        legend([pp;np;ep],{legtext1,legtext2,legtext3},...
-            'location','southeast','fontsize',15,'box','off')
+        if do_plot
+            equal_diff = data(1,:) == data(2,:);
+            pp = plot(data(1,pos_diff),data(2,pos_diff),'o','markeredgecolor',pcolor,'linewidth',2,...
+                'MarkerFaceColor',pcolor);
+            hold on
+            np = plot(data(1,neg_diff),data(2,neg_diff),'^','markeredgecolor',...
+                ncolor,'MarkerFaceColor',ncolor,'linewidth',2);
+            ep = plot(data(1,equal_diff),data(2,equal_diff),'s','markeredgecolor',...
+                ecolor,'markerfacecolor',ecolor,'linewidth',2);
+
+            xlabel(sprintf('%s %s',ytext,sprintf(xlabels{1})))
+            ylabel(sprintf('%s %s',ytext,sprintf(xlabels{2})))
+
+            pause(0.3)
+
+            all_min = min([ylim,xlim]);
+            all_max = max([xlim,ylim]);
+
+
+
+            plot([all_min all_max],[all_min all_max],'k--','linewidth',2)
+
+
+            xlim([all_min all_max])
+            ylim([all_min all_max])
+            xl = xlim;
+            yl = ylim;
+
+            px = xl(1) + 0.01*(xl(2)-xl(1));
+            py = yl(1) + 0.99*(yl(2)-yl(1));
+            %ylim
+            text(px,py,get_p_text(pval),'verticalalignment','top','fontsize',15)
+            %ylim
+            legtext1 = sprintf('Higher %s',legtext);
+            legtext2 = sprintf('Lower %s',legtext);
+            legtext3 = 'Equal';
+
+            legend([pp;np;ep],{legtext1,legtext2,legtext3},...
+                'location','southeast','fontsize',15,'box','off')
+        end
         
         stats_out.medians = [nanmedian(data(1,:)) nanmedian(data(2,:))];
         stats_out.iqrs = [iqr(data(1,:))  iqr(data(2,:))];
@@ -122,7 +131,10 @@ if ~strcmp(plot_type,'scatter')
     yl = ylim;
     [p,post_hoc_p,which_groups]=get_and_plot_non_para_stats(yl,data,p_or_unp);
 end
+
+if do_plot
 set(gca,'fontsize',15)
+end
 
 
 

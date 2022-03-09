@@ -48,6 +48,10 @@ for ip = 1:npts
     rate_sleep_lr(ip,1) = nanmean(curr_sleep_rates(strcmp(curr_lats,'L')));
     rate_sleep_lr(ip,2) = nanmean(curr_sleep_rates(strcmp(curr_lats,'R')));
     
+    if 0
+        table(curr_labels,curr_lats,curr_sleep_rates);
+    end
+    
 end
 
 %% Remove those with nans

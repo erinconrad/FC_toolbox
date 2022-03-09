@@ -3,6 +3,7 @@ function sleep_figure3
 
 
 %% Parameters
+nb = 10;
 plot_type = 'scatter';
 nblocks = 6;
 myColours = [0.1660, 0.540, 0.1880;...
@@ -177,14 +178,20 @@ wake_p= soz_roc_out.wake_p;
 sleep_or = (sleep_or - 1)*100;
 wake_or = (wake_or - 1)*100;
 
-nb = 1000;
+
 all_roc = nan(nb,1000,2);
 all_auc = nan(nb,1);
+all_disc = nan(nb,1);
+all_soz_class = cell(nb,1);
+all_non_soz_class = cell(nb,1);
 % Now do it 1,000 times!!!
 for ib = 1:nb
     soz_roc_out = classify_soz(1);
     all_roc(ib,:,:) = soz_roc_out.roc;
     all_auc(ib) = soz_roc_out.auc;
+    all_disc(ib) = soz_roc_out.disc;
+    all_soz_class{ib} = soz_roc_out.class_soz;
+    all_non_soz_class{ib} = soz_roc_out.class_no_soz;
 end
 
 nexttile([1 1])
@@ -196,18 +203,11 @@ auc_ci = [prctile(all_auc,2.5) prctile(all_auc,97.5)];
 [unify_x,unify_y] = unify_roc(all_roc);
 
 ym = median(unify_y,1);
+
+
 ly = prctile(unify_y,25,1);
 uy = prctile(unify_y,75,1);
 
-shaded_error_bars_fc(unify_x,ym,[ly',uy'],'k');
-%plot(roc(:,1),roc(:,2),'k-','linewidth',2)
-hold on
-plot([0 1],[0 1],'k--','linewidth',2)
-xlabel('False positive rate')
-ylabel('True positive rate')
-legend(sprintf('Median AUC %1.2f',median_auc),'location','southeast','fontsize',15,'box','off')
-set(gca,'fontsize',15)
-title('SOZ identification accuracy')
 
 %% ROC text
 fprintf(fid,['<p>Finally, we tested how accurately spike rates could '...
@@ -221,14 +221,91 @@ fprintf(fid,['<p>Finally, we tested how accurately spike rates could '...
     '(<i>t</i> = %1.1f, %s). Holding spike rate in sleep constant,'...
     ' the odds of an electrode being a SOZ electrode increased by %1.1f%% (95%% CI [%1.2f-'...
     '%1.2f]) for each additional normalized spike rate in wake unit, which was not significant ('...
-    '<i>t</i> = %1.1f, %s). Applying this model to the remaining'...
+    '<i>t</i> = %1.1f, %s). This latter result provides additional support that spikes in sleep localize the SOZ better than spikes in wake.</p>'...
+    '<p>Applying this model to the remaining'...
     ' one-third of patients held as testing data accurately '...
     'classified electrodes as SOZ versus non-SOZ '...
-    '(Median AUC across 1,000 random splits of testing and training data = %1.2f (95%% CI [%1.2f-%1.2f]), Fig. 4E). This result implies that using '...
-    'spike rates and sleep/wake classification alone can accurately identify the SOZ.'...
-    ' It also provides additional support that spikes in sleep localize the SOZ better than spikes in wake.</p>'],...
+    '(Median AUC across 1,000 random splits of testing and training data = %1.2f (95%% CI [%1.2f-%1.2f]), Fig. 4E).'...
+    ' These results imply that a simple model incorporating just spike rates and sleep/wake state can accurately localize the SOZ.</p>'],...
     sleep_or,sleep_ci95(1),sleep_ci95(2),sleep_t,get_p_html(sleep_p),wake_or,...
     wake_ci95(1),wake_ci95(2),wake_t,get_p_html(wake_p),median_auc,auc_ci(1),auc_ci(2));
+
+%% Build confusion matrix
+disc = median(all_disc);
+all_mat = nan(2,2,nb);
+all_sens = nan(nb,1);
+all_spec = nan(nb,1);
+all_ppv = nan(nb,1);
+all_npv = nan(nb,1);
+for ib = 1:nb
+    tout = sleep_conf_matrix(all_soz_class{ib},all_non_soz_class{ib},disc);
+    all_mat(:,:,ib) = tout.mat;
+    all_sens(ib) = tout.sensitivity;
+    all_spec(ib) = tout.specificity;
+    all_ppv(ib) = tout.ppv;
+    all_npv(ib) = tout.npv;
+end
+
+%% Alt confusion matrix to optimize PPV
+disc_opt = 0.2;
+new_all_mat = nan(2,2,nb);
+new_all_sens = nan(nb,1);
+new_all_spec = nan(nb,1);
+new_all_ppv = nan(nb,1);
+new_all_npv = nan(nb,1);
+for ib = 1:nb
+    tout = sleep_conf_matrix(all_soz_class{ib},all_non_soz_class{ib},disc_opt);
+    new_all_mat(:,:,ib) = tout.mat;
+    new_all_sens(ib) = tout.sensitivity;
+    new_all_spec(ib) = tout.specificity;
+    new_all_ppv(ib) = tout.ppv;
+    new_all_npv(ib) = tout.npv;
+end
+
+%% Add text
+%{
+fprintf(fid,[' As an example of how this classifier would perform at predicting the SOZ,'...
+    ' the point on the median ROC curve that best maximizes the sum of sensitivity and specificity'...
+    ' results in a median sensitivity of %1.1f%% and specifity of %1.1f%% for detecting the SOZ across the 1,000 random test datasets.'...
+    ' This corresponds to a positive predictive value (the probability that a predicted SOZ is a true SOZ) of %1.1f%%'...
+    ' and a negative predictive value of %1.1f%%. An alternate value on the ROC curve optimizing specificity at the'...
+    ' expense of sensitivity results in a positive predictive value of %1.1f%% and a negative predictive value of %1.1f%%.'...
+    ' These results imply that a simple model incorporating just spike rates and sleep/wake state can accurately localize the SOZ.</p>'],...
+    median(all_sens)*100,median(all_spec)*100,median(all_ppv)*100,median(all_npv)*100,...
+    median(new_all_ppv)*100,median(new_all_npv)*100);
+%}
+
+mp = shaded_error_bars_fc(unify_x,ym,[ly',uy'],'k');
+%plot(roc(:,1),roc(:,2),'k-','linewidth',2)
+hold on
+plot([0 1],[0 1],'k--','linewidth',2)
+
+% Add the example points
+point1 = [1-median(all_spec),median(all_sens)];
+point2 = [1-median(new_all_spec),median(new_all_sens)];
+
+% snap the example points to the graph
+point1 = find_closest_point(point1,[unify_x',ym']);
+point2 = find_closest_point(point2,[unify_x',ym']);
+
+%{
+p1=plot(point1(1),point1(2),'d','markeredgecolor',[0.4940, 0.1840, 0.5560],...
+    'markerfacecolor',[0.4940, 0.1840, 0.5560],'markersize',15);
+p2 = plot(point2(1),point2(2),'o','markeredgecolor',[0.3010, 0.7450, 0.9330],...
+    'markerfacecolor',[0.3010, 0.7450, 0.9330],'markersize',15);
+%}
+legend(sprintf('Median AUC %1.2f',median_auc),'location','southeast','fontsize',15,'box','off')
+xlabel('False positive rate')
+ylabel('True positive rate')
+%{
+legend([mp,p1,p2],...
+    {sprintf('Median AUC %1.2f',median_auc),sprintf('PPV = %1.1f%%, NPV = %1.1f%%',...
+    median(all_ppv)*100,median(all_npv)*100),sprintf('PPV = %1.1f%%, NPV = %1.1f%%',...
+    median(new_all_ppv)*100,median(new_all_npv)*100)},...
+    'location','southeast','fontsize',15,'box','off')
+%}
+set(gca,'fontsize',15)
+title('SOZ identification accuracy')
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',20,'linestyle','none')
@@ -263,5 +340,14 @@ for i = 1:size(all_roc,1)
         
     end
 end
+
+end
+
+
+function closest = find_closest_point(test,points)
+
+dist = vecnorm(points-test,2,2);
+[~,closest] = min(dist);
+closest = points(closest,:);
 
 end
