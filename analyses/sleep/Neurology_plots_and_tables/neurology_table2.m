@@ -3,7 +3,7 @@ function sleep_table2
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/sleep/'];
+out_folder = [results_folder,'analysis/sleep/neurology/'];
 %int_folder = [results_folder,'analysis/intermediate/'];
 int_folder = [results_folder,'analysis/backup_intermediate_Feb26_good_spikes/'];
 if ~exist(out_folder,'dir')

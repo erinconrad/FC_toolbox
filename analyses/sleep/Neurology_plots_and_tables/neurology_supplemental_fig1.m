@@ -1,4 +1,4 @@
-function supplemental_fig1
+function neurology_supplemental_fig1
 
 %% Parameters
 min_rate = 0.1;
@@ -19,7 +19,6 @@ myColours = [0.4940, 0.1840, 0.5560;...
 locations = fc_toolbox_locs;
 script_folder = locations.script_folder;
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/sleep/'];
 out_folder1 = [script_folder,'analyses/sleep/data/'];
 
 %% Load out file and get roc stuff
@@ -28,7 +27,7 @@ out = out.out;
 
 %% Unpack substructures
 unpack_any_struct(out);
-out_folder = [results_folder,'analysis/sleep/'];
+out_folder = [results_folder,'analysis/sleep/neurology/'];
 
 %% Prep output text file
 fid = fopen([out_folder,'supplemental_results.html'],'a');

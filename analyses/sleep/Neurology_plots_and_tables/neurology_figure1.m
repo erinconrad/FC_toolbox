@@ -244,6 +244,7 @@ annotation('textbox',[0.5 0.45 0.1 0.1],'String','D','fontsize',25,'linestyle','
 
 
 print([results_folder,'analysis/sleep/neurology/fig1'],'-depsc')
+close(gcf)
 
 end
 

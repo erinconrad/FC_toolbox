@@ -25,7 +25,7 @@ end
 if length(varargin) >= 7
     do_plot = varargin{7};
 else
-    do_plot = 0;
+    do_plot = 1;
 end
 
 %(data,xlabels,ytext,p_or_unp,plot_type)
