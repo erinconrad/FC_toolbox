@@ -3,7 +3,7 @@ function neurology_figure5
 
 
 %% Parameters
-nb = 10;
+nb = 1000;
 plot_type = 'scatter';
 nblocks = 6;
 myColours = [0.1660, 0.540, 0.1880;...
