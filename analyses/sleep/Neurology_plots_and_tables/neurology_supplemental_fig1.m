@@ -35,57 +35,15 @@ fprintf(fid,'<p><b>Alternate division of localization</b>');
 
 %% Figure
 figure
-set(gcf,'position',[10 10 1100 600])
-tiledlayout(2,3,'tilespacing','tight','padding','tight')
+set(gcf,'position',[10 10 900 350])
+tiledlayout(1,2,'tilespacing','tight','padding','tight')
 
-%% Overall rate localization
-rate = bin_out.overall_rates;
+%%  localization
 loc = circ_out.all_locs;
 mt = contains(loc,'mesial temporal');
 nc = contains(loc,'cortical') | contains(loc,'other cortex'); % temporal neocortical and other cortex
 
-if 0
-   table(loc,mt,nc) 
-end
 
-[p,~,stats] = ranksum(rate(mt),rate(nc));
-
-nexttile()
-plot(1+randn(sum(mt),1)*0.05,rate(mt),'o','linewidth',2,'color',myColours(1,:))
-hold on
-plot([0.7 1.3],[nanmedian(rate(mt)) nanmedian(rate(mt))],...
-    'linewidth',2,'color',myColours(1,:))
-plot(2+randn(sum(nc),1)*0.05,rate(nc),'o','linewidth',2,'color',myColours(2,:))
-plot([1.7 2.3],[nanmedian(rate(nc)) nanmedian(rate(nc))],...
-    'linewidth',2,'color',myColours(2,:))
-xticks([1 2])
-xticklabels({'Mesial temporal','Neocortical'})
-ylabel('Spikes/elec/min')
-title('Average spike rate by localization')
-set(gca,'fontsize',15);
-xlim([0 3])
-yl = ylim;
-ybar = yl(1) + 1.05*(yl(2)-yl(1));
-ytext = yl(1) + 1.13*(yl(2)-yl(1));
-ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
-plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
-ylim(ylnew)
-
-W = stats.ranksum;
-nt = sum(~isnan(rate(mt)));
-ne = sum(~isnan(rate(nc)));
-ns = min([sum(mt),sum(nc)]);
-U1 = W - nt*(nt+1)/2;
-U2 = nt*ne-U1;
-U = min([U1,U2]);
-
-fprintf(fid,[' There was also no difference in overall spike rates between patients'...
-    ' with mesial temporal lobe epilepsy (median = %1.1f spikes/elecs/min) and patients with neocortical'...
-    ' epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
-    '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig. 2H).'],nanmedian(rate(mt)),nanmedian(rate(nc)),...
-    nt,ne,U,get_p_html(p));
 
 %% Sleep-wake spike difference
 rate_sw = bin_out.all_rates;
@@ -135,45 +93,6 @@ fprintf(fid,[' There was no significant difference in sleep-wake spike rate diff
     nt,ne,U,get_p_html(p));
 
 
-%% Percent asleep
-nexttile
-pre_wake = sz_circ_out.pre_wake;
-perc_sz_asleep = cellfun(@(x) prc_asleep(x),pre_wake);
-[p,~,stats] = ranksum(perc_sz_asleep(mt),perc_sz_asleep(nc));
-plot(1+randn(sum(mt),1)*0.05,perc_sz_asleep(mt),'o','linewidth',2,'color',myColours(1,:))
-hold on
-plot([0.7 1.3],[nanmedian(perc_sz_asleep(mt)) nanmedian(perc_sz_asleep(mt))],...
-    'linewidth',2,'color',myColours(1,:))
-plot(2+randn(sum(nc),1)*0.05,perc_sz_asleep(nc),'o','linewidth',2,'color',myColours(2,:))
-plot([1.7 2.3],[nanmedian(perc_sz_asleep(nc)) nanmedian(perc_sz_asleep(nc))],...
-    'linewidth',2,'color',myColours(2,:))
-xticks([1 2])
-xticklabels({'Mesial temporal','Neocortical'})
-ylabel('Seizures arising from sleep (%)')
-title('Seizures arising from sleep')
-set(gca,'fontsize',15);
-xlim([0 3])
-yl = ylim;
-ybar = yl(1) + 1.05*(yl(2)-yl(1));
-ytext = yl(1) + 1.13*(yl(2)-yl(1));
-ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
-plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
-ylim(ylnew)
-
-W = stats.ranksum;
-nt = sum(~(isnan(perc_sz_asleep(mt))));
-ne = sum(~(isnan(perc_sz_asleep(nc))));
-%ns = min([sum(temporal),sum(extra)]);
-U1 = W - nt*(nt+1)/2;
-U2 = nt*ne-U1;
-U = min([U1,U2]);
-fprintf(fid,[' The proportion of seizures arising from sleep was also similar '...
-    'between patients with mesial temporal epilepsy (median = %1.1f%%) and neocortical'...
-    ' epilepsy (median = %1.1f%%) (Mann-Whitney test: <i>U</i>'...
-    '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig. 3C).</p>'],nanmedian(perc_sz_asleep(mt)),nanmedian(perc_sz_asleep(nc)),...
-    nt,ne,U,get_p_html(p));
 
 %% Postictal rate change
 nexttile([1 1])
@@ -220,57 +139,12 @@ fprintf(fid,[' Patients with mesial temporal epilepsy also had a greater '...
     ' %1.1f, %s).</p>'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
     nt,ne,U,get_p_html(p));
 
-%% Rate diff in preictal period by epilepsy localization
-nexttile
-nbins = size(all_pts_spikes_bins,2);
-early_pre = 1:nbins/4; % first quarter
-late_pre = nbins/4+1:nbins/2; % second quarter
-early_late = [nanmean(all_pts_spikes_bins(:,early_pre),2),nanmean(all_pts_spikes_bins(:,late_pre),2)];
-rate_diff = early_late(:,2)-early_late(:,1);
-[p,~,stats] = ranksum(rate_diff(mt),rate_diff(nc));
-plot(1+randn(sum(mt),1)*0.05,rate_diff(mt),'o','linewidth',2,'color',myColours(1,:))
-hold on
-plot([0.7 1.3],[nanmedian(rate_diff(mt)) nanmedian(rate_diff(mt))],...
-    'linewidth',2,'color',myColours(1,:))
-plot(2+randn(sum(nc),1)*0.05,rate_diff(nc),'o','linewidth',2,'color',myColours(2,:))
-plot([1.7 2.3],[nanmedian(rate_diff(nc)) nanmedian(rate_diff(nc))],...
-    'linewidth',2,'color',myColours(2,:))
-xticks([1 2])
-xticklabels({'Mesial temporal','Neocortical'})
-ylabel('Late-early spikes/elec/min')
-title('Late-early preictal spike rate difference')
-set(gca,'fontsize',15);
-xlim([0 3])
-yl = ylim;
-ybar = yl(1) + 1.05*(yl(2)-yl(1));
-ytext = yl(1) + 1.13*(yl(2)-yl(1));
-ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
-plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
-ylim(ylnew)
 
-% text
-W = stats.ranksum;
-nt = sum(~(isnan(rate_diff(mt))));
-ne = sum(~(isnan(rate_diff(nc))));
-U1 = W - nt*(nt+1)/2;
-U2 = nt*ne-U1;
-U = min([U1,U2]);
-
-fprintf(fid,[' The early-to-late'...
-    ' preictal spike rate change was also similar between patients with mesial temporal epilepsy '...
-    '(median = %1.2f spikes/elecs/min) and those with neocortical epilepsy'...
-    ' (median = %1.2f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
-    '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
-    ' %1.1f, %s).</p>'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
-    nt,ne,U,get_p_html(p));
 
 %% Add annotations
 annotation('textbox',[0 0.9 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.34 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0.665 0.9 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.4 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
-annotation('textbox',[0.34 0.4 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0.52 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+
 
 
 

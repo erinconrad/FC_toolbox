@@ -29,8 +29,8 @@ out_folder = [results_folder,'analysis/sleep/neurology/'];
 fid = fopen([out_folder,'results.html'],'a');
 
 figure
-set(gcf,'position',[100 100 900 600])
-tiledlayout(2,2,'tilespacing','compact','padding','compact')
+set(gcf,'position',[100 100 1100 350])
+tiledlayout(1,3,'tilespacing','tight','padding','tight')
 
 %% 2B independent spikes
 seq_sw = bin_out.seq_sw; %1,2,3,4 are #seq wake, #seq sleep, seq length wake, seq length sleep, respectively
@@ -56,6 +56,7 @@ fprintf(fid,[' The spike spread was also higher in sleep (median %1.1f spikes/se
     ' than wake (median %1.1f spikes/sequence) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3B).'],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
+%{
 %% 2D RL sleep-wake correlation across patients
 %rl_sw_corr = bin_out.rl_sw_corr;
 
@@ -126,6 +127,7 @@ t;
 text(xl(2),yl(1),sprintf('Median r = %1.2f',nanmedian(rl_sw_corr)),...
     'fontsize',15,'verticalalignment','bottom','horizontalalignment','right')
 %}
+    %}
 
 %% 2E NS
 ns_sw = bin_out.ns_sw;
@@ -135,15 +137,14 @@ title('Functional connectivity')
 fprintf(fid,[' To test a potential mechanism for the increased spike rates in sleep,'...
     ' we compared functional connectivity between wake and sleep. The functional connectivity'...
     ' as measured by the average node strength was higher in sleep (median %1.1f)'...
-    ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3D).</p>'],...
+    ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3C).</p>'],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
 
 %% Add annotations
 annotation('textbox',[0 0.9 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.41 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.41 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.665 0.9 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 
 fclose(fid);
 print([out_folder,'Fig3'],'-depsc')

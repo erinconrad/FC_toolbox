@@ -21,7 +21,7 @@ if isempty(do_save)
 end
 
 if isempty(plot_montage)
-    plot_montage = 1;
+    plot_montage = 2;
 end
 
 
