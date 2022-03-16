@@ -108,6 +108,6 @@ for p = whichPts
 end
 
 T = table(names,bipolar_rates,car_rates);
-writetable(T,[out_folder,'spike_rates']);
+writetable(T,[out_folder,'spike_rates.csv']);
 
 end
