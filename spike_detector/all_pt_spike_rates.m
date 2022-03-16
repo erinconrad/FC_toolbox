@@ -74,6 +74,11 @@ for p = whichPts
             nspikes = 0;
             nruns = 0;
             
+            if ~isfield(out.file(f).run(1),'data')
+                file_nruns(f) = nruns;
+                file_spikes_per_elecs(f) = nspikes_per_elec;
+                continue;
+            end
             
             nchs = length(out.file(f).run(1).data.montage(1).labels);
             for h = 1:length(out.file(f).run)
