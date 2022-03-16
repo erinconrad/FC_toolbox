@@ -97,9 +97,9 @@ for p = whichPts
         
         names{count} = pt_name;
         if im == 2
-            car_rates{count} = avg_spike_rate;
+            car_rates(count) = avg_spike_rate;
         elseif im == 1
-            bipolar_rates{count} = avg_spike_rate;
+            bipolar_rates(count) = avg_spike_rate;
         end
         
     end
