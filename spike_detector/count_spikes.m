@@ -47,31 +47,39 @@ for p = whichPts
     % Include an extra column for the file index and block
     for im = 1:2
         all_spikes = [];
-        mins_per_block = diff(out.file(1).run(1).run_times)/60; % divide by 60 to convert from secs to mins
-        nblocks = 0;
-        ndup = 0;
-        for f = 1:length(out.file)
+        
+        if ~isfield(out.file(1).run(1),'run_times')
+            nblocks = nan;
+            nspikes = nan;
+            spikes_per_min = nan;
+        else
+        
+            mins_per_block = diff(out.file(1).run(1).run_times)/60; % divide by 60 to convert from secs to mins
+            nblocks = 0;
+            ndup = 0;
+            for f = 1:length(out.file)
 
-            for h = 1:length(out.file(f).run)
-                gdf = out.file(f).run(h).data.montage(im).spikes;
+                for h = 1:length(out.file(f).run)
+                    gdf = out.file(f).run(h).data.montage(im).spikes;
 
-                % remove duplicates
-                if ~isempty(gdf)
-                    [gdf,n_removed] = remove_duplicates(gdf);
-                    ndup = ndup + n_removed;
+                    % remove duplicates
+                    if ~isempty(gdf)
+                        [gdf,n_removed] = remove_duplicates(gdf);
+                        ndup = ndup + n_removed;
+                    end
+
+                    nblocks = nblocks + 1;
+                    all_spikes = [all_spikes;gdf,...
+                        repmat(f,size(gdf,1),1),...
+                        repmat(h,size(gdf,1),1)];
                 end
-
-                nblocks = nblocks + 1;
-                all_spikes = [all_spikes;gdf,...
-                    repmat(f,size(gdf,1),1),...
-                    repmat(h,size(gdf,1),1)];
             end
+
+            if ndup >0, error('why'); end
+
+            nspikes = size(all_spikes,1);
+            spikes_per_min = nspikes/nblocks/mins_per_block;
         end
-
-        if ndup >0, error('why'); end
-
-        nspikes = size(all_spikes,1);
-        spikes_per_min = nspikes/nblocks/mins_per_block;
 
         %% Prep table
         if im == 1
