@@ -164,7 +164,7 @@ fprintf(['%d of %d (%1.1f%%) patients with mesial temporal lobe-predominant spik
 
 
 %% Show
-if 0
+if 1
 figure
 set(gcf,'position',[-1076 741 1800 600])
 tiledlayout(1,2)
