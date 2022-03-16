@@ -95,7 +95,7 @@ for p = 1:npts
         fc = summ.avg_fc;
     end
     
-    elecs_labels{ip} = elabels;
+    elecs_labels{p} = elabels;
     
     %% Get spikes
     if good_spikes

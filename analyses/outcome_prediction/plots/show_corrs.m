@@ -18,7 +18,7 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Load the corr_out file
-out = load([data_folder,'corr_out.mat']);
+out = load([data_folder,'main_out.mat']);
 out = out.out;
 avg_corr_sp = out.avg_corr_sp;
 avg_corr_pear = out.avg_corr_pear;
