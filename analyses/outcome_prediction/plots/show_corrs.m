@@ -1,12 +1,14 @@
 function show_corrs
 
-
+%% Parameters
+which_atlas = 'brainnetome';%'aal_bernabei';
 
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/outcome/plots/'];
 data_folder = [results_folder,'analysis/outcome/data/'];
+atlas_folder = [results_folder,'analysis/atlas/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
@@ -15,27 +17,45 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% Load the file
+%% Load the corr_out file
 out = load([data_folder,'corr_out.mat']);
 out = out.out;
 avg_corr_sp = out.avg_corr_sp;
 avg_corr_pear = out.avg_corr_pear;
+
+%% Also load the atlas file
+out = load([atlas_folder,which_atlas,'.mat']);
+out = out.out;
+atlas = out.atlas;
+spikes = out.spikes_atlas;
+
+%% Get normalized atlas
+z = (atlas-nanmean(atlas,3))./nanstd(atlas,[],3);
+ns = squeeze(nanmean(z,2));
+
+%% Correlate ns and spikes
+npts = size(atlas,3);
+avg_corr_sp_norm = nan(npts,1);
+for ip = 1:npts
+    avg_corr_sp_norm(ip) = corr(ns(:,ip),spikes(:,ip),'rows','pairwise',...
+        'type','spearman');
+    
+end
 
 %% Initialize figure
 figure
 set(gcf,'position',[10 10 900 350])
 tiledlayout(1,2,'tilespacing','tight','padding','tight')
 
-%% Show pearson
-nexttile
-ind_corr_plot(avg_corr_pear)
-title('Pearson correlation')
-
-
-%% Show spearman
+%% Show spearman for non-normalized
 nexttile
 ind_corr_plot(avg_corr_sp)
-title('Spearman correlation')
+title('Spike-connectivity correlation')
+
+%% Show spearman for normalized
+nexttile
+ind_corr_plot(avg_corr_sp_norm)
+title('Spike-connectivity correlation (normalized by anatomy)')
 
 
 end
