@@ -29,6 +29,7 @@ all_soz_bin = cell(npts,1);
 all_spikes = cell(npts,1);
 all_rl = cell(npts,1);
 all_ns = cell(npts,1);
+all_labels = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -62,6 +63,7 @@ for p = 1:npts
     
     %% SOZ bin
     all_soz_bin{p} = soz_bin;
+    all_labels{p} = labels;
     
     %% Get averages over times
     avg_spikes = nanmean(spikes,2);
@@ -102,6 +104,7 @@ out.all_soz_bin = all_soz_bin;
 out.all_spikes = all_spikes;
 out.all_rl = all_rl;
 out.all_ns = all_ns;
+out.all_labels = all_labels;
 
 %% Save
 save([out_folder,'main_out.mat'],'out');
