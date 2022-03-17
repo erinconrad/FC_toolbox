@@ -1,6 +1,6 @@
 function add_elec_locs
 
-overwrite = 1;
+overwrite = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -21,7 +21,7 @@ for p = 1:length(pt)
     pt_name = pt(p).name;
     
     if isfield(pt(p),'elecs') == 1 && ...
-            ~isempty(pt(p).elecs)
+            ~isempty(pt(p).elecs) && ~isempty(pt(p).elecs(1).locs)
         if overwrite == 0
             fprintf('\nskipping %s\n',pt(p).name);
             continue

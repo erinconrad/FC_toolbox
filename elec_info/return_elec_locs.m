@@ -29,14 +29,21 @@ for i = 1:length(match_idx)
     try
         T = readtable([elec_loc_folder,listing(which_index).name,'/',elec_file]);
     catch
-        fprintf('\nWarning, no file match for %s\n',name);
-        
-        out(i).folder_name = listing(which_index).name;
-        out(i).elec_names = [];
-        out(i).locs = [];
-        out(i).anatomy = [];
-        
-        continue
+        try
+            folder_name = listing(which_index).name;
+            C = strsplit(folder_name,'_');
+            rid = C{1};
+            T = readtable([elec_loc_folder,listing(which_index).name,'/',rid,'/',elec_file]);        
+        catch
+            fprintf('\nWarning, no file match for %s\n',name);
+
+            out(i).folder_name = listing(which_index).name;
+            out(i).elec_names = [];
+            out(i).locs = [];
+            out(i).anatomy = [];
+
+            continue
+        end
     end
     
     if ~ismember(T.Properties.VariableNames,'Var1')
