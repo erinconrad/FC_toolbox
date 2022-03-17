@@ -30,6 +30,7 @@ all_spikes = cell(npts,1);
 all_rl = cell(npts,1);
 all_ns = cell(npts,1);
 all_labels = cell(npts,1);
+all_names = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -44,6 +45,9 @@ for p = 1:npts
     soz_loc = summ.soz.loc;
     soz_lat = summ.soz.lat;
     soz_labels = summ.soz.labels;
+    name = summ.name;
+    
+    all_names{p} = name;
     
     %% Get soz
     all_soz_locs{p} = soz_loc;
@@ -105,6 +109,7 @@ out.all_spikes = all_spikes;
 out.all_rl = all_rl;
 out.all_ns = all_ns;
 out.all_labels = all_labels;
+out.all_names = all_names;
 
 %% Save
 save([out_folder,'main_out.mat'],'out');

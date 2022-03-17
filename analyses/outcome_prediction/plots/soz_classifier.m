@@ -1,5 +1,5 @@
-function soz_classifier
-nb = 5;
+function [T_test,T_train] = soz_classifier
+nb = 10;
 all_auc = nan(nb,1);
 
 
@@ -8,6 +8,8 @@ for ib = 1:nb
     all_auc(ib) = soz_roc_out.auc;
 end
 
+T_test = soz_roc_out.T_test;
+T_train = soz_roc_out.T_train;
 
 end
 
@@ -22,8 +24,8 @@ localization (a categorical variable that can be MT, TN, WM, or OC)
 which_atlas = 'brainnetome';%'aal_bernabei';
 broad_locs = {'mesial temporal','temporal neocortical','other cortex'};
 prop_train = 2/3;
-do_norm = 0;
-do_anat = 0;
+do_norm = 1;
+do_anat = 1;
 
 
 %% File locations
@@ -46,6 +48,7 @@ soz = out.all_soz_bin;
 loc = out.all_soz_locs;
 npts = length(soz);
 labels = out.all_labels;
+ns = out.all_ns;
 
 %% Turn soz to logical
 soz = cellfun(@logical,soz,'uniformoutput',false);
@@ -92,11 +95,15 @@ vec_rate = [];
 vec_loc = {};
 vec_soz = [];
 vec_pt_idx = [];
+vec_ns = [];
+vec_rl = [];
 
 for ip = 1:npts
     curr_rate = rate{ip};
     curr_soz = soz{ip};
     curr_loc = elec_broad{ip};
+    curr_ns = ns{ip};
+    curr_rl = rl{ip};
     
     if do_norm
         curr_rate = (curr_rate-nanmean(curr_rate))./nanstd(curr_rate);
@@ -105,14 +112,17 @@ for ip = 1:npts
     vec_rate = [vec_rate;curr_rate];
     vec_loc = [vec_loc;curr_loc];
     vec_soz = [vec_soz;curr_soz];
+    vec_rl = [vec_rl;curr_rl];
+    vec_ns = [vec_ns;curr_ns];
     vec_pt_idx = [vec_pt_idx;repmat(ip,length(curr_soz),1)];
 end
 
 %% Make table
-T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc);
+T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_rl);
 
 %% Remove nan and inf rows
-nan_rows = isnan(T.vec_soz) | isnan(T.vec_pt_idx) | isnan(T.vec_rate);
+nan_rows = isnan(T.vec_soz) | isnan(T.vec_pt_idx) | isnan(T.vec_rate) | ...
+    isnan(T.vec_rl) | isnan(T.vec_ns);
 T(nan_rows,:) = [];
 
 %% Remove rows without localization
@@ -134,7 +144,7 @@ assert(isempty(intersect(train_pts,test_pts)))
 
 if do_anat
 glm = fitglm(T_train,...
-    'vec_soz ~ vec_rate + vec_loc',...
+    'vec_soz ~ vec_rate + vec_ns',...
     'Distribution','Poisson','Link','log');
 else
 
@@ -188,6 +198,9 @@ class_no_soz = classification(all_no_soz);
 
 soz_roc_out.roc = roc;
 soz_roc_out.auc = auc;
+soz_roc_out.T_train = T_train;
+soz_roc_out.T_test = T_test;
+soz_roc_out.glm = glm;
 
 end
 
