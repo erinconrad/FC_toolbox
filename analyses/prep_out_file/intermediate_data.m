@@ -51,7 +51,8 @@ for j = 1:npts
     name = pt(j).name;
     rid = pt(j).rid;
     
-    if exist([out_folder,name,'.mat'],'file') ~= 0
+    if exist([out_folder,name,'.mat'],'file') ~= 0 && overwrite == 0
+        
         fprintf('\nSkipping %s\n',name);
         continue
     else
