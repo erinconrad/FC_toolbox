@@ -1,6 +1,9 @@
 function ranking_by_localization
 
 %% Parameters
+thing_to_plot = 'rate_norm';
+which_atlas = 'aal_bernabei'; %'brainnetome';%
+
 rl_min_spikes = 0;
 plot_type = 'scatter';
 nblocks = 6;
@@ -16,6 +19,9 @@ script_folder = locations.script_folder;
 addpath(genpath(locations.script_folder))
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/outcome/data/'];
+plot_folder = [results_folder,'analysis/outcome/plots/'];
+atlas_folder = [results_folder,'analysis/atlas/'];
+
 
 %% Load out file and get roc stuff
 out = load([out_folder,'main_out.mat']);
@@ -24,9 +30,36 @@ out = out.out;
 %% Get stuff
 rate = out.all_spikes;
 rl = out.all_rl;
+ns = out.all_ns;
 soz = out.all_soz_bin;
 loc = out.all_soz_locs;
 npts = length(soz);
+labels = out.all_labels;
+
+%% Load atlas file
+atlas_out = load([atlas_folder,which_atlas,'.mat']);
+atlas_out = atlas_out.out;
+
+%% get atlas stuff
+atlas_elec_labels = atlas_out.elecs_labels;
+atlas_elec_regions = atlas_out.elecs_atlas;
+spikes_atlas = atlas_out.spikes_atlas;
+atlas_nums = atlas_out.atlas_nums;
+atlas_names = atlas_out.atlas_names;
+ns_atlas = atlas_out.atlas;
+ns_atlas = squeeze(nanmean(ns_atlas,2));
+
+%% Normalize spike rates and ns
+z_rates = cell(npts,1);
+z_ns = cell(npts,1);
+for ip = 1:npts
+    z_rates{ip} = normalize_spike_rates(labels{ip},atlas_elec_labels{ip},...
+        atlas_elec_regions{ip},spikes_atlas,rate{ip},atlas_nums);
+    
+    z_ns{ip} = normalize_spike_rates(labels{ip},atlas_elec_labels{ip},...
+        atlas_elec_regions{ip},ns_atlas,ns{ip},atlas_nums);
+end
+
 
 %% Turn soz to logical
 soz = cellfun(@logical,soz,'uniformoutput',false);
@@ -40,38 +73,63 @@ mt = strcmp(loc,'mesial temporal');
 tn = strcmp(loc,'temporal neocortical');
 oc = strcmp(loc,'other cortex');
 
+%% Decide what to plot
+switch thing_to_plot
+    case 'ns'
+        thing = ns;
+    case 'rate'
+        thing = rate;
+    case 'rl'
+        thing = rl;
+    case 'rate_norm'
+        thing = z_rates;
+    case 'ns_norm'
+        thing = z_ns;
+        
+end
+
 figure
 set(gcf,'position',[10 10 1100 600])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+tiledlayout(3,2,'tilespacing','tight','padding','tight')
 
 %% SOZ spike rate ranking
-nexttile
-do_plot(rate,soz,mt,'mesial temporal')
+nexttile([1 2])
+all = logical(ones(npts,1));
+do_plot(thing,soz,all,'all',thing_to_plot)
 
 nexttile
-do_plot(rate,soz,tn,'temporal neocortical')
+do_plot(thing,soz,mt,'mesial temporal',thing_to_plot)
 
 nexttile
-do_plot(rate,soz,oc,'other cortex')
+do_plot(thing,soz,tn,'temporal neocortical',thing_to_plot)
 
 nexttile
-do_plot(rate,soz,mf,'multifocal')
+do_plot(thing,soz,oc,'other cortex',thing_to_plot)
 
-figure
-set(gcf,'position',[10 10 1100 600])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+nexttile
+do_plot(thing,soz,mf,'multifocal',thing_to_plot)
+
+print(gcf,[plot_folder,thing_to_plot,'_rankings'],'-dpng')
 
 end
 
-function do_plot(rate,soz,which_pts,pt_text)
+function do_plot(rate,soz,which_pts,pt_text,thing_to_plot)
 
-stats_out = plot_orders(rate(which_pts),soz(which_pts));
+curr_things = rate(which_pts);
+curr_soz = soz(which_pts);
+
+% remove nans
+old_curr_things = curr_things;
+curr_things = cellfun(@(x,y) x(~isnan(x) & ~isnan(y)),curr_things,curr_soz,'uniformoutput',false);
+curr_soz = cellfun(@(x,y) y(~isnan(x) & ~isnan(y)),old_curr_things,curr_soz,'uniformoutput',false);
+
+stats_out = outcome_plot_orders(curr_things,curr_soz);
 hold on
 xticklabels([])
 xlabel('Patient')
-ylabel('Electrode spike rate rank')
+ylabel(sprintf('Electrode %s rank',thing_to_plot))
 set(gca,'fontsize',15)
-title(sprintf('SOZ spike rate ranking for %s onsets',pt_text))
+title(sprintf('SOZ %s ranking for %s onsets',thing_to_plot,pt_text))
 xl = xlim;
 yl=ylim;
 text(mean(xl),yl(2),sprintf('median rank = %1.1f',stats_out.median_rank),...
@@ -82,5 +140,39 @@ end
 function x = make_non_spikey_nan(x,y,rl_min_spikes)
 
 x(y<rl_min_spikes) = nan;
+
+end
+
+function z = normalize_spike_rates(sp_labels,atlas_labels,regions,atlas,spikes,atlas_nums)
+    
+%% Remove ekg from atlas
+ekg = find_non_intracranial(atlas_labels);
+atlas_labels(ekg) = [];
+regions(ekg) = [];
+
+%% Reconcile labels
+assert(isequal(sp_labels,atlas_labels)) 
+
+z = nan(length(spikes),1);
+
+% Loop over electrodes
+for ich = 1:length(spikes)
+    
+    % get the region of this electrode
+    curr_region = regions(ich);
+    
+    % get the index of this
+    curr_idx = find(atlas_nums == curr_region);
+    
+    if isempty(curr_idx), z(ich) = nan; continue; end
+    
+    % normalize by atlas (across all patients for that region)
+    %z(ich) = (spikes(ich)-nanmedian(atlas(curr_idx,:)))./iqr(atlas(curr_idx,:));
+    z(ich) = (spikes(ich)-nanmean(atlas(curr_idx,:)))./nanstd(atlas(curr_idx,:));
+end
+
+if 0
+    table(sp_labels,spikes,z)
+end
 
 end

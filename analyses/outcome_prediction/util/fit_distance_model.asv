@@ -1,0 +1,20 @@
+function fit_distance_model(all_locs,all_conn)
+
+npts = length(all_locs);
+for ip = 1:npts
+    loc = all_locs{ip};
+    conn = all_conn{ip};
+    
+    % make inter-distance matrix
+    
+end
+
+end
+
+
+function D = make_interdist_matrix(locs)
+
+nelecs = length(dist);
+
+
+end
