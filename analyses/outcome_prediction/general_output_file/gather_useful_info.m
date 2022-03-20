@@ -32,6 +32,7 @@ all_ns = cell(npts,1);
 all_labels = cell(npts,1);
 all_names = cell(npts,1);
 all_fc = cell(npts,1);
+all_locs = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -48,6 +49,7 @@ for p = 1:npts
     soz_labels = summ.soz.labels;
     name = summ.name;
     fc = summ.avg_fc;
+    locs = summ.locs;
     
     all_names{p} = name;
     
@@ -67,6 +69,7 @@ for p = 1:npts
     soz_bin(ekg) = [];
     rl(ekg,:) = [];
     fc(ekg,:) = []; fc(:,ekg) = [];
+    locs(ekg,:) = [];
     
     %% SOZ bin
     all_soz_bin{p} = soz_bin;
@@ -81,6 +84,7 @@ for p = 1:npts
     all_ns{p} = avg_ns;
     all_rl{p} = avg_rl;
     all_fc{p} = fc;
+    all_locs{p} = locs;
     
     %% Correlate average ns and spikes
     avg_corr_sp = corr(avg_spikes,avg_ns,'rows','pairwise','type','spearman');
@@ -110,6 +114,7 @@ out.all_soz_locs = all_soz_locs;
 out.all_soz_lats = all_soz_lats;
 out.all_soz_bin = all_soz_bin;
 out.all_spikes = all_spikes;
+out.all_locs = all_locs;
 out.all_rl = all_rl;
 out.all_fc = all_fc;
 out.all_ns = all_ns;
