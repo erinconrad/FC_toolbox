@@ -1,7 +1,7 @@
 function ranking_by_localization
 
 %% Parameters
-thing_to_plot = 'rate_norm';
+thing_to_plot = 'ns_resid';
 which_atlas = 'aal_bernabei'; %'brainnetome';%
 
 rl_min_spikes = 0;
@@ -32,9 +32,11 @@ rate = out.all_spikes;
 rl = out.all_rl;
 ns = out.all_ns;
 soz = out.all_soz_bin;
-loc = out.all_soz_locs;
+soz_loc = out.all_soz_locs;
 npts = length(soz);
 labels = out.all_labels;
+locs = out.all_locs;
+fc = out.all_fc;
 
 %% Load atlas file
 atlas_out = load([atlas_folder,which_atlas,'.mat']);
@@ -67,11 +69,15 @@ soz = cellfun(@logical,soz,'uniformoutput',false);
 %% For RL, set as nans those without enough spikes
 rl = cellfun(@(x,y) make_non_spikey_nan(x,y,rl_min_spikes), rl, rate,'uniformoutput',false);
 
+%% Spatially normalize the FC matrix
+resid = fit_distance_model(locs,fc,soz);
+ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
+
 %% Separate patients by localization
-mf = contains(loc,'multifocal') | contains(loc,'diffuse');
-mt = strcmp(loc,'mesial temporal');
-tn = strcmp(loc,'temporal neocortical');
-oc = strcmp(loc,'other cortex');
+mf = contains(soz_loc,'multifocal') | contains(soz_loc,'diffuse');
+mt = strcmp(soz_loc,'mesial temporal');
+tn = strcmp(soz_loc,'temporal neocortical');
+oc = strcmp(soz_loc,'other cortex');
 
 %% Decide what to plot
 switch thing_to_plot
@@ -85,6 +91,8 @@ switch thing_to_plot
         thing = z_rates;
     case 'ns_norm'
         thing = z_ns;
+    case 'ns_resid'
+        thing = ns_resid;
         
 end
 

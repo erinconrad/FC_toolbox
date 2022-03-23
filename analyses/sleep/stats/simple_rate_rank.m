@@ -14,6 +14,7 @@ for i = 1:npts
     curr_soz = sozs{i};
     curr_rates = rates{i};
     
+    % median SOZ rate vs overall median rate
     soz_chance(i,:) = [nanmedian(curr_rates(curr_soz)),nanmedian(curr_rates)];
     
     % remove nans

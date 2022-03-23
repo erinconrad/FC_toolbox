@@ -17,6 +17,12 @@ elseif ndims(adj_in) == 2
         % assume 2d unwrapped (I'm screwed if z happens to equal nch*(nch-1)/2)
         threed = 0;
         flat = 0;
+  %{      
+    elseif n == 1
+        threed = 0;
+        flat = 1;
+        
+        %}
     else
         % assume 3d unwrapped
         threed = 1;

@@ -20,8 +20,20 @@ addpath(genpath(scripts_folder));
 %% Load the corr_out file
 out = load([data_folder,'main_out.mat']);
 out = out.out;
-avg_corr_sp = out.avg_corr_sp;
-avg_corr_pear = out.avg_corr_pear;
+soz = out.all_soz_bin;
+fc = out.all_fc;
+locs = out.all_locs;
+alt_spikes = out.all_spikes;
+
+%% Turn soz to logical
+soz = cellfun(@logical,soz,'uniformoutput',false);
+
+%% Spatially normalize the FC matrix
+resid = fit_distance_model(locs,fc,soz);
+
+%% Get ns of fc and resid
+alt_ns = cellfun(@(x) nanmean(x,2),fc,'uniformoutput',false);
+ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
 
 %% Also load the atlas file
 out = load([atlas_folder,which_atlas,'.mat']);
@@ -31,13 +43,23 @@ spikes = out.spikes_atlas;
 
 %% Get normalized atlas
 z = (atlas-nanmean(atlas,3))./nanstd(atlas,[],3);
-ns = squeeze(nanmean(z,2));
+z = squeeze(nanmean(z,2));
+ns = squeeze(nanmean(atlas,2));
 
-%% Correlate ns and spikes
+%% Correlations
 npts = size(atlas,3);
-avg_corr_sp_norm = nan(npts,1);
+norm_ana = nan(npts,1);
+base = nan(npts,1);
+base_alt = nan(npts,1);
+norm_dist = nan(npts,1);
 for ip = 1:npts
-    avg_corr_sp_norm(ip) = corr(ns(:,ip),spikes(:,ip),'rows','pairwise',...
+    norm_ana(ip) = corr(z(:,ip),spikes(:,ip),'rows','pairwise',...
+        'type','spearman');
+    base(ip) = corr(ns(:,ip),spikes(:,ip),'rows','pairwise',...
+        'type','spearman');
+    base_alt(ip) = corr(alt_ns{ip},alt_spikes{ip},'rows','pairwise',...
+        'type','spearman');
+    norm_dist(ip) = corr(ns_resid{ip},alt_spikes{ip},'rows','pairwise',...
         'type','spearman');
     
 end
@@ -45,17 +67,25 @@ end
 %% Initialize figure
 figure
 set(gcf,'position',[10 10 900 350])
-tiledlayout(1,2,'tilespacing','tight','padding','tight')
+tiledlayout(1,5,'tilespacing','tight','padding','tight')
 
 %% Show spearman for non-normalized
 nexttile
-ind_corr_plot(avg_corr_sp)
-title('Spike-connectivity correlation')
+ind_corr_plot(base)
+title('Spike-connectivity correlation (atlas file)')
 
 %% Show spearman for normalized
 nexttile
-ind_corr_plot(avg_corr_sp_norm)
-title('Spike-connectivity correlation (normalized by anatomy)')
+ind_corr_plot(base_alt)
+title('Spike-connectivity correlation (main file)')
+
+nexttile
+ind_corr_plot(norm_dist)
+title('Spike-connectivity correlation (distance norm)')
+
+nexttile
+ind_corr_plot(norm_ana)
+title('Spike-connectivity correlation (ana norm)')
 
 
 end

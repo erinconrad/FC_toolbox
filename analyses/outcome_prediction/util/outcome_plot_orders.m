@@ -22,10 +22,23 @@ ranks matlab will force equal things to have different ranks, and so this
 seems more accurate. The p values are slightly different but both <0.001
 %}
 if 1
-    soz_chance(any(isnan(soz_chance),2),:) = []; % remove nans
+    assert(isequal(any(isnan(soz_chance),2),cellfun(@(x) sum(x)==0,sozs)))
+    
+    % remove ties (these shouldn't count in significance testing, right?)
+    % and nans
+    nans = any(isnan(soz_chance),2);
+    ties = soz_chance(:,1) == soz_chance(:,2);
+    nans_or_ties = nans | ties;
+    soz_chance(nans_or_ties,:) = [];
+    
     npts_alt = size(soz_chance,1);
  
     alt_successes = soz_chance(:,1) > soz_chance(:,2);
+    alt_failures = soz_chance(:,1) < soz_chance(:,2);
+    
+    
+    
+    assert(sum(alt_successes) + sum(alt_failures) == npts_alt);
     
     if sum(alt_successes==0) < sum(alt_successes==1)
         pval_binom_alt = 2*binocdf(sum(alt_successes==0),npts_alt,0.5);
@@ -34,6 +47,13 @@ if 1
     end
     
 end
+
+%% Double check with another binomial test % remove when publish code as requires someone else's code
+% alt alt
+pout=myBinomTest(sum(alt_successes==0),npts_alt,0.5,'two');
+
+% check it gives the same result
+assert(abs(pout-pval_binom_alt)<0.01);
 
 %% Re-order by # of electrodes
 num_elecs = cellfun(@length,all_ranks);

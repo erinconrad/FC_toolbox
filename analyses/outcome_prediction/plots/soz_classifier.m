@@ -1,5 +1,5 @@
-function [T_test,T_train] = soz_classifier
-nb = 10;
+function [T_test,T_train,all_auc] = soz_classifier
+nb = 1;
 all_auc = nan(nb,1);
 
 
@@ -10,6 +10,7 @@ end
 
 T_test = soz_roc_out.T_test;
 T_train = soz_roc_out.T_train;
+all_auc
 
 end
 
@@ -24,8 +25,8 @@ localization (a categorical variable that can be MT, TN, WM, or OC)
 which_atlas = 'brainnetome';%'aal_bernabei';
 broad_locs = {'mesial temporal','temporal neocortical','other cortex'};
 prop_train = 2/3;
-do_norm = 1;
-do_anat = 1;
+do_norm = 1; % normalize within patient
+do_anat = 0;
 
 
 %% File locations
@@ -49,9 +50,13 @@ loc = out.all_soz_locs;
 npts = length(soz);
 labels = out.all_labels;
 ns = out.all_ns;
+fc = out.all_fc;
+locs = out.all_locs;
 
 %% Turn soz to logical
 soz = cellfun(@logical,soz,'uniformoutput',false);
+
+
 
 %% Load atlas file
 atlas_out = load([atlas_folder,which_atlas,'.mat']);
@@ -63,6 +68,10 @@ atlas_elec_regions = atlas_out.elecs_atlas;
 spikes_atlas = atlas_out.spikes_atlas;
 atlas_nums = atlas_out.atlas_nums;
 atlas_names = atlas_out.atlas_names;
+
+%% Spatially normalize the FC matrix
+resid = fit_distance_model(locs,fc,soz);
+ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
 
 %% Localize regions into broad categories
 broad = localize_regions(atlas_names,which_atlas);
@@ -81,13 +90,13 @@ for ip = 1:npts
     elec_broad{ip} = get_anatomy_elecs(labels{ip},atlas_elec_labels{ip},atlas_elec_regions{ip},broad_no_lat,atlas_nums);
 end
 
-%% Normalize spike rates
+%% Normalize spike rates by anatomical location
 z = cell(npts,1);
 for ip = 1:npts
     z{ip} = normalize_spike_rates(labels{ip},atlas_elec_labels{ip},...
         atlas_elec_regions{ip},spikes_atlas,rate{ip},atlas_nums);
 end
-%rate = z;
+rate_z = z;
 
 
 %% Get stuff into friendly format
@@ -97,6 +106,8 @@ vec_soz = [];
 vec_pt_idx = [];
 vec_ns = [];
 vec_rl = [];
+vec_ns_resid = [];
+vec_rate_z = [];
 
 for ip = 1:npts
     curr_rate = rate{ip};
@@ -104,9 +115,15 @@ for ip = 1:npts
     curr_loc = elec_broad{ip};
     curr_ns = ns{ip};
     curr_rl = rl{ip};
-    
+    curr_ns_resid = ns_resid{ip};
+    curr_rate_z = rate_z{ip};
+        
+    % normalize within patient
     if do_norm
         curr_rate = (curr_rate-nanmean(curr_rate))./nanstd(curr_rate);
+        curr_ns_resid = (curr_ns_resid - nanmean(curr_ns_resid))./nanstd(curr_ns_resid);
+        curr_rate_z = (curr_rate_z-nanmean(curr_rate_z))./nanstd(curr_rate_z);
+        curr_rl = (curr_rl-nanmean(curr_rl))./nanstd(curr_rl);
     end
     
     vec_rate = [vec_rate;curr_rate];
@@ -114,15 +131,17 @@ for ip = 1:npts
     vec_soz = [vec_soz;curr_soz];
     vec_rl = [vec_rl;curr_rl];
     vec_ns = [vec_ns;curr_ns];
+    vec_rate_z = [vec_rate_z;curr_rate_z];
+    vec_ns_resid = [vec_ns_resid;curr_ns_resid];
     vec_pt_idx = [vec_pt_idx;repmat(ip,length(curr_soz),1)];
 end
 
 %% Make table
-T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_rl);
+T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_rl,vec_ns_resid,vec_rate_z);
 
 %% Remove nan and inf rows
 nan_rows = isnan(T.vec_soz) | isnan(T.vec_pt_idx) | isnan(T.vec_rate) | ...
-    isnan(T.vec_rl) | isnan(T.vec_ns);
+    isnan(T.vec_rl) | isnan(T.vec_ns) | isnan(T.vec_ns_resid);
 T(nan_rows,:) = [];
 
 %% Remove rows without localization
