@@ -36,7 +36,7 @@ sw_disc = sw_out.roc_out.disc;
 
 %% Get the indices of the patients with good spikes
 T = readtable(validation_file);
-good_pts = T.Var13;
+good_pts = T.GoodCARSpikes;
 good_pts = good_pts(~isnan(good_pts));
 good_pt_names = T.Var14;
 %npts = length(good_pts);
