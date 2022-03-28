@@ -1,68 +1,20 @@
 function [T_test,T_train,all_auc] = soz_classifier
-nb = 10;
-models = {'ana','ana_cov','ana_cov_spikes','ana_cov_spikes_ns','ana_cov_ns'};
-pretty_name = {'Anatomy','Add coverage density','Add spike rates','Add connectivity','Add connectivity'};
+nb = 1;
+all_auc = nan(nb,1);
 
-
-%% File locations
-locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-plot_folder = [results_folder,'analysis/outcome/plots/'];
-
-nmodels = length(models);
-all_auc = nan(nb,nmodels);
-
-for im = 1:nmodels
-    model_info(im).name = models{im};
-    model_info(im).pretty_name = pretty_name{im};
-    model_info(im).all_auc = nan(nb,1);
-    model_info(im).all_roc = cell(nb,1);
-end
 
 for ib = 1:nb
-    if mod(ib,10) == 0, fprintf('\nDoing %d of %d\n',ib,nb); end
-    out = individual_classifier(models);
-    for im = 1:nmodels
-        all_auc(ib,im) = out.model(im).auc;
-        model_info(im).all_auc(ib) = out.model(im).auc;
-        model_info(im).all_roc{ib} = out.model(im).roc;
-    end
+    soz_roc_out = individual_classifier;
+    all_auc(ib) = soz_roc_out.auc;
 end
 
-%array2table(all_auc,'variablenames',models)
-for im = 1:nmodels
-    [unify_x,unify_y] = unify_roc(model_info(im).all_roc);
-    model_info(im).x = unify_x;
-    model_info(im).y = unify_y;
-    model_info(im).ym = median(unify_y);
-    model_info(im).ly = prctile(unify_y,25,1);
-    model_info(im).uy = prctile(unify_y,75,1);
-    
-end
-
-figure
-set(gcf,'position',[10 10 1100 350])
-tiledlayout(1,3,'tilespacing','tight','padding','tight')
-
-for im = [1 2 5]
-    nexttile
-    mp = shaded_error_bars_fc(model_info(im).x,model_info(im).ym,...
-        [model_info(im).ly',model_info(im).uy'],'k');
-    hold on
-    plot([0 1],[0 1],'k--','linewidth',2)
-    title(model_info(im).pretty_name)
-    legend(mp,sprintf('Median AUC = %1.2f',median( model_info(im).all_auc)),...
-        'location','southeast','fontsize',15)
-    set(gca,'fontsize',15)
-    xlabel('False positive rate')
-    ylabel('True positive rate')
-end
-
-print(gcf,[plot_folder,'prediction_nospikes'],'-dpng')
+T_test = soz_roc_out.T_test;
+T_train = soz_roc_out.T_train;
+all_auc
 
 end
 
-function out = individual_classifier(models)
+function soz_roc_out = individual_classifier
 %{
 Predict whether an electrode is in the SOZ based on 1) its spike rate
 normalized across other electrodes within the patient and 2) its anatomical
@@ -70,11 +22,11 @@ localization (a categorical variable that can be MT, TN, WM, or OC)
 %}
 
 %% Parameters
-max_spikes = 0.1; % max spikes/elecs/min to include in model
 which_atlas = 'brainnetome';%'aal_bernabei';
 broad_locs = {'mesial temporal','temporal neocortical','other cortex'};
 prop_train = 2/3;
 do_norm = 1; % normalize within patient
+do_anat = 0;
 
 
 %% File locations
@@ -92,7 +44,9 @@ out = out.out;
 
 %% Get stuff
 rate = out.all_spikes;
+rl = out.all_rl;
 soz = out.all_soz_bin;
+loc = out.all_soz_locs;
 npts = length(soz);
 labels = out.all_labels;
 ns = out.all_ns;
@@ -111,13 +65,13 @@ atlas_out = atlas_out.out;
 %% get atlas stuff
 atlas_elec_labels = atlas_out.elecs_labels;
 atlas_elec_regions = atlas_out.elecs_atlas;
+spikes_atlas = atlas_out.spikes_atlas;
 atlas_nums = atlas_out.atlas_nums;
 atlas_names = atlas_out.atlas_names;
 
 %% Spatially normalize the FC matrix
-[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes);
+resid = fit_distance_model(locs,fc,soz);
 ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
-ns = ns_resid;
 
 %% Localize regions into broad categories
 broad = localize_regions(atlas_names,which_atlas);
@@ -136,6 +90,13 @@ for ip = 1:npts
     elec_broad{ip} = get_anatomy_elecs(labels{ip},atlas_elec_labels{ip},atlas_elec_regions{ip},broad_no_lat,atlas_nums);
 end
 
+%% Normalize spike rates by anatomical location
+z = cell(npts,1);
+for ip = 1:npts
+    z{ip} = normalize_spike_rates(labels{ip},atlas_elec_labels{ip},...
+        atlas_elec_regions{ip},spikes_atlas,rate{ip},atlas_nums);
+end
+rate_z = z;
 
 
 %% Get stuff into friendly format
@@ -144,39 +105,43 @@ vec_loc = {};
 vec_soz = [];
 vec_pt_idx = [];
 vec_ns = [];
-vec_pred_conn_D = [];
+vec_rl = [];
+vec_ns_resid = [];
+vec_rate_z = [];
 
 for ip = 1:npts
     curr_rate = rate{ip};
     curr_soz = soz{ip};
-    curr_ana_loc = elec_broad{ip};
+    curr_loc = elec_broad{ip};
     curr_ns = ns{ip};
-    curr_loc = locs{ip};
-    
-    % predict connectivty just based on locs (using model from above)
-    predict_conn = predict_conn_from_loc(f,curr_loc);
-    predict_conn = nanmean(predict_conn,2);
-    vec_pred_conn_D = [vec_pred_conn_D;predict_conn];
+    curr_rl = rl{ip};
+    curr_ns_resid = ns_resid{ip};
+    curr_rate_z = rate_z{ip};
         
     % normalize within patient
     if do_norm
         curr_rate = (curr_rate-nanmean(curr_rate))./nanstd(curr_rate);
-        curr_ns = (curr_ns-nanmean(curr_ns))./nanstd(curr_ns);
+        curr_ns_resid = (curr_ns_resid - nanmean(curr_ns_resid))./nanstd(curr_ns_resid);
+        curr_rate_z = (curr_rate_z-nanmean(curr_rate_z))./nanstd(curr_rate_z);
+        curr_rl = (curr_rl-nanmean(curr_rl))./nanstd(curr_rl);
     end
     
     vec_rate = [vec_rate;curr_rate];
-    vec_loc = [vec_loc;curr_ana_loc];
+    vec_loc = [vec_loc;curr_loc];
     vec_soz = [vec_soz;curr_soz];
+    vec_rl = [vec_rl;curr_rl];
     vec_ns = [vec_ns;curr_ns];
+    vec_rate_z = [vec_rate_z;curr_rate_z];
+    vec_ns_resid = [vec_ns_resid;curr_ns_resid];
     vec_pt_idx = [vec_pt_idx;repmat(ip,length(curr_soz),1)];
 end
 
 %% Make table
-T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_pred_conn_D);
+T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_rl,vec_ns_resid,vec_rate_z);
 
 %% Remove nan and inf rows
 nan_rows = isnan(T.vec_soz) | isnan(T.vec_pt_idx) | isnan(T.vec_rate) | ...
-    isnan(T.vec_ns) | isnan(T.vec_pred_conn_D);
+    isnan(T.vec_rl) | isnan(T.vec_ns) | isnan(T.vec_ns_resid);
 T(nan_rows,:) = [];
 
 %% Remove rows without localization
@@ -196,7 +161,6 @@ train_pts = unique(T_train.vec_pt_idx);
 test_pts = unique(T_test.vec_pt_idx);
 assert(isempty(intersect(train_pts,test_pts)))
 
-%{
 if do_anat
 glm = fitglm(T_train,...
     'vec_soz ~ vec_rate + vec_ns',...
@@ -207,74 +171,55 @@ glm = fitglm(T_train,...
     'vec_soz ~ vec_rate',...
     'Distribution','Poisson','Link','log');
 end
+
+%% Test model on testing data
+% Find the reference category
+params = glm.CoefficientNames;
+
+%{
+non_ref_cats = {};
+for p  = 2:length(params)
+    if ~contains((params{p}),'vec_loc')
+        continue
+    end
+    
+    C = strsplit((params{p}),'_');
+    non_ref_cats = [non_ref_cats;C{3}];
+    
+end
 %}
 
-% models = {'ana','ana_cov','ana_cov_spikes','ana_cov_spikes_ns','ana_cov_ns'};
-for im = 1:length(models)
-    curr_model = models{im};
-    switch curr_model
+
+asum = zeros(size(T_test,1),1);
+asum = asum + glm.Coefficients.Estimate(1);
+for p = 2:length(params)
+    est = glm.Coefficients.Estimate(p);
+    if contains((params{p}),'vec_loc')
+        C = strsplit((params{p}),'_');
+        cat = C{3};
         
-        case 'ana'
-            formula = 'vec_soz ~ vec_loc';
-            formula_me = 'vec_soz ~ vec_loc + vec_pt_idx';
-        case 'ana_cov'
-            formula = 'vec_soz ~ vec_loc + vec_pred_conn_D';
-            formula_me = 'vec_soz ~ vec_loc + vec_pred_conn_D+ vec_pt_idx';
-        case 'ana_cov_spikes'
-            formula = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_rate';
-            formula_me = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_rate + vec_pt_idx';
-        case 'ana_cov_spikes_ns'
-            formula = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_rate + vec_ns';
-            formula_me = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_rate + vec_ns + vec_pt_idx';
-        case 'ana_cov_ns'
-            formula = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_ns';
-            formula_me = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_ns + vec_pt_idx';
+        % find the indices of T_test that fit this category
+        match = strcmp(T_test.vec_loc,cat);
+        asum(match) = asum(match) + est;
+    else
+        
+        asum = asum +  T_test.(params{p})*est;
     end
-    
-    %% Do both the glm and glme
-    glm = fitglm(T_train,formula,'Distribution','Poisson','Link','log');
-    glme = fitglme(T_train,formula_me,'Distribution','Poisson','Link','log');
-    
-    %% Test glm on testing data
-    params = glm.CoefficientNames;
-    
-    % Calculate the model response
-    asum = zeros(size(T_test,1),1);
-    asum = asum + glm.Coefficients.Estimate(1);
-    for p = 2:length(params)
-        est = glm.Coefficients.Estimate(p);
-        if contains((params{p}),'vec_loc')
-            C = strsplit((params{p}),'_');
-            cat = C{3};
-
-            % find the indices of T_test that fit this category
-            match = strcmp(T_test.vec_loc,cat);
-            asum(match) = asum(match) + est;
-        else
-
-            asum = asum +  T_test.(params{p})*est;
-        end
-    end
-    classification = logistic(asum);
-    
-    % Compare classification against true
-    all_soz = T_test.vec_soz==1;
-    all_no_soz = T_test.vec_soz==0;
-    class_soz = classification(all_soz);
-    class_no_soz = classification(all_no_soz);
-    %[roc,auc,disc,disc_I] = calculate_roc(class_no_soz,class_soz,1e3);
-    [X,Y,T,AUC,opt] = perfcurve(T_test.vec_soz,classification,1);
-    
-    out.model(im).name = curr_model;
-    out.model(im).glme = glme;
-    out.model(im).roc = [X,Y];
-    out.model(im).auc = AUC;
-    
 end
 
 
+classification = logistic(asum);
+all_soz = T_test.vec_soz==1;
+all_no_soz = T_test.vec_soz==0;
+class_soz = classification(all_soz);
+class_no_soz = classification(all_no_soz);
+[roc,auc,disc,disc_I] = calculate_roc(class_no_soz,class_soz,1e3);
 
-
+soz_roc_out.roc = roc;
+soz_roc_out.auc = auc;
+soz_roc_out.T_train = T_train;
+soz_roc_out.T_test = T_test;
+soz_roc_out.glm = glm;
 
 end
 

@@ -1,4 +1,4 @@
-function out = fit_distance_model(all_locs,all_conn,all_soz)
+function [out,f] = fit_distance_model(all_locs,all_conn,all_soz,all_spikes,max_spikes,plot_folder)
 
 npts = length(all_locs);
 vec_dist = [];
@@ -8,6 +8,7 @@ for ip = 1:npts
     locs = all_locs{ip};
     conn = all_conn{ip};
     soz = all_soz{ip};
+    spikes = all_spikes{ip};
     
     % make inter-distance matrix
     D = make_interdist_matrix(locs);
@@ -18,6 +19,10 @@ for ip = 1:npts
     
     % make soz nans
     conn(soz) = nan;
+    
+    % make those with many spikes nans
+    many_spikes = spikes > max_spikes;
+    conn(many_spikes) = nan;
     
     % add to vector
     vec_dist = [vec_dist;D];
@@ -31,11 +36,7 @@ bad = isnan(vec_dist) | isnan(vec_conn) | vec_dist > 1e3;
 vec_dist(bad) = [];
 vec_conn(bad) = [];
 
-% show it
-if 0
-    figure
-    plot(vec_dist,vec_conn,'o')
-end
+
 
 % do a model
 x = vec_dist;
@@ -44,6 +45,22 @@ f = fit(x,y,'rat11','startpoint',[0.1 0.1 0.1]);
 
 % rebuild predicted y
 predict_y = (f.p1 * x + f.p2)./(x + f.q1);
+
+% show it
+if 0
+    figure
+    plot(vec_dist,vec_conn,'o')
+    hold on
+    temp_x = [min(x):0.5:max(x)];
+    temp_y = (f.p1 * temp_x + f.p2)./(temp_x + f.q1);
+    plot(temp_x,temp_y,'linewidth',3)
+    ylim([min(y) max(y)])
+    xlim([min(x) max(x)])
+    xlabel('Distance (mm)')
+    ylabel('Correlation (r^2)')
+    set(gca,'fontsize',15)
+    print(gcf,[plot_folder,'dist_model'],'-dpng')
+end
 
 % calculate the residuals
 resid = y-predict_y;
@@ -65,24 +82,3 @@ end
 end
 
 
-function D = make_interdist_matrix(locs)
-
-nelecs = size(locs,1);
-D = nan(nelecs,nelecs);
-
-for i = 1:nelecs
-    for j = 1:nelecs-1
-        
-        locs_i = locs(i,:);
-        locs_j = locs(j,:);
-        
-        d = vecnorm(locs_i-locs_j);
-        D(i,j) = d;
-        D(j,i) = d;
-        
-    end
-    
-end
-
-
-end

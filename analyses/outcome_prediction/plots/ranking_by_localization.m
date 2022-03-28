@@ -1,6 +1,7 @@
 function ranking_by_localization
 
 %% Parameters
+max_spikes = 0.1; % max spikes/elecs/min to include in model
 thing_to_plot = 'ns_resid';
 which_atlas = 'aal_bernabei'; %'brainnetome';%
 
@@ -70,7 +71,7 @@ soz = cellfun(@logical,soz,'uniformoutput',false);
 rl = cellfun(@(x,y) make_non_spikey_nan(x,y,rl_min_spikes), rl, rate,'uniformoutput',false);
 
 %% Spatially normalize the FC matrix
-resid = fit_distance_model(locs,fc,soz);
+resid = fit_distance_model(locs,fc,soz,rate,max_spikes,plot_folder);
 ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
 
 %% Separate patients by localization

@@ -1,6 +1,6 @@
-function pretty_matrix(thing,labels,cutoff,clabel,oned)
+function pm = pretty_matrix(thing,labels,cutoff,clabel,oned)
 
-turn_nans_gray(thing)
+pm = turn_nans_gray(thing);
 xticklabels([])
 yticklabels([])
 hold on
@@ -10,8 +10,8 @@ if ~oned
 end
 
 xl = xlim;
-new_xl = [xl(1) - 0.1*(xl(2)-xl(1)),xl(2)];
-line_pos = xl(1) - 0.05*(xl(2)-xl(1));
+new_xl = [xl(1) - 0.07*(xl(2)-xl(1)),xl(2)];
+line_pos = xl(1) - 0.04*(xl(2)-xl(1));
 
 top_text_y = (1+cutoff)/2;
 bottom_text_y = (cutoff+size(thing,1))/2;
@@ -22,6 +22,7 @@ text(line_pos,top_text_y,labels{1},'horizontalalignment','center',...
 text(line_pos,bottom_text_y,labels{2},'horizontalalignment','center',...
     'rotation',90,'fontsize',20)
 xlim(new_xl)
+
 
 if ~oned
     c = colorbar('location','westoutside');

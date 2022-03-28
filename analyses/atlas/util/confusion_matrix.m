@@ -1,4 +1,4 @@
-function mat = confusion_matrix(predicted,actual,do_plot)
+function out = confusion_matrix(predicted,actual,do_plot)
 
 
 classes = unique([predicted;actual]);
@@ -13,7 +13,10 @@ for i = 1:length(predicted)
     pred = predicted(i);
     ac = actual(i);
     
-    mat(ac+1,pred+1) = mat(ac+1,pred+1) + 1;
+    pred_idx = strcmp(classes,pred);
+    ac_idx = strcmp(classes,ac);
+    
+    mat(ac_idx,pred_idx) = mat(ac_idx,pred_idx) + 1;
     
 end
 
@@ -31,6 +34,17 @@ sensitivity = tp/(tp+fn);
 specificity = tn/(tn+fp);
 ppv = tp/(fp+tp);
 npv = tn/(tn+fn);
+
+out.mat = mat;
+out.sensitivity = sensitivity;
+out.specificity = specificity;
+out.ppv = ppv;
+out.npv = npv;
+out.classes = classes;
+out.xlabel = 'Predicted';
+out.ylabel = 'True';
+out.nclasses = nclasses;
+out.accuracy = accuracy;
 
 
 if do_plot
