@@ -96,6 +96,10 @@ for i = 1:length(whichPts)
             last_run = 1;
         end
     else
+        if exist([out_dir,out_name],'file') ~= 0
+            pc = load([out_dir,out_name]);
+            pc = pc.pc;
+        end
         last_file = 1;
         last_run = 1; % ok to redo one
         pc.name = name;

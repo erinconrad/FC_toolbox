@@ -1,7 +1,7 @@
-function long_run(whichPts)
+function long_run(whichPts,overwrite)
 
 %% Parameters
-overwrite = 0;
+%overwrite = 0;
 tw = 2; % 2 second time window for pc calculations
 which_net = 'pc';
 
@@ -75,6 +75,10 @@ for i = 1:length(whichPts)
             pc.name = name;
         end
     else
+        if exist([out_dir,out_name],'file') ~= 0
+            pc = load([out_dir,out_name]);
+            pc = pc.pc;
+        end
         last_file = 1;
         last_run = 1; % ok to redo one
         pc.name = name;
