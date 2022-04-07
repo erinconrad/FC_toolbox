@@ -33,6 +33,8 @@ soz = out.all_soz_bin;
 npts = length(soz);
 labels = out.all_labels;
 fc = out.all_fc;
+%fc = cellfun(@(x) x(:,:,5), out.all_coh,'uniformoutput',false);
+coh = out.all_coh;
 
 % Soz lats
 soz_lats = out.all_soz_lats;
@@ -59,8 +61,8 @@ neither_lat = ~left & ~right;
 % confirm atlas has as many on right as left
 assert(sum(left)==sum(right));
 
-[atlas,spikes,bin_soz] = rebuild_atlas(fc,rate,atlas_elec_labels,...
-    atlas_elec_regions,atlas_nums,labels,soz);
+[atlas,spikes,bin_soz,coh] = rebuild_atlas(fc,rate,atlas_elec_labels,...
+    atlas_elec_regions,atlas_nums,labels,soz,coh);
 
 %% Re-order atlas to be left then right then neither
 lr_order = reorder_lr(locs,lats);
@@ -69,6 +71,7 @@ left = left(lr_order);
 right = right(lr_order);
 neither_lat = neither_lat(lr_order);
 atlas = atlas(lr_order,lr_order,:);
+coh = coh(lr_order,lr_order,:,:);
 names = names(lr_order);
 locs = locs(lr_order);
 lats = lats(lr_order);
@@ -88,6 +91,15 @@ assert(isequal(locs(contra_index(1:sum(left))),locs(contra_index(sum(left)+1:sum
 %% First, build symmetric coverage atlas
 [symm_cov_atlas,all_bilateral] = build_symmetric_coverage_atlas(atlas,locs,lats);
 atlas = symm_cov_atlas;
+symm_cov_coh = nan(size(coh));
+for ip = 1:npts
+    curr_bilateral = logical(all_bilateral(:,ip));
+    curr_coh = coh(:,:,:,ip);
+    curr_coh(~curr_bilateral,:,:) = nan;
+    curr_coh(:,~curr_bilateral,:) = nan;
+    symm_cov_coh(:,:,:,ip) = curr_coh;
+end
+coh = symm_cov_coh;
 
 %% Double check symmetric coverage
 % Looks good!
@@ -106,12 +118,15 @@ for ip = 1:npts
 end
 
 %% Get average connectivity of SOZ (to other things) and that of contralateral region
+nfreqs = size(coh,3);
 soz_intra = nan(npts,2);
 lr_soz_intra = nan(npts,2);
 soz_all = nan(npts,2);
 lr_soz_all = nan(npts,2);
 hemi = nan(npts,2);
 hemi_lr = nan(npts,2);
+
+soz_coh_all = nan(npts,nfreqs,2);
 for ip = 1:npts
     
     %% SOZ connectivity
@@ -156,6 +171,9 @@ for ip = 1:npts
     soz_all(ip,:) = [nanmean(atlas(curr_soz,:,ip),'all'),...
         nanmean(atlas(bin_contra_soz,:,ip),'all')];
     
+    soz_coh_all(ip,:,1) = nanmean(coh(curr_soz,:,:,ip),[1 2]);
+    soz_coh_all(ip,:,2) = nanmean(coh(bin_contra_soz,:,:,ip),[1 2]);
+    
     %% Holohemispjheric
     % get everything on the side of the soz
     if right_lat(ip) == 1
@@ -198,7 +216,7 @@ conf_out = confusion_matrix(predicted,lats_for_conf,0);
 if do_plots
 
 figure
-set(gcf,'position',[-2023         710        1781         891])
+set(gcf,'position',[-2023         710        1781         900])
 tiledlayout(2,6,'tilespacing','compact','padding','tight')
 
 nexttile([1 3])
@@ -227,7 +245,18 @@ nexttile([1 2])
 plot_paired_data(soz_intra',{'SOZ','contralateral region','contralateral region'},'Intrinsic connectivity','paired',plot_type);
 title('Intrinsic connectivity in SOZ vs contralateral region')
 
+
 print(gcf,[plot_folder,'symm_',which_atlas],'-dpng')
+
+%% coherence
+if 0
+
+for i = 1:nfreqs
+    nexttile
+    plot_paired_data((squeeze(soz_coh_all(:,i,:)))',{'SOZ','contralateral region','contralateral region'},'Average coherence','paired',plot_type);
+    title('Average coherence to SOZ vs contralateral region')
+end
+end
 
 
 %% LR to check

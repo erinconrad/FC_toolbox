@@ -1,7 +1,9 @@
-function [fc_atlas,spike_atlas,soz_atlas] = rebuild_atlas(fc,spikes,atlas_labels,regions,atlas_nums,labels,soz)
+function [fc_atlas,spike_atlas,soz_atlas,coh_atlas] = ...
+    rebuild_atlas(fc,spikes,atlas_labels,regions,atlas_nums,labels,soz,coh)
 
 npts = length(fc);
 nregions = length(atlas_nums);
+nfreqs = size(coh{1},3);
 
 %% Remove ekg from atlas
 for ip = 1:npts
@@ -15,13 +17,15 @@ end
 fc_atlas = nan(nregions,nregions,npts);
 spike_atlas = nan(nregions,npts);
 soz_atlas = zeros(nregions,npts);
+coh_atlas = nan(nregions,nregions,nfreqs,npts);
 
 for ip = 1:npts
     
     curr_spikes = spikes{ip};
-    curr_fc = fc{ip}; curr_fc = curr_fc.^2;
+    curr_fc = fc{ip}; %curr_fc = curr_fc.^2;
     curr_regions = regions{ip};
     curr_soz = soz{ip};
+    curr_coh = coh{ip};
     
     % Loop over regions
     for ir = 1:nregions
@@ -47,6 +51,9 @@ for ip = 1:npts
             % get fc
             fc_atlas(ir,jr,ip) = nanmean(curr_fc(curr_chs_i,curr_chs_j),'all');
             fc_atlas(jr,ir,ip) = nanmean(curr_fc(curr_chs_i,curr_chs_j),'all');
+            
+            coh_atlas(ir,jr,:,ip) = nanmean(curr_coh(curr_chs_i,curr_chs_j,:),[1 2]);
+            coh_atlas(jr,ir,:,ip) = nanmean(curr_coh(curr_chs_i,curr_chs_j,:),[1 2]);
             
         end
         

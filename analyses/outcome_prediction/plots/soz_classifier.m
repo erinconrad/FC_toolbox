@@ -6,7 +6,7 @@ To do:
 %}
 
 function [T_test,T_train,all_auc] = soz_classifier
-nb = 5;
+nb = 10;
 params.only_sleep = 0;
 params.models = {'ana','ana_cov','ana_cov_spikes','ana_cov_spikes_ns','ana_cov_ns'};
 params.pretty_name = {'Anatomy','Add coverage density','Add spike rates','Add connectivity','Add connectivity'};
@@ -88,7 +88,6 @@ which_atlas = params.which_atlas;
 prop_train = params.prop_train;
 do_norm = params.do_norm;
 models = params.models;
-only_sleep = params.only_sleep;
 
 
 %% File locations
@@ -126,9 +125,10 @@ atlas_nums = atlas_out.atlas_nums;
 atlas_names = atlas_out.atlas_names;
 
 %% Spatially normalize the FC matrix
-[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes);
-ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
-ns = ns_resid;
+%[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes);
+%ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
+%ns = ns_resid;
+ns = cellfun(@(x) nanmean(x,2),fc,'uniformoutput',false);
 
 %% Localize regions into broad categories
 broad = localize_regions(atlas_names,which_atlas);
@@ -155,7 +155,7 @@ vec_loc = {};
 vec_soz = [];
 vec_pt_idx = [];
 vec_ns = [];
-vec_pred_conn_D = [];
+%vec_pred_conn_D = [];
 vec_dens = [];
 
 for ip = 1:npts
@@ -166,9 +166,11 @@ for ip = 1:npts
     curr_loc = locs{ip};
     
     % predict connectivty just based on locs (using model from above)
+    %{
     predict_conn = predict_conn_from_loc(f,curr_loc);
     predict_conn = nanmean(predict_conn,2);
     vec_pred_conn_D = [vec_pred_conn_D;predict_conn];
+    %}
     
     % get density
     density = estimate_coverage_density(curr_loc,1e8);
@@ -189,11 +191,11 @@ for ip = 1:npts
 end
 
 %% Make table
-T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_pred_conn_D,vec_dens);
+T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_dens);
 
 %% Remove nan and inf rows
 nan_rows = isnan(T.vec_soz) | isnan(T.vec_pt_idx) | isnan(T.vec_rate) | ...
-    isnan(T.vec_ns) | isnan(T.vec_pred_conn_D) | isnan(T.vec_dens);
+    isnan(T.vec_ns) | isnan(T.vec_dens);
 T(nan_rows,:) = [];
 
 %% Remove rows without localization
@@ -213,20 +215,6 @@ train_pts = unique(T_train.vec_pt_idx);
 test_pts = unique(T_test.vec_pt_idx);
 assert(isempty(intersect(train_pts,test_pts)))
 
-%{
-if do_anat
-glm = fitglm(T_train,...
-    'vec_soz ~ vec_rate + vec_ns',...
-    'Distribution','Poisson','Link','log');
-else
-
-glm = fitglm(T_train,...
-    'vec_soz ~ vec_rate',...
-    'Distribution','Poisson','Link','log');
-end
-%}
-
-% models = {'ana','ana_cov','ana_cov_spikes','ana_cov_spikes_ns','ana_cov_ns'};
 for im = 1:length(models)
     curr_model = models{im};
     switch curr_model
@@ -277,9 +265,6 @@ for im = 1:length(models)
     % Compare classification against true
     all_soz = T_test.vec_soz==1;
     all_no_soz = T_test.vec_soz==0;
-    class_soz = classification(all_soz);
-    class_no_soz = classification(all_no_soz);
-    %[roc,auc,disc,disc_I] = calculate_roc(class_no_soz,class_soz,1e3);
     [X,Y,T,AUC,opt] = perfcurve(T_test.vec_soz,classification,1);
     
     out.model(im).name = curr_model;
