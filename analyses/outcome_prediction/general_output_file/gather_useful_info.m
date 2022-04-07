@@ -33,6 +33,7 @@ all_labels = cell(npts,1);
 all_names = cell(npts,1);
 all_fc = cell(npts,1);
 all_locs = cell(npts,1);
+all_coh = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -50,6 +51,7 @@ for p = 1:npts
     name = summ.name;
     fc = summ.avg_fc;
     locs = summ.locs;
+    coh = wrap_or__unwrap_adjacency_fc_toolbox(summ.avg_coh);
     
     all_names{p} = name;
     
@@ -70,6 +72,8 @@ for p = 1:npts
     rl(ekg,:) = [];
     fc(ekg,:) = []; fc(:,ekg) = [];
     locs(ekg,:) = [];
+    coh(ekg,:,:) = [];
+    coh(:,ekg,:) = [];
     
     %% SOZ bin
     all_soz_bin{p} = soz_bin;
@@ -85,6 +89,7 @@ for p = 1:npts
     all_rl{p} = avg_rl;
     all_fc{p} = fc;
     all_locs{p} = locs;
+    all_coh{p} = coh;
     
     %% Correlate average ns and spikes
     avg_corr_sp = corr(avg_spikes,avg_ns,'rows','pairwise','type','spearman');
@@ -118,8 +123,10 @@ out.all_locs = all_locs;
 out.all_rl = all_rl;
 out.all_fc = all_fc;
 out.all_ns = all_ns;
+out.all_coh = all_coh;
 out.all_labels = all_labels;
 out.all_names = all_names;
+
 
 %% Save
 save([out_folder,'main_out.mat'],'out');
