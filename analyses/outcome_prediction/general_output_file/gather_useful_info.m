@@ -51,7 +51,7 @@ for p = 1:npts
     name = summ.name;
     fc = summ.avg_fc;
     locs = summ.locs;
-    coh = wrap_or__unwrap_adjacency_fc_toolbox(summ.avg_coh);
+    coh = wrap_or_unwrap_adjacency_fc_toolbox(summ.avg_coh);
     
     all_names{p} = name;
     
