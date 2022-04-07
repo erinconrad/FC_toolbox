@@ -8,11 +8,11 @@ plot_type = 'scatter';
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
+atlas_folder = [results_folder,'analysis/atlas/'];
 
 bct_folder= locations.bct;
-out_folder = [results_folder,'analysis/outcome/data/'];
+out_folder = [results_folder,'analysis/atlas/'];
 plot_folder = [results_folder,'analysis/outcome/plots/'];
-atlas_folder = [results_folder,'analysis/atlas/'];
 if ~exist(out_folder,'dir'), mkdir(out_folder); end
 if ~exist(plot_folder,'dir'), mkdir(plot_folder); end
 
@@ -22,33 +22,23 @@ addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
 
-%% Load out file and get roc stuff
-out = load([out_folder,'main_out.mat']);
+%% Load atlas and get region names and spikes
+out = load([atlas_folder,which_atlas,'.mat']);
 out = out.out;
+atlas = out.atlas;
+names = out.atlas_names;
+spikes = out.spikes_atlas;
+nregions = length(names);
+assert(nregions==size(atlas,1))
+npts = size(atlas,3);
+sozs = out.sozs;
+atlas_nums = out.atlas_nums;
+bin_soz = (cell2mat(cellfun(@(x) ismember(atlas_nums',x),sozs,'uniformoutput',false)))';
 
-
-%% Get stuff
-rate = out.all_spikes;
-soz = out.all_soz_bin;
-npts = length(soz);
-labels = out.all_labels;
-fc = out.all_fc;
-
-% Soz lats
+%% Load soz lats
 soz_lats = out.all_soz_lats;
 right_lat = strcmp(soz_lats,'right');
 left_lat = strcmp(soz_lats,'left');
-
-%% Load atlas file
-atlas_out = load([atlas_folder,which_atlas,'.mat']);
-atlas_out = atlas_out.out;
-
-%% get atlas stuff
-atlas_elec_labels = atlas_out.elecs_labels;
-atlas_elec_regions = atlas_out.elecs_atlas;
-atlas_nums = atlas_out.atlas_nums;
-names = atlas_out.atlas_names;
-
 
 %% Get locs and lats for atlas names
 [locs,lats] = lateralize_regions(names,which_atlas);
@@ -58,9 +48,6 @@ neither_lat = ~left & ~right;
 
 % confirm atlas has as many on right as left
 assert(sum(left)==sum(right));
-
-[atlas,spikes,bin_soz] = rebuild_atlas(fc,rate,atlas_elec_labels,...
-    atlas_elec_regions,atlas_nums,labels,soz);
 
 %% Re-order atlas to be left then right then neither
 lr_order = reorder_lr(locs,lats);

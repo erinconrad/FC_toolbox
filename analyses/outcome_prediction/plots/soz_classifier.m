@@ -1,27 +1,38 @@
-function [T_test,T_train,all_auc] = soz_classifier
-nb = 10;
-models = {'ana','ana_cov','ana_cov_spikes','ana_cov_spikes_ns','ana_cov_ns'};
-pretty_name = {'Anatomy','Add coverage density','Add spike rates','Add connectivity','Add connectivity'};
+%{
 
+To do:
+- add ability to use only sleep
+
+%}
+
+function [T_test,T_train,all_auc] = soz_classifier
+nb = 5;
+params.only_sleep = 0;
+params.models = {'ana','ana_cov','ana_cov_spikes','ana_cov_spikes_ns','ana_cov_ns'};
+params.pretty_name = {'Anatomy','Add coverage density','Add spike rates','Add connectivity','Add connectivity'};
+params.do_norm = 1;
+params.which_atlas = 'aal_bernabei';
+params.max_spikes = 0.1;
+params.prop_train = 2/3;
 
 %% File locations
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 plot_folder = [results_folder,'analysis/outcome/plots/'];
 
-nmodels = length(models);
+nmodels = length(params.models);
 all_auc = nan(nb,nmodels);
 
 for im = 1:nmodels
-    model_info(im).name = models{im};
-    model_info(im).pretty_name = pretty_name{im};
+    model_info(im).name = params.models{im};
+    model_info(im).pretty_name = params.pretty_name{im};
     model_info(im).all_auc = nan(nb,1);
     model_info(im).all_roc = cell(nb,1);
 end
 
 for ib = 1:nb
     if mod(ib,10) == 0, fprintf('\nDoing %d of %d\n',ib,nb); end
-    out = individual_classifier(models);
+    out = individual_classifier(params);
     for im = 1:nmodels
         all_auc(ib,im) = out.model(im).auc;
         model_info(im).all_auc(ib) = out.model(im).auc;
@@ -41,10 +52,10 @@ for im = 1:nmodels
 end
 
 figure
-set(gcf,'position',[10 10 1100 350])
-tiledlayout(1,3,'tilespacing','tight','padding','tight')
+set(gcf,'position',[10 10 1400 350])
+tiledlayout(1,5,'tilespacing','tight','padding','tight')
 
-for im = [1 2 5]
+for im = [1 2 5 3 4]
     nexttile
     mp = shaded_error_bars_fc(model_info(im).x,model_info(im).ym,...
         [model_info(im).ly',model_info(im).uy'],'k');
@@ -62,24 +73,26 @@ print(gcf,[plot_folder,'prediction_nospikes'],'-dpng')
 
 end
 
-function out = individual_classifier(models)
+function out = individual_classifier(params)
 %{
 Predict whether an electrode is in the SOZ based on 1) its spike rate
 normalized across other electrodes within the patient and 2) its anatomical
 localization (a categorical variable that can be MT, TN, WM, or OC)
 %}
 
+
+
 %% Parameters
-max_spikes = 0.1; % max spikes/elecs/min to include in model
-which_atlas = 'brainnetome';%'aal_bernabei';
-broad_locs = {'mesial temporal','temporal neocortical','other cortex'};
-prop_train = 2/3;
-do_norm = 1; % normalize within patient
+max_spikes = params.max_spikes; % max spikes/elecs/min to include in model
+which_atlas = params.which_atlas;
+prop_train = params.prop_train;
+do_norm = params.do_norm;
+models = params.models;
+only_sleep = params.only_sleep;
 
 
 %% File locations
 locations = fc_toolbox_locs;
-script_folder = locations.script_folder;
 addpath(genpath(locations.script_folder))
 results_folder = [locations.main_folder,'results/'];
 spike_folder = [results_folder,'analysis/outcome/data/'];
@@ -95,13 +108,11 @@ rate = out.all_spikes;
 soz = out.all_soz_bin;
 npts = length(soz);
 labels = out.all_labels;
-ns = out.all_ns;
 fc = out.all_fc;
 locs = out.all_locs;
 
 %% Turn soz to logical
 soz = cellfun(@logical,soz,'uniformoutput',false);
-
 
 
 %% Load atlas file
@@ -145,6 +156,7 @@ vec_soz = [];
 vec_pt_idx = [];
 vec_ns = [];
 vec_pred_conn_D = [];
+vec_dens = [];
 
 for ip = 1:npts
     curr_rate = rate{ip};
@@ -157,14 +169,19 @@ for ip = 1:npts
     predict_conn = predict_conn_from_loc(f,curr_loc);
     predict_conn = nanmean(predict_conn,2);
     vec_pred_conn_D = [vec_pred_conn_D;predict_conn];
+    
+    % get density
+    density = estimate_coverage_density(curr_loc,1e8);
         
     % normalize within patient
     if do_norm
         curr_rate = (curr_rate-nanmean(curr_rate))./nanstd(curr_rate);
         curr_ns = (curr_ns-nanmean(curr_ns))./nanstd(curr_ns);
+        density = (density - nanmean(density))./nanstd(density);
     end
     
     vec_rate = [vec_rate;curr_rate];
+    vec_dens = [vec_dens;density];
     vec_loc = [vec_loc;curr_ana_loc];
     vec_soz = [vec_soz;curr_soz];
     vec_ns = [vec_ns;curr_ns];
@@ -172,11 +189,11 @@ for ip = 1:npts
 end
 
 %% Make table
-T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_pred_conn_D);
+T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_pred_conn_D,vec_dens);
 
 %% Remove nan and inf rows
 nan_rows = isnan(T.vec_soz) | isnan(T.vec_pt_idx) | isnan(T.vec_rate) | ...
-    isnan(T.vec_ns) | isnan(T.vec_pred_conn_D);
+    isnan(T.vec_ns) | isnan(T.vec_pred_conn_D) | isnan(T.vec_dens);
 T(nan_rows,:) = [];
 
 %% Remove rows without localization
@@ -218,17 +235,17 @@ for im = 1:length(models)
             formula = 'vec_soz ~ vec_loc';
             formula_me = 'vec_soz ~ vec_loc + vec_pt_idx';
         case 'ana_cov'
-            formula = 'vec_soz ~ vec_loc + vec_pred_conn_D';
-            formula_me = 'vec_soz ~ vec_loc + vec_pred_conn_D+ vec_pt_idx';
+            formula = 'vec_soz ~ vec_loc + vec_dens';
+            formula_me = 'vec_soz ~ vec_loc + vec_dens+ vec_pt_idx';
         case 'ana_cov_spikes'
-            formula = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_rate';
-            formula_me = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_rate + vec_pt_idx';
+            formula = 'vec_soz ~ vec_loc + vec_dens + vec_rate';
+            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_pt_idx';
         case 'ana_cov_spikes_ns'
-            formula = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_rate + vec_ns';
-            formula_me = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_rate + vec_ns + vec_pt_idx';
+            formula = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns';
+            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns + vec_pt_idx';
         case 'ana_cov_ns'
-            formula = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_ns';
-            formula_me = 'vec_soz ~ vec_loc + vec_pred_conn_D + vec_ns + vec_pt_idx';
+            formula = 'vec_soz ~ vec_loc + vec_dens + vec_ns';
+            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_ns + vec_pt_idx';
     end
     
     %% Do both the glm and glme
