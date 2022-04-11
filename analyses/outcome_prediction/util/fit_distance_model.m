@@ -33,49 +33,96 @@ end
 
 %% Remove nans and very large distances
 bad = isnan(vec_dist) | isnan(vec_conn) | vec_dist > 1e3;
-vec_dist(bad) = [];
-vec_conn(bad) = [];
-
-
 
 % do a model
 x = vec_dist;
 y = vec_conn;
+x(bad) = [];
+y(bad) = [];
 f = fit(x,y,'rat11','startpoint',[0.1 0.1 0.1]);
 
-% rebuild predicted y
-predict_y = (f.p1 * x + f.p2)./(x + f.q1);
+% rebuild the matrix of residuals
+out = cell(size(all_conn));
+for ip = 1:npts
+    
+    locs = all_locs{ip};
+    conn = all_conn{ip};
+    
+    % make inter-distance matrix
+    D = make_interdist_matrix(locs);
+    
+     % convert to 1D
+    D = wrap_or_unwrap_adjacency_fc_toolbox(D);
+    conn = wrap_or_unwrap_adjacency_fc_toolbox(conn);
+    
+    % predict y
+    predict_y = (f.p1 * D + f.p2)./(D + f.q1);
+    
+    resid = conn - predict_y;
+    
+    
+    out{ip} = wrap_or_unwrap_adjacency_fc_toolbox(resid);
+    
+end
+
 
 % show it
 if 0
+    ip = 60;
+    
+    
     figure
+    set(gcf,'position',[10 10 1000 650])
+    tiledlayout(2,2,'tilespacing','tight','padding','tight')
+    
+    nexttile
+    conn = all_conn{ip};
+    turn_nans_gray(conn)
+    c = colorbar;
+    caxis([-1 1])
+    ylabel(c,'Pearson correlation')
+    set(gca,'fontsize',15)
+    xticklabels([])
+    yticklabels([])
+    xlabel('Electrode')
+    ylabel('Electrode')
+    
+    nexttile
+    D = make_interdist_matrix(all_locs{ip});
+    turn_nans_gray(D)
+    c = colorbar;
+    ylabel(c,'Distance (mm)')
+    set(gca,'fontsize',15)
+    xticklabels([])
+    yticklabels([])
+    xlabel('Electrode')
+    ylabel('Electrode')
+    
+    nexttile
     plot(vec_dist,vec_conn,'o')
     hold on
     temp_x = [min(x):0.5:max(x)];
     temp_y = (f.p1 * temp_x + f.p2)./(temp_x + f.q1);
-    plot(temp_x,temp_y,'linewidth',3)
-    ylim([min(y) max(y)])
+    plot(temp_x,temp_y,'k','linewidth',3)
+    ylim([-1 1])
     xlim([min(x) max(x)])
     xlabel('Distance (mm)')
-    ylabel('Correlation (r^2)')
+    ylabel('Correlation (r)')
     set(gca,'fontsize',15)
+    
+    nexttile
+    conn = out{ip};
+    turn_nans_gray(conn)
+    c = colorbar;
+    caxis([-1 1])
+    ylabel(c,'Normalized correlation (model residuals)')
+    set(gca,'fontsize',15)
+    xticklabels([])
+    yticklabels([])
+    xlabel('Electrode')
+    ylabel('Electrode')
+    
     print(gcf,[plot_folder,'dist_model'],'-dpng')
-end
-
-% calculate the residuals
-resid = y-predict_y;
-
-% rebuild the matrix
-all_resid = nan(length(bad),1);
-all_resid(~bad) = resid;
-
-out = cell(size(all_conn));
-for ip = 1:npts
-    idx = which_pt == ip;
-    
-    curr_resid = all_resid(idx);
-    out{ip} = wrap_or_unwrap_adjacency_fc_toolbox(curr_resid);
-    
 end
 
 

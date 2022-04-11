@@ -14,9 +14,19 @@ for ip = 1:npts
     locs = all_locs{ip};
     locs(any(locs > 1e5,2),:) = nan; % fix for one weird patient
     
+    if isnan(nanmean(locs,'all')), continue; end
+    
     % mean center of input points
     mean_center = nanmean(locs,1);
     nelecs = size(locs,1);
+    
+    if 0
+        figure
+        scatter3(locs(:,1),locs(:,2),locs(:,3),100,'k',...
+            'markeredgecolor','k','linewidth',2);
+        hold on
+        scatter3(mean_center(:,1),mean_center(:,2),mean_center(:,3),100,'r','filled');
+    end
     
     % get the distance from the mean center for all points
     D = vecnorm(locs - repmat(mean_center,nelecs,1),2,2);
@@ -40,6 +50,9 @@ for ip = 1:npts
     SD = sqrt(sum(all_SD)); % add across dimensions, take sqrt
     
     sr = 0.9*min([SD,sqrt(1/log(2))*Dm])*nelecs^(-0.2);
+    
+    if sr == 0, error('why'); end
+    
     all_sr(ip) = sr;
     
 end

@@ -45,7 +45,7 @@ legtext2 = sprintf('Higher in %s',xlabels{1});
 legtext3 = 'Equal';
 
 legend([pp;np;ep],{legtext1,legtext2,legtext3},...
-    'location','southeast','fontsize',15,'box','off')
+    'location','southeast','fontsize',15)
 set(gca,'fontsize',15)
 
 stats_out.medians = [nanmedian(data(:,1)) nanmedian(data(:,2))];

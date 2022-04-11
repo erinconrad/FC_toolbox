@@ -1,7 +1,7 @@
 function ranking_by_localization
 
 %% Parameters
-max_spikes = 0.1; % max spikes/elecs/min to include in model
+max_spikes = 1/3600; % max spikes/elecs/min to include in model
 thing_to_plot = 'ns_resid';
 which_atlas = 'aal_bernabei'; %'brainnetome';%
 

@@ -6,16 +6,15 @@ To do:
 %}
 
 function [T_test,T_train,all_auc] = soz_classifier
-nb = 100;
+nb = 20;
 params.only_sleep = 0;
 params.atlas_anatomy = 0;
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',};
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
 params.do_norm = 1;
 params.which_atlas = 'aal_bernabei';
-params.max_spikes = 1/3600;
+params.max_spikes = 0.1;
 params.prop_train = 2/3;
-params.do_ns_resid = 1;
 
 %% File locations
 locations = fc_toolbox_locs;
@@ -133,7 +132,7 @@ prop_train = params.prop_train;
 do_norm = params.do_norm;
 models = params.models;
 atlas_anatomy = params.atlas_anatomy;
-do_ns_resid = params.do_ns_resid;
+
 
 %% File locations
 locations = fc_toolbox_locs;
@@ -141,7 +140,6 @@ addpath(genpath(locations.script_folder))
 results_folder = [locations.main_folder,'results/'];
 spike_folder = [results_folder,'analysis/outcome/data/'];
 atlas_folder = [results_folder,'analysis/atlas/'];
-plot_folder = [results_folder,'analysis/outcome/plots/'];
 
 
 %% Load out file and get roc stuff
@@ -171,14 +169,10 @@ atlas_nums = atlas_out.atlas_nums;
 atlas_names = atlas_out.atlas_names;
 
 %% Spatially normalize the FC matrix
-[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes,plot_folder);
-ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
+%[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes);
+%ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
+%ns = ns_resid;
 ns = cellfun(@(x) nanmean(x,2),fc,'uniformoutput',false);
-
-if do_ns_resid == 1
-    ns = ns_resid;
-end
-
 
 %% Localize regions into broad categories
 broad = localize_regions(atlas_names,which_atlas);
@@ -226,10 +220,7 @@ for ip = 1:npts
     % normalize within patient
     if do_norm
         curr_rate = (curr_rate-nanmean(curr_rate))./nanstd(curr_rate);
-        
-        if ~do_ns_resid
-            curr_ns = (curr_ns-nanmean(curr_ns))./nanstd(curr_ns);
-        end
+        curr_ns = (curr_ns-nanmean(curr_ns))./nanstd(curr_ns);
         density = (density - nanmean(density))./nanstd(density);
     end
     

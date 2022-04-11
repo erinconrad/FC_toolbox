@@ -1,5 +1,8 @@
 function spike_fc_correlation
 
+%% Parameters
+do_r2 = 0;
+
 locations = fc_toolbox_locs;
 script_folder = locations.script_folder;
 addpath(genpath(locations.script_folder))
@@ -24,6 +27,9 @@ labels = out.all_labels;
 locs = out.all_locs;
 fc = out.all_fc;
 
+if do_r2
+    fc = cellfun(@(x) x.^2, fc,'uniformoutput',false);
+end
 
 %% Get spike-fc correlations
 spike_fc_corr = nan(npts,1);

@@ -38,7 +38,8 @@ for in = 1:nelecs
         if in == jn, continue; end
           
         % get distance between i and j elecs
-        d = sum((locs(in,:)-locs(jn,:)).^2);
+        %d = sqrt(sum((locs(in,:)-locs(jn,:)).^2));
+        d = vecnorm(locs(in,:)-locs(jn,:));
         
         % skip points outside the search radius
         if d > r, continue; end
@@ -61,6 +62,13 @@ if 0
     figure
     scatter3(locs(:,1),locs(:,2),locs(:,3),100,density,'filled',...
         'markeredgecolor','k','linewidth',2);
+    c = colorbar;
+    xlabel('X position (mm)')
+    ylabel('Y position (mm)')
+    zlabel('Z position (mm)')
+    ylabel(c,'Density (1/mm^2)')
+    set(gca,'fontsize',15)
+    title('Electrode coverage density')
 end
 
 
