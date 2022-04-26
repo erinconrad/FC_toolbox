@@ -1,4 +1,4 @@
-function symmetric_coverage_tests
+function nout = symmetric_coverage_tests(which_atlas)
 
 %{
 I have edited this script so that it automatically builds the atlas on the
@@ -6,8 +6,8 @@ fly.
 %}
 
 %% Parameters
-do_plots = 1;
-which_atlas = 'aal_bernabei';%'aal_bernabei';%%'brainnetome';
+do_plots = 0;
+%which_atlas = 'brainnetome';'aal_bernabei';%'aal_bernabei';%%'brainnetome';
 plot_type = 'scatter';
 freqs = {'Delta (0.5-4 Hz)','Theta (4-8 Hz)','Alpha (8-12 Hz)','Beta (12-30 Hz)','Gamma (30-80 Hz)'};
 
@@ -26,6 +26,7 @@ if ~exist(plot_folder,'dir'), mkdir(plot_folder); end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
+
 
 
 %% Load out file with functional connectivity and spikes as well as SOZ info
@@ -166,6 +167,7 @@ lr_soz_all = nan(npts,2);
 hemi = nan(npts,2);
 hemi_lr = nan(npts,2);
 soz_coh_all = nan(npts,nfreqs,2);
+all_bin_contra_soz = zeros(size(bin_soz));
 
 for ip = 1:npts
     
@@ -179,6 +181,7 @@ for ip = 1:npts
     bin_contra_soz = zeros(length(curr_soz),1);
     bin_contra_soz(contra_soz) = 1;
     bin_contra_soz = logical(bin_contra_soz);
+    all_bin_contra_soz(:,ip) = bin_contra_soz;
     
     % confirm that difference in number of soz and contra soz is just those
     % regions that have no contralateral thing 
@@ -283,10 +286,27 @@ for ip = 1:npts
 end
 
 
+%% Output data for plots
+nout.soz_lats = soz_lats;
+nout.all_bilateral = all_bilateral;
+nout.left = left;
+nout.right = right;
+nout.neither_lat = neither_lat;
+nout.soz_non_soz_ordered_atlas = soz_non_soz_ordered_atlas;
+nout.soz_all = soz_all;
+nout.hemi = hemi;
+nout.soz_intra = soz_intra;
+nout.soz_coh_all = soz_coh_all;
+nout.which_atlas = which_atlas;
+nout.conf_out_fc = conf_out_fc;
+nout.conf_out_spikes = conf_out_spikes;
+nout.bin_soz = bin_soz;
+nout.all_bin_contra_soz = all_bin_contra_soz;
+
 if do_plots
     
 %% Compare lr conn between unilat and bilateral
-if 1
+if 0
     figure
     plot(1+randn(sum(unilat),1)*0.05,lr_conn(unilat),'o','linewidth',2)
     hold on
@@ -327,7 +347,6 @@ nexttile([1 3])
 pretty_matrix(nanmean(soz_non_soz_ordered_atlas(~neither_lat,~neither_lat,:),3),...
     {'SOZ','non-SOZ'},sum(left),'r',0)
 title('Average connectivity (symmetric coverage only)')
-xlabel('Patient')
 
 nexttile([1 2])
 plot_paired_data(soz_all',{'SOZ','contralateral region','contralateral region'},'Average connectivity','paired',plot_type);
@@ -415,6 +434,9 @@ for i = 1:2 % connectivity then spikes
 end
 
 print(gcf,[plot_folder,'symm_pred_',which_atlas],'-dpng')
+
+%% Output text
+fprintf(fid,'<p><b>Changes in spikes with seizures</b>');
 
 end
 

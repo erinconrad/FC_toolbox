@@ -6,16 +6,26 @@ To do:
 %}
 
 function [T_test,T_train,all_auc] = soz_classifier
-nb = 100;
-params.only_sleep = 0;
-params.atlas_anatomy = 0;
+nb = 1e1;
+do_plot = 1;
+
+
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',};
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
-params.do_norm = 1;
+
 params.which_atlas = 'aal_bernabei';
-params.max_spikes = 1/3600;
+params.sr = []; % search radius (leave empty to use default calc)
 params.prop_train = 2/3;
-params.do_ns_resid = 1;
+params.do_r2 = 0; % r^2 instead of r for FC measurement?
+params.do_ns_resid = 1; % take residuals of ns (density normalized)
+params.include_lat = 0; % include laterality in addition to broad anatomical regions
+params.dens_model = 1; % use Erin's density model as opposed to rat11
+
+params.max_spikes = 1/3600; % max spikes for both distance and density models
+params.do_norm = 1; % normalize spike rate and density within pt
+params.atlas_anatomy = 0; % break anatomy into many categories (all atlas regions)? Model fails to converge
+params.only_sleep = 0; % outside scope, don't change
+
 
 %% File locations
 locations = fc_toolbox_locs;
@@ -33,6 +43,7 @@ for im = 1:nmodels
 end
 
 %% Get AUC for each model for each random testing/training split
+params.do_glme = 0; 
 for ib = 1:nb
     if mod(ib,10) == 0, fprintf('\nDoing %d of %d\n',ib,nb); end
     out = individual_classifier(params);
@@ -94,30 +105,41 @@ all_out.model_sd = model_sd;
 all_out.model_diff = model_diff;
 all_out.model_p = model_p;
 
-figure
-set(gcf,'position',[10 10 1400 350])
-tiledlayout(1,5,'tilespacing','tight','padding','tight')
+if do_plot
+    figure
+    set(gcf,'position',[10 10 1400 350])
+    tiledlayout(1,5,'tilespacing','tight','padding','tight')
 
-for im = [1 2 3 4 5]
-    nexttile
-    mp = shaded_error_bars_fc(model_info(im).x,model_info(im).ym,...
-        [model_info(im).ly',model_info(im).uy'],'k');
-    hold on
-    plot([0 1],[0 1],'k--','linewidth',2)
-    title(model_info(im).pretty_name)
-    legend(mp,sprintf('Mean AUC = %1.2f',median( model_info(im).all_auc)),...
-        'location','southeast','fontsize',15)
-    set(gca,'fontsize',15)
-    xlabel('False positive rate')
-    ylabel('True positive rate')
+    for im = [1 2 3 4 5]
+        nexttile
+        mp = shaded_error_bars_fc(model_info(im).x,model_info(im).ym,...
+            [model_info(im).ly',model_info(im).uy'],'k');
+        hold on
+        plot([0 1],[0 1],'k--','linewidth',2)
+        title(model_info(im).pretty_name)
+        legend(mp,sprintf('Mean AUC = %1.2f',median( model_info(im).all_auc)),...
+            'location','southeast','fontsize',15)
+        set(gca,'fontsize',15)
+        xlabel('False positive rate')
+        ylabel('True positive rate')
+    end
+
+    print(gcf,[plot_folder,'prediction_nospikes'],'-dpng')
 end
 
-print(gcf,[plot_folder,'prediction_nospikes'],'-dpng')
+
+%% Do once with all data to get glme paramaters
+params.do_glme = 1;
+out = individual_classifier(params);
+all_out.glme_stuff = out;
+
 save([plot_folder,'model_stuff.mat'],'all_out')
 
+
+
 end
 
-function out = individual_classifier(params)
+function mout = individual_classifier(params)
 %{
 Predict whether an electrode is in the SOZ based on 1) its spike rate
 normalized across other electrodes within the patient and 2) its anatomical
@@ -134,6 +156,11 @@ do_norm = params.do_norm;
 models = params.models;
 atlas_anatomy = params.atlas_anatomy;
 do_ns_resid = params.do_ns_resid;
+do_glme = params.do_glme;
+include_lat = params.include_lat;
+dens_model = params.dens_model;
+do_r2 = params.do_r2;
+sr = params.sr;
 
 %% File locations
 locations = fc_toolbox_locs;
@@ -159,6 +186,10 @@ locs = out.all_locs;
 %% Turn soz to logical
 soz = cellfun(@logical,soz,'uniformoutput',false);
 
+%% R^2???
+if do_r2
+    fc = cellfun(@(x) x.^2, fc,'uniformoutput',false);
+end
 
 %% Load atlas file
 atlas_out = load([atlas_folder,which_atlas,'.mat']);
@@ -171,9 +202,14 @@ atlas_nums = atlas_out.atlas_nums;
 atlas_names = atlas_out.atlas_names;
 
 %% Spatially normalize the FC matrix
-[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes,plot_folder);
-ns_resid = cellfun(@(x) nanmean(x,2),resid,'uniformoutput',false);
-ns = cellfun(@(x) nanmean(x,2),fc,'uniformoutput',false);
+if dens_model
+    resid = erin_dens_model(out,max_spikes,[],sr);
+else
+    resid = fit_distance_model(locs,fc,soz,rate,max_spikes,plot_folder);
+end
+
+ns_resid = cellfun(@(x) nansum(x,2),resid,'uniformoutput',false);
+ns = cellfun(@(x) nansum(x,2),fc,'uniformoutput',false);
 
 if do_ns_resid == 1
     ns = ns_resid;
@@ -182,13 +218,17 @@ end
 
 %% Localize regions into broad categories
 broad = localize_regions(atlas_names,which_atlas);
-broad_no_lat = cell(length(broad),1);
-for ib = 1:length(broad)
-    curr = broad{ib};
-    if isempty(curr),continue; end
-    curr = strrep(curr,'left ','');
-    curr = strrep(curr,'right ','');
-    broad_no_lat{ib} = curr;
+if ~include_lat
+    broad_no_lat = cell(length(broad),1);
+    for ib = 1:length(broad)
+        curr = broad{ib};
+        if isempty(curr),continue; end
+        curr = strrep(curr,'left ','');
+        curr = strrep(curr,'right ','');
+        broad_no_lat{ib} = curr;
+    end
+else
+    broad_no_lat = broad;
 end
 
 %% Get localizations for each patient
@@ -207,7 +247,9 @@ vec_ns = [];
 vec_dens = [];
 
 %% GEt default search radius
-sr = calculate_default_search_radius(locs); 
+if isempty(sr)
+    sr = calculate_default_search_radius(locs); 
+end
 
 for ip = 1:npts
     curr_rate = rate{ip};
@@ -255,17 +297,25 @@ nan_rows = isnan(T.vec_soz) | isnan(T.vec_pt_idx) | isnan(T.vec_rate) | ...
 T(nan_rows,:) = [];
 
 %% Divide into training and testing set
-training = randsample(npts,floor(npts*prop_train));
-training_idx = ismember(T.vec_pt_idx,training);
-testing_idx = ~ismember(T.vec_pt_idx,training);
+if do_glme
+    T_train = T;
+else
+    training = randsample(npts,floor(npts*prop_train));
+    training_idx = ismember(T.vec_pt_idx,training);
+    testing_idx = ~ismember(T.vec_pt_idx,training);
+    T_train = T(training_idx,:);
+    T_test = T(testing_idx,:);
+    
+    %% Confirm that I separated by patients
+    train_pts = unique(T_train.vec_pt_idx);
+    test_pts = unique(T_test.vec_pt_idx);
+    assert(isempty(intersect(train_pts,test_pts)))
+    
+end
 
-T_train = T(training_idx,:);
-T_test = T(testing_idx,:);
 
-%% Confirm that I separated by patients
-train_pts = unique(T_train.vec_pt_idx);
-test_pts = unique(T_test.vec_pt_idx);
-assert(isempty(intersect(train_pts,test_pts)))
+
+
 
 for im = 1:length(models)
     curr_model = models{im};
@@ -273,30 +323,42 @@ for im = 1:length(models)
         
         case 'ana'
             formula = 'vec_soz ~ vec_loc';
-            formula_me = 'vec_soz ~ vec_loc + vec_pt_idx';
+            formula_me = 'vec_soz ~ vec_loc + (1|vec_pt_idx)';
         case 'ana_cov'
             formula = 'vec_soz ~ vec_loc + vec_dens';
-            formula_me = 'vec_soz ~ vec_loc + vec_dens+ vec_pt_idx';
+            formula_me = 'vec_soz ~ vec_loc + vec_dens+ (1|vec_pt_idx)';
         case 'ana_cov_spikes'
             formula = 'vec_soz ~ vec_loc + vec_dens + vec_rate';
-            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_pt_idx';
+            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + (1|vec_pt_idx)';
         case 'ana_cov_spikes_ns'
             formula = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns';
-            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns + vec_pt_idx';
+            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns + (1|vec_pt_idx)';
         case 'ana_cov_ns'
             formula = 'vec_soz ~ vec_loc + vec_dens + vec_ns';
-            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_ns + vec_pt_idx';
+            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_ns + (1|vec_pt_idx)';
     end
     
     %% Do both the glm and glme
     %T_train_me = T_train;
    % T_train_me.vec_pt_idx = nominal(T_train_me.vec_pt_idx);
     
-    glm = fitglm(T_train,formula,'Distribution','Poisson','Link','log');
-  %  glme = fitglme(T_train_me,formula_me,'Distribution','Poisson','Link','log');
+   if do_glme
+       T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
+       glm = fitglme(T_train,formula_me,'Distribution','Poisson','Link','log');
+   else
+       glm = fitglm(T_train,formula,'Distribution','Poisson','Link','log');
+   end
+  %  
     
     %% Test glm on testing data
     params = glm.CoefficientNames;
+    
+    if do_glme
+        mout.model(im).params = params;
+        mout.model(im).name = curr_model;
+        mout.model(im).glm = glm;
+        continue;
+    end
     
     % Calculate the model response
     asum = zeros(size(T_test,1),1);
@@ -322,10 +384,10 @@ for im = 1:length(models)
     all_no_soz = T_test.vec_soz==0;
     [X,Y,T,AUC,opt] = perfcurve(T_test.vec_soz,classification,1);
   
-    out.model(im).name = curr_model;
+    mout.model(im).name = curr_model;
    % out.model(im).glme = glme;
-    out.model(im).roc = [X,Y];
-    out.model(im).auc = AUC;
+    mout.model(im).roc = [X,Y];
+    mout.model(im).auc = AUC;
     
     
 end

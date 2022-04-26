@@ -36,6 +36,7 @@ for in = 1:nelecs
         
         % skip itself
         if in == jn, continue; end
+        if any(isnan(locs(jn,:))), continue; end
           
         % get distance between i and j elecs
         %d = sqrt(sum((locs(in,:)-locs(jn,:)).^2));

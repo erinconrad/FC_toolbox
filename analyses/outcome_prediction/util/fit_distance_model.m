@@ -6,7 +6,7 @@ vec_conn = [];
 which_pt = [];
 for ip = 1:npts
     locs = all_locs{ip};
-    conn = all_conn{ip};
+    conn = (all_conn{ip});
     soz = all_soz{ip};
     spikes = all_spikes{ip};
     
