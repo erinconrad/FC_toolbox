@@ -17,7 +17,7 @@ data = load([data_folder,'main_out.mat']);
 data = data.out;
 
 model_folder = [results_folder,'analysis/outcome/plots/'];
-model = load([model_folder,'model_stuff.mat']);
+model = load([model_folder,'model_stuff_',which_atlas,'.mat']);
 model_info = model.all_out.model_info;
 
 A = niftiread([atlas_folder,'BN_Atlas_246_2mm.nii.gz']);
@@ -99,7 +99,7 @@ yticklabels([])
 zticklabels([])
 grid off
 set(gca,'visible','off')
-text(0,0,maxZ + 0.36*range,'Spatial density model','fontsize',20,...
+text(0,0,maxZ + 0.28*range,'Spatial density model','fontsize',20,...
     'horizontalalignment','center','fontweight','bold')
 
 %% C: Spatial density example (single patient)
@@ -138,7 +138,7 @@ annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','
 annotation('textbox',[0 0.46 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.46 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
-print(gcf,[plot_folder,'Fig4'],'-dpng')
+print(gcf,[plot_folder,'Fig5'],'-dpng')
 
 end
 

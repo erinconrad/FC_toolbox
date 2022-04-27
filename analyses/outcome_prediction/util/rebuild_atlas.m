@@ -22,7 +22,7 @@ coh_atlas = nan(nregions,nregions,nfreqs,npts);
 for ip = 1:npts
     
     curr_spikes = spikes{ip};
-    curr_fc = fc{ip}; %curr_fc = curr_fc.^2;
+    curr_fc = fc{ip};
     curr_regions = regions{ip};
     curr_soz = soz{ip};
     curr_coh = coh{ip};

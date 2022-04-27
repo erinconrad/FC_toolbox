@@ -1,118 +1,54 @@
-function out = erin_dens_model(nout,max_spikes,plot_folder,sr)
-unpack_any_struct(nout)
+function out = erin_dens_model(nout,max_spikes,plot_folder)
 
+%% Params
+poss_sr = [5:5:100];
+nsr = length(poss_sr);
 
-%% Nodal level:
-%{
-% Get all electrode densities
-% default search radius
-sr = calculate_default_search_radius(all_locs);
-
-% get all densities
-all_dens = cell(npts,1);
-for i = 1:npts
-    locs = all_locs{i};
-    density = estimate_coverage_density(locs,sr);
-    all_dens{i} = density;
-end
-
-% Concatenate all densities and ns into vectors
-vec_dens = [];
-vec_ns = [];
-vec_ns_sq = [];
-for i = 1:npts
-    vec_dens = [vec_dens;all_dens{i}];
-    
-    % get ns
-    fc = (all_fc{i});
-    fc_sq = (all_fc{i}).^2;
-    ns = nansum(fc,2);
-    ns_sq = nansum(fc_sq,2);
-    vec_ns = [vec_ns;ns];
-    vec_ns_sq = [vec_ns_sq;ns_sq];
-end
-
-% Plot
-if 0
-figure
-nexttile
-plot(vec_dens,vec_ns,'o')
-xlabel('Density')
-ylabel('NS (r)')
-
-nexttile
-plot(vec_dens,vec_ns_sq,'o')
-xlabel('Density')
-ylabel('NS (r^2)')
-end
-%}
-
-%% Edge level
-% For each electrode i, estimate the density from every other electrode j
-
-%all_fc = cellfun(@(x) x.^2, all_fc,'uniformoutput',false);
-
+%% Unpack struct
+all_locs = nout.all_locs;
+all_fc = nout.all_fc;
+all_soz_bin = nout.all_soz_bin;
+all_spikes = nout.all_spikes;
 npts = length(all_locs);
-% default search radius
 
-if ~exist('sr','var') || isempty(sr)
-    sr = calculate_default_search_radius(all_locs);
-end
 
-vec_conn = [];
-vec_dens = [];
-which_pt = [];
-
+%% fix weird locs
 for ip = 1:npts
     locs = all_locs{ip};
-    conn = (all_fc{ip});
-    soz = all_soz_bin{ip};
-    spikes = all_spikes{ip};
-    
-    soz = logical(soz);
-    
-    % Fix for weird locs
     locs(any(locs > 1e5,2),:) = nan;
-    
-    % make inter-distance matrix
-    D = make_interdist_matrix(locs);
-    
-    % Make density matrix
-    dens = interdistance_to_density_matrix(D,sr);
-    
-    % convert to 1D
-    dens = wrap_or_unwrap_adjacency_fc_toolbox(dens);
-    conn = wrap_or_unwrap_adjacency_fc_toolbox(conn);
-    
-    % make soz nans
-    conn(soz) = nan;
-    
-    % make those with many spikes nans
-    many_spikes = spikes > max_spikes;
-    conn(many_spikes) = nan;
-    
-    % add to vector
-    vec_dens = [vec_dens;dens];
-    vec_conn = [vec_conn;conn];
-    which_pt = [which_pt;repmat(ip,length(dens),1)];
-    
+    all_locs{ip} = locs;
 end
 
-%% Remove nans and very large distances
-bad = isnan(vec_dens) | isnan(vec_conn);
+%% Find optimal sr
+all_r2 = nan(nsr,1);
+best_sr = nan;
+best_f = nan;
+best_vec_dens = nan;
+best_vec_conn = nan;
+for isr = 1:nsr
+    sr = poss_sr(isr);
+    [f,vec_dens,vec_conn] = dens_model_specific_sr(all_locs,all_fc,all_soz_bin,all_spikes,max_spikes,sr);
+    all_r2(isr) = f.Rsquared.Ordinary;
+    
+    if all_r2(isr) == max(all_r2)
+        best_f = f;
+        best_sr = sr;
+        best_vec_dens = vec_dens;
+        best_vec_conn = vec_conn;
+    end
+end
 
-% do a model
-x = vec_dens;
-y = vec_conn;
-x(bad) = [];
-y(bad) = [];
-f = fitlm(x,y);
+% Use the best model (highest R2)
+f = best_f;
+sr = best_sr;
+vec_dens = best_vec_dens;
+vec_conn = best_vec_conn;
 est = f.Coefficients.Estimate;
 g.p1 = est(1);
 g.p2 = est(2);
 
 % rebuild the matrix of residuals
-out = cell(size(all_fc));
+resid = cell(size(all_fc));
 for ip = 1:npts
     
     locs = all_locs{ip};
@@ -131,71 +67,24 @@ for ip = 1:npts
     % predict y
     predict_y = g.p1 + dens*g.p2;
     
-    resid = fc - predict_y;
-    
-    
-    out{ip} = wrap_or_unwrap_adjacency_fc_toolbox(resid);
+    tresid = fc - predict_y;
+ 
+    resid{ip} = wrap_or_unwrap_adjacency_fc_toolbox(tresid);
     
 end
 
+out.resid = resid;
+out.f = f;
+out.sr = sr;
+out.vec_dens = vec_dens;
+out.vec_conn = vec_conn;
+out.all_fc = all_fc;
+out.all_locs = all_locs;
+out.g = g;
+
 if exist('plot_folder','var') && ~isempty(plot_folder)
-    ip = 60;
     
-    
-    figure
-    set(gcf,'position',[10 10 1000 650])
-    tiledlayout(2,2,'tilespacing','tight','padding','tight')
-    
-    nexttile
-    conn = all_fc{ip};
-    turn_nans_gray(conn)
-    c = colorbar;
-    caxis([-1 1])
-    ylabel(c,'Pearson correlation')
-    set(gca,'fontsize',15)
-    xticklabels([])
-    yticklabels([])
-    xlabel('Electrode')
-    ylabel('Electrode')
-    
-    nexttile
-    D = make_interdist_matrix(all_locs{ip});
-    dens = interdistance_to_density_matrix(D,sr);
-    turn_nans_gray(dens)
-    c = colorbar;
-    ylabel(c,'Density (mm)')
-    set(gca,'fontsize',15)
-    xticklabels([])
-    yticklabels([])
-    xlabel('Electrode')
-    ylabel('Electrode')
-    
-    nexttile
-    plot(vec_dens,vec_conn,'o')
-    hold on
-    temp_x = [min(x):0.5:max(x)];
-    %temp_y = (f.p1 * temp_x + f.p2)./(temp_x + f.q1);
-    temp_y = (g.p1 + temp_x*g.p2);
-    plot(temp_x,temp_y,'k','linewidth',3)
-    ylim([-1 1])
-    xlim([min(x) max(x)])
-    xlabel('Density (mm)')
-    ylabel('Correlation (r)')
-    set(gca,'fontsize',15)
-    
-    nexttile
-    conn = out{ip};
-    turn_nans_gray(conn)
-    c = colorbar;
-    caxis([-1 1])
-    ylabel(c,'Normalized correlation (model residuals)')
-    set(gca,'fontsize',15)
-    xticklabels([])
-    yticklabels([])
-    xlabel('Electrode')
-    ylabel('Electrode')
-    
-    print(gcf,[plot_folder,'dens_model'],'-dpng')
+    save([plot_folder,'dens_model.mat'],'out');
 end
 
 

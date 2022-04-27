@@ -12,6 +12,7 @@ addpath(genpath(locations.script_folder))
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/outcome/data/'];
 plot_folder = [results_folder,'analysis/outcome/plots/'];
+model_folder = [results_folder,'analysis/outcome/plots/'];
 atlas_folder = [results_folder,'analysis/atlas/'];
 
 
@@ -40,7 +41,9 @@ end
 
 %% Spatially normalize the FC matrix
 %[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes,plot_folder);
-resid = erin_dens_model(out,max_spikes,[],[]);
+dens_out = load([model_folder,'dens_model.mat']);
+dens_out = dens_out.out;
+resid = dens_out.resid;
 
 %% Get spike-fc correlations
 spike_fc_corr = nan(npts,1);

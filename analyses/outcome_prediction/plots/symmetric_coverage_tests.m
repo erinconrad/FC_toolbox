@@ -302,6 +302,7 @@ nout.conf_out_fc = conf_out_fc;
 nout.conf_out_spikes = conf_out_spikes;
 nout.bin_soz = bin_soz;
 nout.all_bin_contra_soz = all_bin_contra_soz;
+save([plot_folder,'symm_cov_',which_atlas,'.mat'],'nout');
 
 if do_plots
     

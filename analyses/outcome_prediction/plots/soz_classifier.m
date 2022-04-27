@@ -7,13 +7,13 @@ To do:
 
 function [T_test,T_train,all_auc] = soz_classifier
 nb = 1e1;
-do_plot = 1;
+do_plot = 0;
 
 
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',};
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
 
-params.which_atlas = 'aal_bernabei';
+params.which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';
 params.sr = []; % search radius (leave empty to use default calc)
 params.prop_train = 2/3;
 params.do_r2 = 0; % r^2 instead of r for FC measurement?
@@ -41,6 +41,12 @@ for im = 1:nmodels
     model_info(im).all_auc = nan(nb,1);
     model_info(im).all_roc = cell(nb,1);
 end
+
+%% Load density model
+mout = load([plot_folder,'dens_model.mat']);
+mout = mout.out;
+resid = mout.resid;
+params.resid = resid;
 
 %% Get AUC for each model for each random testing/training split
 params.do_glme = 0; 
@@ -88,6 +94,13 @@ for im = 1:nmodels
     end
 end
 
+%% Also estimate bootstap CI of own AUC
+bootci = nan(nmodels,2);
+for im = 1:nmodels
+    auc = model_info(im).all_auc;
+    bootci(im,:) = [prctile(auc,2.5) prctile(auc,97.5)];
+end
+
 %array2table(all_auc,'variablenames',models)
 for im = 1:nmodels
     [unify_x,unify_y] = unify_roc(model_info(im).all_roc);
@@ -104,6 +117,7 @@ all_out.model_z =  model_z;
 all_out.model_sd = model_sd;
 all_out.model_diff = model_diff;
 all_out.model_p = model_p;
+all_out.bootci = bootci;
 
 if do_plot
     figure
@@ -133,7 +147,7 @@ params.do_glme = 1;
 out = individual_classifier(params);
 all_out.glme_stuff = out;
 
-save([plot_folder,'model_stuff.mat'],'all_out')
+save([plot_folder,'model_stuff_',params.which_atlas,'.mat'],'all_out')
 
 
 
@@ -203,7 +217,7 @@ atlas_names = atlas_out.atlas_names;
 
 %% Spatially normalize the FC matrix
 if dens_model
-    resid = erin_dens_model(out,max_spikes,[],sr);
+    resid = params.resid;
 else
     resid = fit_distance_model(locs,fc,soz,rate,max_spikes,plot_folder);
 end

@@ -1,8 +1,8 @@
-function symmetric_coverage_tests
+function old_symmetric_coverage_tests
 
 %% Parameters
-do_plots = 1;
-which_atlas = 'aal_bernabei';%%'brainnetome';
+do_plots = 0;
+which_atlas = 'brainnetome';%;'aal_bernabei';%%'brainnetome';
 plot_type = 'scatter';
 
 %% Get file locs
@@ -182,6 +182,28 @@ end
 
 conf_out = confusion_matrix(predicted,lats_for_conf,0);
 
+%% COnfusion matrix to lateralize epilepsy
+figure
+turn_nans_gray([1 0;0 1])
+colormap(gca,[0.8500, 0.3250, 0.0980;0, 0.4470, 0.7410])
+xticks(1:conf_out.nclasses)
+xticklabels(conf_out.classes)
+yticks(1:conf_out.nclasses)
+yticklabels(conf_out.classes)
+xlabel(conf_out.xlabel)
+ylabel(conf_out.ylabel)
+hold on
+for i = 1:conf_out.nclasses
+    for j = 1:conf_out.nclasses
+        text(i,j,sprintf('%d',conf_out.mat(j,i)),'horizontalalignment','center','fontsize',25,'fontweight','bold')
+    end
+end
+title(sprintf('Accuracy: %1.1f%%, PPV: %1.1f%%, NPV: %1.1f%%',conf_out.accuracy*100,...
+    conf_out.ppv*100,conf_out.npv*100))
+set(gca,'fontsize',15)
+
+print(gcf,[plot_folder,'symm_pred_',which_atlas],'-dpng')
+
 if do_plots
 
 figure
@@ -235,27 +257,7 @@ title('Intrinsic connectivity in SOZ localization (left vs right)')
 
 print(gcf,[plot_folder,'symm_lr_',which_atlas],'-dpng')
 
-%% COnfusion matrix to lateralize epilepsy
-figure
-turn_nans_gray([1 0;0 1])
-colormap(gca,[0.8500, 0.3250, 0.0980;0, 0.4470, 0.7410])
-xticks(1:conf_out.nclasses)
-xticklabels(conf_out.classes)
-yticks(1:conf_out.nclasses)
-yticklabels(conf_out.classes)
-xlabel(conf_out.xlabel)
-ylabel(conf_out.ylabel)
-hold on
-for i = 1:conf_out.nclasses
-    for j = 1:conf_out.nclasses
-        text(i,j,sprintf('%d',conf_out.mat(j,i)),'horizontalalignment','center','fontsize',25,'fontweight','bold')
-    end
-end
-title(sprintf('Accuracy: %1.1f%%, PPV: %1.1f%%, NPV: %1.1f%%',conf_out.accuracy*100,...
-    conf_out.ppv*100,conf_out.npv*100))
-set(gca,'fontsize',15)
 
-print(gcf,[plot_folder,'symm_pred_',which_atlas],'-dpng')
 
 end
 
