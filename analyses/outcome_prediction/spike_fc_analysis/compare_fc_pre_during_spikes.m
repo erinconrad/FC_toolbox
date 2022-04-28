@@ -128,6 +128,9 @@ for l = 1:npts
         
         %% Spike detector
         gdf = detector_alt(values,fs);
+        if isempty(gdf)
+            continue
+        end
         sp_chs = unique(gdf(:,1));
         
         %% Get networks

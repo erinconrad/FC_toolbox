@@ -1,14 +1,13 @@
 function nout = symmetric_coverage_tests(which_atlas)
 
 %{
-I have edited this script so that it automatically builds the atlas on the
-fly.
+This performs the analysis comparing connectivity to the SOZ to the region
+contralateral to the SOZ, first restricting regions to only those with
+bilateral coverage.
 %}
 
 %% Parameters
 do_plots = 0;
-%which_atlas = 'brainnetome';'aal_bernabei';%'aal_bernabei';%%'brainnetome';
-plot_type = 'scatter';
 freqs = {'Delta (0.5-4 Hz)','Theta (4-8 Hz)','Alpha (8-12 Hz)','Beta (12-30 Hz)','Gamma (30-80 Hz)'};
 
 %% Get file locs
@@ -27,12 +26,9 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
-
-
 %% Load out file with functional connectivity and spikes as well as SOZ info
 out = load([out_folder,'main_out.mat']);
 out = out.out;
-
 
 %% Get stuff
 nfreqs = length(freqs);
@@ -47,8 +43,8 @@ coh = out.all_coh;
 soz_lats = out.all_soz_lats;
 right_lat = strcmp(soz_lats,'right');
 left_lat = strcmp(soz_lats,'left');
-bilat = cellfun(@(x) contains(x,'bilateral') || contains(x,'diffuse'),soz_lats);
-unilat = cellfun(@(x) contains(x,'left') || contains(x,'right'),soz_lats);
+%bilat = cellfun(@(x) contains(x,'bilateral') || contains(x,'diffuse'),soz_lats);
+%unilat = cellfun(@(x) contains(x,'left') || contains(x,'right'),soz_lats);
 
 
 %% Load atlas file
