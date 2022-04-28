@@ -7,7 +7,7 @@ tw = 2;
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/outcome_prediction/data/spike_corrs/'];
+out_folder = [results_folder,'analysis/outcome/data/spike_corrs/'];
 spikes_folder = [results_folder,'all_out/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
@@ -85,7 +85,7 @@ for l = 1:npts
     %% Loop over these spikes ang grab data
     for is = 1:N
         if mod(is,10) == 1
-            fprintf('\Doing spike %d of %d\n',is,N);
+            fprintf('\nDoing spike %d of %d\n',is,N);
         end
         s = which_spikes(is);
         f = all_spikes(s,4);
