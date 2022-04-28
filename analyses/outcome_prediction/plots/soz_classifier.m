@@ -6,7 +6,7 @@ To do:
 %}
 
 function [T_test,T_train,all_auc] = soz_classifier
-nb = 1e1;
+nb = 1e3;
 do_plot = 0;
 
 
@@ -17,7 +17,7 @@ params.which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';
 params.sr = []; % search radius (leave empty to use default calc)
 params.prop_train = 2/3;
 params.do_r2 = 0; % r^2 instead of r for FC measurement?
-params.do_ns_resid = 1; % take residuals of ns (density normalized)
+params.do_ns_resid = 0; % take residuals of ns (density normalized)
 params.include_lat = 0; % include laterality in addition to broad anatomical regions
 params.dens_model = 1; % use Erin's density model as opposed to rat11
 

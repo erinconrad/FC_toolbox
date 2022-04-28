@@ -1,9 +1,10 @@
-function get_spikes_and_corr
+function out = get_spikes_and_corr
 
 tw = 2;
 step = 0.1;
 file_name = 'HUP212_phaseII';
-times = [100003 10008];
+times = [100003 100009];
+window = diff(times);
 which_net = 'pc';
 
 %% get pt name
@@ -100,18 +101,35 @@ all_corrs = nan(nsteps,1);
 mean_indices = (istart+iend)/2;
 mean_times = mean_indices/fs;
 
+
 % Get running time window of corrs
 for is = 1:nsteps
     clip = values(istart(is):iend(is),sp_chs);
     pc = corrcoef(clip);
-    pc(logical(eye(size(pc)))) = 0;
+    pc(logical(eye(size(pc)))) = nan;
     all_corrs(is) = nanmean(pc,'all');
 end
 
+times = linspace(0,window,size(values,1));
+out.times = times;
+out.sp_chs = sp_chs;
+out.values = values;
+out.mean_times = mean_times;
+out.all_corrs = all_corrs;
+out.window = window;
+%{
 nexttile
-plot(values(:,8))
+offset = 0;
+for isp = 1:length(sp_chs)
+    plot(times,values(:,sp_chs(isp))-offset,'k')
+    hold on
+    if isp < length(sp_chs)
+        offset = offset - (min(values(:,sp_chs(isp))) - max(values(:,sp_chs(isp+1))));
+    end
+end
 
 nexttile
-plot(all_corrs)
-
+plot(mean_times,all_corrs)
+xlim([0 window])
+%}
 end

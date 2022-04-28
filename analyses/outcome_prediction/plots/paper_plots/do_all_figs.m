@@ -50,6 +50,9 @@ corr_out = spike_fc_correlation;
 dens_out = load([model_folder,'dens_model.mat']);
 dens_out = dens_out.out;
 
+%% Fig 1 - conceptual fig
+main_conceptual_figure
+
 %% Supplemental fig 1 - density model construction
 ip = 80;
 all_fc = dens_out.all_fc;

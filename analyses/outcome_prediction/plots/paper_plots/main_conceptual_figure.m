@@ -23,7 +23,8 @@ data = data.out;
 %% initialize figure
 figure
 set(gcf,'position',[10 10 1000 700])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+t1 = tiledlayout(4,2,'tilespacing','compact','padding','tight');
+
 
 %% A: incomplete electrode coverage
 offset = [0 5 35];
@@ -41,13 +42,14 @@ locs = data.all_locs{ip};
 locs(any(locs>1e5,2),:) = nan;
 locs = locs + repmat(offset,size(locs,1),1);
 
-ax3 = nexttile;
+ax3 = nexttile([2 1]);
 plot_gifti_erin_2(ax3,g)
 
 hold on
 scatter3(locs(:,1),locs(:,2),locs(:,3),100,'filled','markerfacecolor','k',...
     'markeredgecolor','k')
 view([-99 7])
+
 
 %% B: normal anatomical variation in connectivity
 which_atlas = 'aal_bernabei';
@@ -69,7 +71,7 @@ atlas = rebuild_atlas(fc,rate,atlas_elec_labels,...
 lr_order = reorder_lr(locs,lats);
 atlas = atlas(lr_order,lr_order,:);
 
-nexttile
+nexttile([2 1])
 mean_atlas = nanmean(atlas,3);
 nan_regions = sum(~isnan(mean_atlas),1) == 0;
 mean_atlas(nan_regions,:) = [];
@@ -77,7 +79,9 @@ mean_atlas(:,nan_regions) = [];
 turn_nans_gray(mean_atlas)
 xticklabels([])
 yticklabels([])
-xlabel('Anatomical region')
+c = colorbar('location','eastoutside');
+ylabel(c,'Correlation (r)')
+%xlabel('Anatomical region')
 ylabel('Anatomical region')
 title('Anatomical variability in connectivity')
 set(gca,'fontsize',20)
@@ -87,24 +91,69 @@ p = 102;
 locs = data.all_locs{p};
 sr = calculate_default_search_radius(data.all_locs);
 density = estimate_coverage_density(locs,sr);
-nexttile
+ax4 = nexttile([2 1]);
 scatter3(locs(:,1),locs(:,2),locs(:,3),100,density,'filled',...
     'markeredgecolor','k','linewidth',2);
 colormap(gca,parula)
-c = colorbar;
+c = colorbar('location','southoutside');
 xticklabels([])
 yticklabels([])
 zticklabels([])
 ylabel(c,'Density (1/mm^2)')
 set(gca,'fontsize',20)
-text(mean(locs(:,1)),mean(locs(:,2)),max(locs(:,3))+45,...
-    sprintf('Variability in electrode density'),'fontsize',20,...
-    'horizontalalignment','center','fontweight','bold')
+
 grid off
 set(gca,'visible','off')
-view(-45.5,11)
+view(-57.5,-23)
 
 %% D: SPikes
+spout = get_spikes_and_corr;
+times = spout.times;
+sp_chs = spout.sp_chs;
+values = spout.values;
+mean_times = spout.mean_times;
+all_corrs = spout.all_corrs;
+window = spout.window;
+
+
+nexttile
+offset = 0;
+for isp = 1:length(sp_chs)
+    plot(times,values(:,sp_chs(isp))-offset,'k','linewidth',2)
+    hold on
+    if isp < length(sp_chs)
+        offset = offset - (min(values(:,sp_chs(isp))) - max(values(:,sp_chs(isp+1))));
+    end
+end
+title('Spikes alter connectivity')
+xticklabels([])
+yticklabels([])
+ylabel('Amplitude')
+set(gca,'fontsize',20)
+
+nexttile
+plot(mean_times,all_corrs,'linewidth',3)
+xlim([0 window])
+yticklabels([])
+xlabel('Time (s)')
+ylabel('Correlation (r)')
+set(gca,'fontsize',20)
+
+%% text first plot
+text(ax3,mean(locs(:,1)),mean(locs(:,2)),max(locs(:,3))+92,...
+    sprintf('Incomplete electrode sampling'),'fontsize',23,...
+    'horizontalalignment','center','fontweight','bold')
+text(ax4,mean(locs(:,1)),mean(locs(:,2))-15,max(locs(:,3))+49,...
+    sprintf('Variability in electrode density'),'fontsize',23,...
+    'horizontalalignment','center','fontweight','bold')
+
+%% Annotations
+annotation('textbox',[0 0.90 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.47 0.90 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.46 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.47 0.46 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+
+print(gcf,[plot_folder,'Fig1'],'-dpng')
 
 end
 
