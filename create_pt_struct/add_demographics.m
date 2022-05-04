@@ -13,7 +13,7 @@ pt = pt.pt;
 addpath(genpath(script_folder));
 
 %% Get demographics table
-T = readtable([data_folder,'clinical_info/age_sex.csv']);
+T = readtable([data_folder,'clinical_info/clinical.csv']);
 
 %% Loop over patients in table
 for ir = 1:size(T,1)
@@ -45,6 +45,95 @@ for ir = 1:size(T,1)
             end
             pt(ip).clinical.age_onset = T.sz_hist_duration(ir);
             pt(ip).clinical.stereo = T.ieeg_implanttype___4(ir);
+            
+            surg = T.outcome_proctype(ir);
+            if isnumeric(surg)
+                if surg == 1
+                    pt(ip).clinical.surgery = 'Resection';
+                elseif surg == 2
+                    pt(ip).clinical.surgery = 'Resection withou implant';
+                elseif surg == 3
+                    pt(ip).clinical.surgery = 'RNS';
+                elseif surg == 4
+                    pt(ip).clinical.surgery = 'Laser ablation';
+                elseif surg == 5
+                    pt(ip).clinical.surgery = 'VNS';
+                elseif surg == 6
+                    pt(ip).clinical.surgery = 'DBS';
+                end
+            else
+                pt(ip).clinical.surgery = 'Other';
+            end
+            
+            tilae = [T.demog_ilae1year T.demog_ilae2years];
+            ilae = cell(2,1);
+            for i = 1:length(tilae)
+                switch tilae(i)
+                    
+                    case 1
+                        ilae{i} = 'ILAE 1';
+                    case 2
+                        ilae{i} = 'ILAE 1a';
+                    case 3
+                        ilae{i} = 'ILAE 2';
+                    case 4
+                        ilae{i} = 'ILAE 3';
+                    case 5
+                        ilae{i} = 'ILAE 4';
+                    case 6
+                        ilae{i} = 'ILAE 5';
+                    case 7
+                        ilae{i} = 'ILAE 6';
+                    otherwise
+                        ilae{i} = '';
+                end
+            end
+            ilae_years = [1 2];
+            pt(ip).clinical.ilae = ilae;
+            pt(ip).clinical.ilae_years = ilae_years;
+            
+            
+            tengel = [T.demog_year T.demog_years2];
+            engel = cell(2,1);
+            engel_years = [1 2];
+            for i = 1:length(tengel)
+                switch tengel(i)
+                    
+                    case 1
+                        engel{i} = 'IA';
+                    case 5
+                        engel{i} = 'IB';
+                    case 6
+                        engel{i} = 'IC';
+                    case 7
+                        engel{i} = 'ID';
+                    case 2
+                        engel{i} = 'IIA';
+                    case 8
+                        engel{i} = 'IIB';
+                    case 9
+                        engel{i} = 'IIC';
+                    case 10
+                        engel{i} = 'IID';
+                    case 3
+                        engel{i} = 'IIIA';
+                    case 11
+                        engel{i} = 'IIIB';
+                    case 4
+                        engel{i} = 'IVA';
+                    case 12
+                        engel{i} = 'IVB';
+                    case 13
+                        engel{i} = 'IVC';
+                    otherwise
+                        engel{i} = '';
+                        
+                end
+            end
+            pt(ip).clinical.engel = engel;
+            pt(ip).clinical.engel_years = engel_years;
+            
+            
         end
     end
     

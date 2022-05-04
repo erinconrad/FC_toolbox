@@ -10,7 +10,8 @@ end
 
 if isempty(times)
     times = [100000 100015];
-end
+    %times = [100000 100000+5];
+ end
 
 if isempty(which_net)
     which_net = 'pc';
@@ -59,6 +60,7 @@ clean_loc_labels = decompose_labels(loc_labels,pt_name);
 
 %% Get ieeg data
 data = download_ieeg_data(file_name,login_name,pwfile,times,1); % 1 means get lots of data
+
 chLabels = data.chLabels;
 values = data.values;
 raw_values = values;

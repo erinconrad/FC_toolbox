@@ -16,6 +16,7 @@ for ip = 1:npts
     curr_soz_left = left_soz(ip);
     curr_atlas = lr_ordered_atlas(:,:,ip);
     
+    % Make it nan is patient not cleaely right or left
     if ~curr_soz_right && ~curr_soz_left, continue; end
     
     if curr_soz_right == 1

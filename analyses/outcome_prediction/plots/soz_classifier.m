@@ -6,8 +6,8 @@ To do:
 %}
 
 function [T_test,T_train,all_auc] = soz_classifier
-nb = 1e3;
-do_plot = 0;
+nb = 20;
+do_plot = 1;
 
 
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',};
@@ -358,9 +358,9 @@ for im = 1:length(models)
     
    if do_glme
        T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
-       glm = fitglme(T_train,formula_me,'Distribution','Poisson','Link','log');
+       glm = fitglme(T_train,formula_me,'Distribution','Binomial');
    else
-       glm = fitglm(T_train,formula,'Distribution','Poisson','Link','log');
+       glm = fitglm(T_train,formula,'Distribution','Binomial');
    end
   %  
     

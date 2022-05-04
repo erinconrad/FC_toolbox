@@ -14,7 +14,9 @@ pwfile = locations.ieeg_pw_file;
 login_name = locations.ieeg_login;
 
 %% Get ieeg data
+
 data = download_ieeg_data(file_name,login_name,pwfile,times,1); % 1 means get lots of data
+
 chLabels = data.chLabels;
 values = data.values;
 fs = data.fs;
