@@ -3,7 +3,7 @@ function prep_spike_fc
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-data_folder = [results_folder,'analysis/outcome/data/spikes_corrs/'];
+data_folder = [results_folder,'analysis/outcome/data/spike_corrs/'];
 out_folder = [results_folder,'analysis/outcome/data/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
