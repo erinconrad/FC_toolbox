@@ -46,6 +46,23 @@ if do_r2
     fc = cellfun(@(x) x.^2, fc,'uniformoutput',false);
 end
 
+%% Do individual spike analysis
+all_sp_chs_corr = nan(npts,2); % first column is pre spike and 2nd column is spike
+all_all_chs_corr = nan(npts,2);
+for ip = 1:npts
+    curr_all = all_chs_corr{ip};
+    curr_sp = sp_chs_corr{ip};
+    
+    if isempty(curr_all), continue; end
+    
+    % take mean across spikes
+    curr_all_mean = nanmean(curr_all,1);
+    curr_sp_mean = nanmean(curr_sp,1);
+    
+    all_sp_chs_corr(ip,:) =curr_sp_mean;
+    all_all_chs_corr(ip,:) = curr_all_mean;
+end
+
 %% Spatially normalize the FC matrix
 %[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes,plot_folder);
 dens_out = load([model_folder,'dens_model.mat']);

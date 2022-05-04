@@ -416,8 +416,8 @@ end
 unpack_any_struct(corr_out);
 
 figure
-%set(gcf,'position',[1 100 370 370])
-%tiledlayout(1,1,'tilespacing','compact','padding','tight');
+set(gcf,'position',[1 100 370 1000])
+tiledlayout(1,3,'tilespacing','compact','padding','tight');
 fid = fopen([plot_folder,'results.html'],'a');
 fprintf(fid,'<p><br><b>Correlation between functional connectivity and spikes</b></br>');
 
@@ -445,6 +445,13 @@ for i = 1
     [~,p,~,stats] = ttest(thing);
     legend(pp,sprintf('mean \\rho = %1.2f, %s',mean_corr,get_p_text(p)),'location','southeast','fontsize',15)
     set(gca,'fontsize',15)
+    
+    nexttile
+    paired_plot(all_all_chs_corr,'Average connectivity',{'before spike','during spike'});
+    
+    nexttile
+    paired_plot(all_sp_chs_corr,'Average connectivity',{'before spike','during spike'});
+    
 end
 
 fprintf(fid,[' The mean correlation was &rho; = %1.2f, which was significantly less than zero '...
