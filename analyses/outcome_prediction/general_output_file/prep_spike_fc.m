@@ -15,6 +15,7 @@ addpath(genpath(scripts_folder));
 
 %% Load main out file
 main_out = load([out_folder,'main_out.mat']);
+main_out = main_out.out;
 npts = length(main_out.all_names);
 
 %% Initialize spike info
