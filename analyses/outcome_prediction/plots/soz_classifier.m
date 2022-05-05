@@ -5,15 +5,15 @@ To do:
 
 %}
 
-function [T_test,T_train,all_auc] = soz_classifier
-nb = 20;
-do_plot = 1;
+function soz_classifier(which_atlas)
+nb = 1e3;
+do_plot = 0;
 
 
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',};
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
 
-params.which_atlas = 'brainnetome';%'aal_bernabei';%'brainnetome';
+params.which_atlas = which_atlas;%'brainnetome';%'aal_bernabei';%'brainnetome';
 params.sr = []; % search radius (leave empty to use default calc)
 params.prop_train = 2/3;
 params.do_r2 = 0; % r^2 instead of r for FC measurement?
