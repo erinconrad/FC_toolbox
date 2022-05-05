@@ -23,8 +23,8 @@ np = plot(data(neg_diff,1),data(neg_diff,2),'^','markeredgecolor',...
 ep = plot(data(equal_diff,1),data(equal_diff,2),'s','markeredgecolor',...
     ecolor,'markerfacecolor',ecolor,'linewidth',2);
 
-xlabel(sprintf('%s in %s',ytext,sprintf(xlabels{1})))
-ylabel(sprintf('%s in %s',ytext,sprintf(xlabels{2})))
+xlabel(sprintf('%s %s',ytext,sprintf(xlabels{1})))
+ylabel(sprintf('%s %s',ytext,sprintf(xlabels{2})))
 
 
 all_min = min([ylim,xlim]);
@@ -40,8 +40,8 @@ yl = ylim;
 px = xl(1) + 0.01*(xl(2)-xl(1));
 py = yl(1) + 0.99*(yl(2)-yl(1));
 text(px,py,get_p_text(pval),'verticalalignment','top','fontsize',15)
-legtext1 = sprintf('Lower in %s',xlabels{1});
-legtext2 = sprintf('Higher in %s',xlabels{1});
+legtext1 = sprintf('Higher %s',xlabels{2});
+legtext2 = sprintf('Lower %s',xlabels{2});
 legtext3 = 'Equal';
 
 legend([pp;np;ep],{legtext1,legtext2,legtext3},...

@@ -446,23 +446,40 @@ for i = 1
     legend(pp,sprintf('mean \\rho = %1.2f, %s',mean_corr,get_p_text(p)),'location','southeast','fontsize',15)
     set(gca,'fontsize',15)
     
+    fprintf(fid,[' The mean correlation was &rho; = %1.2f, which was significantly less than zero '...
+    '(<i>t</i>-test, <i>t</i>(%d) = %1.2f, %s (Fig. 4A).'],mean_corr,stats.df,stats.tstat,get_p_html(p));
+    fprintf(fid,[' This implies that electrodes with higher spike rates tend to be less connected '...
+        'to other electrodes.']);
+    
     nexttile
-    paired_plot(all_all_chs_corr,'Average connectivity',{'before spike','during spike'});
+    stats = paired_plot(all_all_chs_corr,'Average connectivity',{'before spike','during spike'});
     set(gca,'fontsize',15)
     title({'Change in connectivity with single spikes',' (All channels)'})
     
+   fprintf(fid,[' In an attempt to understand if the negative relationship between spikes and connectivity '...
+        'is due to the spikes themselves reducing connectivity, we compared the functional '...
+        'connectivity during individual spikes (2 s window centered around each spike) to that before the spike '...
+        '(the prior 2 s window). We examined 100 random spikes for each patient, averaging the pre- and during-spike '...
+        'connectivity across all spikes for each patient. The average connectivity across all electrodes '...
+        'during the spike was higher (median %s) than that before the spike (median %s) '...
+        '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 4B). This implies that average global network connectivity '...
+        'is reduced during a spike.'],pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval));
+    
     nexttile
-    paired_plot(all_sp_chs_corr,'Average connectivity',{'before spike','during spike'});
+    stats = paired_plot(all_sp_chs_corr,'Average connectivity',{'before spike','during spike'});
     title({'Change in connectivity with single spikes',' (Channels involved in spike)'})
     set(gca,'fontsize',15)
+    
+    fprintf(fid,[' In order to examine the local effect of spikes, we also compared the pre- and during-spike '...
+        'connectivity for a local network including only the electrodes involved in the spike '...
+        '(defined to be those electrodes with a spike detected in the 6-second window '...
+        'centered around the chosen spike). 
+    
     
 end
 
 
-fprintf(fid,[' The mean correlation was &rho; = %1.2f, which was significantly less than zero '...
-    '(<i>t</i>-test, <i>t</i>(%d) = %1.2f, %s (Fig. 4).'],mean_corr,stats.df,stats.tstat,get_p_html(p));
-fprintf(fid,[' This implies that electrodes with higher spike rates tend to be less connected '...
-    'to other electrodes.</p>']);
+
 fclose(fid);
 
 %annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')

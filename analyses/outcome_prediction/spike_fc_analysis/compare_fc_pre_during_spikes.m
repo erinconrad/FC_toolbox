@@ -81,6 +81,7 @@ for l = 1:npts
     
     all_chs_corr = nan(N,2);
     sp_chs_corr = nan(N,2);
+    single_ch_corr = nan(N,2);
     
     %% Loop over these spikes ang grab data
     for is = 1:N
@@ -91,6 +92,7 @@ for l = 1:npts
         f = all_spikes(s,4);
         h = all_spikes(s,3);
         sp_index = all_spikes(s,2);
+        sp_ch = all_spikes(s,1);
         
         fs = out.file(f).run(h).data.fs;
         run_start = out.file(f).run(h).run_times(1);
@@ -163,6 +165,19 @@ for l = 1:npts
         pc(logical(eye(size(pc)))) = nan;
         sp_chs_corr(is,2) = nanmean(pc,'all');
         
+        % pre spike single spike channel
+        clip = values(pre_spike_period,:);
+        pc = corrcoef(clip);
+        pc(logical(eye(size(pc)))) = nan;
+        single_ch_corr(is,1) = nanmean(pc(:,sp_ch));
+        
+        % spike single spike channel
+        clip = values(spike_period,:);
+        pc = corrcoef(clip);
+        pc(logical(eye(size(pc)))) = nan;
+        single_ch_corr(is,2) = nanmean(pc(:,sp_ch));
+        
+        
         if 0
             figure
             nexttile
@@ -178,6 +193,7 @@ for l = 1:npts
     
     spout.all_chs_corr = all_chs_corr;
     spout.sp_chs_corr = sp_chs_corr;
+    spout.single_ch_corr = single_ch_corr;
     save([out_folder,name,'.mat'],'spout');
 
 end
