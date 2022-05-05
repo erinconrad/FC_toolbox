@@ -374,6 +374,7 @@ for im = 1:length(models)
         continue;
     end
     
+    %{
     % Calculate the model response
     asum = zeros(size(T_test,1),1);
     asum = asum + glm.Coefficients.Estimate(1);
@@ -392,6 +393,8 @@ for im = 1:length(models)
         end
     end
     classification = logistic(asum);
+    %}
+    classification = feval(glm,T_test);
     
     % Compare classification against true
     all_soz = T_test.vec_soz==1;
