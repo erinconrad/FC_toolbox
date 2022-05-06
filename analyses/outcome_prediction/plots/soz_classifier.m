@@ -1,30 +1,15 @@
 %{
 
 To do:
-- add ability to use only sleep
+- NEED TO ADD IN BEST SEARCH RADIUS
 
 %}
 
 function soz_classifier(which_atlas)
-nb = 1e3;
-do_plot = 0;
-
-
+nb = 20;
+do_plot = 1;
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',};
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
-
-params.which_atlas = which_atlas;%'brainnetome';%'aal_bernabei';%'brainnetome';
-params.sr = []; % search radius (leave empty to use default calc)
-params.prop_train = 2/3;
-params.do_r2 = 0; % r^2 instead of r for FC measurement?
-params.do_ns_resid = 0; % take residuals of ns (density normalized)
-params.include_lat = 0; % include laterality in addition to broad anatomical regions
-params.dens_model = 1; % use Erin's density model as opposed to rat11
-
-params.max_spikes = 1/3600; % max spikes for both distance and density models
-params.do_norm = 1; % normalize spike rate and density within pt
-params.atlas_anatomy = 0; % break anatomy into many categories (all atlas regions)? Model fails to converge
-params.only_sleep = 0; % outside scope, don't change
 
 
 %% File locations
@@ -47,6 +32,23 @@ mout = load([plot_folder,'dens_model.mat']);
 mout = mout.out;
 resid = mout.resid;
 params.resid = resid;
+
+
+params.which_atlas = which_atlas;%'brainnetome';%'aal_bernabei';%'brainnetome';
+params.sr = mout.sr;%[]; % search radius (leave empty to use default calc)
+params.prop_train = 2/3;
+params.do_r2 = 0; % r^2 instead of r for FC measurement?
+params.do_ns_resid = 0; % take residuals of ns (density normalized)
+params.include_lat = 0; % include laterality in addition to broad anatomical regions
+params.dens_model = 1; % use Erin's density model as opposed to rat11
+
+params.max_spikes = 1/3600; % max spikes for both distance and density models
+params.do_norm = 1; % normalize spike rate and density within pt
+params.atlas_anatomy = 0; % break anatomy into many categories (all atlas regions)? Model fails to converge
+params.only_sleep = 0; % outside scope, don't change
+
+
+
 
 %% Get AUC for each model for each random testing/training split
 params.do_glme = 0; 
@@ -251,6 +253,9 @@ for ip = 1:npts
     elec_broad{ip} = get_anatomy_elecs(labels{ip},atlas_elec_labels{ip},atlas_elec_regions{ip},broad_no_lat,atlas_nums,atlas_anatomy);
 end
 
+if 0
+    table(elec_broad{110},labels{110})
+end
 
 %% Get stuff into friendly format
 vec_rate = [];
@@ -263,6 +268,7 @@ vec_dens = [];
 %% GEt default search radius
 if isempty(sr)
     sr = calculate_default_search_radius(locs); 
+    %sr = max_inter_elec_dist(locs);
 end
 
 for ip = 1:npts

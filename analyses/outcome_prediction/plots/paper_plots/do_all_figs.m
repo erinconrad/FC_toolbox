@@ -63,12 +63,28 @@ vec_dens = dens_out.vec_dens;
 vec_conn = dens_out.vec_conn;
 resid = dens_out.resid;
 sr = dens_out.sr;
+all_r2 = dens_out.all_r2;
+poss_sr = dens_out.poss_sr;
 g = dens_out.g;
 
     
 figure
 set(gcf,'position',[10 10 1000 700])
 tiledlayout(2,2,'tilespacing','tight','padding','tight')
+
+nexttile
+D = make_interdist_matrix(all_locs{ip});
+dens = interdistance_to_density_matrix(D,sr);
+turn_nans_gray(dens)
+c = colorbar;
+ylabel(c,'Density (mm)')
+set(gca,'fontsize',15)
+xticklabels([])
+yticklabels([])
+xlabel('Electrode')
+ylabel('Electrode')
+title({'Inter-electrode density','(single patient)'})
+
 
 % Functional connectivity
 nexttile
@@ -85,33 +101,32 @@ ylabel('Electrode')
 title({'Functional connectivity','(single patient)'})
 
 nexttile
-D = make_interdist_matrix(all_locs{ip});
-dens = interdistance_to_density_matrix(D,sr);
-turn_nans_gray(dens)
-c = colorbar;
-ylabel(c,'Density (mm)')
-set(gca,'fontsize',15)
-xticklabels([])
-yticklabels([])
-xlabel('Electrode')
-ylabel('Electrode')
-title({'Inter-electrode density','(single patient)'})
-
-nexttile
 %[xbins,ybins] = bin_data_get_means(vec_dens,vec_conn,1e3);
 plot(vec_dens,vec_conn,'o')
 hold on
 temp_x = [min(vec_dens):0.1*(max(vec_dens)-min(vec_dens)):max(vec_dens)];
 %temp_y = (f.p1 * temp_x + f.p2)./(temp_x + f.q1);
 temp_y = (g.p1 + temp_x*g.p2);
-plot(temp_x,temp_y,'k','linewidth',3)
+rp = plot(temp_x,temp_y,'k','linewidth',3);
 ylim([-1 1])
 xlim([min(vec_dens) max(vec_dens)])
 xlabel('Density (mm)')
 ylabel('Functional connectivity (r)')
 set(gca,'fontsize',15)
+legend(rp,sprintf('r^2 = %1.2f',max(all_r2)),'fontsize',15)
 title({'Density-functional connectivity correlation','(all patients)'})
 
+nexttile
+plot(poss_sr,all_r2,'linewidth',2)
+hold on
+rp = plot(sr,all_r2(poss_sr == sr),'*','markersize',20,'linewidth',2);
+ylim([0 0.35])
+xlabel('Search radius')
+ylabel('Model r^2')
+title({'Density-functional connectivity model r^2','as a function of search radius'})
+set(gca,'fontsize',15)
+legend(rp,'Optimal search radius','fontsize',15)
+%{
 nexttile
 conn = resid{ip};
 turn_nans_gray(conn)
@@ -124,13 +139,14 @@ yticklabels([])
 xlabel('Electrode')
 ylabel('Electrode')
 title({'Density-normalized correlation','(single patient)'})
+%}
 
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.42 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.42 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
-print(gcf,[plot_folder,'FigS1'],'-dpng')
+print(gcf,[plot_folder,'Fig S1'],'-dpng')
 
 %% Figure 2 - symmetric coverage test for brainnetome and Supplemental Fig 2 (same but AAL)
 % NEED TO THINK ABOUT N
@@ -141,7 +157,7 @@ for ia = 1:2
         atlas_out = brain_out;
         fid = fopen([plot_folder,'results.html'],'a');
         fprintf(fid,'<p><br><b>Connectivity with symmetric coverage constraint</b></br>');
-        fig_name = 'Fig2';
+        fig_name = 'Fig 2';
         
         fprintf(fid,['To control for spatial sampling bias, we first compared connectivity '...
         'in the SOZ against that in the contralateral region while restricting analysis '...
@@ -151,7 +167,7 @@ for ia = 1:2
         atlas_out = aal_out;
         fid = fopen([plot_folder,'supplemental_results.html'],'a');
         fprintf(fid,'<p><br><b>Connectivity with symmetric coverage constraint - AAL atlas</b></br>');
-        fig_name = 'FigS2';
+        fig_name = 'Fig S2';
         
         fprintf(fid,['We repeated our symmetric coverage analysis '...
             'using the AAL atlas rather than the Brainnetome atlas to '...
@@ -179,9 +195,9 @@ for ia = 1:2
 
     fprintf(fid,[' Across patients, there were on average %1.1f (range %d-%d) regions '...
         ' (%1.1f when separately counting left and right) with bilateral electrode coverage. '...
-        '%d of %d patients had any regions with bilateral electrode coverage (Fig. 2A).'],...
+        '%d of %d patients had any regions with bilateral electrode coverage (%sA).'],...
         mean(atlas_out.n_coverage.nsymmetric),min(atlas_out.n_coverage.nsymmetric),max(atlas_out.n_coverage.nsymmetric),...
-        mean(atlas_out.n_coverage.nsymmetric)*2,atlas_out.n_coverage.any_symmetric,atlas_out.total_n_for_symmetric);
+        mean(atlas_out.n_coverage.nsymmetric)*2,atlas_out.n_coverage.any_symmetric,atlas_out.total_n_for_symmetric,fig_name);
     % why is n different?
 
     % Show atlas
@@ -193,7 +209,7 @@ for ia = 1:2
     xlabel('Region')
 
     fprintf(fid,[' Visually, in a network averaged across patients, network edges in the hemisphere opposite the SOZ were '...
-        'stronger than those in the hemisphere of the SOZ (Fig. 2B, brighter colors indicate higher connectivity).']);
+        'stronger than those in the hemisphere of the SOZ (%sB, brighter colors indicate higher connectivity).'],fig_name);
 
     % Show tests
     %need TO ADD N FOR EACH TEST
@@ -207,8 +223,8 @@ for ia = 1:2
         atlas_out.n_analyses.n_soz_all);
 
     fprintf(fid,[' The average connectivity to the SOZ (median %s) was lower than that to '...
-        ' the region contralateral to the SOZ (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 2C).'],...
-        pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval));
+        ' the region contralateral to the SOZ (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (%sC).'],...
+        pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval),fig_name);
 
     nexttile([1 2])
     stats = paired_plot(atlas_out.hemi,'Intra-hemispheric connectivity',{'in SOZ side','in non-SOZ side'});
@@ -221,9 +237,9 @@ for ia = 1:2
         atlas_out.n_analyses.n_holo_hem);
 
     fprintf(fid,[' The average intra-hemispheric connectivity on the side of the SOZ (median %s) was also lower than that in '...
-        ' the contralateral hemisphere (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 2D).'...
+        ' the contralateral hemisphere (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (%sD).'...
         ' This suggests that the change in connectivity in epilepsy is broad and affects the entire hemisphere.'],...
-        pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval));
+        pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval),fig_name);
 
     nexttile([1 2])
     stats = paired_plot(atlas_out.soz_intra,'Intrinsic connectivity',{'in SOZ','in contralateral region'});
@@ -237,9 +253,9 @@ for ia = 1:2
 
     fprintf(fid,[' The intrinisic connectivity within the SOZ '...
         '(between one SOZ region and other SOZ regions) (median %s) was no different from the intrinsic connectivity '...
-        ' within the same regions in the contralateral hemisphere (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 2E).'...
+        ' within the same regions in the contralateral hemisphere (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (%sE).'...
         ' This suggests no focal within-SOZ change in connectivity within the limits of this analysis.'],...
-        pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval));
+        pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval),fig_name);
 
     % Add annotations
     annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',30,'linestyle','none')
@@ -252,12 +268,12 @@ for ia = 1:2
     
     if ia == 1
         fprintf(fid,[' Results were similar when using the AAL rather than the Brainnetome '...
-            'atlas for parcellating brain regions (Supplemental Results, Fig. S2).</p>']);
+            'atlas for parcellating brain regions (Supplemental Results, %s).'],fig_name);
     end
     
     fprintf(fid,[' Results for studying coherence rather than Pearson correlation networks '...
         'were more heterogeneous, seen for different frequency bands in the two different atlases '...
-        '(Supplemental Results, Fig. S3).</p>']);
+        '(Supplemental Results, %s).</p>'],fig_name);
     fclose(fid);
 end
 
@@ -266,7 +282,7 @@ end
 figure
 set(gcf,'position',[1 1 1440 900])
 tiledlayout(2,5,'tilespacing','tight','padding','tight')
-fig_name = 'FigS3';
+fig_name = 'Fig S3';
 fid = fopen([plot_folder,'supplemental_results.html'],'a');
 fprintf(fid,'<br><b>Coherence-based connectivity with symmetric coverage constraint</b></br>');
 for ia = 1:2
@@ -290,12 +306,12 @@ for ia = 1:2
         title(freqs{f})
         if stats.pval < 0.05
             fprintf(fid,[' The average %s coherence to the SOZ (median %s) was lower than that to '...
-                ' the region contralateral to the SOZ (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 1C).'],...
-                freqs{f},pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval));
+                ' the region contralateral to the SOZ (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (%sC).'],...
+                freqs{f},pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval),fig_name);
         else
             fprintf(fid,[' There was no significant difference between the %s coherence to the SOZ (median %s) and that to '...
-                ' the region contralateral to the SOZ (median %1.1e) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 1C).'],...
-                freqs{f},pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval));
+                ' the region contralateral to the SOZ (median %1.1e) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (%sC).'],...
+                freqs{f},pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval),fig_name);
         end
         
     end
@@ -328,14 +344,14 @@ for ia = 1:2
     
     if ia == 1
         atlas_out = brain_out;
-        fig_name = 'Fig3';
+        fig_name = 'Fig 3';
         fid = fopen([plot_folder,'results.html'],'a');
         fprintf(fid,'<p><br><b>Epilepsy lateralization</b></br>');
         fprintf(fid,['We asked how well intra-hemispheric functional connectivity '...
             'could lateralize epilepsy.']);
     else
         atlas_out = aal_out;  
-        fig_name = 'FigS4';
+        fig_name = 'Fig S4';
         fid = fopen([plot_folder,'supplemental_results.html'],'a');
         fprintf(fid,'<p><br><b>Epilepsy lateralization - AAL atlas</b></br>');
         fprintf(fid,['We repeated the epilepsy lateralization analysis using the AAL '...
@@ -367,7 +383,7 @@ for ia = 1:2
                 fprintf(fid,[' For comparison, a prediction using spike rates '...
                     '(predicting the hemisphere of the SOZ to be the hemisphere with more spikes, restricting regions to '...
                     'those with symmetric coverage) was %1.1f%% accurate (PPV for identifying right-sided epilepsy %1.1f%%, NPV %1.1f%%) '...
-                    'at lateralizing the SOZ (%s) (Fig. 3).'],conf_out.accuracy*100,...
+                    'at lateralizing the SOZ (%s).'],conf_out.accuracy*100,...
                     conf_out.ppv*100,conf_out.npv*100,fig_name);
             else
                 fprintf(fid,[' For comparison, a prediction using spike rates '...
@@ -379,7 +395,7 @@ for ia = 1:2
             
             if ia == 1
                 fprintf(fid,[' Results were similar using the AAL atlas '...
-                    '(Supplemental Results, Fig. S4).']);
+                    '(Supplemental Results, Fig S4).']);
             end
         end
 
@@ -419,6 +435,7 @@ figure
 set(gcf,'position',[1 100 1300 370])
 tiledlayout(1,3,'tilespacing','compact','padding','tight');
 fid = fopen([plot_folder,'results.html'],'a');
+fig_name = 'Fig 4';
 fprintf(fid,'<p><br><b>Correlation between functional connectivity and spikes</b></br>');
 
 fprintf(fid,['We next measured the correlation between functional connecitivity and spike rates. '...
@@ -447,7 +464,7 @@ for i = 1
     set(gca,'fontsize',15)
     
     fprintf(fid,[' The mean correlation was &rho; = %1.2f, which was significantly less than zero '...
-    '(<i>t</i>-test, <i>t</i>(%d) = %1.2f, %s (Fig. 4A).'],mean_corr,stats.df,stats.tstat,get_p_html(p));
+    '(<i>t</i>-test, <i>t</i>(%d) = %1.2f, %s (%sA).'],mean_corr,stats.df,stats.tstat,get_p_html(p),fig_name);
     fprintf(fid,[' This implies that electrodes with higher spike rates tend to be less connected '...
         'to other electrodes.']);
     
@@ -462,8 +479,9 @@ for i = 1
         '(the prior 2 s window). We examined 100 random spikes for each patient, averaging the pre- and during-spike '...
         'connectivity across all spikes for each patient. The average connectivity across all electrodes '...
         'during the spike was higher (median %s) than that before the spike (median %s) '...
-        '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 4B). This implies that average global network connectivity '...
-        'is reduced during a spike.'],pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval));
+        '(Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (%sB). This implies that average global network connectivity '...
+        'is reduced during a spike.'],pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,...
+        get_p_html(stats.pval),fig_name);
     
     nexttile
     stats = paired_plot(all_sp_chs_corr,'Average connectivity',{'before spike','during spike'});
@@ -485,7 +503,7 @@ fclose(fid);
 
 %annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 %annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-print(gcf,[plot_folder,'Fig4'],'-dpng')
+print(gcf,[plot_folder,fig_name],'-dpng')
 
 %% Figure 5 - null model construction
 null_model_conceptual
@@ -499,24 +517,24 @@ for ia = 1:2
     if ia == 1
         fname = 'results.html';
         model = brain_model;
-        fig_name = 'Fig6';
+        fig_name = 'Fig 6';
         fid = fopen([plot_folder,fname],'a');
         fprintf(fid,'<p><br><b>Predicting SOZ</b></br>');
         fprintf(fid,['We next developed a classifier to predict whether an individual '...
         'electrode contact would be designated as belonging to the SOZ or not. To account for '...
         'expected spatial bias in electrode sampling (clinicians preferentially place '...
         'electrodes closer to the SOZ), we first constructed a null model, which provides '...
-        'an estimate of the accuracy of predicting the SOZ based entirely on spatial location (Fig. 5). '...
+        'an estimate of the accuracy of predicting the SOZ based entirely on spatial location (Fig 5). '...
         'This is an estimate of how accurately we can localize the SOZ before even considering '...
         'EEG data.']);
     else
         fname = 'supplemental_results.html';
         model = aal_model;
-        fig_name = 'FigS5';
+        fig_name = 'Fig S5';
         fid = fopen([plot_folder,fname],'a');
         fprintf(fid,'<p><br><b>Predicting SOZ</b></br>');
         fprintf(fid,['We repeated the classification analysis using the AAL atlas '...
-            'rather than the Brainnetome atlas (Fig. 5).']);
+            'rather than the Brainnetome atlas.']);
     end
     
     
@@ -563,16 +581,16 @@ for ia = 1:2
     title('SOZ prediction')
     print(gcf,[plot_folder,fig_name],'-dpng')
 
-    fprintf(fid,[' We compared the performance of this null model against a model including connectivity '...
+    fprintf(fid,[' We compared the performance of the null model against a model including connectivity '...
         'data, a model including spike rate data, '...
-        'and a model including both spikes and connectivity (Fig. 6). The model '...
+        'and a model including both spikes and connectivity (%s). The model '...
         'was trained on 2/3 of the patients, and tested on the remaining 1/3. 1,000 random '...
         'splits of patients into testing and training data were performed to obtain model statistics. '...
         'These results show that, first, '...
         'even a null model ignoring EEG data substantially outperforms a chance model. It also shows '...
         'incremental improvement in adding connectivity data (albeit not as good as with adding spike data), with '...
         'still better performance when combining spike and connectivity data '...
-        '(Table 2 shows statistics of model comparisons). </p>']);
+        '(Table 2 shows statistics of model comparisons). </p>'],fig_name);
 
     beta = model.all_out.glme_stuff.model(5).glm.Coefficients{5,2};
     se = model.all_out.glme_stuff.model(5).glm.Coefficients{5,3};

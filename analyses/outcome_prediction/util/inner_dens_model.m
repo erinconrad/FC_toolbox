@@ -18,11 +18,11 @@ for ip = 1:npts
     conn = wrap_or_unwrap_adjacency_fc_toolbox(conn);
     
     % make soz nans
-    conn(soz) = nan;
+    %conn(soz) = nan;
     
     % make those with many spikes nans
-    many_spikes = spikes > max_spikes;
-    conn(many_spikes) = nan;
+    %many_spikes = spikes > max_spikes;
+    %conn(many_spikes) = nan;
     
     % add to vector
     vec_dens = [vec_dens;dens];

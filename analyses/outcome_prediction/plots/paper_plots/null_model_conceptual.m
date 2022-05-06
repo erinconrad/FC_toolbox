@@ -52,6 +52,7 @@ broad_A(non_zero_A) = broad_nums(A(non_zero_A));
 broad_A(isnan(broad_A)) = 0;
 
 %% Prep figure
+fig_name = 'Fig 5';
 figure
 set(gcf,'position',[10 10 1000 700])
 tiledlayout(2,2,'tilespacing','tight','padding','tight')
@@ -138,7 +139,7 @@ annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','
 annotation('textbox',[0 0.46 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.46 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
-print(gcf,[plot_folder,'Fig5'],'-dpng')
+print(gcf,[plot_folder,fig_name],'-dpng')
 
 end
 

@@ -81,6 +81,8 @@ out.vec_conn = vec_conn;
 out.all_fc = all_fc;
 out.all_locs = all_locs;
 out.g = g;
+out.poss_sr = poss_sr;
+out.all_r2 = all_r2;
 
 if exist('plot_folder','var') && ~isempty(plot_folder)
     
