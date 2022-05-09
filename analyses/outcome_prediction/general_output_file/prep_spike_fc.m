@@ -22,6 +22,7 @@ npts = length(main_out.all_names);
 sp_names = main_out.all_names;
 all_chs_corr = cell(npts,1);
 sp_chs_corr = cell(npts,1);
+single_ch_corr = cell(npts,1);
 
 for ip = 1:npts
     
@@ -36,6 +37,7 @@ for ip = 1:npts
     
     all_chs_corr{ip} = spikes.all_chs_corr;
     sp_chs_corr{ip} = spikes.sp_chs_corr;
+    single_ch_corr{ip} = spikes.single_ch_corr;
     
 end
 
@@ -43,6 +45,7 @@ end
 spikes_out.names = sp_names;
 spikes_out.all_chs_corr = all_chs_corr;
 spikes_out.sp_chs_corr = sp_chs_corr;
+spikes_out.single_ch_corr = single_ch_corr;
 save([out_folder,'spikes_out.mat'],'spikes_out');
 
 end
