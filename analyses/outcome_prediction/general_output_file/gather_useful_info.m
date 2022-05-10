@@ -54,7 +54,7 @@ for p = 1:npts
     locs = summ.locs;
     coh = wrap_or_unwrap_adjacency_fc_toolbox(summ.avg_coh);
     clinical = summ.clinical;
-    all_stereo(p) = stereo;
+    all_stereo(p) = clinical.stereo;
     
     all_names{p} = name;
     
