@@ -55,7 +55,8 @@ for p = 1:npts
     duration(p) = summ.times(end)/3600/24;
     
     %% SOZ localization
-    [curr_loc,curr_lat] = seizure_localization_parser(summ.soz.loc,summ.soz.lat);
+    %[curr_loc,curr_lat] = seizure_localization_parser(summ.soz.loc,summ.soz.lat);
+    [curr_loc,curr_lat] = bin_manual_locs(summ.soz.loc,summ.soz.lat);
     lat{p} = curr_lat;
     loc{p} = curr_loc;
     
@@ -76,8 +77,9 @@ median_range_duration = [nanmedian(duration),min(duration),max(duration)];
 n_left = sum(cellfun(@(x) strcmp(x,'left'),lat));
 n_right = sum(cellfun(@(x) strcmp(x,'right'),lat));
 n_bilateral = sum(cellfun(@(x) strcmp(x,'bilateral'),lat));
-n_temporal = sum(cellfun(@(x) strcmp(x,'temporal'),loc));
-n_other = sum(cellfun(@(x) strcmp(x,'other'),loc));
+n_mesial_temporal = sum(cellfun(@(x) strcmp(x,'mesial temporal'),loc));
+n_temporal_neocortical = sum(cellfun(@(x) strcmp(x,'temporal neocortical'),loc));
+n_other_cortex = sum(cellfun(@(x) strcmp(x,'other cortex'),loc));
 
 % Turn to table
 total_str = {'Total: N',sprintf('%d',npts)};
@@ -98,8 +100,9 @@ left_str = {'Left: N (%)',sprintf('%d (%1.1f%%)',n_left,n_left/npts*100)};
 right_str = {'Right: N (%)',sprintf('%d (%1.1f%%)',n_right,n_right/npts*100)};
 bilateral_str = {'Bilateral: N (%)',sprintf('%d (%1.1f%%)',n_bilateral,n_bilateral/npts*100)};
 loc_str = {'Seizure localization',''};
-temporal_str = {'Temporal: N (%)',sprintf('%d (%1.1f%%)',n_temporal,n_temporal/npts*100)};
-other_str = {'Extra-temporal: N (%)',sprintf('%d (%1.1f%%)',n_other,n_other/npts*100)};
+mesial_temporal_str = {'Mesial temporal: N (%)',sprintf('%d (%1.1f%%)',n_mesial_temporal,n_mesial_temporal/npts*100)};
+temporal_neocortical_str = {'Temporal neocortical: N (%)',sprintf('%d (%1.1f%%)',n_temporal_neocortical,n_temporal_neocortical/npts*100)};
+other_cortex_str = {'Other cortex: N (%)',sprintf('%d (%1.1f%%)',n_other_cortex,n_other_cortex/npts*100)};
 
 %{
 Rows:
@@ -123,8 +126,9 @@ all = [total_str;...
     right_str;...
     bilateral_str;...
     loc_str;...
-    temporal_str;...
-    other_str;...
+    mesial_temporal_str;...
+    temporal_neocortical_str;
+    other_cortex_str;...
     nelecs_str;...
     implant_str;...
     n_gs_str;...
