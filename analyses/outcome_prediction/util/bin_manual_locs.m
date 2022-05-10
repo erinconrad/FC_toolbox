@@ -1,6 +1,6 @@
 function [new_loc,new_lat] = bin_manual_locs(loc,lat)
 
-if isempty(loc) || isempty(lat)
+if isempty(lat)
     new_loc = 'no seizures';
     new_lat = 'no seizures';
     return
