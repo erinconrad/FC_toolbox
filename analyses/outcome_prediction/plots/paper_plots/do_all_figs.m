@@ -53,6 +53,12 @@ dens_out = load([model_folder,'dens_model.mat']);
 dens_out = dens_out.out;
 
 %% Prep some general results
+fid = fopen([plot_folder,'results.html'],'a');
+fprintf(fid,['<p>A total of 118 patients were included (although the number '...
+    'of patients analyzed varied by analysis, as noted in the results of individual '...
+    'analyses. Patients were heterogeneous by age, sex, seizure localization ',...
+    'and lateralization, and implant strategy (Table 1).</p>']);
+fclose(fid);
 
 %% Fig 1 - conceptual fig
 main_conceptual_figure

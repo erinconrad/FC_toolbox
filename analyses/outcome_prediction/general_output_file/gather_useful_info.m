@@ -34,6 +34,7 @@ all_names = cell(npts,1);
 all_fc = cell(npts,1);
 all_locs = cell(npts,1);
 all_coh = cell(npts,1);
+all_stereo = nan(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -52,6 +53,8 @@ for p = 1:npts
     fc = summ.avg_fc;
     locs = summ.locs;
     coh = wrap_or_unwrap_adjacency_fc_toolbox(summ.avg_coh);
+    clinical = summ.clinical;
+    all_stereo(p) = stereo;
     
     all_names{p} = name;
     
@@ -126,6 +129,7 @@ out.all_ns = all_ns;
 out.all_coh = all_coh;
 out.all_labels = all_labels;
 out.all_names = all_names;
+out.all_stereo = all_stereo;
 
 
 %% Save

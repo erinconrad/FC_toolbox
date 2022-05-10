@@ -49,7 +49,6 @@ params.only_sleep = 0; % outside scope, don't change
 
 
 
-
 %% Get AUC for each model for each random testing/training split
 params.do_glme = 0; 
 for ib = 1:nb
