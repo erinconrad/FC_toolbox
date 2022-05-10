@@ -1,4 +1,4 @@
-function main_table_fc
+function T1 = main_table_fc
 
 
 %% Get file locs
