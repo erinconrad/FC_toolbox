@@ -1,5 +1,6 @@
 function add_demographics
 
+
 %% Get file locs
 locations = fc_toolbox_locs;
 data_folder = [locations.main_folder,'data/'];
@@ -34,7 +35,11 @@ for ir = 1:size(T,1)
     for ip = 1:length(pt)
         name = pt(ip).name;
         if strcmp(name,rname)
+            
+            % Age 
             pt(ip).clinical.age_implant = T.ageatieegimplant(ir);
+            
+            % Sex
             sex = T.sex(ir);
             if sex == 1
                 pt(ip).clinical.sex = 'Male';
@@ -43,29 +48,33 @@ for ir = 1:size(T,1)
             else
                 error('what?');
             end
+            
+            % Age onset
             pt(ip).clinical.age_onset = T.sz_hist_duration(ir);
-            pt(ip).clinical.stereo = T.ieeg_implanttype___4(ir);
             
-            surg = T.outcome_proctype(ir);
-            if isnumeric(surg)
-                if surg == 1
-                    pt(ip).clinical.surgery = 'Resection';
-                elseif surg == 2
-                    pt(ip).clinical.surgery = 'Resection withou implant';
-                elseif surg == 3
-                    pt(ip).clinical.surgery = 'RNS';
-                elseif surg == 4
-                    pt(ip).clinical.surgery = 'Laser ablation';
-                elseif surg == 5
-                    pt(ip).clinical.surgery = 'VNS';
-                elseif surg == 6
-                    pt(ip).clinical.surgery = 'DBS';
-                end
+            % was it stereo?
+            pt(ip).clinical.stereo = logical(T.ieeg_implanttype___4(ir));
+            
+            % surgery type
+            if T.outcome_proctype___1(ir) == 1
+                surg = 'Resection';
+            elseif T.outcome_proctype___2(ir) == 1
+                surg = 'Resection without implant';
+            elseif T.outcome_proctype___3(ir) == 1
+                surg = 'RNS';
+            elseif T.outcome_proctype___4(ir) == 1
+                surg = 'Laser ablation';
+            elseif T.outcome_proctype___5(ir) == 1
+                surg = 'VNS';
+            elseif T.outcome_proctype___6(ir) == 1
+                surg = 'DBS';
             else
-                pt(ip).clinical.surgery = 'Other';
+                surg = 'Other';
             end
+            pt(ip).clinical.surgery = surg;
             
-            tilae = [T.demog_ilae1year T.demog_ilae2years];
+            % ILAE outcome
+            tilae = [T.demog_ilae1year(ir) T.demog_ilae2years(ir)];
             ilae = cell(2,1);
             for i = 1:length(tilae)
                 switch tilae(i)
@@ -92,8 +101,8 @@ for ir = 1:size(T,1)
             pt(ip).clinical.ilae = ilae;
             pt(ip).clinical.ilae_years = ilae_years;
             
-            
-            tengel = [T.demog_year T.demog_years2];
+            % engel outcome
+            tengel = [T.demog_year(ir) T.demog_years2(ir)];
             engel = cell(2,1);
             engel_years = [1 2];
             for i = 1:length(tengel)
@@ -133,6 +142,29 @@ for ir = 1:size(T,1)
             pt(ip).clinical.engel = engel;
             pt(ip).clinical.engel_years = engel_years;
             
+            %{
+            surg = T.outcome_proctype(ir);
+            if isnumeric(surg)
+                if surg == 1
+                    pt(ip).clinical.surgery = 'Resection';
+                elseif surg == 2
+                    pt(ip).clinical.surgery = 'Resection without implant';
+                elseif surg == 3
+                    pt(ip).clinical.surgery = 'RNS';
+                elseif surg == 4
+                    pt(ip).clinical.surgery = 'Laser ablation';
+                elseif surg == 5
+                    pt(ip).clinical.surgery = 'VNS';
+                elseif surg == 6
+                    pt(ip).clinical.surgery = 'DBS';
+                end
+            else
+                pt(ip).clinical.surgery = 'Other';
+            end
+            
+            
+            %}
+            
             
         end
     end
@@ -146,6 +178,7 @@ for ip = 1:length(pt)
     end
     
 end
+
 
 save([data_folder,'pt.mat'],'pt');
 

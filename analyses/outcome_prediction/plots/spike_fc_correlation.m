@@ -26,6 +26,7 @@ spout = spout.spikes_out;
 sp_names = spout.names;
 all_chs_corr = spout.all_chs_corr;
 sp_chs_corr = spout.sp_chs_corr;
+single_ch_corr = spout.single_ch_corr;
 
 %% Get stuff
 rate = out.all_spikes;
@@ -49,21 +50,26 @@ end
 %% Do individual spike analysis
 all_sp_chs_corr = nan(npts,2); % first column is pre spike and 2nd column is spike
 all_all_chs_corr = nan(npts,2);
+all_single_chs_corr = nan(npts,2);
 for ip = 1:npts
     curr_all = all_chs_corr{ip};
     curr_sp = sp_chs_corr{ip};
+    curr_single = single_ch_corr{ip};
     
     if isempty(curr_all), continue; end
     
     % take mean across spikes
     curr_all_mean = nanmean(curr_all,1);
     curr_sp_mean = nanmean(curr_sp,1);
+    curr_single_mean = nanmean(curr_single,1);
     
     all_sp_chs_corr(ip,:) =curr_sp_mean;
     all_all_chs_corr(ip,:) = curr_all_mean;
+    all_single_chs_corr(ip,:) = curr_single_mean;
 end
 nout.all_sp_chs_corr = all_sp_chs_corr;
 nout.all_all_chs_corr = all_all_chs_corr;
+nout.all_single_chs_corr = all_single_chs_corr;
 
 %% Spatially normalize the FC matrix
 %[resid,f] = fit_distance_model(locs,fc,soz,rate,max_spikes,plot_folder);
