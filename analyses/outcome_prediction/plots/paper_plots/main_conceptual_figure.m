@@ -153,7 +153,7 @@ annotation('textbox',[0.47 0.90 0.1 0.1],'String','B','fontsize',25,'linestyle',
 annotation('textbox',[0 0.46 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0.47 0.46 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
-print(gcf,[plot_folder,'Fig1'],'-dpng')
+print(gcf,[plot_folder,'Fig 1'],'-dpng')
 
 end
 

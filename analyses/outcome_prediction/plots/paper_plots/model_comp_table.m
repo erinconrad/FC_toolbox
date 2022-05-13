@@ -32,15 +32,17 @@ model = model.all_out;
 %% Get data into table friendly format
 mnames = {'Chance','Null model','Null + connectivity','Null + spikes','All'};
 nmodels = length(mnames);
-stat = cell(2,1);
+stat = cell(3,1);
 for i = 1:length(stat)
     stat{i} = nan(nmodels,nmodels);
 end
 for i = 1:length(stat)
     if i == 1
-        thing = model.model_z;
-    else
+        thing = model.model_t;
+    elseif i == 2
         thing = model.model_p;
+    elseif i == 3
+        thing = model.model_df;
     end
     % need to fill in 1,.... for all (each one compared to chance - the
     % pvalue associated with the AUC)
@@ -101,7 +103,7 @@ for im = 2:nmodels
         if jm <= im
             
         else
-            fprintf(fid,'z = %1.2f, %s',stat{1}(im,jm),...
+            fprintf(fid,'t(%d) = %1.2f, %s',stat{3}(im,jm),stat{1}(im,jm),...
                 get_p_html(stat{2}(im,jm)));
         end
         

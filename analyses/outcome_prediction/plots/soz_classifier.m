@@ -7,7 +7,7 @@ To do:
 
 function soz_classifier(which_atlas)
 nb = 20;
-do_plot = 1;
+do_plot = 0;
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',};
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
 
@@ -46,7 +46,7 @@ params.max_spikes = 1/3600; % max spikes for both distance and density models
 params.do_norm = 1; % normalize spike rate and density within pt
 params.atlas_anatomy = 0; % break anatomy into many categories (all atlas regions)? Model fails to converge
 params.only_sleep = 0; % outside scope, don't change
-
+params.test_implant = 0;
 
 
 %% Get AUC for each model for each random testing/training split
@@ -62,9 +62,10 @@ for ib = 1:nb
 end
 
 %% for each pair of models, generate SD of AUC difference 
-model_sd = nan(nmodels,nmodels);
+%model_sd = nan(nmodels,nmodels);
 model_diff = nan(nmodels,nmodels);
-model_z = nan(nmodels,nmodels);
+model_t = nan(nmodels,nmodels);
+model_df = nan(nmodels,nmodels);
 model_p = nan(nmodels,nmodels);
 for im = 1:nmodels
     for jm = 1:im-1
@@ -73,6 +74,16 @@ for im = 1:nmodels
         auc_i = model_info(im).all_auc;
         auc_j = model_info(jm).all_auc;
         
+        % Paired t-test? Same training/testing split
+        [~,p,~,stats] = ttest(auc_i,auc_j);
+        model_t(im,jm) = stats.tstat;
+        model_t(jm,im) = -stats.tstat;
+        model_p(im,jm) = p;
+        model_p(jm,im) = p;
+        model_df(im,jm) = stats.df;
+        model_df(jm,im) = stats.df;
+        
+        %{
         % AUC diff
         auc_diff = auc_i-auc_j;
         mean_diff = nanmean(auc_diff);
@@ -90,6 +101,7 @@ for im = 1:nmodels
         model_z(jm,im) = -zval;
         model_p(im,jm) = p;
         model_p(jm,im) = p;
+        %}
         
         
     end
@@ -114,8 +126,8 @@ for im = 1:nmodels
 end
 
 all_out.model_info = model_info;
-all_out.model_z =  model_z;
-all_out.model_sd = model_sd;
+all_out.model_t =  model_t;
+all_out.model_df = model_df;
 all_out.model_diff = model_diff;
 all_out.model_p = model_p;
 all_out.bootci = bootci;
@@ -148,6 +160,49 @@ params.do_glme = 1;
 out = individual_classifier(params);
 all_out.glme_stuff = out;
 
+
+%% Do it again with stereo vs grid strip
+stereo_all_auc = nan(nb,nmodels);
+not_stereo_all_auc = nan(nb,nmodels);
+params.do_glme = 0; 
+for ib = 1:nb
+    if mod(ib,10) == 0, fprintf('\nDoing %d of %d\n',ib,nb); end
+    params.test_implant = 1;
+    stereo_out = individual_classifier(params);
+    
+    params.test_implant = 2;
+    not_stereo_out = individual_classifier(params);
+    for im = 1:nmodels
+        stereo_all_auc(ib,im) = stereo_out.model(im).auc;
+        stereo.model_info(im).all_auc(ib) = stereo_out.model(im).auc;
+        stereo.model_info(im).all_roc{ib} = stereo_out.model(im).roc;
+        
+        not_stereo_all_auc(ib,im) = not_stereo_out.model(im).auc;
+        not_stereo.model_info(im).all_auc(ib) = not_stereo_out.model(im).auc;
+        not_stereo.model_info(im).all_roc{ib} = not_stereo_out.model(im).roc;
+    end
+end
+
+% for each model, compare stereo to not stereo
+for im = 1:nmodels
+    
+    % Get aucs of each
+    stereo_auc = stereo.model_info(im).all_auc;
+    not_stereo_auc = not_stereo.model_info(im).all_auc;
+
+    % independent t test
+    [~,p,~,stats] = ttest2(stereo_auc,not_stereo_auc);
+        
+    stereo_vs_not.model(im).p = p;
+    stereo_vs_not.model(im).stats = stats;
+    stereo_vs_not.model(im).means = [nanmean(stereo_auc),nanmean(not_stereo_auc)];
+    stereo_vs_not.model(im).sd = [nanstd(stereo_auc),nanstd(not_stereo_auc)];
+    stereo_vs_not.model(im).all = [stereo_auc',not_stereo_auc'];
+  
+end
+
+all_out.stereo_vs_not = stereo_vs_not;
+
 save([plot_folder,'model_stuff_',params.which_atlas,'.mat'],'all_out')
 
 
@@ -176,6 +231,7 @@ include_lat = params.include_lat;
 dens_model = params.dens_model;
 do_r2 = params.do_r2;
 sr = params.sr;
+test_implant = params.test_implant;
 
 %% File locations
 locations = fc_toolbox_locs;
@@ -197,6 +253,9 @@ npts = length(soz);
 labels = out.all_labels;
 fc = out.all_fc;
 locs = out.all_locs;
+all_stereo = out.all_stereo;
+stereo = all_stereo == 1; n_stereo = sum(stereo);
+not_stereo = all_stereo == 0; n_not_stereo = sum(not_stereo);
 
 %% Turn soz to logical
 soz = cellfun(@logical,soz,'uniformoutput',false);
@@ -319,11 +378,42 @@ T(nan_rows,:) = [];
 if do_glme
     T_train = T;
 else
-    training = randsample(npts,floor(npts*prop_train));
-    training_idx = ismember(T.vec_pt_idx,training);
-    testing_idx = ~ismember(T.vec_pt_idx,training);
-    T_train = T(training_idx,:);
-    T_test = T(testing_idx,:);
+    
+    if test_implant == 1 % stereo
+        
+        stereo_idx = stereo(T.vec_pt_idx) == 1; % Reduce to only stereo
+        T(~stereo_idx,:) = [];
+        training = randsample(n_stereo,floor(n_stereo*prop_train));
+        training_idx = ismember(T.vec_pt_idx,training);
+        testing_idx = ~ismember(T.vec_pt_idx,training);
+        T_train = T(training_idx,:);
+        T_test = T(testing_idx,:);
+        
+        % confirm all stereo
+        assert(~any(stereo(T.vec_pt_idx) ~= 1));
+        
+    elseif test_implant == 2 % grid/strip
+        
+        not_stereo_idx = not_stereo(T.vec_pt_idx) == 1; % Reduce to only not stereo
+        T(~not_stereo_idx,:) = [];
+        training = randsample(n_not_stereo,floor(n_not_stereo*prop_train));
+        training_idx = ismember(T.vec_pt_idx,training);
+        testing_idx = ~ismember(T.vec_pt_idx,training);
+        T_train = T(training_idx,:);
+        T_test = T(testing_idx,:);
+        
+        assert(~any(not_stereo(T.vec_pt_idx) ~= 1));
+        
+    else
+    
+        training = randsample(npts,floor(npts*prop_train));
+        training_idx = ismember(T.vec_pt_idx,training);
+        testing_idx = ~ismember(T.vec_pt_idx,training);
+        T_train = T(training_idx,:);
+        T_test = T(testing_idx,:);
+
+        
+    end
     
     %% Confirm that I separated by patients
     train_pts = unique(T_train.vec_pt_idx);

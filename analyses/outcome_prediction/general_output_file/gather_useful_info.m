@@ -35,6 +35,7 @@ all_fc = cell(npts,1);
 all_locs = cell(npts,1);
 all_coh = cell(npts,1);
 all_stereo = nan(npts,1);
+all_good_spikes = nan(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -55,8 +56,15 @@ for p = 1:npts
     coh = wrap_or_unwrap_adjacency_fc_toolbox(summ.avg_coh);
     clinical = summ.clinical;
     all_stereo(p) = clinical.stereo;
+    good_spikes = summ.good_spikes;
+    all_good_spikes(p) = good_spikes;
     
     all_names{p} = name;
+    
+    %% Make spikes nans if bad spikes
+    if ~good_spikes
+        spikes = nan(size(spikes));
+    end
     
     %% Get soz
     all_soz_locs{p} = soz_loc;

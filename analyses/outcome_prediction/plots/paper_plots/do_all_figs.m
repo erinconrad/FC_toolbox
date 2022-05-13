@@ -54,7 +54,7 @@ dens_out = dens_out.out;
 
 %% Prep some general results
 fid = fopen([plot_folder,'results.html'],'a');
-fprintf(fid,['<p>A total of 118 patients were included (although the number '...
+fprintf(fid,['<p>A total of 118 patients were included, although the number '...
     'of patients analyzed varied by analysis, as noted in the results of individual '...
     'analyses. Patients were heterogeneous by age, sex, seizure localization ',...
     'and lateralization, and implant strategy (Table 1).</p>']);
@@ -276,12 +276,12 @@ for ia = 1:2
     
     if ia == 1
         fprintf(fid,[' Results were similar when using the AAL rather than the Brainnetome '...
-            'atlas for parcellating brain regions (Supplemental Results, %s).'],fig_name);
+            'atlas for parcellating brain regions (Supplemental Results; %s).'],fig_name);
     end
     
-    fprintf(fid,[' Results for studying coherence rather than Pearson correlation networks '...
+    fprintf(fid,[' Results when studying coherence rather than Pearson correlation networks '...
         'were more heterogeneous, seen for different frequency bands in the two different atlases '...
-        '(Supplemental Results, %s).</p>'],fig_name);
+        '(Supplemental Results; %s).</p>'],fig_name);
     fclose(fid);
 end
 
@@ -310,8 +310,21 @@ for ia = 1:2
     for f = 1:5
         
         nexttile
-        stats = paired_plot(squeeze(soz_coh_all(:,f,:)),'Coherence',{'SOZ','in contralateral region','in contralateral region'});
-        title(freqs{f})
+        if ia == 1 && f == 1
+            stats = paired_plot(squeeze(soz_coh_all(:,f,:)),'Coherence',...
+                {'SOZ','in contralateral region','in contralateral region'},...
+                0,[0.045,0.85,0.16,0.08]);
+
+        else
+            stats = paired_plot(squeeze(soz_coh_all(:,f,:)),...
+                'Coherence',{'SOZ','in contralateral region','in contralateral region'},...
+                1);
+        end
+        if ia == 1
+            title(sprintf('Brainnetome: %s',freqs{f}))
+        else
+            title(sprintf('AAL: %s',freqs{f}))
+        end
         if stats.pval < 0.05
             fprintf(fid,[' The average %s coherence to the SOZ (median %s) was lower than that to '...
                 ' the region contralateral to the SOZ (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (%sC).'],...
@@ -448,7 +461,7 @@ fprintf(fid,'<p><br><b>Correlation between functional connectivity and spikes</b
 
 fprintf(fid,['We next measured the correlation between functional connecitivity and spike rates. '...
     'For each patient, we took the Spearman rank correlation between the average spike rate '...
-    'for each electrode and the average node strength for each electrode.']);
+    'for each electrode and the average functional connectivity of each electrode.']);
 for i = 1
     if i == 1
         thing = spike_fc_corr;
@@ -458,6 +471,9 @@ for i = 1
         ttext = 'Connectivity (normalized for density)';
     end
     nexttile
+    thing(isnan(thing)) = [];
+    fprintf(fid,['% For this analysis, we included all patients with accurate '...
+        'spike detections (%d patients).'],length(thing));
     pp = plot(thing,'o','linewidth',2);
     hold on
     plot(xlim,[0 0],'k--','linewidth',2)
@@ -466,7 +482,7 @@ for i = 1
     xlabel('Patient')
     xticklabels([])
     ylabel('Spike rate - connectivity correlation (\rho)')
-    title('Correlation between spikes and functional connectivity')
+    title('Correlation between spikes and connectivity')
     [~,p,~,stats] = ttest(thing);
     legend(pp,sprintf('mean \\rho = %1.2f, %s',mean_corr,get_p_text(p)),'location','southeast','fontsize',15)
     set(gca,'fontsize',15)
@@ -507,15 +523,13 @@ for i = 1
         pretty_exp_html(stats.medians(2)),pretty_exp_html(stats.medians(1)),...
         stats.Tpos,get_p_html(stats.pval),fig_name);
     
+    annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+    annotation('textbox',[0.33 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+    annotation('textbox',[0.67 0.91 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
     
 end
 
-
-
 fclose(fid);
-
-%annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-%annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
 print(gcf,[plot_folder,fig_name],'-dpng')
 
 %% Figure 5 - null model construction
@@ -524,7 +538,7 @@ null_model_conceptual
 %% Table 2 - model comparisons
 model_comp_table
 
-%% Figure 6 - model
+%% Figure 6 and Fig S5 - model
 for ia = 1:2
     
     if ia == 1
@@ -532,7 +546,7 @@ for ia = 1:2
         model = brain_model;
         fig_name = 'Fig 6';
         fid = fopen([plot_folder,fname],'a');
-        fprintf(fid,'<p><br><b>Predicting SOZ</b></br>');
+        fprintf(fid,'<p><br><b>Predicting the SOZ</b></br>');
         fprintf(fid,['We next developed a classifier to predict whether an individual '...
         'electrode contact would be designated as belonging to the SOZ or not. To account for '...
         'expected spatial bias in electrode sampling (clinicians preferentially place '...
@@ -563,6 +577,10 @@ for ia = 1:2
     mbars = {'-','--','-.','--o'};
     mleg = nan(3,1);
     figure
+    set(gcf,'position',[380 147 833 650])
+    tiledlayout(2,1,'tilespacing','tight','padding','tight');
+    
+    nexttile
     plot([0 1],[0 1],'k:','linewidth',2)
     hold on
     count = 0;
@@ -592,18 +610,92 @@ for ia = 1:2
     ylabel('True positive rate')
     legend(mnames,'fontsize',15,'location','southeast')
     title('SOZ prediction')
-    print(gcf,[plot_folder,fig_name],'-dpng')
-
+    
     fprintf(fid,[' We compared the performance of the null model against a model including connectivity '...
         'data, a model including spike rate data, '...
-        'and a model including both spikes and connectivity (%s). The model '...
+        'and a model including both spikes and connectivity (%sA). The model '...
         'was trained on 2/3 of the patients, and tested on the remaining 1/3. 1,000 random '...
         'splits of patients into testing and training data were performed to obtain model statistics. '...
         'These results show that, first, '...
-        'even a null model ignoring EEG data substantially outperforms a chance model. It also shows '...
-        'incremental improvement in adding connectivity data (albeit not as good as with adding spike data), with '...
+        'even a null model ignoring EEG data substantially outperforms a chance model (null model AUC = %1.2f). It also shows '...
+        'incremental improvement in adding connectivity data (AUC = %1.2f; '...
+        'albeit not as good as with adding spike data, AUC = %1.2f), with '...
         'still better performance when combining spike and connectivity data '...
-        '(Table 2 shows statistics of model comparisons). </p>'],fig_name);
+        '(AUC = %1.2f; Table 2 shows statistics of model comparisons).</p>'],...
+        fig_name,mean(model_info(2).all_auc),mean(model_info(3).all_auc),...
+        mean(model_info(4).all_auc),mean(model_info(5).all_auc));
+    
+    % Loop over models
+    nexttile
+    count = 0;
+    all_ps = nan(4,1);
+    scale = 2;
+    txticklocs = [];
+    txticklabels = {};
+    legp = nan(4,1);
+    for im = [2 3 4 5]
+        
+        count = count + 1;
+        % grab bootstrap aucs and stats
+        aucs = model.all_out.stereo_vs_not.model(im).all;
+        naucs = size(aucs,1);
+        p = model.all_out.stereo_vs_not.model(im).p;
+        all_ps(count) = p;
+        
+        % Loop over stereo vs not stereo
+        for is = 1:2
+            if is == 1
+                sstereo = 'Stereo';
+            else
+                sstereo = 'Non-stereo';
+            end
+            % plot all aucs
+            legp(count) = plot(im-1+(is-1.5)/scale+0.05*randn(naucs,1),aucs(:,is),'o',...
+                'color',def_colors(count,:),'linewidth',2);
+            hold on
+            % plot mean auc
+            plot([im-1+(is-1.5)/scale-0.1 im-1+(is-1.5)/scale+0.1],...
+                [mean(aucs(:,is)) mean(aucs(:,is))],...
+                'color',def_colors(count,:),'linewidth',2)
+            txticklocs = [txticklocs im-1+(is-1.5)/scale];
+            txticklabels = [txticklabels sstereo];
+            
+        end
+        
+        
+    end
+    
+    % plot bars and p values
+    yl = ylim;
+    ybar = yl(1) + 1.05 * (yl(2)-yl(1));
+    yp = yl(1) + 1.1 * (yl(2)-yl(1));
+    ynew = [yl(1) yl(1) + 1.15 * (yl(2)-yl(1))];
+    ylim(ynew)
+    for im = 1:4
+        plot([im-0.5/scale,im+0.5/scale],[ybar ybar],'k','linewidth',2)
+        text(im,yp,get_p_text(all_ps(im)),'horizontalalignment','center','fontsize',15);
+    end
+    
+    legend(legp,{'Null model','Connectivity','Spikes','All'},...
+    'fontsize',15,'position',[0.5108 0.0730 0.1438 0.1192]);
+    xticks(txticklocs)
+    xticklabels(txticklabels)
+    ylabel('Model AUC');
+    set(gca,'fontsize',15)
+    title('Model performance in stereo-EEG versus grid/strip/depth implantations')
+    
+    fprintf(fid,['<p>We anticipated that the spatial null model and other models ('...
+        'all of which incorporate the spatial null model information) '...
+        'might perform better in patients with stereo-EEG than in patients with '...
+        'grid/strip/depth implantations because electrode spacing is uniform '...
+        'in grids and strips. To test this, we compared the performance '...
+        'of models trained and tested only on patients with stereo-EEG implantations against those '...
+        'trained on patients with grid/strip/depth implantations. As expected, the performance  '...
+        'of each model was higher in the case of stereo-EEG implantations (%sB; Table S2).</p>'],fig_name);
+    
+    
+
+    
 
     beta = model.all_out.glme_stuff.model(5).glm.Coefficients{5,2};
     se = model.all_out.glme_stuff.model(5).glm.Coefficients{5,3};
@@ -617,16 +709,22 @@ for ia = 1:2
         'mixed effects model trained on all patients. The patient identifier was a random effect. '...
         'Holding covariates constant, the odds of an electrode being a SOZ '...
         'electrode decreased by %1.1f%% (95%% CI OR [%1.2f-%1.2f]) for each additional '...
-        'normalized node strength unit (<i>t</i> = %1.1f, %s).'],(1-or)*100,ci95(1),...
+        'normalized connectivity unit (<i>t</i> = %1.1f, %s).'],(1-or)*100,ci95(1),...
         ci95(2),t,get_p_html(p));
 
     if ia == 1
         fprintf(fid,['The negative odds ratio implies that, controlling for spatial sampling '...
             'bias and spike rates, SOZ electrodes tend to have lower average connectivity.</p>']);
     end
-
+    
+    annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+    annotation('textbox',[0 0.40 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+    print(gcf,[plot_folder,fig_name],'-dpng')
     fclose(fid);
 end
+
+%% Table S2 - sEEG vs grid/strip/depth implantation
+model_implant_table
 
 close all
 

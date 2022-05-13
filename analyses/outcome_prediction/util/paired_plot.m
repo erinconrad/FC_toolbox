@@ -1,4 +1,12 @@
-function stats_out = paired_plot(data,ytext,xlabels)
+function stats_out = paired_plot(data,ytext,xlabels,skip_legend,legend_loc)
+
+if exist('skip_legend') == 0
+    skip_legend = 0;
+end
+
+if exist('legend_loc') == 0
+    legend_loc = [];
+end
 
 %% Parameters
 pcolor = [0, 0.4470, 0.7410];
@@ -44,8 +52,16 @@ legtext1 = sprintf('Higher %s',xlabels{2});
 legtext2 = sprintf('Lower %s',xlabels{2});
 legtext3 = 'Equal';
 
-legend([pp;np;ep],{legtext1,legtext2,legtext3},...
-    'location','southeast','fontsize',15)
+if ~skip_legend
+    if isempty(legend_loc)
+        legend([pp;np;ep],{legtext1,legtext2,legtext3},...
+            'location','southeast','fontsize',15)
+    else
+        legend([pp;np;ep],{legtext1,legtext2,legtext3},...
+            'position',legend_loc,'fontsize',15)
+    end
+
+end
 set(gca,'fontsize',15)
 
 stats_out.medians = [nanmedian(data(:,1)) nanmedian(data(:,2))];
