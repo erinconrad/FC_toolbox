@@ -138,6 +138,7 @@ out.all_coh = all_coh;
 out.all_labels = all_labels;
 out.all_names = all_names;
 out.all_stereo = all_stereo;
+out.good_spikes = all_good_spikes;
 
 
 %% Save

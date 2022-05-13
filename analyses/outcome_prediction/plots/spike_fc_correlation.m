@@ -30,6 +30,7 @@ single_ch_corr = spout.single_ch_corr;
 
 %% Get stuff
 rate = out.all_spikes;
+good_spikes = out.good_spikes;
 rl = out.all_rl;
 ns = out.all_ns;
 soz = out.all_soz_bin;
@@ -94,6 +95,7 @@ end
 
 nout.spike_fc_corr = spike_fc_corr;
 nout.spike_resid_corr = spike_resid_corr;
+nout.good_spikes = good_spikes;
 
 %% Plot it
 if do_plot
