@@ -1,5 +1,7 @@
 function all_bilateral = find_symmetric_coverage(atlas,lats,locs)
 
+% find regions with bilateral coverage
+
 nregions = size(atlas,1);
 npts = size(atlas,3);
 
@@ -21,16 +23,16 @@ for ip = 1:npts
         
         % find the row of the corresponding right region
         curr_loc = locs{ir};
-        right_region = strcmp(locs,curr_loc) & right_regions;
+        right_region = strcmp(locs,curr_loc) & right_regions; % same loc but right
         
         % Skip if there is no corresponding right region
-        if sum(right_region) == 0, continue; end
+        if sum(right_region) == 0, continue; end % skipping it will leave it zero
         
         % see if both the left and right region have non-empty elements in
         % the atlas
         if sum(~isnan(curr_atlas(ir,:))) > 0 && ...
                 sum(~isnan(curr_atlas(right_region,:))) > 0
-            bilateral_region(ir) = 1;
+            bilateral_region(ir) = 1; % then it has bilateral coverage
             bilateral_region(right_region) = 1;
         
         end

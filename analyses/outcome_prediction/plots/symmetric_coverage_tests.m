@@ -7,9 +7,9 @@ bilateral coverage.
 %}
 
 %% Parameters
-no_symm_cov = 0;
-randomize_lat = 0; % make fake SOZ and SOZ lats
-do_plots = 0;
+no_symm_cov = 0; % set to 1 if you want to see the results if you DON'T restrict to symmetric coverage (should be 0 for paper)
+randomize_lat = 0; % make fake SOZ and SOZ lats (as a test to confirm negative result if I randomize lats)
+do_plots = 0; 
 freqs = {'Delta (0.5-4 Hz)','Theta (4-8 Hz)','Alpha (8-12 Hz)','Beta (12-30 Hz)','Gamma (30-80 Hz)'};
 
 %% Get file locs
@@ -45,9 +45,8 @@ coh = out.all_coh;
 soz_lats = out.all_soz_lats;
 right_lat = strcmp(soz_lats,'right');
 left_lat = strcmp(soz_lats,'left');
-old_right_lat = right_lat;
-old_left_lat = left_lat;
 
+% randomize lats to confirm negative result if randomized
 if randomize_lat
     nright = sum(right_lat);
     nleft = sum(left_lat);
@@ -66,9 +65,6 @@ if randomize_lat
     left_lat = logical(left_lat);
     
 end
-%bilat = cellfun(@(x) contains(x,'bilateral') || contains(x,'diffuse'),soz_lats);
-%unilat = cellfun(@(x) contains(x,'left') || contains(x,'right'),soz_lats);
-
 
 %% Load atlas file
 atlas_out = load([atlas_folder,which_atlas,'.mat']);
@@ -90,12 +86,14 @@ neither_lat = ~left & ~right;
 assert(sum(left)==sum(right));
 
 %% Construct atlas (regions x regions x patients)
+% Puts FC, spikes, etc. from electrode space into atlas space
 [atlas,spikes,bin_soz,coh] = rebuild_atlas(fc,rate,atlas_elec_labels,...
     atlas_elec_regions,atlas_nums,labels,soz,coh);
 
 %% Re-order atlas to be left then right then neither
-lr_order = reorder_lr(locs,lats);
+lr_order = reorder_lr(locs,lats); % get the order
 
+% Put everything into this order
 left = left(lr_order);
 right = right(lr_order);
 neither_lat = neither_lat(lr_order);
@@ -110,7 +108,7 @@ atlas_nums = atlas_nums(lr_order);
 
 %% index of contralateral region for each region
 contra_index = nan(size(left));
-contra_index(1:sum(left)) = ([1:sum(left)])'+sum(left);
+contra_index(1:sum(left)) = ([1:sum(left)])'+sum(left); % the right sided ones start after left, so contralateral ones for the first nleft are these
 contra_index(sum(left)+1:sum(left)*2) = ([1:sum(left)])';
 
 % make sure first half locs are same as last half locs
@@ -124,7 +122,8 @@ if 0
     table(names_no_contra,names_no_contra(contra_index(~nan_contra)))
 end
 
-%% Define names corresponding to mesial temporal
+%{
+%% Define names corresponding to mesial temporal (not used in paper)
 switch which_atlas
     case 'aal_bernabei'
         mt_names = {'Hippocampus','Amygdala'};
@@ -133,14 +132,16 @@ switch which_atlas
 end
 
 mt = contains(names,mt_names);
+%}
 
 %% First, build symmetric coverage atlas
 % Build atlas for correlation and get indices of bilateral coverage regions
 [symm_cov_atlas,all_bilateral] = build_symmetric_coverage_atlas(atlas,locs,lats);
 
 if ~no_symm_cov
-    atlas = symm_cov_atlas;
+    atlas = symm_cov_atlas; % redefine the FC atlas to be the symmetric coverage atlas
 else
+    % stuff for the test of allowing non symmetric coverage
     all_bilateral = zeros(size(all_bilateral));
     for ip = 1:npts
         curr_atlas = atlas(:,:,ip);
@@ -155,13 +156,19 @@ symm_cov_coh = nan(size(coh));
 for ip = 1:npts
     curr_bilateral = logical(all_bilateral(:,ip));
     curr_coh = coh(:,:,:,ip);
-    curr_coh(~curr_bilateral,:,:) = nan;
+    curr_coh(~curr_bilateral,:,:) = nan; % set to nan if not bilateral coverage
     curr_coh(:,~curr_bilateral,:) = nan;
     symm_cov_coh(:,:,:,ip) = curr_coh;
 end
 coh = symm_cov_coh;
 
 % Build symmetric coverage spike matrix
+% I believe this is also important for spikes because some regions (like
+% hippocampus) have more spikes and are preferentially implanted on the
+% contralateral hemisphere as sentinel electrodes. Without restricting to
+% symmetric coverage, we would have a bias toward finding MORE spikes on
+% the opposite side of the SOZ because this side is mostly hippocampal
+% coverage whereas the SOZ side would average a broad less-spikey area.
 symm_spikes = nan(size(spikes));
 for ip = 1:npts
     curr_bilateral = logical(all_bilateral(:,ip));
@@ -179,11 +186,12 @@ for ip = 1:npts
     avg_rows = nanmean(curr,2);
     
     % find non nan
-    non_nan = find(~isnan(avg_rows));
+    non_nan = find(~isnan(avg_rows)); % find rows for that patient with any network edges
     
-    % confirm contralateral is non nan
+    % confirm contralateral is non nan (make sure contralateral region also
+    % has network edges)
     for i = 1:length(non_nan)
-        assert(~isnan(avg_rows(contra_index(non_nan(i))))|length(non_nan)==3) % latter is an edge case
+        assert(~isnan(avg_rows(contra_index(non_nan(i))))|length(non_nan)==3) % latter is an edge case, forgot why
     end
     
 end
@@ -200,23 +208,25 @@ nout.total_n_for_symmetric = total_n_for_symmetric;
 nout.mean_symmetric = mean_symmetric;
 
 %% Build atlas ONLY containing mesial temporal regions
+%{
 mt_atlas = atlas;
 mt_atlas(~mt,:,:) = nan; mt_atlas(:,~mt,:) = nan;
 mt_spikes = spikes;
 mt_spikes(~mt,:) = nan;
 mt_names = names;
 mt_names(~mt) = {''};
+%}
 
 %% Get average connectivity of SOZ (to other things) and that of contralateral region
 % INitialize things
-soz_intra = nan(npts,2);
-lr_soz_intra = nan(npts,2);
-soz_all = nan(npts,2);
-lr_soz_all = nan(npts,2);
-hemi = nan(npts,2);
-hemi_lr = nan(npts,2);
-soz_coh_all = nan(npts,nfreqs,2);
-all_bin_contra_soz = zeros(size(bin_soz));
+soz_intra = nan(npts,2); % soz to itself vs contralateral
+lr_soz_intra = nan(npts,2); % left soz loc to itself vs right
+soz_all = nan(npts,2); % avg connectivity to soz vs contralateral
+lr_soz_all = nan(npts,2); % same but L-R
+hemi = nan(npts,2); % intrahemispheric connectivity on side of SOZ vs contra
+hemi_lr = nan(npts,2); % same but LR
+soz_coh_all = nan(npts,nfreqs,2); % avg coherence to SOZ
+all_bin_contra_soz = zeros(size(bin_soz)); 
 ns_soz_minus_contra = nan(sum(strcmp(lats,'R')),npts);
 
 
@@ -226,7 +236,7 @@ for ip = 1:npts
     % get soz indices
     curr_soz = bin_soz(:,ip);
     
-    if randomize_lat
+    if randomize_lat % test
         nsoz = sum(curr_soz);
         k = randsample(length(curr_soz),nsoz);
         curr_soz = zeros(length(curr_soz),1);
@@ -246,7 +256,7 @@ for ip = 1:npts
     % regions that have no contralateral thing. Note, some patients will
     % have bilateral SOZ.
     switch which_atlas
-        case 'aal_bernabei'
+        case 'aal_bernabei' % some regions without laterality
             assert(abs(sum(curr_soz)-sum(bin_contra_soz)) == ...
                 sum(ismember([names(curr_soz)';names(bin_contra_soz)'],names(end-8:end))))
         case 'brainnetome'
@@ -384,10 +394,12 @@ soz_non_soz_ordered_atlas = build_soz_ordered_atlas(atlas,left,right,right_lat,l
 %% get confusion matrix for connectivity
 hemi_diff = hemi_lr(:,1) - hemi_lr(:,2);
 predicted = cell(length(soz_lats),1);
+
+% prediction rule: lower connectivity on side of SOZ
 predicted(hemi_diff > 0) = {'right'}; % if diff positive, so L more, predict R sided epilepsy
 predicted(hemi_diff < 0) = {'left'};
 empty = hemi_diff == 0 | isnan(hemi_diff) | (~strcmp(soz_lats,'right') & ~strcmp(soz_lats,'left'));
-predicted(empty) = [];
+predicted(empty) = []; % remove those without info
 lats_for_conf = soz_lats;
 lats_for_conf(empty) = [];
 
@@ -395,6 +407,7 @@ if 0
     table(lats_for_conf,predicted)
 end
 
+% Calculate confusion matrix
 conf_out_fc = confusion_matrix(predicted,lats_for_conf,0);
 
 % Get numbers for above analysis
@@ -406,6 +419,8 @@ assert(n_conf_fc == n_holo_hem)
 hemi_lr_spikes = [nanmean(spikes(left,:),1)',nanmean(spikes(right,:),1)'];
 hemi_diff = hemi_lr_spikes(:,1) - hemi_lr_spikes(:,2);
 predicted = cell(length(soz_lats),1);
+
+% prediction rule: more spikes on side of SOZ
 predicted(hemi_diff < 0) = {'right'};  % if fewer spikes left, predict right sided epilepsy
 predicted(hemi_diff > 0) = {'left'};
 empty = hemi_diff == 0 | isnan(hemi_diff) | (~strcmp(soz_lats,'right') & ~strcmp(soz_lats,'left'));

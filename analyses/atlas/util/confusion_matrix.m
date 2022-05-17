@@ -1,6 +1,8 @@
 function out = confusion_matrix(predicted,actual,do_plot)
 
+% Calculate a confusion matrix
 
+% get the potential classes
 classes = unique([predicted;actual]);
 nclasses = length(classes);
 
@@ -13,10 +15,10 @@ for i = 1:length(predicted)
     pred = predicted(i);
     ac = actual(i);
     
-    pred_idx = strcmp(classes,pred);
-    ac_idx = strcmp(classes,ac);
+    pred_idx = strcmp(classes,pred); % which of the classes is predicted
+    ac_idx = strcmp(classes,ac); % which of the classes is actual
     
-    mat(ac_idx,pred_idx) = mat(ac_idx,pred_idx) + 1;
+    mat(ac_idx,pred_idx) = mat(ac_idx,pred_idx) + 1; % add one more to that element of confusion matrix
     
 end
 

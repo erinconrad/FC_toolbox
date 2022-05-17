@@ -1,14 +1,14 @@
-function soz_classifier(which_atlas)
-
 %{
-This function models the SOZ based on various features
+
+To do:
+- NEED TO ADD IN BEST SEARCH RADIUS
+
 %}
 
-%% Initial parameters
-
-nb = 20; % How many random testing/training splits (do 1,000 for paper)
+function soz_classifier(which_atlas)
+nb = 20;
 do_plot = 0;
-params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',}; % which models
+params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',};
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
 
 
@@ -20,7 +20,6 @@ plot_folder = [results_folder,'analysis/outcome/plots/'];
 nmodels = length(params.models);
 all_auc = nan(nb,nmodels);
 
-% initialize fun model facts
 for im = 1:nmodels
     model_info(im).name = params.models{im};
     model_info(im).pretty_name = params.pretty_name{im};
@@ -28,26 +27,26 @@ for im = 1:nmodels
     model_info(im).all_roc = cell(nb,1);
 end
 
-%% Load density model (this is how I get the search radius)
+%% Load density model
 mout = load([plot_folder,'dens_model.mat']);
 mout = mout.out;
 resid = mout.resid;
 params.resid = resid;
 
 
-params.which_atlas = which_atlas;
-params.sr = mout.sr; % search radius (leave empty to use default calc)
+params.which_atlas = which_atlas;%'brainnetome';%'aal_bernabei';%'brainnetome';
+params.sr = mout.sr;%[]; % search radius (leave empty to use default calc)
 params.prop_train = 2/3;
-params.do_r2 = 0; % r^2 instead of r for FC measurement? (should be zero)
-%params.do_ns_resid = 0; % take residuals of ns (density normalized). I don't do this.
-params.include_lat = 0; % include laterality in addition to broad anatomical regions. I don't do this but should I????
-%params.dens_model = 1; % use Erin's density model as opposed to rat11. Doesn't matter because I don't do residuals.
+params.do_r2 = 0; % r^2 instead of r for FC measurement?
+params.do_ns_resid = 0; % take residuals of ns (density normalized)
+params.include_lat = 0; % include laterality in addition to broad anatomical regions
+params.dens_model = 1; % use Erin's density model as opposed to rat11
 
-%params.max_spikes = 1/3600; % max spikes for both distance and density models
+params.max_spikes = 1/3600; % max spikes for both distance and density models
 params.do_norm = 1; % normalize spike rate and density within pt
 params.atlas_anatomy = 0; % break anatomy into many categories (all atlas regions)? Model fails to converge
-%params.only_sleep = 0; % outside scope, don't change
-params.test_implant = 0; % 0: all patients, 1: sEEG, 2: grid/strip
+params.only_sleep = 0; % outside scope, don't change
+params.test_implant = 0;
 
 
 %% Get AUC for each model for each random testing/training split
@@ -63,7 +62,8 @@ for ib = 1:nb
 end
 all_out.npts_remain = out.npts_remain;
 
-%% for each pair of models, generate stats for AUC difference 
+%% for each pair of models, generate SD of AUC difference 
+%model_sd = nan(nmodels,nmodels);
 model_diff = nan(nmodels,nmodels);
 model_t = nan(nmodels,nmodels);
 model_df = nan(nmodels,nmodels);
@@ -83,6 +83,26 @@ for im = 1:nmodels
         model_p(jm,im) = p;
         model_df(im,jm) = stats.df;
         model_df(jm,im) = stats.df;
+        
+        %{
+        % AUC diff
+        auc_diff = auc_i-auc_j;
+        mean_diff = nanmean(auc_diff);
+        model_diff(im,jm) = mean_diff;
+        model_diff(jm,im) = -mean_diff;
+        
+        % Get standard deviation of diff
+        auc_diff_sd = nanstd(auc_diff);
+        model_sd(im,jm) = auc_diff_sd;
+        model_sd(jm,im) = auc_diff_sd;
+        
+        % z score and p-value
+        [h,p,ci,zval] = ztest(auc_diff,0,auc_diff_sd);
+        model_z(im,jm) = zval;
+        model_z(jm,im) = -zval;
+        model_p(im,jm) = p;
+        model_p(jm,im) = p;
+        %}
         
         
     end
@@ -137,7 +157,7 @@ end
 
 
 %% Do once with all data to get glme paramaters
-params.do_glme = 1; 
+params.do_glme = 1;
 out = individual_classifier(params);
 all_out.glme_stuff = out;
 
@@ -145,7 +165,7 @@ all_out.glme_stuff = out;
 %% Do it again with stereo vs grid strip
 stereo_all_auc = nan(nb,nmodels);
 not_stereo_all_auc = nan(nb,nmodels);
-params.do_glme = 0; % reset to training/testing paradigm
+params.do_glme = 0; 
 for ib = 1:nb
     if mod(ib,10) == 0, fprintf('\nDoing %d of %d\n',ib,nb); end
     params.test_implant = 1;
@@ -173,8 +193,7 @@ for im = 1:nmodels
     stereo_auc = stereo.model_info(im).all_auc;
     not_stereo_auc = not_stereo.model_info(im).all_auc;
 
-    % independent t test (different testing training splits in each
-    % bootstrap)
+    % independent t test
     [~,p,~,stats] = ttest2(stereo_auc,not_stereo_auc);
         
     stereo_vs_not.model(im).p = p;
@@ -197,22 +216,22 @@ function mout = individual_classifier(params)
 %{
 Predict whether an electrode is in the SOZ based on 1) its spike rate
 normalized across other electrodes within the patient and 2) its anatomical
-localization (a categorical variable that can be MT, TN, OC, or nothing)
+localization (a categorical variable that can be MT, TN, WM, or OC)
 %}
 
 
 
 %% Parameters
-%max_spikes = params.max_spikes; % max spikes/elecs/min to include in model
+max_spikes = params.max_spikes; % max spikes/elecs/min to include in model
 which_atlas = params.which_atlas;
 prop_train = params.prop_train;
 do_norm = params.do_norm;
 models = params.models;
 atlas_anatomy = params.atlas_anatomy;
-%do_ns_resid = params.do_ns_resid;
+do_ns_resid = params.do_ns_resid;
 do_glme = params.do_glme;
 include_lat = params.include_lat;
-%dens_model = params.dens_model;
+dens_model = params.dens_model;
 do_r2 = params.do_r2;
 sr = params.sr;
 test_implant = params.test_implant;
@@ -260,7 +279,6 @@ atlas_nums = atlas_out.atlas_nums;
 atlas_names = atlas_out.atlas_names;
 
 %% Spatially normalize the FC matrix
-%{
 if dens_model
     resid = params.resid;
 else
@@ -268,13 +286,11 @@ else
 end
 
 ns_resid = cellfun(@(x) nansum(x,2),resid,'uniformoutput',false);
+ns = cellfun(@(x) nansum(x,2),fc,'uniformoutput',false);
 
 if do_ns_resid == 1
     ns = ns_resid;
 end
-%}
-
-ns = cellfun(@(x) nanmean(x,2),fc,'uniformoutput',false); % average rather than sum
 
 
 %% Localize regions into broad categories
@@ -302,7 +318,7 @@ if 0
     table(elec_broad{110},labels{110})
 end
 
-%% Get stuff into single column format
+%% Get stuff into friendly format
 vec_rate = [];
 vec_loc = {};
 vec_soz = [];
@@ -333,11 +349,10 @@ for ip = 1:npts
     % normalize within patient
     if do_norm
         curr_rate = (curr_rate-nanmean(curr_rate))./nanstd(curr_rate);
-        %{
+        
         if ~do_ns_resid
             curr_ns = (curr_ns-nanmean(curr_ns))./nanstd(curr_ns);
         end
-        %}
         density = (density - nanmean(density))./nanstd(density);
     end
     
@@ -386,7 +401,7 @@ mout.n_exc_spikes = n_exc_spikes;
 
 %% Divide into training and testing set
 if do_glme
-    T_train = T; % do glme model on full dataset
+    T_train = T;
 else
     
     if test_implant == 1 % stereo
@@ -438,7 +453,8 @@ end
 
 
 
-% Loop over models
+
+
 for im = 1:length(models)
     curr_model = models{im};
     switch curr_model
@@ -482,11 +498,32 @@ for im = 1:length(models)
         continue;
     end
     
-    % Derive classifications (probability of SOZ) for testing data
+    %{
+    % Calculate the model response
+    asum = zeros(size(T_test,1),1);
+    asum = asum + glm.Coefficients.Estimate(1);
+    for p = 2:length(params)
+        est = glm.Coefficients.Estimate(p);
+        if contains((params{p}),'vec_loc')
+            C = strsplit((params{p}),'_');
+            cat = C{3};
+
+            % find the indices of T_test that fit this category
+            match = strcmp(T_test.vec_loc,cat);
+            asum(match) = asum(match) + est;
+        else
+
+            asum = asum +  T_test.(params{p})*est;
+        end
+    end
+    classification = logistic(asum);
+    %}
     classification = feval(glm,T_test);
     
     % Compare classification against true
-    [X,Y,~,AUC,~] = perfcurve(T_test.vec_soz,classification,1);
+    all_soz = T_test.vec_soz==1;
+    all_no_soz = T_test.vec_soz==0;
+    [X,Y,T,AUC,opt] = perfcurve(T_test.vec_soz,classification,1);
   
     mout.model(im).name = curr_model;
    % out.model(im).glme = glme;
@@ -546,4 +583,36 @@ out = 1./(1+exp(-x));
 
 end
 
+function z = normalize_spike_rates(sp_labels,atlas_labels,regions,atlas,spikes,atlas_nums)
+    
+%% Remove ekg from atlas
+ekg = find_non_intracranial(atlas_labels);
+atlas_labels(ekg) = [];
+regions(ekg) = [];
 
+%% Reconcile labels
+assert(isequal(sp_labels,atlas_labels)) 
+
+z = nan(length(spikes),1);
+
+% Loop over electrodes
+for ich = 1:length(spikes)
+    
+    % get the region of this electrode
+    curr_region = regions(ich);
+    
+    % get the index of this
+    curr_idx = find(atlas_nums == curr_region);
+    
+    if isempty(curr_idx), z(ich) = nan; continue; end
+    
+    % normalize by atlas (across all patients for that region)
+    z(ich) = (spikes(ich)-nanmedian(atlas(curr_idx,:)))./iqr(atlas(curr_idx,:));
+    %z(ich) = (spikes(ich)-nanmean(atlas(curr_idx,:)))./nanstd(atlas(curr_idx,:));
+end
+
+if 0
+    table(sp_labels,spikes,z)
+end
+
+end

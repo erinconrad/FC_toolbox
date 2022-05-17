@@ -14,7 +14,6 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 
 bct_folder= locations.bct;
-out_folder = [results_folder,'analysis/outcome/data/'];
 plot_folder = [results_folder,'analysis/outcome/plots/paper_plots/'];
 model_folder = [results_folder,'analysis/outcome/plots/'];
 
@@ -26,15 +25,15 @@ addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
 %% Delete the current results file
-if exist([plot_folder,'results.html'])~=0
+if exist([plot_folder,'results.html'],'file')~=0
     delete([plot_folder,'results.html']);
 end
 
-if exist([plot_folder,'supplemental_results.html'])~=0
+if exist([plot_folder,'supplemental_results.html'],'file')~=0
     delete([plot_folder,'supplemental_results.html']);
 end
 
-%% Do all analyses
+%% Load intermediate datasets
 % Load results from model
 brain_model = load([model_folder,'model_stuff_brainnetome.mat']);
 aal_model = load([model_folder,'model_stuff_aal_bernabei.mat']);
@@ -46,7 +45,8 @@ brain_out = load([model_folder,'symm_cov_brainnetome.mat']);
 brain_out = brain_out.nout;
 
 % Spike-fc corr
-corr_out = spike_fc_correlation;
+corr_out = load([model_folder,'spike_analysis.mat']);
+corr_out = corr_out.nout;
 
 % density out
 dens_out = load([model_folder,'dens_model.mat']);
@@ -54,10 +54,10 @@ dens_out = dens_out.out;
 
 %% Prep some general results
 fid = fopen([plot_folder,'results.html'],'a');
-fprintf(fid,['<p>A total of 118 patients were included, although the number '...
+fprintf(fid,['<p>We included all patients who had available electrode localizations (%d patients), although the number '...
     'of patients analyzed varied by analysis, as noted in the results of individual '...
     'analyses. Patients were heterogeneous by age, sex, seizure localization ',...
-    'and lateralization, and implant strategy (Table 1).</p>']);
+    'and lateralization, and implant strategy (Table 1).</p>'],corr_out.pts_with_any_locs);
 fclose(fid);
 
 %% Fig 1 - conceptual fig
@@ -69,7 +69,6 @@ all_fc = dens_out.all_fc;
 all_locs = dens_out.all_locs;
 vec_dens = dens_out.vec_dens;
 vec_conn = dens_out.vec_conn;
-resid = dens_out.resid;
 sr = dens_out.sr;
 all_r2 = dens_out.all_r2;
 poss_sr = dens_out.poss_sr;
@@ -472,11 +471,13 @@ for i = 1
     end
     nexttile
     thing(isnan(thing)) = [];
+    assert(length(thing) == sum(good_spikes))
     fprintf(fid,['% For this analysis, we included all patients with accurate '...
         'spike detections (%d patients).'],length(thing));
     pp = plot(thing,'o','linewidth',2);
     hold on
     plot(xlim,[0 0],'k--','linewidth',2)
+    xlim([0 sum(good_spikes)])
     ylim([-1 1])
     mean_corr = nanmean(thing);
     xlabel('Patient')
@@ -613,7 +614,8 @@ for ia = 1:2
     
     fprintf(fid,[' We compared the performance of the null model against a model including connectivity '...
         'data, a model including spike rate data, '...
-        'and a model including both spikes and connectivity (%sA). The model '...
+        'and a model including both spikes and connectivity (%sA). This analysis included all patients '...
+        'with electrode localizations and accurate spike detections (%d patients). The model '...
         'was trained on 2/3 of the patients, and tested on the remaining 1/3. 1,000 random '...
         'splits of patients into testing and training data were performed to obtain model statistics. '...
         'These results show that, first, '...
@@ -622,7 +624,7 @@ for ia = 1:2
         'albeit not as good as with adding spike data, AUC = %1.2f), with '...
         'still better performance when combining spike and connectivity data '...
         '(AUC = %1.2f; Table 2 shows statistics of model comparisons).</p>'],...
-        fig_name,mean(model_info(2).all_auc),mean(model_info(3).all_auc),...
+        fig_name,model.all_out.npts_remain,mean(model_info(2).all_auc),mean(model_info(3).all_auc),...
         mean(model_info(4).all_auc),mean(model_info(5).all_auc));
     
     % Loop over models
@@ -689,9 +691,12 @@ for ia = 1:2
         'might perform better in patients with stereo-EEG than in patients with '...
         'grid/strip/depth implantations because electrode spacing is uniform '...
         'in grids and strips. To test this, we compared the performance '...
-        'of models trained and tested only on patients with stereo-EEG implantations against those '...
-        'trained on patients with grid/strip/depth implantations. As expected, the performance  '...
-        'of each model was higher in the case of stereo-EEG implantations (%sB; Table S2).</p>'],fig_name);
+        'of models trained and tested only on patients with stereo-EEG implantations '...
+        '(%d patients who also had accurate spike detections and electrode localizations) against those '...
+        'trained on patients with grid/strip/depth implantations (%d patients). As expected, the performance  '...
+        'of each model was higher in the case of stereo-EEG implantations (%sB; Table S2).</p>'],...
+        model.all_out.stereo_vs_not.n_stereo_remain,...
+        model.all_out.stereo_vs_not.n_not_stereo_remain,fig_name);
     
     
 

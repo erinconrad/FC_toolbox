@@ -5,18 +5,31 @@ function T1 = main_table_fc
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/outcome/plots/paper_plots/'];
+model_folder = [results_folder,'analysis/outcome/plots/'];
 int_folder = [results_folder,'analysis/intermediate/']; % this includes patients with good and bad spikes
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
 
+
+
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
+% Spike-fc corr
+corr_out = load([model_folder,'spike_analysis.mat']);
+corr_out = corr_out.nout;
+any_locs = corr_out.pts_with_any_locs;
+names = corr_out.names;
+
+%% Find those with any locs
+npts = sum(any_locs);
+name_with_locs = names(any_locs);
+
 %% Listing of available files
-listing = dir([int_folder,'*.mat']);
-npts = length(listing);
+%listing = dir([int_folder,'*.mat']);
+%npts = length(listing);
 
 names = cell(npts,1);
 age_onset = nan(npts,1);
@@ -33,7 +46,7 @@ stereo = nan(npts,1);
 for p = 1:npts
     
     %% Load
-    summ = load([int_folder,listing(p).name]);
+    summ = load([int_folder,name_with_locs{p}]);
     summ = summ.summ;
     
     %% Basic demographics

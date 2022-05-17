@@ -21,15 +21,7 @@ out = load([out_folder,'main_out.mat']);
 out = out.out;
 
 %% Get total n for main result n
-npts = length(out.all_locs);
-any_locs = zeros(npts,1);
-for ip = 1:npts
-   if any(~isnan(out.all_locs{ip}),'all')
-       any_locs(ip) = 1;
-   end
-end
-nout.pts_with_any_locs = (any_locs);
-nout.names = out.all_names;
+npts = length(out.a;
 
 %% Also load spike out file
 spout = load([out_folder,'spikes_out.mat']);
