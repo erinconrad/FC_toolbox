@@ -25,7 +25,7 @@ names = corr_out.names;
 
 %% Find those with any locs
 npts = sum(any_locs);
-name_with_locs = names(any_locs);
+name_with_locs = names(logical(any_locs));
 
 %% Listing of available files
 %listing = dir([int_folder,'*.mat']);
