@@ -3,6 +3,7 @@ function main_conceptual_figure
 %% Get file locs
 locations = fc_toolbox_locs;
 plot_folder = locations.paper_plot_folder;
+atlas_folder = locations.paper_data_folder;
 
 % add script folder to path
 scripts_folder = locations.script_folder;
