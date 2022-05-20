@@ -583,8 +583,6 @@ for ia = 1:2
         end
         if im == 5
             if doing_from_github == 1
-                mleg(count) = plot(model_info(im).x,model_info(im).ym,mbars{count},'linewidth',2,...
-                    'color',def_colors(count,:));
             else
                 mleg(count) = line_fewer_markers(model_info(im).x,model_info(im).ym,10,mbars{count},'linewidth',2,...
                     'color',def_colors(count,:));
