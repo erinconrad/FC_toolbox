@@ -1,4 +1,4 @@
-function do_all_figs
+function do_all_figs(doing_from_github)
 
 close all
 
@@ -11,18 +11,14 @@ def_colors = [0, 0.4470, 0.7410;...
 
 %% Get file locs
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-
-bct_folder= locations.bct;
-plot_folder = [results_folder,'analysis/outcome/plots/paper_plots/'];
-model_folder = [results_folder,'analysis/outcome/plots/'];
+plot_folder = locations.paper_plot_folder;
 
 if ~exist(plot_folder,'dir'), mkdir(plot_folder); end
 
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
-addpath(genpath(bct_folder));
+model_folder = locations.paper_plot_folder;
 
 %% Delete the current results file
 if exist([plot_folder,'results.html'],'file')~=0
@@ -57,14 +53,15 @@ fid = fopen([plot_folder,'results.html'],'a');
 fprintf(fid,['<p>We included all patients who had available electrode localizations (%d patients), although the number '...
     'of patients analyzed varied by analysis, as noted in the results of individual '...
     'analyses. Patients were heterogeneous by age, sex, seizure localization ',...
-    'and lateralization, and implant strategy (Table 1).</p>'],corr_out.pts_with_any_locs);
+    'and lateralization, and implant strategy (Table 1).</p>'],sum(corr_out.pts_with_any_locs));
 fclose(fid);
 
 %% Fig 1 - conceptual fig
-main_conceptual_figure
+if ~doing_from_github
+    main_conceptual_figure
+end
 
 %% Supplemental fig 1 - density model construction
-ip = 80;
 all_fc = dens_out.all_fc;
 all_locs = dens_out.all_locs;
 vec_dens = dens_out.vec_dens;
@@ -80,7 +77,7 @@ set(gcf,'position',[10 10 1000 700])
 tiledlayout(2,2,'tilespacing','tight','padding','tight')
 
 nexttile
-D = make_interdist_matrix(all_locs{ip});
+D = make_interdist_matrix(all_locs);
 dens = interdistance_to_density_matrix(D,sr);
 turn_nans_gray(dens)
 c = colorbar;
@@ -95,7 +92,7 @@ title({'Inter-electrode density','(single patient)'})
 
 % Functional connectivity
 nexttile
-conn = all_fc{ip};
+conn = all_fc;
 turn_nans_gray(conn)
 c = colorbar;
 caxis([-1 1])
@@ -120,7 +117,7 @@ xlim([min(vec_dens) max(vec_dens)])
 xlabel('Density (mm)')
 ylabel('Functional connectivity (r)')
 set(gca,'fontsize',15)
-legend(rp,sprintf('r^2 = %1.2f',max(all_r2)),'fontsize',15)
+legend(rp,sprintf('r^2 = %1.2f',max(all_r2)),'fontsize',15,'location','northwest')
 title({'Density-functional connectivity correlation','(all patients)'})
 
 nexttile
@@ -133,20 +130,7 @@ ylabel('Model r^2')
 title({'Density-functional connectivity model r^2','as a function of search radius'})
 set(gca,'fontsize',15)
 legend(rp,'Optimal search radius','fontsize',15)
-%{
-nexttile
-conn = resid{ip};
-turn_nans_gray(conn)
-c = colorbar;
-%caxis([-1 1])
-ylabel(c,'Normalized correlation (model residuals)')
-set(gca,'fontsize',15)
-xticklabels([])
-yticklabels([])
-xlabel('Electrode')
-ylabel('Electrode')
-title({'Density-normalized correlation','(single patient)'})
-%}
+
 
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
@@ -205,7 +189,6 @@ for ia = 1:2
         '%d of %d patients had any regions with bilateral electrode coverage (%sA).'],...
         mean(atlas_out.n_coverage.nsymmetric),min(atlas_out.n_coverage.nsymmetric),max(atlas_out.n_coverage.nsymmetric),...
         mean(atlas_out.n_coverage.nsymmetric)*2,atlas_out.n_coverage.any_symmetric,atlas_out.total_n_for_symmetric,fig_name);
-    % why is n different?
 
     % Show atlas
     nexttile([1 3])
@@ -534,7 +517,9 @@ fclose(fid);
 print(gcf,[plot_folder,fig_name],'-dpng')
 
 %% Figure 5 - null model construction
-null_model_conceptual
+if ~doing_from_github
+    null_model_conceptual
+end
 
 %% Table 2 - model comparisons
 model_comp_table

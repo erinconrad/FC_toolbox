@@ -1,4 +1,4 @@
-function nout = spike_fc_correlation
+function spike_fc_correlation
 
 %{
 Calculate the correlation between spikes and FC and the pre-spike vs
@@ -7,18 +7,15 @@ during-spike FC
 
 %% Locations
 locations = fc_toolbox_locs;
-script_folder = locations.script_folder;
 addpath(genpath(locations.script_folder))
-results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/outcome/data/'];
-plot_folder = [results_folder,'analysis/outcome/plots/'];
-model_folder = [results_folder,'analysis/outcome/plots/'];
-atlas_folder = [results_folder,'analysis/atlas/'];
-
 
 %% Load out file
-out = load([out_folder,'main_out.mat']);
+out = load([locations.paper_data_folder,'main_out.mat']);
 out = out.out;
+
+%% Also load spike out file
+spout = load([locations.paper_data_folder,'spikes_out.mat']);
+spout = spout.spikes_out;
 
 %% Get total n for main result n
 npts = length(out.all_locs);
@@ -31,9 +28,6 @@ end
 nout.pts_with_any_locs = (any_locs);
 nout.names = out.all_names;
 
-%% Also load spike out file
-spout = load([out_folder,'spikes_out.mat']);
-spout = spout.spikes_out;
 all_chs_corr = spout.all_chs_corr;
 sp_chs_corr = spout.sp_chs_corr;
 single_ch_corr = spout.single_ch_corr;
@@ -85,6 +79,6 @@ end
 nout.spike_fc_corr = spike_fc_corr;
 nout.good_spikes = good_spikes;
 
-save([plot_folder,'spike_analysis.mat'],'nout');
+save([locations.paper_plot_folder,'spike_analysis.mat'],'nout');
 
 end

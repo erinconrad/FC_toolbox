@@ -4,18 +4,15 @@ function T1 = main_table_fc
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/outcome/plots/paper_plots/'];
-model_folder = [results_folder,'analysis/outcome/plots/'];
 int_folder = [results_folder,'analysis/intermediate/']; % this includes patients with good and bad spikes
-if ~exist(out_folder,'dir')
-    mkdir(out_folder)
-end
 
 
 
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
+model_folder = locations.paper_data_folder;
+
 
 % Spike-fc corr
 corr_out = load([model_folder,'spike_analysis.mat']);
@@ -169,7 +166,7 @@ all = [total_str;...
 %}
 
 T2 = cell2table(all);
-writetable(T2,[out_folder,'Table1.csv']);
+writetable(T2,[locations.paper_plot_folder,'Table1.csv']);
 
 end
 

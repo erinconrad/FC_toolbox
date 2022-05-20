@@ -1,4 +1,4 @@
-function nout = symmetric_coverage_tests(which_atlas)
+function symmetric_coverage_tests(which_atlas)
 
 %{
 This performs the analysis comparing connectivity to the SOZ to the region
@@ -14,14 +14,10 @@ freqs = {'Delta (0.5-4 Hz)','Theta (4-8 Hz)','Alpha (8-12 Hz)','Beta (12-30 Hz)'
 
 %% Get file locs
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
+plot_folder = locations.paper_plot_folder;
 
 bct_folder= locations.bct;
-out_folder = [results_folder,'analysis/outcome/data/'];
-plot_folder = [results_folder,'analysis/outcome/plots/'];
-atlas_folder = [results_folder,'analysis/atlas/'];
-if ~exist(out_folder,'dir'), mkdir(out_folder); end
-if ~exist(plot_folder,'dir'), mkdir(plot_folder); end
+atlas_folder = locations.paper_data_folder;
 
 % add script folder to path
 scripts_folder = locations.script_folder;
@@ -29,7 +25,7 @@ addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
 %% Load out file with functional connectivity and spikes as well as SOZ info
-out = load([out_folder,'main_out.mat']);
+out = load([locations.paper_data_folder,'main_out.mat']);
 out = out.out;
 
 %% Get stuff
@@ -435,6 +431,7 @@ end
 conf_out_spikes = confusion_matrix(predicted,lats_for_conf,0);
 
 %% Get average L-R connectivity for each patient
+%{
 lr_conn = nan(npts,1);
 lr_spikes = nan(npts,2);
 for ip = 1:npts
@@ -443,6 +440,7 @@ for ip = 1:npts
     lr_conn(ip) = nanmean(mt_atlas(left,right,ip),'all');
     lr_spikes(ip,:) = [nanmean(mt_spikes(left,ip)) nanmean(mt_spikes(right,ip))];
 end
+%}
 
 if 0
     figure % odd, appears that connectivity between L MT region and R MT region higher in L sided epilepsy than in R
@@ -607,7 +605,7 @@ for i = 1:2 % connectivity then spikes
     set(gca,'fontsize',15)
 end
 
-print(gcf,[plot_folder,'symm_pred_',which_atlas],'-dpng')
+print(gcf,[locations.paper_plot_folder,'symm_pred_',which_atlas],'-dpng')
 
 %% Output text
 fprintf(fid,'<p><b>Changes in spikes with seizures</b>');

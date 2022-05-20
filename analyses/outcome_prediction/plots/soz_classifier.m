@@ -1,12 +1,11 @@
-function soz_classifier(which_atlas)
+function soz_classifier(which_atlas,nb)
 
 %{
 This function models the SOZ based on various features
 %}
 
 %% Initial parameters
-
-nb = 20; % How many random testing/training splits (do 1,000 for paper)
+% nb = How many random testing/training splits (do 1,000 for paper)
 do_plot = 0;
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',}; % which models
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
@@ -14,9 +13,6 @@ params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add s
 
 %% File locations
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-plot_folder = [results_folder,'analysis/outcome/plots/'];
-
 nmodels = length(params.models);
 all_auc = nan(nb,nmodels);
 
@@ -29,7 +25,7 @@ for im = 1:nmodels
 end
 
 %% Load density model (this is how I get the search radius)
-mout = load([plot_folder,'dens_model.mat']);
+mout = load([locations.paper_plot_folder,'dens_model.mat']);
 mout = mout.out;
 resid = mout.resid;
 params.resid = resid;
@@ -132,7 +128,7 @@ if do_plot
         ylabel('True positive rate')
     end
 
-    print(gcf,[plot_folder,'prediction_nospikes'],'-dpng')
+    print(gcf,[locations.paper_plot_folder,'prediction_nospikes'],'-dpng')
 end
 
 
@@ -187,7 +183,7 @@ end
 
 all_out.stereo_vs_not = stereo_vs_not;
 
-save([plot_folder,'model_stuff_',params.which_atlas,'.mat'],'all_out')
+save([locations.paper_plot_folder,'model_stuff_',params.which_atlas,'.mat'],'all_out')
 
 
 
@@ -220,10 +216,8 @@ test_implant = params.test_implant;
 %% File locations
 locations = fc_toolbox_locs;
 addpath(genpath(locations.script_folder))
-results_folder = [locations.main_folder,'results/'];
-spike_folder = [results_folder,'analysis/outcome/data/'];
-atlas_folder = [results_folder,'analysis/atlas/'];
-plot_folder = [results_folder,'analysis/outcome/plots/'];
+spike_folder = locations.paper_data_folder;
+atlas_folder = locations.paper_data_folder;
 
 
 %% Load out file and get roc stuff

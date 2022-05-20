@@ -1,4 +1,14 @@
-function out = erin_dens_model(nout,max_spikes,plot_folder)
+function erin_dens_model
+
+%% Parameters
+ex_pt = 80;
+
+%% File locations
+locations = fc_toolbox_locs;
+
+%% Load out file with functional connectivity and spikes as well as SOZ info
+nout = load([locations.paper_data_folder,'main_out.mat']);
+nout = nout.out;
 
 %% Params
 poss_sr = [5:5:100];
@@ -7,8 +17,6 @@ nsr = length(poss_sr);
 %% Unpack struct
 all_locs = nout.all_locs;
 all_fc = nout.all_fc;
-all_soz_bin = nout.all_soz_bin;
-all_spikes = nout.all_spikes;
 npts = length(all_locs);
 
 
@@ -27,7 +35,7 @@ best_vec_dens = nan;
 best_vec_conn = nan;
 for isr = 1:nsr
     sr = poss_sr(isr);
-    [f,vec_dens,vec_conn] = dens_model_specific_sr(all_locs,all_fc,all_soz_bin,all_spikes,max_spikes,sr);
+    [f,vec_dens,vec_conn] = dens_model_specific_sr(all_locs,all_fc,sr);
     all_r2(isr) = f.Rsquared.Ordinary;
     
     if all_r2(isr) == max(all_r2)
@@ -73,21 +81,46 @@ for ip = 1:npts
     
 end
 
+%% smooth vec dens and vec conn for plotting
+[vec_dens_smooth,vec_conn_smooth] = smooth_data(vec_dens,vec_conn,1e-4);
+
 out.resid = resid;
+out.ex_pt = ex_pt;
 out.f = f;
 out.sr = sr;
-out.vec_dens = vec_dens;
-out.vec_conn = vec_conn;
-out.all_fc = all_fc;
-out.all_locs = all_locs;
+out.vec_dens = vec_dens_smooth;
+out.vec_conn = vec_conn_smooth;
+out.all_fc = all_fc{ex_pt};
+out.all_locs = all_locs{ex_pt};
 out.g = g;
 out.poss_sr = poss_sr;
 out.all_r2 = all_r2;
 
-if exist('plot_folder','var') && ~isempty(plot_folder)
-    
-    save([plot_folder,'dens_model.mat'],'out');
+
+save([locations.paper_plot_folder,'dens_model.mat'],'out');
+
+
 end
+
+
+function [xbin,ybin] = smooth_data(x,y,granularity)
+
+minx = min(x);
+maxx = max(x);
+span = maxx-minx;
+bin_size = span*granularity;
+
+bin_edges = minx:bin_size:maxx;
+nbins = length(bin_edges)-1;
+xbin = nan(nbins,1);
+ybin = nan(nbins,1);
+
+for i = 1:nbins
+    xbin(i) = mean([bin_edges(i) bin_edges(i+1)]);
+    ybin(i) = mean(y(x>=bin_edges(i) & x<bin_edges(i+1)));
+    
+end
+
 
 
 end

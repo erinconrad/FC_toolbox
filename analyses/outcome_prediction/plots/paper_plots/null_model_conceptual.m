@@ -8,14 +8,14 @@ results_folder = [locations.main_folder,'results/'];
 atlas_folder = [locations.main_folder,'data/atlas/brainnetome/'];
 atlas_out_folder = [results_folder,'analysis/atlas/'];
 
-bct_folder= locations.bct;
-data_folder = [results_folder,'analysis/outcome/data/'];
-plot_folder = [results_folder,'analysis/outcome/plots/paper_plots/'];
+data_folder = locations.paper_data_folder;
+plot_folder = locations.paper_plot_folder;
 
 %% Load stuff
 data = load([data_folder,'main_out.mat']);
 data = data.out;
-
+scripts_folder = locations.script_folder;
+addpath(genpath(scripts_folder));
 model_folder = [results_folder,'analysis/outcome/plots/'];
 model = load([model_folder,'model_stuff_',which_atlas,'.mat']);
 model_info = model.all_out.model_info;

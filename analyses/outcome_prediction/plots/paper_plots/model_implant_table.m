@@ -2,12 +2,8 @@ function model_implant_table
 
 %% Get file locs
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-
-bct_folder= locations.bct;
-out_folder = [results_folder,'analysis/outcome/data/'];
-plot_folder = [results_folder,'analysis/outcome/plots/paper_plots/'];
-model_folder = [results_folder,'analysis/outcome/plots/'];
+model_folder = locations.paper_plot_folder;
+plot_folder = locations.paper_plot_folder;
 
 fname = 'TableS2.html';
 brain_atlas = 'brainnetome';

@@ -2,14 +2,7 @@ function main_conceptual_figure
 
 %% Get file locs
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-bct_folder= locations.bct;
-atlas_folder = [results_folder,'analysis/atlas/'];
-data_folder = [results_folder,'analysis/outcome/data/'];
-plot_folder = [results_folder,'analysis/outcome/plots/paper_plots/'];
-model_folder = [results_folder,'analysis/outcome/plots/'];
-
-if ~exist(plot_folder,'dir'), mkdir(plot_folder); end
+plot_folder = locations.paper_plot_folder;
 
 % add script folder to path
 scripts_folder = locations.script_folder;
@@ -17,7 +10,7 @@ addpath(genpath(scripts_folder));
 addpath(genpath(bct_folder));
 
 %% Load stuff
-data = load([data_folder,'main_out.mat']);
+data = load([locations.paper_data_folder,'main_out.mat']);
 data = data.out;
 
 %% initialize figure

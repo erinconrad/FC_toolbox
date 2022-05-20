@@ -1,4 +1,4 @@
-function [f,vec_dens,vec_conn] = dens_model_specific_sr(all_locs,all_fc,all_soz_bin,all_spikes,max_spikes,sr)
+function [f,vec_dens,vec_conn] = dens_model_specific_sr(all_locs,all_fc,sr)
 
 %% establish all density matrices
 npts = length(all_locs);
@@ -15,7 +15,7 @@ for ip = 1:npts
     
 end
 
-[f,vec_dens,vec_conn] = inner_dens_model(all_density,all_fc,all_soz_bin,all_spikes,max_spikes);
+[f,vec_dens,vec_conn] = inner_dens_model(all_density,all_fc);
 
 
 
