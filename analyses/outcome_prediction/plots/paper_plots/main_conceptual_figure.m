@@ -7,7 +7,6 @@ plot_folder = locations.paper_plot_folder;
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
-addpath(genpath(bct_folder));
 
 %% Load stuff
 data = load([locations.paper_data_folder,'main_out.mat']);
