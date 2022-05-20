@@ -3,8 +3,6 @@ function main_ieeg_biases(n_test_train_splits,doing_from_github)
 % seed random number generator (for consistency in the random testing/training splits)
 rng(0) 
 
-doing_from_github = 1
-
 % how many testing/training splits
 if ~exist('n_test_train_splits','var')
     n_test_train_splits = 1e3;
