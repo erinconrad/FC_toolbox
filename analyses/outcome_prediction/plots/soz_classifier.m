@@ -60,9 +60,6 @@ end
 all_out.npts_remain = out.npts_remain;
 
 %% for each pair of models, generate stats for AUC difference 
-model_diff = nan(nmodels,nmodels);
-model_t = nan(nmodels,nmodels);
-model_df = nan(nmodels,nmodels);
 model_p = nan(nmodels,nmodels);
 for im = 1:nmodels
     for jm = 1:im-1
@@ -71,15 +68,9 @@ for im = 1:nmodels
         auc_i = model_info(im).all_auc;
         auc_j = model_info(jm).all_auc;
         
-        % Paired t-test? Same training/testing split
-        [~,p,~,stats] = ttest(auc_i,auc_j);
-        model_t(im,jm) = stats.tstat;
-        model_t(jm,im) = -stats.tstat;
-        model_p(im,jm) = p;
-        model_p(jm,im) = p;
-        model_df(im,jm) = stats.df;
-        model_df(jm,im) = stats.df;
-        
+        % bootstrap stats
+        stats = bootstrap_ci_and_p(auc_i,auc_j);
+        model_p(im,jm) = stats.p;
         
     end
 end
@@ -103,9 +94,6 @@ for im = 1:nmodels
 end
 
 all_out.model_info = model_info;
-all_out.model_t =  model_t;
-all_out.model_df = model_df;
-all_out.model_diff = model_diff;
 all_out.model_p = model_p;
 all_out.bootci = bootci;
 
@@ -134,8 +122,17 @@ end
 
 %% Do once with all data to get glme paramaters
 params.do_glme = 1; 
-out = individual_classifier(params);
-all_out.glme_stuff = out;
+glme_beta = nan(nb,1);
+for ib = 1:nb
+    glme_stuff = individual_classifier(params);
+    beta = glme_stuff.model(5).glm.Coefficients{5,2};
+    glme_beta(ib) = beta;
+end
+all_out.glme_stuff.last_model = out;
+all_out.glme_stuff.all_betas = glme_beta;
+% Get stats on the betas
+stats = bootstrap_ci_and_p(glme_beta);
+all_out.glme_stuff.stats = stats;
 
 
 %% Do it again with stereo vs grid strip
@@ -169,14 +166,12 @@ for im = 1:nmodels
     stereo_auc = stereo.model_info(im).all_auc;
     not_stereo_auc = not_stereo.model_info(im).all_auc;
 
-    % independent t test (different testing training splits in each
-    % bootstrap)
-    [~,p,~,stats] = ttest2(stereo_auc,not_stereo_auc);
+    % Get stats on the diff
+    stats = bootstrap_ci_and_p(stereo_auc,not_stereo_auc);
         
-    stereo_vs_not.model(im).p = p;
-    stereo_vs_not.model(im).stats = stats;
+    stereo_vs_not.model(im).p = stats.p;
     stereo_vs_not.model(im).means = [nanmean(stereo_auc),nanmean(not_stereo_auc)];
-    stereo_vs_not.model(im).sd = [nanstd(stereo_auc),nanstd(not_stereo_auc)];
+    stereo_vs_not.model(im).ci95 = [stats.CI_95];
     stereo_vs_not.model(im).all = [stereo_auc',not_stereo_auc'];
   
 end
@@ -380,7 +375,9 @@ mout.n_exc_spikes = n_exc_spikes;
 
 %% Divide into training and testing set
 if do_glme
-    T_train = T; % do glme model on full dataset
+    training = randsample(npts,npts,true); % the true means to sample WITH replacement
+    training_idx = ismember(T.vec_pt_idx,training);
+    T_train = T(training_idx,:);
 else
     
     if test_implant == 1 % stereo

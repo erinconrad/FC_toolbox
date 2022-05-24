@@ -28,27 +28,18 @@ model = model.all_out;
 %% Get data into table friendly format
 mnames = {'Chance','Null model','Null + connectivity','Null + spikes','All'};
 nmodels = length(mnames);
-stat = cell(3,1);
-for i = 1:length(stat)
-    stat{i} = nan(nmodels,nmodels);
-end
-for i = 1:length(stat)
-    if i == 1
-        thing = model.model_t;
-    elseif i == 2
-        thing = model.model_p;
-    elseif i == 3
-        thing = model.model_df;
-    end
-    % need to fill in 1,.... for all (each one compared to chance - the
-    % pvalue associated with the AUC)
-    stat{i}(2,3) = thing(2,3); % density/connectivity
-    stat{i}(2,4) = thing(2,4); % density/spikes
-    stat{i}(2,5) = thing(2,5); % density/all
-    stat{i}(3,4) = thing(3,4); % connectivity/spikes
-    stat{i}(3,5) = thing(3,5); % connectivity/all
-    stat{i}(4,5) = thing(4,5); % spikes/all
-end
+stat = nan(nmodels,nmodels);
+
+thing = model.model_p';
+
+% need to fill in 1,.... for all (each one compared to chance - the
+% pvalue associated with the AUC)
+stat(2,3) = thing(2,3); % density/connectivity
+stat(2,4) = thing(2,4); % density/spikes
+stat(2,5) = thing(2,5); % density/all
+stat(3,4) = thing(3,4); % connectivity/spikes
+stat(3,5) = thing(3,5); % connectivity/all
+stat(4,5) = thing(4,5); % spikes/all
 
 individ_auc = nan(nmodels,1);
 indiv_boot_ci = model.bootci;
@@ -99,8 +90,7 @@ for im = 2:nmodels
         if jm <= im
             
         else
-            fprintf(fid,'t(%d) = %1.2f, %s',stat{3}(im,jm),stat{1}(im,jm),...
-                get_p_html(stat{2}(im,jm)));
+            fprintf(fid,'%s',get_p_html(stat(im,jm)));
         end
         
         fprintf(fid,'</td>');

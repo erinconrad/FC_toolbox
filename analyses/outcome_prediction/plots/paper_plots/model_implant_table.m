@@ -19,7 +19,7 @@ fid = fopen([plot_folder,fname],'a');
 stat = nan(2,4,7); 
 % first dimension which atlas
 % second dimension which model
-% 3rd dimension: mean seeg, std seeg, mean g/s, std g/s, df, tstat, p-value
+% 3rd dimension: mean seeg, ci95 seeg, mean g/s, ci95 g/s, p-value
 
 atlas_names = {'Brainnetome','AAL'};
 mnames = {'Null model','Null + connectivity','Null + spikes','All'};
@@ -44,10 +44,9 @@ for ia = 1:2
         curr_model = model.stereo_vs_not.model(im);
         
         % get the stuff
-        stat(ia,count,[1,3]) = curr_model.means; % means
-        stat(ia,count,[2,4]) = curr_model.sd; % stds
-        stat(ia,count,5) = curr_model.stats.df;
-        stat(ia,count,6) = curr_model.stats.tstat;
+        stat(ia,count,[1,4]) = curr_model.means; % means
+        stat(ia,count,2:3) = curr_model.ci95(1,:); % CI-95 seeg
+        stat(ia,count,5:6) = curr_model.ci95(2,:); % CI-95 g/s
         stat(ia,count,7) = curr_model.p;
         
     end
@@ -83,11 +82,11 @@ for im = 1:4
         % next column (cell)
         fprintf(fid,'<td>');
         
-        fprintf(fid,['Stereo-EEG mean (SD): %1.2f (%1.2f)<br>G/S/D mean (SD):'...
-            ' %1.2f (%1.2f)<br><i>t</i>(%d) = %1.2f, %s'],...
-            stat(ia,im,1),stat(ia,im,2),...
-            stat(ia,im,3),stat(ia,im,4),...
-            stat(ia,im,5),stat(ia,im,6),get_p_html(stat(ia,im,7)));
+        fprintf(fid,['Stereo-EEG mean (95%% CI): %1.2f (%1.2f-%1.2f)<br>G/S/D mean'...
+            ' (95%% CI): %1.2f (%1.2f-%1.2f)<br>%s'],...
+            stat(ia,im,1),stat(ia,im,2), stat(ia,im,3),...
+            stat(ia,im,4),stat(ia,im,5),stat(ia,im,6),...
+            get_p_html(stat(ia,im,7)));
         
         fprintf(fid,'</td>');
         
