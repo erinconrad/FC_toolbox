@@ -375,22 +375,11 @@ mout.n_exc_spikes = n_exc_spikes;
 
 %% Divide into training and testing set
 if do_glme
-    npts = length(unique_pts);
-    training = randsample(unique_pts,npts,true); % the true means to sample WITH replacement
+    training = randsample(npts,npts,true); % the true means to sample WITH replacement
     
     % rebuild the table
-    temp_table  = cell2table(cell(0,size(T,2)),'VariableNames',T.Properties.VariableNames);
-    for ip = 1:length(training)
-        % get the rows of T with this patient id
-        curr_rows = ismember(T.vec_pt_idx,training(ip));
-        
-        temp_table = [temp_table;T(curr_rows,:)];
-        
-    end
+    optionsChange  = cell2table(cell(0,size(T,2))
     
-    T_train = temp_table;
-    
-    assert(isequal(unique(T_train.vec_pt_idx),unique(training)))
     %training_idx = ismember(T.vec_pt_idx,training);
     %T_train = T(training_idx,:);
 else
