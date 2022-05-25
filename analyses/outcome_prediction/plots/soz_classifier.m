@@ -374,132 +374,144 @@ mout.n_exc_locs = n_exc_locs;
 mout.n_exc_spikes = n_exc_spikes;
 
 %% Divide into training and testing set
-if do_glme
-    npts = length(unique_pts);
-    training = randsample(unique_pts,npts,true); % the true means to sample WITH replacement
-    
-    % rebuild the table
-    temp_table  = cell2table(cell(0,size(T,2)),'VariableNames',T.Properties.VariableNames);
-    for ip = 1:length(training)
-        % get the rows of T with this patient id
-        curr_rows = ismember(T.vec_pt_idx,training(ip));
-        
-        temp_table = [temp_table;T(curr_rows,:)];
-        
-    end
-    
-    T_train = temp_table;
-    
-    assert(isequal(unique(T_train.vec_pt_idx),unique(training)))
-    %training_idx = ismember(T.vec_pt_idx,training);
-    %T_train = T(training_idx,:);
-else
-    
-    if test_implant == 1 % stereo
-        
-        stereo_idx = stereo(T.vec_pt_idx) == 1; % Reduce to only stereo
-        T(~stereo_idx,:) = [];
-        unique_pts = unique(T.vec_pt_idx);
-        mout.n_stereo = length(unique_pts);
-        training = randsample(n_stereo,floor(n_stereo*prop_train));
-        training_idx = ismember(T.vec_pt_idx,training);
-        testing_idx = ~ismember(T.vec_pt_idx,training);
-        T_train = T(training_idx,:);
-        T_test = T(testing_idx,:);
-        
-        % confirm all stereo
-        assert(~any(stereo(T.vec_pt_idx) ~= 1));
-        
-    elseif test_implant == 2 % grid/strip
-        
-        not_stereo_idx = not_stereo(T.vec_pt_idx) == 1; % Reduce to only not stereo
-        T(~not_stereo_idx,:) = [];
-        unique_pts = unique(T.vec_pt_idx);
-        mout.n_not_stereo = length(unique_pts);
-        training = randsample(n_not_stereo,floor(n_not_stereo*prop_train));
-        training_idx = ismember(T.vec_pt_idx,training);
-        testing_idx = ~ismember(T.vec_pt_idx,training);
-        T_train = T(training_idx,:);
-        T_test = T(testing_idx,:);
-        
-        assert(~any(not_stereo(T.vec_pt_idx) ~= 1));
-        
-    else
-    
-        training = randsample(npts,floor(npts*prop_train));
-        training_idx = ismember(T.vec_pt_idx,training);
-        testing_idx = ~ismember(T.vec_pt_idx,training);
-        T_train = T(training_idx,:);
-        T_test = T(testing_idx,:);
-
-        
-    end
-    
-    %% Confirm that I separated by patients
-    train_pts = unique(T_train.vec_pt_idx);
-    test_pts = unique(T_test.vec_pt_idx);
-    assert(isempty(intersect(train_pts,test_pts)))
-    
-end
-
-
-
-% Loop over models
-for im = 1:length(models)
-    curr_model = models{im};
-    switch curr_model
-        
-        case 'ana'
-            formula = 'vec_soz ~ vec_loc';
-            formula_me = 'vec_soz ~ vec_loc + (1|vec_pt_idx)';
-        case 'ana_cov'
-            formula = 'vec_soz ~ vec_loc + vec_dens';
-            formula_me = 'vec_soz ~ vec_loc + vec_dens+ (1|vec_pt_idx)';
-        case 'ana_cov_spikes'
-            formula = 'vec_soz ~ vec_loc + vec_dens + vec_rate';
-            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + (1|vec_pt_idx)';
-        case 'ana_cov_spikes_ns'
-            formula = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns';
-            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns + (1|vec_pt_idx)';
-        case 'ana_cov_ns'
-            formula = 'vec_soz ~ vec_loc + vec_dens + vec_ns';
-            formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_ns + (1|vec_pt_idx)';
-    end
-    
-    %% Do both the glm and glme
-    %T_train_me = T_train;
-   % T_train_me.vec_pt_idx = nominal(T_train_me.vec_pt_idx);
-    
-   if do_glme
-       T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
-       glm = fitglme(T_train,formula_me,'Distribution','Binomial');
-   else
-       glm = fitglm(T_train,formula,'Distribution','Binomial');
-   end
-  %  
-    
-    %% Test glm on testing data
-    params = glm.CoefficientNames;
-    
+while 1 % wrap this all in a while loop to try again if wacky errors related to bad selection (occurs in ~1/100-1/200 times)
     if do_glme
-        mout.model(im).params = params;
-        mout.model(im).name = curr_model;
-        mout.model(im).glm = glm;
-        continue;
+        npts = length(unique_pts);
+        training = randsample(unique_pts,npts,true); % the true means to sample WITH replacement
+
+        % rebuild the table
+        temp_table  = cell2table(cell(0,size(T,2)),'VariableNames',T.Properties.VariableNames);
+        for ip = 1:length(training)
+            % get the rows of T with this patient id
+            curr_rows = ismember(T.vec_pt_idx,training(ip));
+
+            temp_table = [temp_table;T(curr_rows,:)];
+
+        end
+
+        T_train = temp_table;
+
+        assert(isequal(unique(T_train.vec_pt_idx),unique(training)))
+        %training_idx = ismember(T.vec_pt_idx,training);
+        %T_train = T(training_idx,:);
+    else
+
+        if test_implant == 1 % stereo
+
+            stereo_idx = stereo(T.vec_pt_idx) == 1; % Reduce to only stereo
+            T(~stereo_idx,:) = [];
+            unique_pts = unique(T.vec_pt_idx);
+            mout.n_stereo = length(unique_pts);
+            training = randsample(n_stereo,floor(n_stereo*prop_train));
+            training_idx = ismember(T.vec_pt_idx,training);
+            testing_idx = ~ismember(T.vec_pt_idx,training);
+            T_train = T(training_idx,:);
+            T_test = T(testing_idx,:);
+
+            % confirm all stereo
+            assert(~any(stereo(T.vec_pt_idx) ~= 1));
+
+        elseif test_implant == 2 % grid/strip
+
+            not_stereo_idx = not_stereo(T.vec_pt_idx) == 1; % Reduce to only not stereo
+            T(~not_stereo_idx,:) = [];
+            unique_pts = unique(T.vec_pt_idx);
+            mout.n_not_stereo = length(unique_pts);
+            training = randsample(n_not_stereo,floor(n_not_stereo*prop_train));
+            training_idx = ismember(T.vec_pt_idx,training);
+            testing_idx = ~ismember(T.vec_pt_idx,training);
+            T_train = T(training_idx,:);
+            T_test = T(testing_idx,:);
+
+            assert(~any(not_stereo(T.vec_pt_idx) ~= 1));
+
+        else
+
+            training = randsample(npts,floor(npts*prop_train));
+            training_idx = ismember(T.vec_pt_idx,training);
+            testing_idx = ~ismember(T.vec_pt_idx,training);
+            T_train = T(training_idx,:);
+            T_test = T(testing_idx,:);
+
+
+        end
+
+        %% Confirm that I separated by patients
+        train_pts = unique(T_train.vec_pt_idx);
+        test_pts = unique(T_test.vec_pt_idx);
+        assert(isempty(intersect(train_pts,test_pts)))
+
     end
-    
-    % Derive classifications (probability of SOZ) for testing data
-    classification = feval(glm,T_test);
-    
-    % Compare classification against true
-    [X,Y,~,AUC,~] = perfcurve(T_test.vec_soz,classification,1);
-  
-    mout.model(im).name = curr_model;
-   % out.model(im).glme = glme;
-    mout.model(im).roc = [X,Y];
-    mout.model(im).auc = AUC;
-    
-    
+
+
+
+    % Loop over models
+    for im = 1:length(models)
+        curr_model = models{im};
+        switch curr_model
+
+            case 'ana'
+                formula = 'vec_soz ~ vec_loc';
+                formula_me = 'vec_soz ~ vec_loc + (1|vec_pt_idx)';
+            case 'ana_cov'
+                formula = 'vec_soz ~ vec_loc + vec_dens';
+                formula_me = 'vec_soz ~ vec_loc + vec_dens+ (1|vec_pt_idx)';
+            case 'ana_cov_spikes'
+                formula = 'vec_soz ~ vec_loc + vec_dens + vec_rate';
+                formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + (1|vec_pt_idx)';
+            case 'ana_cov_spikes_ns'
+                formula = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns';
+                formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_rate + vec_ns + (1|vec_pt_idx)';
+            case 'ana_cov_ns'
+                formula = 'vec_soz ~ vec_loc + vec_dens + vec_ns';
+                formula_me = 'vec_soz ~ vec_loc + vec_dens + vec_ns + (1|vec_pt_idx)';
+        end
+
+        %% Do both the glm and glme
+        %T_train_me = T_train;
+       % T_train_me.vec_pt_idx = nominal(T_train_me.vec_pt_idx);
+       
+       try
+           if do_glme % try glme regardless
+               T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
+               T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
+               glm = fitglme(T_train,formula_me,'Distribution','Binomial');
+           else
+               glm = fitglm(T_train,formula,'Distribution','Binomial');
+           end
+       catch ME
+            if contains(ME.message,'NaN or Inf values are not allowed in X')
+                fprintf('\nWacky error, resample again...');
+                continue % redo while loop
+            end
+           
+       end
+      %  
+
+        %% Test glm on testing data
+        params = glm.CoefficientNames;
+
+        if do_glme
+            mout.model(im).params = params;
+            mout.model(im).name = curr_model;
+            mout.model(im).glm = glm;
+            continue;
+        end
+
+        % Derive classifications (probability of SOZ) for testing data
+        classification = feval(glm,T_test);
+
+        % Compare classification against true
+        [X,Y,~,AUC,~] = perfcurve(T_test.vec_soz,classification,1);
+
+        mout.model(im).name = curr_model;
+       % out.model(im).glme = glme;
+        mout.model(im).roc = [X,Y];
+        mout.model(im).auc = AUC;
+
+
+    end
+    break % if survive to here, break out of the while loop
 end
 
 
