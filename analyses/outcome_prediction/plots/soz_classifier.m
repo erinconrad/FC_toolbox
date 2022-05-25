@@ -390,6 +390,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
         end
 
         T_train = temp_table;
+        T_test = temp_table;
 
         assert(isequal(unique(T_train.vec_pt_idx),unique(training)))
         %training_idx = ismember(T.vec_pt_idx,training);
@@ -483,6 +484,8 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
             if contains(ME.message,'NaN or Inf values are not allowed in X')
                 fprintf('\nWacky error, resample again...');
                 continue % redo while loop
+            else
+                error('unexpected error');
             end
            
        end
@@ -498,8 +501,31 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
             continue;
         end
 
-        % Derive classifications (probability of SOZ) for testing data
-        classification = feval(glm,T_test);
+        if 1
+            asum = zeros(size(T_test,1),1);
+            asum = asum + glm.Coefficients.Estimate(1);
+            for p = 2:length(params)
+                est = glm.Coefficients.Estimate(p);
+                if contains((params{p}),'vec_loc')
+                    C = strsplit((params{p}),'_');
+                    cat = C{3};
+
+                    % find the indices of T_test that fit this category
+                    match = strcmp(T_test.vec_loc,cat);
+                    asum(match) = asum(match) + est;
+                else
+
+                    asum = asum +  T_test.(params{p})*est;
+                end
+            end
+
+
+            classification = logistic(asum);
+        else
+            % Derive classifications (probability of SOZ) for testing data
+            classification = feval(glm,T_test); % predict
+            
+        end
 
         % Compare classification against true
         [X,Y,~,AUC,~] = perfcurve(T_test.vec_soz,classification,1);
@@ -509,7 +535,9 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
         mout.model(im).roc = [X,Y];
         mout.model(im).auc = AUC;
 
-
+        if isempty(mout.model(im).auc)
+            error('what');
+        end
     end
     break % if survive to here, break out of the while loop
 end
