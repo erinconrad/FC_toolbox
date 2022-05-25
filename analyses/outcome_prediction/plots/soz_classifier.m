@@ -474,7 +474,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
        % T_train_me.vec_pt_idx = nominal(T_train_me.vec_pt_idx);
        
        try
-           if do_glme%1 % try glme regardless
+           if do_glme % try glme regardless
                T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
                T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
                glm = fitglme(T_train,formula_me,'Distribution','Binomial');
@@ -483,7 +483,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
            end
        catch ME
             if contains(ME.message,'NaN or Inf values are not allowed in X')
-                fprintf('\nWacky error, resample again...');
+                fprintf('\nWacky error, resample again...\n');
                 continue_out_of_while_loop = 1;
                 break % break out of model for loop
             else

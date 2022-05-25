@@ -25,6 +25,10 @@ fprintf('\nDoing alpha delta ratio validation\n');
 roc_out = ad_validation;
 disc = roc_out.disc;
 
+%% Time-varying analysis
+fprintf('\nDoing time-varying analysis\n');
+time_out = time_varying_spikes(disc);
+
 %% Do binary ad analyses
 fprintf('\nDoing binary AD analyses\n');
 bin_out = binary_ad_analyses(disc);
@@ -52,6 +56,7 @@ out.roc_out = roc_out;
 out.sz_circ_out = sz_circ_out;
 out.bin_out = bin_out;
 out.sz_out = sz_out;
+out.time_out = time_out;
 out.out_folder = out_folder;
 
 %% Save out file
