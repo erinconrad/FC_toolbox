@@ -1,5 +1,7 @@
 function out = time_varying_spikes(disc)
 
+exc = []; % don't change
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
