@@ -375,6 +375,7 @@ mout.n_exc_spikes = n_exc_spikes;
 
 %% Divide into training and testing set
 while 1 % wrap this all in a while loop to try again if wacky errors related to bad selection (occurs in ~1/100-1/200 times)
+    continue_out_of_while_loop = 0;
     if do_glme
         npts = length(unique_pts);
         training = randsample(unique_pts,npts,true); % the true means to sample WITH replacement
@@ -473,7 +474,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
        % T_train_me.vec_pt_idx = nominal(T_train_me.vec_pt_idx);
        
        try
-           if 1 % try glme regardless
+           if do_glme%1 % try glme regardless
                T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
                T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
                glm = fitglme(T_train,formula_me,'Distribution','Binomial');
@@ -483,7 +484,8 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
        catch ME
             if contains(ME.message,'NaN or Inf values are not allowed in X')
                 fprintf('\nWacky error, resample again...');
-                continue % redo while loop
+                continue_out_of_while_loop = 1;
+                break % break out of model for loop
             else
                 error('unexpected error');
             end
@@ -539,6 +541,9 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
         if isempty(mout.model(im).auc)
             error('what');
         end
+    end
+    if continue_out_of_while_loop == 1
+        continue;
     end
     break % if survive to here, break out of the while loop
 end
