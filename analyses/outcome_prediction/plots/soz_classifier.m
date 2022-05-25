@@ -473,7 +473,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
        % T_train_me.vec_pt_idx = nominal(T_train_me.vec_pt_idx);
        
        try
-           if do_glme % try glme regardless
+           if 1 % try glme regardless
                T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
                T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
                glm = fitglme(T_train,formula_me,'Distribution','Binomial');
@@ -501,7 +501,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
             continue;
         end
 
-        if 1
+        if 0
             asum = zeros(size(T_test,1),1);
             asum = asum + glm.Coefficients.Estimate(1);
             for p = 2:length(params)
@@ -523,7 +523,8 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
             classification = logistic(asum);
         else
             % Derive classifications (probability of SOZ) for testing data
-            classification = feval(glm,T_test); % predict
+            %classification = feval(glm,T_test); % predict
+            classification = predict(glm,T_test);
             
         end
 
