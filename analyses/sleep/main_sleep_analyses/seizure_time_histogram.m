@@ -64,7 +64,7 @@ all_pts_bin_id_vec = [];
 all_pts_id_vec = [];
 all_pts_sleep_vec = [];
 missing_loc = zeros(npts,1);
-post_ictal_rates = cell(npts,1);
+post_ictal_rates = cell(npts,2);
 pre_to_post_change = nan(npts,1);
 
 spikes_strat = cell(3,1);
@@ -177,7 +177,8 @@ for p = 1:npts
 
     end
     
-    post_ictal_rates{p} = (nanmean(sp_count_bins_all_elecs,1))';
+    post_ictal_rates{p,1} = (nanmean(sp_count_bins_all_elecs(:,pre_bins),1))';
+    post_ictal_rates{p,2} = (nanmean(sp_count_bins_all_elecs(:,post_bins),1))';
     
     %% Calculate the pre-to-post change
     pre_bins = 1:nbins/2;
