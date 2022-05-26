@@ -35,9 +35,9 @@ params.which_atlas = which_atlas;
 params.sr = mout.sr; % search radius (leave empty to use default calc)
 params.prop_train = 2/3;
 params.do_r2 = 0; % r^2 instead of r for FC measurement? (should be zero)
-%params.do_ns_resid = 0; % take residuals of ns (density normalized). I don't do this.
+params.do_ns_resid = 0; % take residuals of ns (density normalized). I don't do this.
 params.include_lat = 0; % include laterality in addition to broad anatomical regions. I don't do this but should I????
-%params.dens_model = 1; % use Erin's density model as opposed to rat11. Doesn't matter because I don't do residuals.
+params.dens_model = 1; % use Erin's density model as opposed to rat11. Doesn't matter because I don't do residuals.
 
 %params.max_spikes = 1/3600; % max spikes for both distance and density models
 params.do_norm = 1; % normalize spike rate and density within pt
@@ -200,10 +200,10 @@ prop_train = params.prop_train;
 do_norm = params.do_norm;
 models = params.models;
 atlas_anatomy = params.atlas_anatomy;
-%do_ns_resid = params.do_ns_resid;
+do_ns_resid = params.do_ns_resid;
 do_glme = params.do_glme;
 include_lat = params.include_lat;
-%dens_model = params.dens_model;
+dens_model = params.dens_model;
 do_r2 = params.do_r2;
 sr = params.sr;
 test_implant = params.test_implant;
@@ -249,7 +249,7 @@ atlas_nums = atlas_out.atlas_nums;
 atlas_names = atlas_out.atlas_names;
 
 %% Spatially normalize the FC matrix
-%{
+%
 if dens_model
     resid = params.resid;
 else
@@ -257,13 +257,13 @@ else
 end
 
 ns_resid = cellfun(@(x) nansum(x,2),resid,'uniformoutput',false);
+ns = cellfun(@(x) nanmean(x,2),fc,'uniformoutput',false); % average rather than sum
 
 if do_ns_resid == 1
     ns = ns_resid;
 end
-%}
 
-ns = cellfun(@(x) nanmean(x,2),fc,'uniformoutput',false); % average rather than sum
+
 
 
 %% Localize regions into broad categories
@@ -322,11 +322,11 @@ for ip = 1:npts
     % normalize within patient
     if do_norm
         curr_rate = (curr_rate-nanmean(curr_rate))./nanstd(curr_rate);
-        %{
+        %
         if ~do_ns_resid
             curr_ns = (curr_ns-nanmean(curr_ns))./nanstd(curr_ns);
         end
-        %}
+        
         density = (density - nanmean(density))./nanstd(density);
     end
     

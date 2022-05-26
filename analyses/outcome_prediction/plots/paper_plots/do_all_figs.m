@@ -56,6 +56,8 @@ fprintf(fid,['<p>We included all patients who had available electrode localizati
     'and lateralization, and implant strategy (Table 1).</p>'],sum(corr_out.pts_with_any_locs));
 fclose(fid);
 
+if 1
+
 %% Fig 1 - conceptual fig
 if doing_from_github == 0
     main_conceptual_figure
@@ -519,6 +521,7 @@ print(gcf,[plot_folder,fig_name],'-dpng')
 %% Figure 5 - null model construction
 if doing_from_github == 0 || doing_from_github == 2
     null_model_conceptual
+end
 end
 
 %% Table 2 - model comparisons
