@@ -64,7 +64,7 @@ all_pts_bin_id_vec = [];
 all_pts_id_vec = [];
 all_pts_sleep_vec = [];
 missing_loc = zeros(npts,1);
-pre_post_ictal_rates = cell(npts,1);
+post_ictal_rates = cell(npts,1);
 pre_to_post_change = nan(npts,1);
 
 spikes_strat = cell(3,1);
@@ -357,7 +357,7 @@ out.surround_hours = surround_hours;
 out.spikes_strat = spikes_strat;
 out.main = main;
 out.names = names;
-out.pre_post_ictal_rates = pre_post_ictal_rates;
+out.post_ictal_rates = post_ictal_rates;
 out.pre_to_post_change = pre_to_post_change;
 
 %{
