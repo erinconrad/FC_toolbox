@@ -168,13 +168,16 @@ for p = 1:npts
         too_early = curr_bins <= 0;
         too_late = curr_bins > size(avg_spikes,2);
         
+        pre_bins_in_range = curr_bins(pre_bins) > 0 & curr_bins(pre_bins) <= size(avg_spikes,2);
+        post_bins_in_range = curr_bins(post_bins) > 0 & curr_bins(post_bins) <= size(avg_spikes,2);
+        
         % get the spikes for those in range
         out_bins = [nan(1,sum(too_early)),avg_spikes(curr_bins(bins_in_range)),nan(1,sum(too_late))];
         sp_bins(s,:) = out_bins;
         
         sp_count_bins(s,:) = [nan(1,sum(too_early)),spike_counts(curr_bins(bins_in_range)),nan(1,sum(too_late))];
-        sp_count_bins_all_elecs(s,:,1) = nanmean(spikes(:,curr_bins(pre_bins)),2);
-        sp_count_bins_all_elecs(s,:,2) = nanmean(spikes(:,curr_bins(post_bins)),2);
+        sp_count_bins_all_elecs(s,:,1) = nanmean(spikes(:,curr_bins(pre_bins_in_range)),2);
+        sp_count_bins_all_elecs(s,:,2) = nanmean(spikes(:,curr_bins(post_bins_in_range)),2);
         
         % sleep bins
         sleep_in_bins(s,:) = [nan(1,sum(too_early)),...
