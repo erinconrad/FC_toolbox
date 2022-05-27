@@ -65,6 +65,7 @@ all_circ_P = nan(npts,1);
 names = cell(npts,1);
 sex = cell(npts,1);
 age_onset = nan(npts,1);
+stereo = nan(npts,1);
 age_implant = nan(npts,1);
 duration = nan(npts,1);
 
@@ -91,6 +92,7 @@ for p = 1:npts
     soz_loc = summ.soz.loc;
     soz_lat = summ.soz.lat;
     name = summ.name;
+    stereo(p) = summ.clinical.stereo;
     sex{p} = summ.clinical.sex;
     age_implant(p) = summ.clinical.age_implant;
     age_onset(p) = summ.clinical.age_onset;
@@ -211,6 +213,7 @@ out.age_implant = age_implant;
 out.duration = duration;
 out.all_tod_rate = all_tod_rate;
 out.tod_edges = tod_edges;
+out.stereo = stereo;
 %out.eleven_to_five = eleven_to_five;
 
 %{

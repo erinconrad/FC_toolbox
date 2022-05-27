@@ -52,7 +52,7 @@ duration_ticks = [duration_ticks,new_lim];
 duration_ticklabels = arrayfun(@(x) sprintf('%d',x),duration_ticks,'uniformoutput',false);
 duration_ticklabels(end) = {'Full'};
 
-if 0
+%{
 figure
 for iws = 1:2
     curr_aucs = squeeze(mean(all_aucs(iws,:,:),3));
@@ -65,7 +65,8 @@ xticks(duration_ticks)
 xticklabels(duration_ticklabels)
 ylabel('Mean AUC')
 title('Accuracy by duration')
-end
+%}
+
 out.all_aucs = all_aucs;
 out.durations = durations;
 out.duration_ticklabels = duration_ticklabels;

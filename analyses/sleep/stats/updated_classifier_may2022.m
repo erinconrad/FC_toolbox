@@ -9,7 +9,6 @@ randomize_soz = 0; % negative control. If I shuffle the SOZ, I should not exceed
 locations = fc_toolbox_locs;
 addpath(genpath(locations.script_folder))
 script_folder = locations.script_folder;
-results_folder = [locations.main_folder,'results/'];
 out_folder1 = [script_folder,'analyses/sleep/data/'];
 
 
@@ -90,7 +89,10 @@ else
     T_train = T(training_idx,:);
     T_test = T(testing_idx,:);
 
-    
+    if isempty(T_test)
+        mout.AUC = nan;
+        return
+    end
     % Confirm I got the right pt to leave out
     train_pts = unique(T_train.vec_pt_idx);
     test_pts = unique(T_test.vec_pt_idx);
@@ -102,9 +104,21 @@ end
 %% Train model with glm model
 if do_glme
     T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
-    glm = fitglme(T_train,...
-        'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post + (1|vec_pt_idx)',...
-        'Distribution','Binomial');
+    T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
+    try
+        glm = fitglme(T_train,...
+            'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post + (1|vec_pt_idx)',...
+            'Distribution','Binomial');
+    catch ME
+        
+        if contains(ME.message,'NaN or Inf values are not allowed in X.')
+               mout.AUC = nan;
+               return
+        else
+            error('what');
+        end
+        
+    end
 else
     glm = fitglm(T_train,...
         'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post',...
@@ -112,22 +126,21 @@ else
 end
 
 %% Test model on testing data
-if do_glme
-    mout.glme = glm;
-else
-    classification = predict(glm,T_test);
 
-    all_soz = T_test.vec_soz==1;
-    all_no_soz = T_test.vec_soz==0;
+classification = predict(glm,T_test);
 
-    labels = cell(length(classification),1);
-    labels(all_soz) = {'SOZ'};
-    labels(all_no_soz) = {'Not SOZ'};
-    posclass = 'SOZ';
-    scores = classification;
-    [~,~,~,AUC,~] = perfcurve(labels,scores,posclass);
+all_soz = T_test.vec_soz==1;
+all_no_soz = T_test.vec_soz==0;
 
-    mout.AUC = AUC;
-end
+labels = cell(length(classification),1);
+labels(all_soz) = {'SOZ'};
+labels(all_no_soz) = {'Not SOZ'};
+posclass = 'SOZ';
+scores = classification;
+[~,~,~,AUC,~] = perfcurve(labels,scores,posclass);
+
+mout.AUC = AUC;
+mout.model = glm;
+
 
 end
