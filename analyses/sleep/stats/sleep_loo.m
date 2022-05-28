@@ -20,18 +20,23 @@ all_soz = out.bin_out.all_is_soz;
 
 
 %% LOO analysis - get distribution of individual patient AUCs
-pt_stats = nan(npts,3);
+pt_stats = nan(npts,7);
 for ip = 1:npts
     fprintf('\npatient = %d of %d\n',ip,npts);
     curr_soz = all_soz{ip};
     if sum(curr_soz) == 0
         continue;
     else
-        mout = updated_classifier_may2022(ip,1);
+        mout = updated_classifier_may2022(ip,1,[],[]);
         if ~isfield(mout,'PPV'), continue; end
-        pt_stats(ip,1) = mout.AUC;
-        pt_stats(ip,2) = mout.PPV;
-        pt_stats(ip,3) = mout.NPV;
+        for ic = 1:4
+            pt_stats(ip,ic) = mout.model.Coefficients{ic+1,2}; 
+        end
+        
+        pt_stats(ip,5) = mout.AUC;
+        pt_stats(ip,6) = mout.PPV;
+        pt_stats(ip,7) = mout.NPV;
+        
     end
 end
 

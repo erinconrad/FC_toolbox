@@ -18,7 +18,7 @@ Take the mininum of [1,2] and multiply this by 2 to get a 2-sided pvalue
 
 if ~exist('B','var') % if only one thing
     %% Get mean and 95% CI for each thing
-    Amean = mean(A);
+    Amean = nanmean(A);
     A_CI_95 = prctile(A,[2.5,97.5]);
     p_A_bigger = (sum(A>=0)+1)/(length(A)+1);
     p_B_bigger = (sum(A<=0)+1)/(length(A)+1);

@@ -1,4 +1,4 @@
-function mout = updated_classifier_may2022(leave_out,do_glme)
+function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration)
 
 %% Parameters
 prop_train = 2/3;
@@ -21,8 +21,12 @@ rate_sw = out.bin_out.all_elecs_rates_sw; %rates wake and sleep
 soz = out.bin_out.all_is_soz;
 pt_idx = (1:length(rate_sw))';
 rate_pre_post = out.sz_out.pre_post_ictal_rates;
+rate_time = out.time_out.all_spikes;
+ws_time = out.time_out.all_ws;
+
 
 %% Put data into friendly format
+vec_rate = [];
 vec_rate_sleep = [];
 vec_rate_wake = [];
 vec_rate_post = [];
@@ -34,6 +38,41 @@ for ip = 1:length(pt_idx)
     curr_rate_sw = rate_sw{ip};
     curr_rate_post = rate_pre_post{ip}(:,2);
     curr_rate_pre = rate_pre_post{ip}(:,1);
+    curr_soz = (soz{ip})';
+    curr_rate_time = rate_time{ip};
+    
+    %% Get the indices of the time segments of wake or sleep
+    if ~isempty(wake_or_sleep)
+        curr_ws_time = ws_time{ip,wake_or_sleep};
+        curr_indices = find(curr_ws_time == 1); % find the indices matching the desired state
+    else
+        curr_indices = 1:size(curr_rate_time,2);
+    end
+    
+    nsoz = sum(curr_soz==1);
+    nelecs = length(curr_soz);
+    if randomize_soz == 1
+        fake_soz_indices = randsample(nelecs,nsoz);
+        curr_soz = zeros(nelecs,1);
+        curr_soz(fake_soz_indices) = 1;
+    end
+    
+
+    % how many segments to take (either duration or all the indices)
+    if isempty(duration)
+        nsegments_to_take = size(curr_rate_time,2);
+    else
+        nsegments_to_take = min([length(curr_indices),duration]);
+    end
+    
+    %% Get random sample of nsegments_to_take from curr_indices
+    segs = randsample(curr_indices,nsegments_to_take);
+    
+    %% Get the rates in those
+    seg_rates = curr_rate_time(:,segs);
+    
+    %% Take the average across times
+    avg_segs_rates = nanmean(seg_rates,2);
     
     if do_norm
         % normalize the rate across electrodes (this is so that patients
@@ -45,6 +84,8 @@ for ip = 1:length(pt_idx)
             nanstd(curr_rate_post);
         curr_rate_pre = (curr_rate_pre - nanmean(curr_rate_pre))./...
             nanstd(curr_rate_pre);
+        avg_segs_rates = (avg_segs_rates - nanmean(avg_segs_rates,1))./...
+            nanstd(avg_segs_rates,[],1);
     end
     
     vec_rate_sleep = [vec_rate_sleep;curr_rate_sw(:,2)];
@@ -54,16 +95,21 @@ for ip = 1:length(pt_idx)
     
     vec_pt_idx = [vec_pt_idx;repmat(pt_idx(ip),length(rate_sw{ip}(:,2)),1)];
     
-    vec_soz = [vec_soz;soz{ip}'];
+    vec_soz = [vec_soz;curr_soz];
+    vec_rate = [vec_rate;avg_segs_rates];
     
 end
 
 %% Make table
-T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,vec_rate_pre,vec_rate_post);
+T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,vec_rate_pre,vec_rate_post,vec_rate);
 
 %% Remove nan and inf rows
-nan_rows = isnan(T.vec_rate_sleep) | isnan(T.vec_rate_wake) | isnan(T.vec_soz) ...
-    | isnan(T.vec_pt_idx) | isnan(T.vec_rate_pre) | isnan(T.vec_rate_post);
+if isempty(wake_or_sleep)
+    nan_rows = isnan(T.vec_rate_sleep) | isnan(T.vec_rate_wake) | isnan(T.vec_soz) ...
+        | isnan(T.vec_pt_idx) | isnan(T.vec_rate_pre) | isnan(T.vec_rate_post);
+else
+    nan_rows = isnan(T.vec_rate)| isnan(T.vec_soz) | isnan(T.vec_pt_idx);
+end
 T(nan_rows,:) = [];
 
 %% Divide into training and testing data
@@ -102,29 +148,53 @@ else
 end
 
 %% Train model with glm model
-if do_glme
-    T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
-    T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
-    try
-        glm = fitglme(T_train,...
-            'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post + (1|vec_pt_idx)',...
-            'Distribution','Binomial');
-    catch ME
-        
-        if contains(ME.message,'NaN or Inf values are not allowed in X.')
-               mout.AUC = nan;
-               return
-        else
-            error('what');
+if isempty(wake_or_sleep)
+    if do_glme
+        T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
+        T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
+        try
+            glm = fitglme(T_train,...
+                'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post + (1|vec_pt_idx)',...
+                'Distribution','Binomial');
+        catch ME
+
+            if contains(ME.message,'NaN or Inf values are not allowed in X.')
+                   mout.AUC = nan;
+                   return
+            else
+                error('what');
+            end
+
         end
-        
+    else
+        glm = fitglm(T_train,...
+            'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post',...
+            'Distribution','Binomial');
     end
 else
-    glm = fitglm(T_train,...
-        'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post',...
-        'Distribution','Binomial');
-end
+    if do_glme
+        T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
+        T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
+        try
+            glm = fitglme(T_train,...
+                'vec_soz ~ vec_rate + (1|vec_pt_idx)',...
+                'Distribution','Binomial');
 
+        catch ME
+            if contains(ME.message,'NaN or Inf values are not allowed in X.')
+                   mout.AUC = nan;
+                   return
+            else
+                error('what');
+            end
+        end
+    else
+        glm = fitglm(T_train,...
+            'vec_soz ~ vec_rate ',...
+            'Distribution','Binomial');
+    end
+end
+    
 %% Test model on testing data
 
 classification = predict(glm,T_test);

@@ -15,7 +15,7 @@ I also have the constraint of the ROC curve
 
 
 %% Parameters
-nb = 10;
+durations = {1, 5, 10, 30, 60, 60*2,[]};
 ncoeffs = 4;
 myColours = [0.1660, 0.540, 0.1880;...
 0.4940, 0.1840, 0.5560;...    
@@ -44,6 +44,28 @@ out = out.out;
 npts = length(out.circ_out.names);
 all_soz = out.bin_out.all_is_soz;
 
+%% Get some clinical stuff
+stereo = logical(out.circ_out.stereo);
+loc = out.circ_out.all_locs;
+temporal = contains(loc,'temporal');
+extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
+
+
+%% LOO
+pt_stats = sleep_loo;
+
+%% Determine bootstrap stats for each coefficient
+coeff_stats = nan(ncoeffs,4); % mean, lower CI, higher CI, p
+for ic = 1:ncoeffs
+    tout = bootstrap_ci_and_p(squeeze(pt_stats(:,ic)));
+    coeff_stats(ic,:) = [tout.mean,tout.CI_95,tout.p];
+    
+end
+
+%% Get AUC for sleep and wake as a function of duration
+all_aucs = sleep_duration(durations);
+
+%{
 %% Get proportion of electrodes that are soz
 nsoz = cellfun(@(x) sum(x==1),all_soz);
 nelecs = cellfun(@length,all_soz);
@@ -122,7 +144,7 @@ if 0
 
 end
 
-
+%}
 
 
 
