@@ -137,10 +137,52 @@ labels(all_soz) = {'SOZ'};
 labels(all_no_soz) = {'Not SOZ'};
 posclass = 'SOZ';
 scores = classification;
-[~,~,~,AUC,~] = perfcurve(labels,scores,posclass);
+[X,Y,T,AUC,~] = perfcurve(labels,scores,posclass);
 
+%% Also get PPV and NPV for a specific spot on curve
+% Pick the threshold to be that such that the model estimates that p of the
+% electrodes are the SOZ, where p is the true proportion of SOZ electrodes
+nsoz = sum(all_soz);
+
+% Calculate the number of predicted SOZ for each possible threshold in T
+n_pred_soz = nan(length(T),1);
+for it = 1:length(T)
+    n_pred_soz(it) = sum(classification >= T(it));
+end
+
+% Find the index that minimizes the difference between predicted number of
+% SOZ and true number
+[~,I] = min(abs(nsoz-n_pred_soz));
+
+% Get corresponding threshold
+chosen_T = T(I);
+
+% Generate predicted labels
+predicted_labels = cell(length(classification),1);
+predicted_labels(classification >= chosen_T) = {'SOZ'};
+predicted_labels(classification < chosen_T) = {'Not SOZ'};
+
+% generate confusion matrix
+cout = confusion_matrix(predicted_labels,labels,0);
+
+if 0
+   table(predicted_labels,labels,T_test.vec_rate_sleep) 
+end
+
+%% Output
 mout.AUC = AUC;
 mout.model = glm;
-
+mout.X = X;
+mout.Y = Y;
+mout.T = T;
+mout.nsoz = nsoz;
+mout.nelecs = length(all_soz);
+mout.scores = scores;
+mout.labels = labels;
+mout.PPV = cout.ppv;
+mout.NPV = cout.npv;
+mout.sensitivity = cout.sensitivity;
+mout.specificity = cout.specificity;
+mout.accuracy = cout.accuracy;
 
 end
