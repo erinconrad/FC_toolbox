@@ -1,6 +1,6 @@
 function coeff_stats = sleep_model_bootstrap_stats
 
-rng(0)
+
 nb = 1e3;
 ncoeffs = 4;
 pt_stats = nan(nb,ncoeffs);

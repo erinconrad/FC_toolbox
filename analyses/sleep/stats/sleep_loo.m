@@ -24,7 +24,7 @@ pt_stats = nan(npts,6);
 pt_specific = cell(npts,3);
 all_roc = cell(npts,1);
 for ip = 1:npts
-    fprintf('\npatient = %d of %d\n',ip,npts);
+    %fprintf('\npatient = %d of %d\n',ip,npts);
     curr_soz = all_soz{ip};
     if sum(curr_soz) == 0
         continue;

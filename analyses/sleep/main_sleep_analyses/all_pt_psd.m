@@ -59,6 +59,8 @@ all_psd = nan(npts,ceil(longest_run/2));
 fs = 0.0017;%1/summ(1).block_dur;
 all_freqs = nan(npts,ceil(longest_run/2));
 skip_pts = [];
+all_elec_locs = cell(npts,1);
+all_elec_lats = cell(npts,1);
 all_locs = cell(npts,1);
 all_lats = cell(npts,1);
 all_circ_P = nan(npts,1);
@@ -104,6 +106,9 @@ for p = 1:npts
     spikes = spikes(~ekg,:);
     loc = loc(~ekg,:);
     lat = lat(~ekg);
+    
+    all_elec_locs{p} = loc;
+    all_elec_lats{p} = lat;
     
     %% Get spike rate by time of day
      % Bin the mod midnights
@@ -214,6 +219,8 @@ out.duration = duration;
 out.all_tod_rate = all_tod_rate;
 out.tod_edges = tod_edges;
 out.stereo = stereo;
+out.all_elec_locs = all_elec_locs;
+out.all_elec_lats = all_elec_lats;
 %out.eleven_to_five = eleven_to_five;
 
 %{

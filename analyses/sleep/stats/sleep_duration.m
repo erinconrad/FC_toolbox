@@ -33,7 +33,7 @@ for iws = 1:2
         
         % Loop over pts
         for ip = 1:npts
-            fprintf('\npatient = %d of %d\n',ip,npts);
+            %fprintf('\npatient = %d of %d\n',ip,npts);
             curr_soz = all_soz{ip};
             if sum(curr_soz) == 0
                 continue;
