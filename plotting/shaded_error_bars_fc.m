@@ -18,8 +18,7 @@ if size(st,1) >2
 end
 
 %% Plot the line
-mp = plot(times,m,'color',color,'linewidth',3);
-hold on
+
 
 %% Plot the patch
 upper = st(2,:);
@@ -32,5 +31,8 @@ nan_idx = isnan(in_between) | isnan(x2);
 
 stp = fill(x2(~nan_idx), in_between(~nan_idx),color,'linestyle','none');
 alpha(stp,0.4);
+hold on
+mp = plot(times,m,'color',color,'linewidth',3);
+
 
 end

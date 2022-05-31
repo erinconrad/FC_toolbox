@@ -1,7 +1,6 @@
 function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration)
 
 %% Parameters
-prop_train = 2/3;
 do_norm = 1;
 randomize_soz = 0; % negative control. If I shuffle the SOZ, I should not exceed chance AUC
 
@@ -60,7 +59,7 @@ for ip = 1:length(pt_idx)
 
     % how many segments to take (either duration or all the indices)
     if isempty(duration)
-        nsegments_to_take = size(curr_rate_time,2);
+        nsegments_to_take = length(curr_indices);
     else
         nsegments_to_take = min([length(curr_indices),duration]);
     end
@@ -115,7 +114,7 @@ T(nan_rows,:) = [];
 %% Divide into training and testing data
 % Are we doing LOO and if so which
 if isempty(leave_out)
-    training = randsample(length(pt_idx),floor(length(pt_idx)*prop_train));
+    training = randsample(length(pt_idx),length(pt_idx),true);
     training_idx = ismember(T.vec_pt_idx,training);
     testing_idx = ~ismember(T.vec_pt_idx,training);
 
@@ -207,6 +206,10 @@ labels(all_soz) = {'SOZ'};
 labels(all_no_soz) = {'Not SOZ'};
 posclass = 'SOZ';
 scores = classification;
+if length(unique(labels)) == 1
+    mout.AUC = nan;
+    return
+end
 [X,Y,T,AUC,~] = perfcurve(labels,scores,posclass);
 
 %% Also get PPV and NPV for a specific spot on curve
@@ -220,6 +223,7 @@ for it = 1:length(T)
     n_pred_soz(it) = sum(classification >= T(it));
 end
 
+%{
 % Find the index that minimizes the difference between predicted number of
 % SOZ and true number
 [~,I] = min(abs(nsoz-n_pred_soz));
@@ -234,6 +238,7 @@ predicted_labels(classification < chosen_T) = {'Not SOZ'};
 
 % generate confusion matrix
 cout = confusion_matrix(predicted_labels,labels,0);
+%}
 
 if 0
    table(predicted_labels,labels,T_test.vec_rate_sleep) 
@@ -249,10 +254,11 @@ mout.nsoz = nsoz;
 mout.nelecs = length(all_soz);
 mout.scores = scores;
 mout.labels = labels;
-mout.PPV = cout.ppv;
-mout.NPV = cout.npv;
-mout.sensitivity = cout.sensitivity;
-mout.specificity = cout.specificity;
-mout.accuracy = cout.accuracy;
+mout.all_soz = all_soz;
+%mout.PPV = cout.ppv;
+%mout.NPV = cout.npv;
+%mout.sensitivity = cout.sensitivity;
+%mout.specificity = cout.specificity;
+%mout.accuracy = cout.accuracy;
 
 end

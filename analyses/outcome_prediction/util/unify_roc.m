@@ -6,6 +6,7 @@ unify_y = nan(length(all_roc),nx);
 
 for i = 1:length(all_roc)
     curr_roc = all_roc{i};
+    if isempty(curr_roc), continue; end
     curr_x = curr_roc(:,1);
     for ix = 1:nx
         curr_ix = unify_x(ix);
