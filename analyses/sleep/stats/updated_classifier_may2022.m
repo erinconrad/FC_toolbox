@@ -1,4 +1,4 @@
-function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration)
+function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration,just_gray)
 
 %% Parameters
 do_norm = 1;
@@ -22,7 +22,7 @@ pt_idx = (1:length(rate_sw))';
 rate_pre_post = out.sz_out.pre_post_ictal_rates;
 rate_time = out.time_out.all_spikes;
 ws_time = out.time_out.all_ws;
-
+elec_locs = out.circ_out.all_elec_locs;
 
 %% Put data into friendly format
 vec_rate = [];
@@ -39,6 +39,21 @@ for ip = 1:length(pt_idx)
     curr_rate_pre = rate_pre_post{ip}(:,1);
     curr_soz = (soz{ip})';
     curr_rate_time = rate_time{ip};
+    curr_locs = elec_locs{ip};
+    
+    %% remove non-gray matter?
+    
+    % Get whether electrodes are gray matter
+    is_gray = strcmp(curr_locs,'other_cortex') | strcmp(curr_locs,'temporal neocortical') | strcmp(curr_locs,'mesial temporal');
+    
+    % remove those that aren't gray matter
+    if just_gray
+        curr_rate_sw(~is_gray,:) = [];
+        curr_rate_post(~is_gray) = [];
+        curr_rate_pre(~is_gray) = [];
+        curr_soz(~is_gray) = [];
+        curr_rate_time(~is_gray,:) = [];
+    end
     
     %% Get the indices of the time segments of wake or sleep
     if ~isempty(wake_or_sleep)
@@ -92,7 +107,7 @@ for ip = 1:length(pt_idx)
     vec_rate_pre = [vec_rate_pre;curr_rate_pre];
     vec_rate_post = [vec_rate_post;curr_rate_post];
     
-    vec_pt_idx = [vec_pt_idx;repmat(pt_idx(ip),length(rate_sw{ip}(:,2)),1)];
+    vec_pt_idx = [vec_pt_idx;repmat(pt_idx(ip),length(curr_rate_post),1)];
     
     vec_soz = [vec_soz;curr_soz];
     vec_rate = [vec_rate;avg_segs_rates];

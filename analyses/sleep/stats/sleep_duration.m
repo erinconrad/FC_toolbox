@@ -1,4 +1,4 @@
-function all_aucs = sleep_duration(durations)
+function all_aucs = sleep_duration(durations,just_gray)
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -38,7 +38,7 @@ for iws = 1:2
             if sum(curr_soz) == 0
                 continue;
             else
-                mout = updated_classifier_may2022(ip,1,iws,duration);
+                mout = updated_classifier_may2022(ip,1,iws,duration,just_gray);
                 all_aucs(iws,id,ip) = mout.AUC;
             end
             

@@ -1,4 +1,4 @@
-function [pt_stats,X,Y,pt_specific] = sleep_loo
+function [pt_stats,X,Y,pt_specific] = sleep_loo(just_gray)
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -29,7 +29,7 @@ for ip = 1:npts
     if sum(curr_soz) == 0
         continue;
     else
-        mout = updated_classifier_may2022(ip,1,[],[]);
+        mout = updated_classifier_may2022(ip,1,[],[],just_gray);
         if ~isfield(mout,'labels'), continue; end
         for ic = 1:4
             pt_stats(ip,ic) = mout.model.Coefficients{ic+1,2}; 

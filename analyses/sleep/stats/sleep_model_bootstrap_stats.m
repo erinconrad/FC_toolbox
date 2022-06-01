@@ -1,12 +1,12 @@
-function coeff_stats = sleep_model_bootstrap_stats
+function coeff_stats = sleep_model_bootstrap_stats(just_gray)
 
 
-nb = 1e3;
+nb = 1e1;
 ncoeffs = 4;
 pt_stats = nan(nb,ncoeffs);
 for ib = 1:nb
     
-    mout = updated_classifier_may2022([],1,[],[]);
+    mout = updated_classifier_may2022([],1,[],[],just_gray);
     if ~isfield(mout,'labels'), continue; end
     for ic = 1:ncoeffs
         pt_stats(ib,ic) = mout.model.Coefficients{ic+1,2}; 

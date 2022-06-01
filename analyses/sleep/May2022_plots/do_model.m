@@ -1,4 +1,4 @@
-function do_model(from_scratch)
+function do_model(from_scratch,just_gray)
 %{
 1) It looks like sleep and post-ictal spike rates independently help localize,
 but awake and pre-ictal do not. (CONFIRM)
@@ -54,15 +54,15 @@ extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifo
 if from_scratch
     % Bootstrap stats
     fprintf('\nDoing bootstrap to get model stats\n');
-    coeff_stats = sleep_model_bootstrap_stats;
+    coeff_stats = sleep_model_bootstrap_stats(just_gray);
 
     % LOO
     fprintf('\nDoing LOO analysis to get individual patient performance\n');
-    [pt_stats,X,Y,pt_specific] = sleep_loo;
+    [pt_stats,X,Y,pt_specific] = sleep_loo(just_gray);
 
     % Get AUC for sleep and wake as a function of duration
     fprintf('\nDoing duration analysis\n');
-    time_aucs = sleep_duration(durations);
+    time_aucs = sleep_duration(durations,just_gray);
 
     nmout.coeff_stats = coeff_stats;
     nmout.pt_stats = pt_stats;
@@ -71,10 +71,18 @@ if from_scratch
     nmout.pt_specific = pt_specific;
     nmout.time_aucs = time_aucs;
 
-    save([time_roc_folder,'new_model_out.mat'],'nmout');
+    if just_gray
+        save([time_roc_folder,'new_model_out_gray.mat'],'nmout');
+    else
+        save([time_roc_folder,'new_model_out.mat'],'nmout');
+    end
     
 else
-    nmout = load([time_roc_folder,'new_model_out.mat']);
+    if just_gray
+        nmout = load([time_roc_folder,'new_model_out_gray.mat']);
+    else
+        nmout = load([time_roc_folder,'new_model_out.mat']);
+    end
     nmout = nmout.nmout;
     unpack_any_struct(nmout);
 end
