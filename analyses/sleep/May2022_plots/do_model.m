@@ -91,43 +91,91 @@ scores =  pt_specific(:,1);
 soz = pt_specific(:,3);
 threshold = pt_specific(:,2);
 desired_threshold = [];
-[npv,ppv,pred,totaln] = cellfun(@(x,y,z) individual_threshold_stats(x,y,z,desired_threshold),...
+[npv,ppv,pred,totaln,mat,threshold,acc] = cellfun(@(x,y,z) individual_threshold_stats(x,y,z,desired_threshold),...
     scores,soz,threshold,'uniformoutput',false);
 npv = cell2mat(npv);
 ppv = cell2mat(ppv);
-pred = cell2mat(pred);
-totaln = cell2mat(totaln);
-nanmean(ppv)
-nanmean(pred./totaln)
+acc = cell2mat(acc);
 
+%% Plot individual patient PPV and NPV
 ym = nanmean(Y,1);
-ly = prctile(Y,2.5,1);
-uy = prctile(Y,97.5,1);
-
-% Plot
+ly = ym-nanstd(Y,[],1);
+uy = ym+nanstd(Y,[],1);
 nexttile
-plot(X,ym,'linewidth',2)
+%plot(X,ym,'linewidth',2)
+mp = shaded_error_bars_fc(X,ym,[ly;uy],'k');
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
-legend(sprintf('Median AUC %1.2f',nanmedian(aucs)),'location','southeast','fontsize',15)
+legend(mp,sprintf('Mean AUC %1.2f',nanmean(aucs)),'location','southeast','fontsize',15)
 xlabel('False positive rate')
 ylabel('True positive rate')
 title('SOZ classification accuracy')
 set(gca,'fontsize',15)
 
 
+%% Get all data for single confusion matrix
+% Convert everything to long vectors
+all_scores = [];
+all_thresholds = [];
+all_soz = [];
+for i = 1:length(soz)
+    all_scores = [all_scores;scores{i}];
+    all_soz = [all_soz;soz{i}];
+    all_thresholds = [all_thresholds;repmat(threshold{i},length(soz{i}),1)];
+    
+end
+
+% Do confusion matrix for this
+[all_npv,all_ppv,all_pred,all_totaln,all_mat,all_threshold,all_acc] = individual_threshold_stats(all_scores,all_soz,[],all_thresholds);
+
+% Compare to alternate way, make sure same
+mat = cat(3,mat{:});
+mat = nansum(mat,3);
+alt_total_ppv = mat(2,2)/(mat(2,2) + mat(1,2));
+alt_total_npv = mat(1,1)/(mat(1,1) + mat(2,1));
+
+assert(alt_total_ppv == all_ppv || alt_total_npv == all_npv)
+
+
+
+%% Plot confusion matrix
+nexttile
+turn_nans_gray([1 0;0 1])
+colormap(gca,[0.8000, 0.420, 0.42;0.5, 0.75, 0.5])
+xticks(1:2)
+xticklabels({'Not SOZ','SOZ'})
+yticks(1:2)
+yticklabels({'Not SOZ','SOZ'})
+xlabel('Predicted')
+ylabel('Actual')
+hold on
+for ic = 1:2
+    for jc = 1:2
+        text(ic,jc,sprintf('%d',all_mat(jc,ic)),'horizontalalignment','center','fontsize',25,'fontweight','bold')
+    end
+end
+title(sprintf('All patients in aggregate\nAccuracy: %1.1f%%, PPV: %1.1f%%, NPV: %1.1f%%',...
+all_acc*100,...
+all_ppv*100,all_npv*100))
+set(gca,'fontsize',15)
+
+
+
+
+
 %% PPVs and NPVs for each patient
 % Sort lowest to highest AUC
 nexttile
-[~,I] = sort(ppv);
-plot(1:length(ppv),ppv(I),'o','linewidth',2)
-hold on
-plot(1:length(ppv),npv(I),'o','linewidth',2)
+%[~,I] = sort(ppv);
+%plot(1:length(ppv),ppv(I),'o','linewidth',2)
+%hold on
+%plot(1:length(ppv),npv(I),'o','linewidth',2)
+plot(1:length(acc),sort(acc),'o','linewidth',2)
 legend({'PPV','NPV'},'fontsize',15,'location','southeast')
-title('Individual patient PPVs and NPVs for example threshold')
+title('Individual patient accuracies')
 set(gca,'fontsize',15)
 xlabel('Patient')
-ylabel('PPV and NPV')
+ylabel('Accuracy (%%)')
 
 %% Do between-patient analyses
 
@@ -178,17 +226,17 @@ duration_ticks = [duration_ticks,new_lim];
 duration_ticklabels = arrayfun(@(x) sprintf('%d',x),duration_ticks,'uniformoutput',false);
 duration_ticklabels(end) = {'Full'};
 
-nexttile([1 2])
+nexttile
 sp = nan(2,1);
 for iws = 1:2
-    curr_aucs = squeeze(nanmedian(time_aucs(iws,:,:),3));
+    curr_aucs = squeeze(nanmean(time_aucs(iws,:,:),3));
     sp(iws) = plot(duration_ticks,curr_aucs,'-o','linewidth',2);
     hold on
 end
 legend({'Wake','Sleep'},'fontsize',15,'location','southeast')
 xticks(duration_ticks)
 xticklabels(duration_ticklabels)
-ylabel('Median AUC')
+ylabel('Mean AUC')
 xlabel('Duration examined (minutes)')
 title('Accuracy by duration')
 set(gca,'fontsize',15);

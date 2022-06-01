@@ -1,10 +1,13 @@
-function [npv,ppv,npred,totaln] = individual_threshold_stats(scores,true_labels,T,desired_threshold)
+function [npv,ppv,npred,totaln,mat,desired_threshold,acc] = individual_threshold_stats(scores,true_labels,T,desired_threshold)
 
 if isempty(scores)
     npv = nan;
     ppv = nan;
     npred = nan;
     totaln = nan;
+    mat = [nan,nan;nan,nan];
+    desired_threshold = nan;
+    acc = nan;
     return
 end
 
@@ -27,6 +30,7 @@ if isempty(desired_threshold)
 end
 
 true_labels = arrayfun(@num2str,true_labels,'uniformoutput',false);
+
 pred_labels = cell(length(true_labels),1);
 pred_labels(scores > desired_threshold) = {'1'};
 pred_labels(scores <= desired_threshold) = {'0'};
@@ -34,6 +38,8 @@ pred_labels(scores <= desired_threshold) = {'0'};
 out = confusion_matrix(pred_labels,true_labels,0);
 ppv = out.ppv;
 npv = out.npv;
+mat = out.mat;
+acc = out.accuracy;
 npred = sum(scores > desired_threshold);
 totaln = length(scores);
 
