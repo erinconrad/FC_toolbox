@@ -1,7 +1,7 @@
 function coeff_stats = sleep_model_bootstrap_stats(just_gray)
 
 
-nb = 1e1;
+nb = 1e3;
 ncoeffs = 4;
 pt_stats = nan(nb,ncoeffs);
 for ib = 1:nb
