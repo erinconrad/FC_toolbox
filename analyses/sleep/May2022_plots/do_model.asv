@@ -315,7 +315,7 @@ duration_ticklabels(end) = {'Full'};
 nexttile
 sp = nan(2,1);
 for iws = 1:2
-    curr_aucs = squeeze(nanmean(time_aucs(iws,:,:,:),[3 4]));
+    curr_aucs = squeeze(nanmean(time_aucs(iws,:,:),3));
     sp(iws) = plot(duration_ticks,curr_aucs,'-o','linewidth',2);
     hold on
 end
@@ -328,11 +328,9 @@ title('Accuracy by duration')
 set(gca,'fontsize',15);
 
 % Text
-%{
 fprintf(fid,[['<p>We next studied what duration of interictal data was needed '...
     'to localize the SOZ. Given that spikes in sleep better localized the SOZ than spikes in wakefulness, '...
-    'we separately evaluated sleep and wake interictal periods. We 
-%}
+    'we separ
 
 %% Print figure
 if just_gray

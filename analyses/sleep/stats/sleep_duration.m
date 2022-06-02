@@ -1,5 +1,7 @@
 function all_aucs = sleep_duration(durations,just_gray)
 
+nb = 1e2;
+
 %% Locations
 locations = fc_toolbox_locs;
 addpath(genpath(locations.script_folder))
@@ -21,7 +23,7 @@ all_soz = out.bin_out.all_is_soz;
 
 %% Initialize stuff
 ndurs = length(durations);
-all_aucs = nan(2,ndurs,npts); % wake/sleep, then durations, then nbs
+all_aucs = nan(2,ndurs,npts,nb); % wake/sleep, then durations, then nbs
 
 % Loop over wake and sleep
 for iws = 1:2
@@ -38,8 +40,10 @@ for iws = 1:2
             if sum(curr_soz) == 0
                 continue;
             else
-                mout = updated_classifier_may2022(ip,1,iws,duration,just_gray);
-                all_aucs(iws,id,ip) = mout.AUC;
+                for ib = 1:nb
+                    mout = updated_classifier_may2022(ip,1,iws,duration,just_gray);
+                    all_aucs(iws,id,ip,ib) = mout.AUC;
+                end
             end
             
             
