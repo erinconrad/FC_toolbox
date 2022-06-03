@@ -17,7 +17,7 @@ rng(0) % seed rng (for bootstrap portion)
 
 %% Parameters
 
-durations = {1, 5, 10, 30, 60, 60*2,[]};
+durations = {1, 5, 10, 30, 60,[]};
 ndurs = length(durations);
 ncoeffs = 4;
 myColours = [0.1660, 0.540, 0.1880;...

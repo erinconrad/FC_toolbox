@@ -1,6 +1,6 @@
 function all_aucs = sleep_duration(durations,just_gray)
 
-nb = 1e2;
+nb = 1e1;
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -40,9 +40,17 @@ for iws = 1:2
             if sum(curr_soz) == 0
                 continue;
             else
+                
                 for ib = 1:nb
                     mout = updated_classifier_may2022(ip,1,iws,duration,just_gray);
                     all_aucs(iws,id,ip,ib) = mout.AUC;
+                    
+                    % if doing the full duration then there's no need to do
+                    % more bootstrap durations
+                    if id == ndurs
+                        all_aucs(iws,id,ip,:) = repmat(mout.AUC,nb,1);
+                        break
+                    end
                 end
             end
             
