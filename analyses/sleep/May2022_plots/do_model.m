@@ -1,16 +1,8 @@
 function do_model(from_scratch,just_gray)
 %{
-1) It looks like sleep and post-ictal spike rates independently help localize,
-but awake and pre-ictal do not. (CONFIRM)
-2) You only need about 30 minutes of sleep to get the most bang for your buck (the other analysis)
-3) Patients are heterogeneous in how well spikes localize, with TLE
-patients doing much better
-4) I need to think of some way to conceptualize actual thresholds. Perhaps
-I should set thresholds such that same number of SOZ as median number. How
-many false positives and false negatives?? If x is the proportion of
-electrodes that I want to be designated SOZ electrodes, that means I want
-(TP + FP)/(TP+TP+FN+FP) =  X
-I also have the constraint of the ROC curve
+
+
+
 %}
 
 rng(0) % seed rng (for bootstrap portion)
@@ -58,7 +50,7 @@ if from_scratch
 
     % LOO
     fprintf('\nDoing LOO analysis to get individual patient performance\n');
-    [pt_stats,X,Y,pt_specific] = sleep_loo(just_gray);
+    [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray);
 
     % Get AUC for sleep and wake as a function of duration
     fprintf('\nDoing duration analysis\n');
@@ -71,6 +63,7 @@ if from_scratch
     nmout.Y = Y;
     nmout.pt_specific = pt_specific;
     nmout.time_aucs = time_aucs;
+    nmout.excluded = excluded;
 
     if just_gray
         save([time_roc_folder,'new_model_out_gray.mat'],'nmout');
@@ -79,17 +72,17 @@ if from_scratch
     end
     
 else
-    if just_gray
-        nmout = load([time_roc_folder,'new_model_out_gray.mat']);
-    else
-        nmout = load([time_roc_folder,'new_model_out.mat']);
-    end
+    
+    nmout_gray = load([time_roc_folder,'new_model_out_gray.mat']);
+    nmout = load([time_roc_folder,'new_model_out.mat']);
     nmout = nmout.nmout;
+    nmout_gray = nmout_gray.nmout;
     unpack_any_struct(nmout);
 end
 
 %% Prep output text file
 fid = fopen([out_folder,'results.html'],'a');
+sfid = fopen([out_folder,'supplemental_results.html'],'a');
 fprintf(fid,'<p><b>Localizing the seizure onset zone with spikes</b><br>');
 
 %% Print results of main model
@@ -108,13 +101,28 @@ fprintf(fid,['We tested how accurately spike rates could classify electrodes '..
     'but not with an increase in spike rate in wakefulness (%1.1f%%, 95%% CI [%1.2f-%1.2f], %s) '...
     'or an increase in preictal spike rate (%1.1f%%, 95%% CI [%1.2f-%1.2f], %s). These results imply '...
     'that spikes in sleep and postictal spikes independently localize the SOZ, but spikes in wakefulness '...
-    'and preictal spikes do not.</p>'], ...
+    'and preictal spikes do not. When restricting analysis to only electrodes in gray matter, '...
+    'we again found that spike rates in sleep were associated with a higher likelihood of being '...
+    'in the SOZ, but we found no association for spikes in any other state (Supplemental Results).</p>'], ...
     coeff_stats(1,1)*100,coeff_stats(1,2),coeff_stats(1,3),get_p_html(coeff_stats(1,4)),...
     coeff_stats(4,1)*100,coeff_stats(4,2),coeff_stats(4,3),get_p_html(coeff_stats(4,4)),...
     coeff_stats(2,1)*100,coeff_stats(2,2),coeff_stats(2,3),get_p_html(coeff_stats(2,4)),...
     coeff_stats(3,1)*100,coeff_stats(3,2),coeff_stats(3,3),get_p_html(coeff_stats(3,4)));
 
 
+%% Print results of gray matter analysis
+fprintf(sfid,'<p><b>Localizing the seizure onset zone with spikes - gray matter only</b><br>');
+fprintf(sfid,['We repeated the SOZ localization analysis, only including electrode '...
+    'contacts determined to be in gray matter from clinical imaging reconstruction. '...
+    'Holding other predictors constant, the odds of an electrode being a SOZ increased significantly '...
+    'with an increase in spike rate in sleep (%1.1f%%, 95%% CI [%1.2f-%1.2f], %s) '...
+    'and with an increase in postictal spike rate (%1.1f%%, 95%% CI [%1.2f-%1.2f], %s), '...
+    'but not with an increase in spike rate in wakefulness (%1.1f%%, 95%% CI [%1.2f-%1.2f], %s) '...
+    'or an increase in preictal spike rate (%1.1f%%, 95%% CI [%1.2f-%1.2f], %s).</p>'], ...
+    nmout_gray.coeff_stats(1,1)*100,nmout_gray.coeff_stats(1,2),nmout_gray.coeff_stats(1,3),get_p_html(nmout_gray.coeff_stats(1,4)),...
+    nmout_gray.coeff_stats(4,1)*100,nmout_gray.coeff_stats(4,2),nmout_gray.coeff_stats(4,3),get_p_html(nmout_gray.coeff_stats(4,4)),...
+    nmout_gray.coeff_stats(2,1)*100,nmout_gray.coeff_stats(2,2),nmout_gray.coeff_stats(2,3),get_p_html(nmout_gray.coeff_stats(2,4)),...
+    nmout_gray.coeff_stats(3,1)*100,nmout_gray.coeff_stats(3,2),nmout_gray.coeff_stats(3,3),get_p_html(nmout_gray.coeff_stats(3,4)));
 
 %% initialize figure
 figure
@@ -155,8 +163,10 @@ fprintf(fid,['<p>We next assessed how a model well a incorporating spike rates w
     'localize the SOZ in new patients. We used a leave-one-out training model where, for '...
     'each patient, we trained the logistic regression classifier described above on all other patients '...
     'and tested the classifier on the held-out patient. The mean (standard deviation) AUC of '...
-    'an ROC curve representing classifier performance on the test data was %1.2f (%1.2f).</p>'],...
-    nanmean(Y,1),nanstd(Y,[],1));
+    'an ROC curve representing classifier performance on the test data was %1.2f (%1.2f). '...
+    'Results were similar for a model analyzing electrodes in gray matter only '...
+    '(mean (SD) AUC =  %1.2f (%1.2f)).</p>'],...
+    nanmean(Y,1),nanstd(Y,[],1),nanmean(nmout_gray.Y,1),nanstd(nmout_gray.Y,[],1));
 
 %% Get all data for single confusion matrix
 % Convert everything to long vectors
@@ -223,14 +233,14 @@ nexttile
 %plot(1:length(ppv),ppv(I),'o','linewidth',2)
 %hold on
 %plot(1:length(ppv),npv(I),'o','linewidth',2)
-plot(1:length(acc),sort(acc),'o','linewidth',2)
+plot(1:length(aucs),sort(aucs),'o','linewidth',2)
 %legend({'PPV','NPV'},'fontsize',15,'location','southeast')
-title('Individual patient accuracies')
+title('Individual patient AUCs')
 set(gca,'fontsize',15)
 xlabel('Patient')
-ylabel('Accuracy (%%)')
+ylabel('AUC')
 
-fprintf(fid,'<p>Individual accuracies were highly variable across patients.');
+fprintf(fid,'<p>Model AUCs were highly variable across patients.');
 
 %% Do between-patient analyses
 
@@ -328,10 +338,24 @@ title('Accuracy by duration')
 set(gca,'fontsize',15);
 
 % Text
-%{
-fprintf(fid,[['<p>We next studied what duration of interictal data was needed '...
+%
+fprintf(fid,['<p>We next studied what duration of interictal data was needed '...
     'to localize the SOZ. Given that spikes in sleep better localized the SOZ than spikes in wakefulness, '...
-    'we separately evaluated sleep and wake interictal periods. We 
+    'we separately evaluated sleep and wake interictal periods. We performed the same logistic regression '...
+    'classification described above, again using a leave-one-out approach to train and test the model.'...
+    ' Using durations of 1 minute, 5 minutes, 10 minutes, and 60 minutes, we chose random 1-minute segments '...
+    'of interictal data of the specified state (sleep or wake) adding up to the specified duration. We performed '...
+    'each training/testing split ten times to obtain a distribution of random durations. '...
+    'We measured the AUC of the model tested on the testing data, and averaged this against each of the '...
+    '10 random samples and each of the training/testing splits. This resulted in a single '...
+    'average model AUC per duration and per wake vs. sleep state. We again observed that the average AUC '...
+    'was higher for models trained on sleep spike data (mean (SD) AUC for full duration = %1.2f (%1.2f))'...
+    ' than those trained on wake spike data (%1.2f (%1.2f)). Also, near-optimal model performance was '...
+    'achieved with only 10 minutes of interictal data (mean (SD) AUC for model trained on ten minutes of sleep '...
+    '= %1.2f (%1.2f)).</p>'],...
+    nanmean(time_aucs(2,end,:,:),[3 4]),nanstd(time_aucs(2,end,:,:),[],[3 4]),...
+    nanmean(time_aucs(1,end,:,:),[3 4]),nanstd(time_aucs(1,end,:,:),[],[3 4]),...
+    nanmean(time_aucs(2,3,:,:),[3 4]),nanstd(time_aucs(2,3,:,:),[],[3 4]));
 %}
 
 %% Print figure
@@ -342,87 +366,7 @@ else
     print(gcf,[time_roc_folder,'new_fig'],'-dpng')
 end
 
-%{
-%% Get proportion of electrodes that are soz
-nsoz = cellfun(@(x) sum(x==1),all_soz);
-nelecs = cellfun(@length,all_soz);
-median_proportion = median(nsoz./nelecs);
-
-%% Get some clinical stuff
-stereo = logical(out.circ_out.stereo);
-loc = out.circ_out.all_locs;
-temporal = contains(loc,'temporal');
-extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
-
-%% Do main model both to get estimates of coefficients and AUCs
-all_auc = nan(nb,1);
-all_coeffs = nan(ncoeffs,nb);
-all_roc = cell(nb,1);
-for ib = 1:nb
-     fprintf('\nib = %d of %d\n',ib,nb)
-     mout = updated_classifier_may2022([],1);
-     all_auc(ib) = mout.AUC;
-     for ic = 1:ncoeffs
-            % get the estimate of the model coefficient
-            all_coeffs(ic,ib) = mout.model.Coefficients{ic+1,2}; 
-         
-     end
-     all_roc{ib} = [mout.X,mout.Y];
-    
-end
-[X,Y] = unify_roc(all_roc);
-
-%% Calculate thresholds
-% Find the point along the ROC curve that would return about 5% positivity
-% rate
-closest_point = find_point_roc_proportion(X,mean(Y,1),median_proportion);
-
-
-% Get confusion matrices
-cout = confusion_matrix(predicted,actual,do_plot);
-
-%% Determine bootstrap stats for each coefficient
-coeff_stats = nan(ncoeffs,4); % mean, lower CI, higher CI, p
-for ic = 1:ncoeffs
-    tout = bootstrap_ci_and_p(squeeze(all_coeffs(ic,:)));
-    coeff_stats(ic,:) = [tout.mean,tout.CI_95,tout.p];
-    
-end
-
-
-%% LOO analysis - get distribution of individual patient AUCs
-pt_auc = nan(npts,1);
-for ip = 1:npts
-    fprintf('\npatient = %d of %d\n',ip,npts);
-    curr_soz = all_soz{ip};
-    if sum(curr_soz) == 0
-        pt_auc(ip) = nan;
-    else
-        mout = updated_classifier_may2022(ip,1);
-        pt_auc(ip) = mout.AUC;
-    end
-end
-
-% Stereo doesn't matter
-if 0
-    figure
-    plot(1+randn(sum(stereo),1)*0.05,pt_auc(stereo),'o','linewidth',2)
-    hold on
-    plot(2+randn(sum(~stereo),1)*0.05,pt_auc(~stereo),'o','linewidth',2)
-
-end
-
-% TLE vs eTLE DOES matter
-if 0
-    figure
-    plot(1+randn(sum(temporal),1)*0.05,pt_auc(temporal),'o','linewidth',2)
-    hold on
-    plot(2+randn(sum(extra),1)*0.05,pt_auc(extra),'o','linewidth',2)
-
-end
-
-%}
-
-
+fclose(fid);
+fclose(sfid);
 
 end

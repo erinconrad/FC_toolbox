@@ -128,6 +128,10 @@ T(nan_rows,:) = [];
 
 %% Divide into training and testing data
 % Are we doing LOO and if so which
+mout.funny_error = 0;
+mout.empty_testing = 0;
+mout.one_label = 0;
+
 if isempty(leave_out)
     training = randsample(length(pt_idx),length(pt_idx),true);
     training_idx = ismember(T.vec_pt_idx,training);
@@ -151,6 +155,7 @@ else
 
     if isempty(T_test)
         mout.AUC = nan;
+        mout.empty_testing = 1;
         return
     end
     % Confirm I got the right pt to leave out
@@ -162,6 +167,7 @@ else
 end
 
 %% Train model with glm model
+
 if isempty(wake_or_sleep)
     if do_glme
         T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
@@ -174,6 +180,7 @@ if isempty(wake_or_sleep)
 
             if contains(ME.message,'NaN or Inf values are not allowed in X.')
                    mout.AUC = nan;
+                   mout.funny_error = 1;
                    return
             else
                 error('what');
@@ -197,6 +204,7 @@ else
         catch ME
             if contains(ME.message,'NaN or Inf values are not allowed in X.')
                    mout.AUC = nan;
+                   mout.funny_error = 1;
                    return
             else
                 error('what');
@@ -223,9 +231,14 @@ posclass = 'SOZ';
 scores = classification;
 if length(unique(labels)) == 1
     mout.AUC = nan;
+    mout.one_label = 1;
     return
 end
 [X,Y,T,AUC,~] = perfcurve(labels,scores,posclass);
+
+if isnan(AUC) && mout.funny_error == 0 && mout.one_label == 0 && mout.empty_testing == 0
+    error('why');
+end
 
 %% Also get PPV and NPV for a specific spot on curve
 % Pick the threshold to be that such that the model estimates that p of the

@@ -1,4 +1,4 @@
-function [pt_stats,X,Y,pt_specific] = sleep_loo(just_gray)
+function [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray)
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -23,20 +23,48 @@ all_soz = out.bin_out.all_is_soz;
 pt_stats = nan(npts,6);
 pt_specific = cell(npts,3);
 all_roc = cell(npts,1);
+excluded = zeros(npts,4); % empty soz, empty testing, funny error, one label
+
+%% Notes on patient exclusions
+% patients 2, 42, 71: no SOZ
+% patient 7 (HUP108): no sleep times identified (looking at raster,almost
+% all bad times)
+% patient 17 (HUP122): no postictal times, no seizures in seizure time file despite
+% SOZ being listed
+% patient 49: wacky error, model fails to converge
+
 for ip = 1:npts
     %fprintf('\npatient = %d of %d\n',ip,npts);
     curr_soz = all_soz{ip};
+    
     if sum(curr_soz) == 0
+        excluded(ip,1) = 1;
         continue;
     else
         mout = updated_classifier_may2022(ip,1,[],[],just_gray);
+        
+        if mout.empty_testing == 1
+            excluded(ip,2) = 1;
+        end
+        
+        if mout.funny_error == 1
+            excluded(ip,3) = 1;
+        end
+        
+        if mout.one_label == 1
+            excluded(ip,4) = 1;
+        end
+        
         if ~isfield(mout,'labels'), continue; end
         for ic = 1:4
             pt_stats(ip,ic) = mout.model.Coefficients{ic+1,2}; 
         end
         
+        
+        
         curr_roc = [mout.X,mout.Y];
         all_roc{ip} = curr_roc;
+
         
         pt_stats(ip,5) = mout.AUC;
         %pt_stats(ip,6) = mout.PPV;
