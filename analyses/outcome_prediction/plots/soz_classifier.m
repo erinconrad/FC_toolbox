@@ -35,7 +35,7 @@ params.which_atlas = which_atlas;
 params.sr = mout.sr; % search radius (leave empty to use default calc)
 params.prop_train = 2/3;
 params.do_r2 = 0; % r^2 instead of r for FC measurement? (should be zero)
-params.do_ns_resid = 1; % take residuals of ns (density normalized). I don't do this.
+params.do_ns_resid = 1; % take residuals of ns (density normalized).
 params.include_lat = 0; % include laterality in addition to broad anatomical regions. I don't do this but should I????
 params.dens_model = 1; % use Erin's density model as opposed to rat11. Doesn't matter because I don't do residuals.
 
