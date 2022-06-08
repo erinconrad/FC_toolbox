@@ -1,4 +1,4 @@
-function neurology_figure3
+function epilepsia_figure3
 
 %% Parameters
 min_rate = 0.1;
@@ -23,7 +23,7 @@ out = out.out;
 
 %% Unpack substructures
 unpack_any_struct(out);
-out_folder = [results_folder,'analysis/sleep/neurology/'];
+out_folder = [results_folder,'analysis/sleep/epilepsia/'];
 
 %% Prep output text file
 fid = fopen([out_folder,'results.html'],'a');

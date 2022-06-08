@@ -1,4 +1,4 @@
-function neurology_supplemental_fig2
+function epilepsia_supplemental_fig2
 
 %{
 Note that the results text for the 3 and 12 hours peri-ictal windows are
@@ -36,7 +36,7 @@ out = out.out;
 
 %% Unpack substructures
 unpack_any_struct(out);
-out_folder = [results_folder,'analysis/sleep/neurology/'];
+out_folder = [results_folder,'analysis/sleep/epilepsia/'];
 
 %% Prep output text file
 

@@ -1,4 +1,4 @@
-function neurology_figure1
+function epilepsia_figure1
 
 p = 94;% HUP197
 f = 1;
@@ -243,7 +243,7 @@ annotation('textbox',[0.5 0.45 0.1 0.1],'String','D','fontsize',25,'linestyle','
 %annotation('textbox',[0.34 0.4 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
 
 
-print([results_folder,'analysis/sleep/neurology/fig1'],'-depsc')
+print([results_folder,'analysis/sleep/epilepsia/fig1'],'-depsc')
 close(gcf)
 
 end

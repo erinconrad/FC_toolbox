@@ -1,9 +1,9 @@
-function T2 = sleep_table1
+function epilepsia_table1
 
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/sleep/neurology/'];
+out_folder = [results_folder,'analysis/sleep/epilepsia/'];
 int_folder = [results_folder,'analysis/backup_intermediate_Feb26_good_spikes/'];
 %int_folder = [results_folder,'analysis/intermediate/'];
 if ~exist(out_folder,'dir')
@@ -13,7 +13,16 @@ end
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
+out_folder1 = [scripts_folder,'analyses/sleep/data/'];
 
+%% Load out file
+out = load([out_folder1,'out.mat']);
+out = out.out;
+n_sleep_wake = out.bin_out.n_sleep_wake;
+
+%% Load validation file
+val_T = readtable(['Manual validation.xlsx']);
+sw_val_T = readtable(['Manual validation.xlsx'],'Sheet','Validation Sw');
 
 %% Listing of available files
 listing = dir([int_folder,'*.mat']);
@@ -30,6 +39,9 @@ duration = nan(npts,1);
 lat = cell(npts,1);
 loc = cell(npts,1);
 stereo = nan(npts,1);
+ppv = nan(npts,1);
+perc_asleep = n_sleep_wake(:,1)./sum(n_sleep_wake,2)*100;
+ws_ppv = nan(npts,2);
 
 %% Loop over files
 for p = 1:npts
@@ -67,6 +79,16 @@ for p = 1:npts
     lat{p} = curr_lat;
     loc{p} = curr_loc;
     
+     %% Spike PPV
+    row = strcmp(val_T.name,names);
+    assert(sum(row) == 1)
+    ppv(p) = val_T.PPV_car_(row);
+    
+    %% Sleep wake PPV
+    row = strcmp(sw_val_T.name,names);
+    assert(sum(row) == 1)
+    ws_ppv(p,:) = [sw_val_T.x_Correct_outOf50_Wake(row)/50, sw_val_T.x_Correct_outOf50_Sleep(row)/50];
+    
     
 end
 
@@ -82,6 +104,8 @@ median_range_age_implant = [nanmedian(age_implant),min(age_implant),max(age_impl
 median_range_nelecs = [nanmedian(nelecs),min(nelecs),max(nelecs)];
 median_range_duration = [nanmedian(duration),min(duration),max(duration)];
 median_range_rate = [nanmedian(rate),min(rate),max(rate)];
+median_range_ppv = [nanmedian(ppv),min(ppv),max(ppv)];
+median_range_sleep = [nanmedian(perc_asleep),min(perc_asleep),max(perc_asleep)];
 n_left = sum(cellfun(@(x) strcmp(x,'left'),lat));
 n_right = sum(cellfun(@(x) strcmp(x,'right'),lat));
 n_bilateral = sum(cellfun(@(x) strcmp(x,'bilateral'),lat));
@@ -111,6 +135,12 @@ bilateral_str = {'Bilateral: N (%)',sprintf('%d (%1.1f%%)',n_bilateral,n_bilater
 loc_str = {'Seizure localization',''};
 temporal_str = {'Temporal: N (%)',sprintf('%d (%1.1f%%)',n_temporal,n_temporal/npts*100)};
 other_str = {'Extra-temporal: N (%)',sprintf('%d (%1.1f%%)',n_other,n_other/npts*100)};
+ppv_str = {'Spike detector positive predictive value: median (range)',...
+    sprintf('%1.2f (%1.2f-%1.2f)',median_range_ppv(1),median_range_ppv(2),...
+    median_range_ppv(3))};
+sleep_str = {'Percentage of times classified as asleep: median (range)',...
+    sprintf('%1.1f%% (%1.1f-%1.1f)',median_range_sleep(1),median_range_sleep(2),...
+    median_range_sleep(3))};
 
 
 
@@ -124,7 +154,15 @@ all = [total_str;...
     bilateral_str;...
     loc_str;...
     temporal_str;...
-    other_str];
+    other_str;...
+    nelecs_str;...
+    implant_str;...
+    n_gs_str;...
+    n_stereo_str;...
+    duration_str;...
+    ppv_str;...
+    rate_str;...
+    sleep_str];
 
 %{
 all = [total_str;...
