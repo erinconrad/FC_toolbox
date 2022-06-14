@@ -55,7 +55,7 @@ broad_A(isnan(broad_A)) = 0;
 fig_name = 'Fig 5';
 figure
 set(gcf,'position',[10 10 1000 700])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+tiledlayout(2,2,'tilespacing','tight','padding','compact')
 
 
 %% A: Brain showing MT, TN, Other
@@ -116,7 +116,7 @@ xticklabels([])
 yticklabels([])
 zticklabels([])
 %ylabel(c,'Density (1/mm^2)')
-set(gca,'fontsize',15)
+set(gca,'fontsize',20)
 text(mean(locs(:,1)),mean(locs(:,2)),max(locs(:,3))+45,...
     sprintf('Electrode coverage density\n(single patient example)'),'fontsize',20,...
     'horizontalalignment','center','fontweight','bold')
@@ -136,8 +136,8 @@ title('Null model ROC')
 
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.46 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.46 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.47 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.5 0.47 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
 print(gcf,[plot_folder,fig_name],'-dpng')
 

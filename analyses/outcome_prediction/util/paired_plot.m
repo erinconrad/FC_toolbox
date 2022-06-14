@@ -1,4 +1,4 @@
-function stats_out = paired_plot(data,ytext,xlabels,skip_legend,legend_loc)
+function stats_out = paired_plot(data,ytext,xlabels,multiline,skip_legend,legend_loc)
 
 if exist('skip_legend') == 0
     skip_legend = 0;
@@ -6,6 +6,10 @@ end
 
 if exist('legend_loc') == 0
     legend_loc = [];
+end
+
+if exist('multiline') == 0
+    multiline = 0;
 end
 
 %% Parameters
@@ -31,9 +35,13 @@ np = plot(data(neg_diff,1),data(neg_diff,2),'^','markeredgecolor',...
 ep = plot(data(equal_diff,1),data(equal_diff,2),'s','markeredgecolor',...
     ecolor,'markerfacecolor',ecolor,'linewidth',2);
 
-xlabel(sprintf('%s %s',ytext,sprintf(xlabels{1})))
-ylabel(sprintf('%s %s',ytext,sprintf(xlabels{2})))
-
+if multiline
+    xlabel(sprintf('\n\n%s\n%s',ytext,sprintf(xlabels{1})),'horizontalalignment','center','verticalalignment','middle')
+    ylabel(sprintf('%s\n%s\n\n',ytext,sprintf(xlabels{2})),'horizontalalignment','center','verticalalignment','middle')
+else
+    xlabel(sprintf('%s %s',ytext,sprintf(xlabels{1})))
+    ylabel(sprintf('%s %s',ytext,sprintf(xlabels{2})))
+end
 
 all_min = min([ylim,xlim]);
 all_max = max([xlim,ylim]);

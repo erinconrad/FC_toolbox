@@ -52,6 +52,7 @@ sfid = fopen([out_folder,'supplemental_results.html'],'a');
 fprintf(fid,'<p><b>Localizing the seizure onset zone with spikes</b><br>');
 
 %% Print results of main model
+coeff_stats = nmout.coeff_stats;
 fprintf(fid,['We tested how accurately spike rates could classify electrodes '...
     'as SOZ versus non-SOZ. To do this, we constructed a mixed-effects logistic regression classifier, '...
     'where each electrode from each patient was a separate observation. The response '...
@@ -97,6 +98,8 @@ tiledlayout(3,2,'tilespacing','tight','padding','tight')
 
 
 %% LOO
+pt_stats = nmout.pt_stats;
+pt_specific = nmout.pt_specific;
 aucs = pt_stats(:,5);
 scores =  pt_specific(:,1);
 soz = pt_specific(:,3);
@@ -110,9 +113,13 @@ acc = cell2mat(acc);
 threshold_mat = cell2mat(threshold);
 
 %% PLot ROC
+Y = nmout.Y;
+X = nmout.X;
 ym = nanmean(Y,1);
-ly = ym-nanstd(Y,[],1);
-uy = ym+nanstd(Y,[],1);
+std_Y = nanstd(Y,[],1);
+ste_Y = std_Y./sqrt(size(Y,1));
+ly = ym-std_Y;
+uy = ym+std_Y;
 nexttile
 %plot(X,ym,'linewidth',2)
 mp = shaded_error_bars_fc(X,ym,[ly;uy],'k');
@@ -293,17 +300,22 @@ duration_ticklabels = arrayfun(@(x) sprintf('%d',x),duration_ticks,'uniformoutpu
 duration_ticklabels(end) = {'Full'};
 
 nexttile
+time_aucs = nmout.time_aucs;
 sp = nan(2,1);
 for iws = 1:2
-    curr_aucs = squeeze(nanmean(time_aucs(iws,:,:,:),[3 4]));
-    auc_std = squeeze(nanstd(time_aucs(iws,:,:,:),[],[3 4]));
-    sp(iws) = plot(duration_ticks,curr_aucs,'-o','linewidth',2);
+    data = squeeze(time_aucs(iws,:,:,:));
+    flattened_data = reshape(data,size(data,1),size(data,2)*size(data,3));
+    mean_aucs = nanmean(flattened_data,2);
+    std_aucs = nanstd(flattened_data,[],2);
+    ste_aucs = std_aucs/sqrt(size(flattened_data,2));
+    %sp(iws) = plot(duration_ticks,curr_aucs,'-o','linewidth',2);
+    sp(iws) = errorbar(duration_ticks,mean_aucs,ste_aucs,'-o','linewidth',2);
     hold on
 end
 legend({'Wake','Sleep'},'fontsize',15,'location','southeast')
 xticks(duration_ticks)
 xticklabels(duration_ticklabels)
-ylabel('Mean AUC')
+ylabel('Mean (standard error) AUC')
 xlabel('Duration examined (minutes)')
 title('Accuracy by duration')
 set(gca,'fontsize',15);
@@ -337,7 +349,7 @@ annotation('textbox',[0.5 0.55 0.1 0.1],'String','D','fontsize',25,'linestyle','
 annotation('textbox',[0 0.23 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.23 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
 
-print(gcf,[out_folder,'new_fig'],'-dpng')
+print(gcf,[out_folder,'Fig5'],'-depsc')
 close all
 
 fclose(fid);

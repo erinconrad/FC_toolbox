@@ -84,7 +84,7 @@ dens = interdistance_to_density_matrix(D,sr);
 turn_nans_gray(dens)
 c = colorbar;
 ylabel(c,'Density (mm)')
-set(gca,'fontsize',15)
+set(gca,'fontsize',20)
 xticklabels([])
 yticklabels([])
 xlabel('Electrode')
@@ -99,7 +99,7 @@ turn_nans_gray(conn)
 c = colorbar;
 caxis([-1 1])
 ylabel(c,'Pearson correlation')
-set(gca,'fontsize',15)
+set(gca,'fontsize',20)
 xticklabels([])
 yticklabels([])
 xlabel('Electrode')
@@ -118,8 +118,8 @@ ylim([-1 1])
 xlim([min(vec_dens) max(vec_dens)])
 xlabel('Density (mm)')
 ylabel('Functional connectivity (r)')
-set(gca,'fontsize',15)
-legend(rp,sprintf('r^2 = %1.2f',max(all_r2)),'fontsize',15,'location','northwest')
+set(gca,'fontsize',20)
+legend(rp,sprintf('r^2 = %1.2f',max(all_r2)),'fontsize',20,'location','northwest')
 title({'Density-functional connectivity correlation','(all patients)'})
 
 nexttile
@@ -130,14 +130,14 @@ ylim([0 0.35])
 xlabel('Search radius')
 ylabel('Model r^2')
 title({'Density-functional connectivity model r^2','as a function of search radius'})
-set(gca,'fontsize',15)
-legend(rp,'Optimal search radius','fontsize',15)
+set(gca,'fontsize',20)
+legend(rp,'Optimal search radius','fontsize',20,'location','southeast')
 
 
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.42 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.42 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.44 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.5 0.44 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
 print(gcf,[plot_folder,'Fig S1'],'-dpng')
 
@@ -180,11 +180,12 @@ for ia = 1:2
     % Show bilateral coverage
     nexttile([1 3])
     pretty_matrix(atlas_out.all_bilateral(~atlas_out.neither_lat,:),...
-        {'SOZ\newlinehemisphere','non-SOZ\newlinehemisphere'},sum(atlas_out.left),[],1);
+        {'Left','Right'},sum(atlas_out.left),[],1);
     colormap(gca,[0.5,0.5,0.5;1 1 1]);
     title('Regions with symmetric coverage')
     xlabel('Patient')
     ylabel('Region')
+    set(gca,'fontsize',20)
 
     fprintf(fid,[' Across patients, there were on average %1.1f (range %d-%d) anatomical regions '...
         ' (%1.1f when separately counting left and right) with bilateral electrode coverage. '...
@@ -195,20 +196,20 @@ for ia = 1:2
     % Show atlas
     nexttile([1 3])
     pretty_matrix(nanmean(atlas_out.soz_non_soz_ordered_atlas(~atlas_out.neither_lat,~atlas_out.neither_lat,:),3),...
-        {'SOZ\newlinehemisphere','non-SOZ\newlinehemisphere'},sum(atlas_out.left),'r',0);
+        {'SOZ\newlinehemisphere','non-SOZ\newlinehemisphere'},sum(atlas_out.left),'Connectivity (r)',0);
     caxis(gca,[-1 1])
     title('Average connectivity (symmetric coverage only)')
     xlabel('Region')
-
+    set(gca,'fontsize',20)
     fprintf(fid,[' Visually, in a network averaged across patients, network edges in the hemisphere opposite the SOZ were '...
         'stronger than those in the hemisphere of the SOZ (%sB, brighter colors indicate higher connectivity).'],fig_name);
 
     % Show tests
     %need TO ADD N FOR EACH TEST
     nexttile([1 2])
-    stats = paired_plot(atlas_out.soz_all,'Average connectivity',{'to SOZ','to contralateral region'});
-    title('Connectivity to SOZ vs. contralateral region')
-    
+    stats = paired_plot(atlas_out.soz_all,'Connectivity',{'to SOZ','to contralateral region'});
+    title({'Connectivity','to SOZ vs. contralateral'})
+    set(gca,'fontsize',20)
     fprintf(fid,[' We compared the average connectivity to the SOZ with that to the '...
         'region contralateral to the SOZ. We included patients who had electrode coverage of both the SOZ '...
         'and the contralateral region in this analysis (%d patients).'],...
@@ -219,9 +220,9 @@ for ia = 1:2
         pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval),fig_name);
 
     nexttile([1 2])
-    stats = paired_plot(atlas_out.hemi,'Intra-hemispheric connectivity',{'in SOZ side','in non-SOZ side'});
+    stats = paired_plot(atlas_out.hemi,'Intra-hemispheric connectivity',{'in SOZ side','in non-SOZ side'},1);
     title({'Hemispheric connectivity','ipsilateral vs. contralateral to SOZ'})
-    
+    set(gca,'fontsize',20)
     fprintf(fid,[' We next compared the intra-hemispheric connectivity between '...
         'the side of the SOZ and the contralateral hemisphere. For this analysis we included '...
         'patients with unilateral epilepsy and at least two symmetrically-implanted atlas regions in '...
@@ -234,9 +235,9 @@ for ia = 1:2
         pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval),fig_name);
 
     nexttile([1 2])
-    stats = paired_plot(atlas_out.soz_intra,'Intrinsic connectivity',{'in SOZ','in contralateral region'});
+    stats = paired_plot(atlas_out.soz_intra,'Intrinsic connectivity',{'in SOZ','in contralateral region'},1);
     title({'Intrinsic connectivity','in SOZ vs contralateral region'})
-    
+    set(gca,'fontsize',20)
     fprintf(fid,[' We next compared the intrinsic connectivity within the SOZ '...
         'and that of the contralateral region. For this analysis we included '...
         'patients whose SOZ spanned at least two atlas regions, and who had electrode coverage '...
@@ -252,9 +253,9 @@ for ia = 1:2
     % Add annotations
     annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',30,'linestyle','none')
     annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',30,'linestyle','none')
-    annotation('textbox',[0 0.44 0.1 0.1],'String','C','fontsize',30,'linestyle','none')
-    annotation('textbox',[0.32 0.44 0.1 0.1],'String','D','fontsize',30,'linestyle','none')
-    annotation('textbox',[0.66 0.44 0.1 0.1],'String','E','fontsize',30,'linestyle','none')
+    annotation('textbox',[0 0.48 0.1 0.1],'String','C','fontsize',30,'linestyle','none')
+    annotation('textbox',[0.33 0.48 0.1 0.1],'String','D','fontsize',30,'linestyle','none')
+    annotation('textbox',[0.68 0.48 0.1 0.1],'String','E','fontsize',30,'linestyle','none')
 
     print(gcf,[plot_folder,fig_name],'-dpng')
     
@@ -262,6 +263,7 @@ for ia = 1:2
         fprintf(fid,[' Results were similar when using the AAL rather than the Brainnetome '...
             'atlas for parcellating brain regions (Supplemental Results; Fig S2).']);
     end
+    
     
     fprintf(fid,[' Results when studying coherence rather than Pearson correlation networks '...
         'were more heterogeneous, seen for different frequency bands in the two different atlases '...
@@ -272,7 +274,7 @@ end
 %% Supplemental Fig 3 - coherence (both atlases)
 
 figure
-set(gcf,'position',[1 1 1440 900])
+set(gcf,'position',[1 1 1440 700])
 tiledlayout(2,5,'tilespacing','tight','padding','tight')
 fig_name = 'Fig S3';
 fid = fopen([plot_folder,'supplemental_results.html'],'a');
@@ -297,12 +299,12 @@ for ia = 1:2
         if ia == 1 && f == 1
             stats = paired_plot(squeeze(soz_coh_all(:,f,:)),'Coherence',...
                 {'SOZ','in contralateral region','in contralateral region'},...
-                0,[0.045,0.85,0.16,0.08]);
+                0,0,[0.045,0.85,0.16,0.08]);
 
         else
             stats = paired_plot(squeeze(soz_coh_all(:,f,:)),...
                 'Coherence',{'SOZ','in contralateral region','in contralateral region'},...
-                1);
+                0,1);
         end
         if ia == 1
             title(sprintf('Brainnetome: %s',freqs{f}))
@@ -344,7 +346,7 @@ fclose(fid);
 for ia = 1:2
     
     figure
-    set(gcf,'position',[1 100 800 370])
+    set(gcf,'position',[1 100 900 370])
     tiledlayout(1,2,'tilespacing','compact','padding','tight');
     
     if ia == 1
@@ -419,10 +421,10 @@ for ia = 1:2
                 text(ic,jc,sprintf('%d',conf_out.mat(jc,ic)),'horizontalalignment','center','fontsize',25,'fontweight','bold')
             end
         end
-        title(sprintf('%s\nAccuracy: %1.1f%%, PPV: %1.1f%%, NPV: %1.1f%%',ttext,...
+        title(sprintf('%s Accuracy: %1.1f%%\nPPV: %1.1f%%, NPV: %1.1f%%',ttext,...
             conf_out.accuracy*100,...
             conf_out.ppv*100,conf_out.npv*100))
-        set(gca,'fontsize',15)
+        set(gca,'fontsize',20)
     end
     annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
     annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
@@ -467,11 +469,11 @@ for i = 1
     mean_corr = nanmean(thing);
     xlabel('Patient')
     xticklabels([])
-    ylabel('Spike rate - connectivity correlation (\rho)')
-    title('Correlation between spikes and connectivity')
+    ylabel({'Spike rate - connectivity','correlation (\rho)'})
+    title({'Correlation between','spikes and connectivity'})
     [~,p,~,stats] = ttest(thing);
-    legend(pp,sprintf('mean \\rho = %1.2f, %s',mean_corr,get_p_text(p)),'location','southeast','fontsize',15)
-    set(gca,'fontsize',15)
+    legend(pp,sprintf('mean \\rho = %1.2f, %s',mean_corr,get_p_text(p)),'location','northeast','fontsize',20)
+    set(gca,'fontsize',20)
     
     fprintf(fid,[' The mean correlation was &rho; = %1.2f, which was significantly less than zero '...
     '(<i>t</i>-test, <i>t</i>(%d) = %1.2f, %s (%sA).'],mean_corr,stats.df,stats.tstat,get_p_html(p),fig_name);
@@ -479,9 +481,9 @@ for i = 1
         'to other electrodes.']);
     
     nexttile
-    stats = paired_plot(all_all_chs_corr,'Average connectivity',{'before spike','during spike'});
-    set(gca,'fontsize',15)
-    title({'Change in connectivity with single spikes',' (All electrodes)'})
+    stats = paired_plot(all_all_chs_corr,'Average connectivity',{'before spike','during spike'},1);
+    set(gca,'fontsize',20)
+    title({'Change in connectivity with','single spikes (all electrodes)'})
     
    fprintf(fid,[' In an attempt to understand if the negative relationship between spikes and connectivity '...
         'is due to the spikes themselves reducing connectivity, we compared the functional '...
@@ -494,9 +496,9 @@ for i = 1
         get_p_html(stats.pval),fig_name);
     
     nexttile
-    stats = paired_plot(all_single_chs_corr,'Average connectivity',{'before spike','during spike'});
-    title({'Change in connectivity with single spikes',' (Spike electrode)'})
-    set(gca,'fontsize',15)
+    stats = paired_plot(all_single_chs_corr,'Average connectivity',{'before spike','during spike'},1);
+    title({'Change in connectivity with','single spikes (spike electrode)'})
+    set(gca,'fontsize',20)
     
     fprintf(fid,[' In order to examine the local effect of spikes, we also compared the average pre- and during-spike '...
         'for the single electrode the spike was detected on. The average connectivity in the spike electrode '...
@@ -599,10 +601,10 @@ for ia = 1:2
 
 
     end
-    set(gca,'fontsize',15)
+    set(gca,'fontsize',20)
     xlabel('False positive rate')
     ylabel('True positive rate')
-    legend(mnames,'fontsize',15,'location','southeast')
+    legend(mnames,'fontsize',20,'location','southeast')
     title('SOZ prediction')
     
     fprintf(fid,[' We compared the performance of the null model against a model including connectivity '...
@@ -675,11 +677,12 @@ for ia = 1:2
     end
     
     legend(legp,{'Null model','Connectivity','Spikes','All'},...
-    'fontsize',15,'position',[0.5108 0.0730 0.1438 0.1192]);
+    'fontsize',20,'position',[0.5108 0.130 0.1438 0.1192]);
+    legend boxoff
     xticks(txticklocs)
     xticklabels(txticklabels)
     ylabel('Model AUC');
-    set(gca,'fontsize',15)
+    set(gca,'fontsize',20)
     title('Model performance in stereo-EEG versus grid/strip/depth implantations')
     
     fprintf(fid,['<p>We anticipated that the spatial null model and other models ('...

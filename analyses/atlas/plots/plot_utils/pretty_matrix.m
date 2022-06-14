@@ -26,9 +26,9 @@ xlim(new_xl)
 
 if ~oned
     c = colorbar('location','westoutside');
-    ylabel(c,clabel,'fontsize',15)
+    ylabel(c,clabel,'fontsize',20)
 end
-set(gca,'fontsize',15)
+set(gca,'fontsize',20)
 
 
 end

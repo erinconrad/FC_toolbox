@@ -1,7 +1,7 @@
 function add_sz_times_multiple_sources
 
 %% Add from AllSeizureTimes sheet of Manual validation file
-add_sztimes_from_manual_valdation_file
+add_sztimes_from_manual_valdation_file(0)
 
 %% Clinician excel file
 %add_clinician_seizure_times
