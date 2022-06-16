@@ -531,7 +531,7 @@ end
 
 end
 
-%{
+%
 function elec_broad = get_anatomy_elecs(sp_labels,atlas_labels,regions,broad_no_lat,atlas_nums,atlas_anatomy)
     
 %% Remove ekg from atlas
@@ -570,6 +570,7 @@ end
 
 end
 
+%{
 function out = logistic(x)
 
 out = 1./(1+exp(-x));
