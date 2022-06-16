@@ -46,14 +46,16 @@ for i = 1:length(labels)
     end
     
     % fix for things that could be either scalp or ieeg
-    if strcmp(labels(i),'O2')
+    %{
+    if strcmp(labels(i),'O2') 
         if sum(strcmp(labels,'O1')) == 0 % if hemiscalp, should not have odd; if ieeg, should have O1
             ekg(i) = 1;
         end
     end
+    %}
     
-    if strcmp(labels(i),'O1')
-        if sum(strcmp(labels,'O6')) == 1
+    if strcmp(labels(i),'O1') || strcmp(labels(i),'O2')
+        if sum(strcmp(labels,'O3')) == 1 || sum(strcmp(labels,'O4')) == 1 % if intracranial, should have these too
             ekg(i) = 0;
         else
             ekg(i) = 1;
