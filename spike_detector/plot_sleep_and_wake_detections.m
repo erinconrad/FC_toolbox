@@ -23,7 +23,7 @@ scripts_folder = locations.script_folder;
 validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
 %% Get the indices of the patients with good spikes
 T = readtable(validation_file);
-good_pts = T.Var13;
+good_pts = T.GoodCARSpikes;
 good_pts = good_pts(~isnan(good_pts));
 npts = length(good_pts);
 
