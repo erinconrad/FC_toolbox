@@ -8,7 +8,7 @@ if ~exist('n_test_train_splits','var')
     n_test_train_splits = 1e3;
 end
 
-% 1 means doing from github so skip some conceptual plots and Table 1 that require looking at larger datasets
+% 1 means doing from github so skip some conceptual plots and Table 1, which require looking at larger datasets
 if ~exist('doing_from_github','var')
     doing_from_github = 1;
 end

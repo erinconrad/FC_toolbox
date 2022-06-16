@@ -203,15 +203,6 @@ nout.n_coverage.any_symmetric = any_symmetric;
 nout.total_n_for_symmetric = total_n_for_symmetric;
 nout.mean_symmetric = mean_symmetric;
 
-%% Build atlas ONLY containing mesial temporal regions
-%{
-mt_atlas = atlas;
-mt_atlas(~mt,:,:) = nan; mt_atlas(:,~mt,:) = nan;
-mt_spikes = spikes;
-mt_spikes(~mt,:) = nan;
-mt_names = names;
-mt_names(~mt) = {''};
-%}
 
 %% Get average connectivity of SOZ (to other things) and that of contralateral region
 % INitialize things
@@ -408,7 +399,9 @@ conf_out_fc = confusion_matrix(predicted,lats_for_conf,0);
 
 % Get numbers for above analysis
 n_conf_fc = length(predicted);
-assert(n_conf_fc == n_holo_hem)
+if ~randomize_lat
+    assert(n_conf_fc == n_holo_hem)
+end
 
 %% get confusion matrix for spikes
 % Note that this is also using a symmetric coverage map!
@@ -607,8 +600,6 @@ end
 
 print(gcf,[locations.paper_plot_folder,'symm_pred_',which_atlas],'-dpng')
 
-%% Output text
-fprintf(fid,'<p><b>Changes in spikes with seizures</b>');
 
 end
 

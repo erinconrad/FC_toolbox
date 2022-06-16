@@ -16,7 +16,7 @@ locations = fc_toolbox_locs;
 nmodels = length(params.models);
 all_auc = nan(nb,nmodels);
 
-% initialize fun model facts
+% initialize model facts
 for im = 1:nmodels
     model_info(im).name = params.models{im};
     model_info(im).pretty_name = params.pretty_name{im};
@@ -36,13 +36,11 @@ params.sr = mout.sr; % search radius (leave empty to use default calc)
 params.prop_train = 2/3;
 params.do_r2 = 0; % r^2 instead of r for FC measurement? (should be zero)
 params.do_ns_resid = 0; % take residuals of ns (density normalized).
-params.include_lat = 0; % include laterality in addition to broad anatomical regions. I don't do this but should I????
+params.include_lat = 0; % include laterality in addition to broad anatomical regions. I don't do this.
 params.dens_model = 1; % use Erin's density model as opposed to rat11. Doesn't matter because I don't do residuals.
 
-%params.max_spikes = 1/3600; % max spikes for both distance and density models
 params.do_norm = 1; % normalize spike rate and density within pt
 params.atlas_anatomy = 0; % break anatomy into many categories (all atlas regions)? Model fails to converge
-%params.only_sleep = 0; % outside scope, don't change
 params.test_implant = 0; % 0: all patients, 1: sEEG, 2: grid/strip
 
 
@@ -125,7 +123,8 @@ params.do_glme = 1;
 glme_beta = nan(nb,1);
 for ib = 1:nb
     glme_stuff = individual_classifier(params);
-    beta = glme_stuff.model(5).glm.Coefficients{5,2};
+    beta = glme_stuff.model(5).glm.Coefficients{5,2}; % the 5th model is the one withe verything. Coefficient 5 is the ns one, I think.
+    assert(strcmp(glme_stuff.model(5).glm.CoefficientNames{5},'vec_ns')) % make sure it's ns
     glme_beta(ib) = beta;
 end
 all_out.glme_stuff.last_model = out;
@@ -393,6 +392,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
         T_train = temp_table;
         T_test = temp_table;
 
+        % make sure it's the same patients
         assert(isequal(unique(T_train.vec_pt_idx),unique(training)))
         %training_idx = ismember(T.vec_pt_idx,training);
         %T_train = T(training_idx,:);
@@ -428,7 +428,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
             assert(~any(not_stereo(T.vec_pt_idx) ~= 1));
 
         else
-
+            % use all patients
             training = randsample(npts,floor(npts*prop_train));
             training_idx = ismember(T.vec_pt_idx,training);
             testing_idx = ~ismember(T.vec_pt_idx,training);
@@ -474,7 +474,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
        % T_train_me.vec_pt_idx = nominal(T_train_me.vec_pt_idx);
        
        try
-           if do_glme % try glme regardless
+           if do_glme 
                T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
                T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
                glm = fitglme(T_train,formula_me,'Distribution','Binomial');
@@ -503,32 +503,9 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
             continue;
         end
 
-        if 0
-            asum = zeros(size(T_test,1),1);
-            asum = asum + glm.Coefficients.Estimate(1);
-            for p = 2:length(params)
-                est = glm.Coefficients.Estimate(p);
-                if contains((params{p}),'vec_loc')
-                    C = strsplit((params{p}),'_');
-                    cat = C{3};
-
-                    % find the indices of T_test that fit this category
-                    match = strcmp(T_test.vec_loc,cat);
-                    asum(match) = asum(match) + est;
-                else
-
-                    asum = asum +  T_test.(params{p})*est;
-                end
-            end
-
-
-            classification = logistic(asum);
-        else
-            % Derive classifications (probability of SOZ) for testing data
-            %classification = feval(glm,T_test); % predict
-            classification = predict(glm,T_test);
-            
-        end
+        
+        % Derive classifications (probability of SOZ) for testing data
+        classification = predict(glm,T_test);
 
         % Compare classification against true
         [X,Y,~,AUC,~] = perfcurve(T_test.vec_soz,classification,1);
@@ -554,6 +531,7 @@ end
 
 end
 
+%{
 function elec_broad = get_anatomy_elecs(sp_labels,atlas_labels,regions,broad_no_lat,atlas_nums,atlas_anatomy)
     
 %% Remove ekg from atlas
@@ -599,3 +577,4 @@ out = 1./(1+exp(-x));
 end
 
 
+%}

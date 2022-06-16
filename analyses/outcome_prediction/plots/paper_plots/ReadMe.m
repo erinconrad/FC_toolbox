@@ -12,8 +12,7 @@ https://github.com/erinconrad/FC_toolbox
 To run the code to regenerate the results plots and tables, perform the
 following steps:
 1) Download the codebase from https://github.com/erinconrad/FC_toolbox/
-2) Download the intermediate datasets
-located in Erin Conrad's Penn Box:
+2) Download the intermediate datasets located in Erin Conrad's Penn Box:
 https://upenn.box.com/s/xsins7ud83e4y93w3yf5uzm37ey40ir4
 3) Add a file named fc_toolbox_locs.m to your Matlab path. This points to
 various other paths. Here is an example of what it would look like:

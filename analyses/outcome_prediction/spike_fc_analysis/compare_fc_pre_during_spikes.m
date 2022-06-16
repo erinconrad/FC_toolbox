@@ -181,11 +181,11 @@ for l = 1:npts
         if 0
             figure
             nexttile
-            plot(values(:,sp_chs(2)))
+            plot(values(:,sp_ch))
             nexttile
-            plot(values(spike_period,sp_chs(2)))
+            plot(values(spike_period,sp_ch))
             nexttile
-            plot(values(pre_spike_period,sp_chs(2)))
+            plot(values(pre_spike_period,sp_ch))
             
         end
         
