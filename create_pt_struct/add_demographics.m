@@ -18,19 +18,32 @@ T = readtable([data_folder,'clinical_info/clinical.csv']);
 
 %% Loop over patients in table
 for ir = 1:size(T,1)
-    rname = T.ieegportalsubjno{ir};
+    %rname = T.ieegportalsubjno{ir};
+    rname = T.hupsubjno(ir);
+    
+    
+    
+    % find the hup***_ string
+    
+    %{
     
     % see if it contains HUP
     if ~contains(rname,'HUP')
         continue
     end
     
-    % find the hup***_ string
     [si,ei] = regexp(rname,'HUP\d*_');
+    
     
     if isempty(si), error('why'); end
     
     rname = rname(si:ei-1);
+    %}
+    if rname <100
+        rname = sprintf('HUP0%d',rname);
+    else
+        rname = sprintf('HUP%d',rname);
+    end
     
     for ip = 1:length(pt)
         name = pt(ip).name;

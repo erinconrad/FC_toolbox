@@ -133,6 +133,8 @@ mout.empty_testing = 0;
 mout.one_label = 0;
 
 if isempty(leave_out)
+    % if this is empty, I am doing all patients with a bootstrap sample
+    % with replacement to get bootstrap CI on coefficients
     training = randsample(length(pt_idx),length(pt_idx),true);
     training_idx = ismember(T.vec_pt_idx,training);
     testing_idx = ~ismember(T.vec_pt_idx,training);

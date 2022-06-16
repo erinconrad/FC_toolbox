@@ -25,6 +25,9 @@ switch which_step
         % define run times
         fprintf('\nGetting run times\n');
         define_run_times
+        
+        % define_blocks_for_coherence
+        define_blocks_for_coherence
 
         % add file start times
         add_file_start_times
