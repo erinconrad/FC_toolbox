@@ -44,7 +44,7 @@ for ip = 1:length(pt_idx)
     %% remove non-gray matter?
     
     % Get whether electrodes are gray matter
-    is_gray = strcmp(curr_locs,'other_cortex') | strcmp(curr_locs,'temporal neocortical') | strcmp(curr_locs,'mesial temporal');
+    is_gray = strcmp(curr_locs,'other cortex') | strcmp(curr_locs,'temporal neocortical') | strcmp(curr_locs,'mesial temporal');
     
     % remove those that aren't gray matter
     if just_gray

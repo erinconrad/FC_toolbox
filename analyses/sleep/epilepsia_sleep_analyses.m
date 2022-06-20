@@ -7,7 +7,7 @@ data folder to be used for plots and statistical tests.
 %}
 
 %% Parameters to change
-doing_from_github = 0; % change to 1 if doing from github
+doing_from_github = 1; % change to 1 if doing from github
 
 %% Get file locs
 locations = fc_toolbox_locs;
