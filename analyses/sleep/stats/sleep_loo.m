@@ -67,8 +67,8 @@ for ip = 1:npts
 
         
         pt_stats(ip,5) = mout.AUC;
-        %pt_stats(ip,6) = mout.PPV;
-        %pt_stats(ip,7) = mout.NPV;
+       % pt_stats(ip,6) = mout.PPV;
+       % pt_stats(ip,7) = mout.NPV;
         
         pt_specific{ip,1} = mout.scores;
         pt_specific{ip,2} = mout.T;

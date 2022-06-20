@@ -204,16 +204,18 @@ fprintf(fid,['<p>To provide an example of real-world classifier performance, we 
 %% PPVs and NPVs for each patient
 % Sort lowest to highest AUC
 nexttile
-%[~,I] = sort(ppv);
-%plot(1:length(ppv),ppv(I),'o','linewidth',2)
-%hold on
-%plot(1:length(ppv),npv(I),'o','linewidth',2)
-plot(1:length(aucs),sort(aucs),'ko','linewidth',2)
+[~,I] = sort(ppv);
+plot(1:length(ppv),ppv(I),'o','linewidth',2)
+hold on
+plot(1:length(ppv),npv(I),'o','linewidth',2)
+%plot(1:length(aucs),sort(aucs),'ko','linewidth',2)
 %legend({'PPV','NPV'},'fontsize',15,'location','southeast')
-title('Individual patient accuracies')
+%title('Individual patient accuracies')
+title('Individual patient positive predictive values (PPV)')
 set(gca,'fontsize',15)
 xlabel('Patient')
-ylabel('AUC')
+%ylabel('AUC')
+ylabel('PPV')
 
 fprintf(fid,'<p>Model accuracies were highly variable across patients (Fig 5C).');
 
@@ -221,12 +223,12 @@ fprintf(fid,'<p>Model accuracies were highly variable across patients (Fig 5C).'
 
 % Implant type
 nexttile
-plot(1+randn(sum(stereo),1)*0.05,aucs(stereo),'o','linewidth',2,'color',myColours(1,:))
+plot(1+randn(sum(stereo),1)*0.05,ppv(stereo),'o','linewidth',2,'color',myColours(1,:))
 hold on
-plot(2+randn(sum(~stereo),1)*0.05,aucs(~stereo),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
+plot(2+randn(sum(~stereo),1)*0.05,ppv(~stereo),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
 xticks([1 2])
 xticklabels({'Stereo-EEG','Grid/strip/depths'});
-ylabel('Classification AUC')
+ylabel('Classification PPV')
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
@@ -236,58 +238,58 @@ text(1.5,ytext,get_p_text(ranksum(aucs(stereo),aucs(~stereo))),...
     'fontsize',15,'horizontalalignment','center')
 ylim(nylim)
 xlim([0.5 2.5])
-title('Accuracy by implant strategy')
+title('Positive predictive value (PPV) by implant strategy')
 set(gca,'fontsize',15)
 
-[p,~,stats] = ranksum(aucs(stereo),aucs(~stereo));
+[p,~,stats] = ranksum(ppv(stereo),ppv(~stereo));
 % text
 W = stats.ranksum;
-nt = sum(~(isnan(aucs(stereo))));
-ne = sum(~(isnan(aucs(~stereo))));
+nt = sum(~(isnan(ppv(stereo))));
+ne = sum(~(isnan(ppv(~stereo))));
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
 fprintf(fid,[' Patients with stereo-EEG implantations had similar '...
-    'classification accuracy '...
+    'classification positive predictive value '...
     '(median AUC = %1.2f) to those with grid/strip/depth implantations'...
     ' (median AUC = %1.2f) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>stereo</sub></i> = %d, <i>N<sub>not-stereo</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig 5D).'],nanmedian(aucs(stereo)),nanmedian(aucs(~stereo)),...
+    ' %1.1f, %s) (Fig 5D).'],nanmedian(ppv(stereo)),nanmedian(ppv(~stereo)),...
     nt,ne,U,get_p_html(p));
 
 % Localization
 nexttile
-plot(1+randn(sum(temporal),1)*0.05,aucs(temporal),'o','linewidth',2,'color',myColours(2,:))
+plot(1+randn(sum(temporal),1)*0.05,ppv(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
-plot(2+randn(sum(extra),1)*0.05,aucs(extra),'o','linewidth',2,'color',myColours(3,:))
+plot(2+randn(sum(extra),1)*0.05,ppv(extra),'o','linewidth',2,'color',myColours(3,:))
 xticks([1 2])
 xticklabels({'Temporal lobe epilepsy','Extra-temporal lobe epilepsy'});
-ylabel('Classification AUC')
+ylabel('Classification PPV')
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k','linewidth',2)
-text(1.5,ytext,get_p_text(ranksum(aucs(temporal),aucs(extra))),...
+text(1.5,ytext,get_p_text(ranksum(ppv(temporal),ppv(extra))),...
     'fontsize',15,'horizontalalignment','center')
 ylim(nylim)
 xlim([0.5 2.5])
-title('Accuracy by seizure localization')
+title('Positive predictive value (PPV) by seizure localization')
 set(gca,'fontsize',15)
-[p,~,stats] = ranksum(aucs(temporal),aucs(extra));
+[p,~,stats] = ranksum(ppv(temporal),ppv(extra));
 % text
 W = stats.ranksum;
-nt = sum(~(isnan(aucs(temporal))));
-ne = sum(~(isnan(aucs(extra))));
+nt = sum(~(isnan(ppv(temporal))));
+ne = sum(~(isnan(ppv(extra))));
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
 fprintf(fid,[' Patients with temporal lobe epilepsy had higher '...
-    'classification accuracy '...
+    'classification positive predictive value '...
     '(median AUC = %1.2f) relative to those with extra-temporal'...
     ' lobe epilepsy (median AUC = %1.2f) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig 5E).</p>'],nanmedian(aucs(temporal)),nanmedian(aucs(extra)),...
+    ' %1.1f, %s) (Fig 5E).</p>'],nanmedian(ppv(temporal)),nanmedian(ppv(extra)),...
     nt,ne,U,get_p_html(p));
 
 
@@ -304,12 +306,27 @@ time_aucs = nmout.time_aucs;
 sp = nan(2,1);
 for iws = 1:2
     data = squeeze(time_aucs(iws,:,:,:));
-    flattened_data = reshape(data,size(data,1),size(data,2)*size(data,3));
-    mean_aucs = nanmean(flattened_data,2);
-    std_aucs = nanstd(flattened_data,[],2);
-    ste_aucs = std_aucs/sqrt(size(flattened_data,2));
+    
+    %% For each duration, do a linear mixed effects model to estimate standard error
+    % initialize mean and ste
+    mean_ste = nan(size(data,1),2);
+    
+    % loop over durations
+    for id = 1:size(data,1)
+        
+        curr_aucs = squeeze(data(id,:,:));
+        
+        [mean_estimate,ste_estimate] = model_clustered_effect(curr_aucs);
+        mean_ste(id,:) = [mean_estimate,ste_estimate];
+        
+    end
+    sp(iws) = errorbar(duration_ticks,mean_ste(:,1),mean_ste(:,2),'-o','linewidth',2);
+    %flattened_data = reshape(data,size(data,1),size(data,2)*size(data,3));
+    %mean_aucs = nanmean(flattened_data,2);
+    %std_aucs = nanstd(flattened_data,[],2);
+    %ste_aucs = std_aucs/sqrt(size(flattened_data,2));
     %sp(iws) = plot(duration_ticks,curr_aucs,'-o','linewidth',2);
-    sp(iws) = errorbar(duration_ticks,mean_aucs,ste_aucs,'-o','linewidth',2);
+    %sp(iws) = errorbar(duration_ticks,mean_aucs,ste_aucs,'-o','linewidth',2);
     hold on
 end
 legend({'Wake','Sleep'},'fontsize',15,'location','southeast')

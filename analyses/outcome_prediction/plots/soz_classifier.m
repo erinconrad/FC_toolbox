@@ -157,6 +157,7 @@ for ib = 1:nb
 end
 stereo_vs_not.n_stereo_remain = stereo_out.n_stereo;
 stereo_vs_not.n_not_stereo_remain = not_stereo_out.n_not_stereo;
+stereo_vs_not.params = params;
 
 % for each model, compare stereo to not stereo
 for im = 1:nmodels
@@ -304,6 +305,9 @@ if isempty(sr)
     %sr = max_inter_elec_dist(locs);
 end
 
+%% Get info on missing info
+missing_stuff = zeros(npts,5);
+
 for ip = 1:npts
     curr_rate = rate{ip};
     curr_soz = soz{ip};
@@ -335,6 +339,28 @@ for ip = 1:npts
     vec_soz = [vec_soz;curr_soz];
     vec_ns = [vec_ns;curr_ns];
     vec_pt_idx = [vec_pt_idx;repmat(ip,length(curr_soz),1)];
+    
+    % info on missing stuff
+    if all(isnan(curr_rate))
+        missing_stuff(ip,1) = 1;
+    end
+    
+    if all(isnan(density))
+        missing_stuff(ip,2) = 1;
+    end
+    
+    if all(cellfun(@isempty,curr_ana_loc))
+        missing_stuff(ip,3) = 1;
+    end
+    
+    if all(isnan(curr_soz))
+        missing_stuff(ip,4) = 1;
+    end
+    
+    if all(isnan(curr_ns))
+        missing_stuff(ip,5) = 1;
+    end
+    
 end
 
 %% Make table
@@ -404,7 +430,7 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
             T(~stereo_idx,:) = [];
             unique_pts = unique(T.vec_pt_idx);
             mout.n_stereo = length(unique_pts);
-            training = randsample(n_stereo,floor(n_stereo*prop_train));
+            training = randsample(unique_pts,floor(mout.n_stereo*prop_train));
             training_idx = ismember(T.vec_pt_idx,training);
             testing_idx = ~ismember(T.vec_pt_idx,training);
             T_train = T(training_idx,:);
@@ -419,7 +445,8 @@ while 1 % wrap this all in a while loop to try again if wacky errors related to 
             T(~not_stereo_idx,:) = [];
             unique_pts = unique(T.vec_pt_idx);
             mout.n_not_stereo = length(unique_pts);
-            training = randsample(n_not_stereo,floor(n_not_stereo*prop_train));
+            
+            training = randsample(unique_pts,floor(mout.n_not_stereo*prop_train));
             training_idx = ismember(T.vec_pt_idx,training);
             testing_idx = ~ismember(T.vec_pt_idx,training);
             T_train = T(training_idx,:);

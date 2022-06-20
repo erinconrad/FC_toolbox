@@ -66,6 +66,8 @@ end
 atlas_out = load([atlas_folder,which_atlas,'.mat']);
 atlas_out = atlas_out.out;
 
+assert(isequal(out.all_names,atlas_out.pt_names))
+
 %% get atlas stuff (indictates which electrodes are in which atlas regions)
 atlas_elec_labels = atlas_out.elecs_labels;
 atlas_elec_regions = atlas_out.elecs_atlas;
