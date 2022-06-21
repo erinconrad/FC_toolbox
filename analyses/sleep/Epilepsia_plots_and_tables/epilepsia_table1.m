@@ -80,12 +80,12 @@ for p = 1:npts
     loc{p} = curr_loc;
     
      %% Spike PPV
-    row = strcmp(val_T.name,names);
+    row = strcmp(val_T.name,names{p});
     assert(sum(row) == 1)
     ppv(p) = val_T.PPV_car_(row);
     
     %% Sleep wake PPV
-    row = strcmp(sw_val_T.name,names);
+    row = strcmp(sw_val_T.name,names{p});
     assert(sum(row) == 1)
     ws_ppv(p,:) = [sw_val_T.x_Correct_outOf50_Wake(row)/50, sw_val_T.x_Correct_outOf50_Sleep(row)/50];
     
