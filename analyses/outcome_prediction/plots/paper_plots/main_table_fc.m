@@ -15,7 +15,7 @@ model_folder = locations.paper_plot_folder;
 
 
 % Spike-fc corr
-corr_out = load([model_folder,'spikes_analysis.mat']);
+corr_out = load([model_folder,'spike_analysis.mat']);
 corr_out = corr_out.nout;
 any_locs = corr_out.pts_with_any_locs;
 names = corr_out.names;
