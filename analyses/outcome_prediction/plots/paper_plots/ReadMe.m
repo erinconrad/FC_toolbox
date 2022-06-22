@@ -3,7 +3,7 @@ This folder contains the scripts to perform the analyses from the
 Intracranial EEG Network Biases paper. 
 
 The code for this analysis can be found at:
-https://github.com/erinconrad/FC_toolbox
+/Users/erinconrad/Desktop/research/FC_toolbox/scripts/analyses/outcome_prediction/plots/paper_plots/
 
 %}
 

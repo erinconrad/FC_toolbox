@@ -1,5 +1,6 @@
 function do_all_figs(doing_from_github)
 
+% close existing figures
 close all
 
 %% Parameters
