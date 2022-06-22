@@ -215,7 +215,7 @@ ylim(ylnew)
 
 fprintf(fid,[' There was no significant difference in sleep-wake spike rate difference between patients'...
     ' with mesial temporal lobe epilepsy and patients with neocortical epilepsy '...
-    '(eFigure 1A, eTable 2).</p>']);
+    '(Supplemental Figure 1A, Supplemental Table 2).</p>']);
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')

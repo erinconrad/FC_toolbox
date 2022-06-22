@@ -4,6 +4,8 @@ function symmetric_coverage_tests(which_atlas)
 This performs the analysis comparing connectivity to the SOZ to the region
 contralateral to the SOZ, first restricting regions to only those with
 bilateral coverage.
+
+Double checked 6/22/22, looks good.
 %}
 
 %% Parameters
@@ -88,6 +90,18 @@ assert(sum(left)==sum(right));
 [atlas,spikes,bin_soz,coh] = rebuild_atlas(fc,rate,atlas_elec_labels,...
     atlas_elec_regions,atlas_nums,labels,soz,coh);
 
+%% Compare some elec labels to atlas labels
+% making sure that LA is left amygdala, etc...
+% did some spot checks, looks ok
+if 0
+    ip = 1;
+    non_nan = ~isnan(atlas_elec_regions{ip});
+    atlas_names = names(atlas_elec_regions{ip}(non_nan));
+    atlas_labels = atlas_elec_labels{ip}(non_nan);
+    table(atlas_labels,atlas_names)
+    
+end
+
 %% Re-order atlas to be left then right then neither
 lr_order = reorder_lr(locs,lats); % get the order
 
@@ -113,6 +127,7 @@ contra_index(sum(left)+1:sum(left)*2) = ([1:sum(left)])';
 assert(isequal(locs(1:sum(left)),locs(sum(left)+1:sum(left)*2)))
 assert(isequal(locs(contra_index(1:sum(left))),locs(contra_index(sum(left)+1:sum(left)*2))))
 
+%% Double check contralateral is contralateral
 if 0
     % looks good
     nan_contra = isnan(contra_index);
@@ -218,6 +233,14 @@ soz_coh_all = nan(npts,nfreqs,2); % avg coherence to SOZ
 all_bin_contra_soz = zeros(size(bin_soz)); 
 ns_soz_minus_contra = nan(sum(strcmp(lats,'R')),npts);
 
+%% Show common soz locations
+if 0 
+    npts_soz = sum(bin_soz,2);
+    [~,sorted_soz] = sort(npts_soz,'descend')
+    table(names(sorted_soz(1:10)))
+    % Doing this shows that the most common SOZ regions are left
+    % hippocampus and then right hippocampus, which is not surprising
+end
 
 for ip = 1:npts
     
@@ -240,6 +263,11 @@ for ip = 1:npts
     bin_contra_soz(contra_soz) = 1;
     bin_contra_soz = logical(bin_contra_soz);
     all_bin_contra_soz(:,ip) = bin_contra_soz;
+    
+    % Show some
+    if 0
+        table(names(curr_soz),names(bin_contra_soz))
+    end
     
     % confirm that difference in number of soz and contra soz is just those
     % regions that have no contralateral thing. Note, some patients will
