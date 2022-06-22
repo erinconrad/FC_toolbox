@@ -1,4 +1,4 @@
-function density = estimate_coverage_density(locs,r)
+function density = estimate_coverage_density(locs,r,labels)
 
 %% Overview
 %{
@@ -63,6 +63,9 @@ if 0
     figure
     scatter3(locs(:,1),locs(:,2),locs(:,3),100,density,'filled',...
         'markeredgecolor','k','linewidth',2);
+    hold on
+    text(locs(:,1),locs(:,2),locs(:,3),labels,...
+        'horizontalalignment','center')
     c = colorbar;
     xlabel('X position (mm)')
     ylabel('Y position (mm)')

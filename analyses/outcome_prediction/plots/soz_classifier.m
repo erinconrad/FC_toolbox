@@ -1,11 +1,13 @@
 function soz_classifier(which_atlas,nb)
 
 %{
-This function models the SOZ based on various features
+This function models the SOZ based on various features. Tested 6/22, looks
+ok
 %}
 
 %% Initial parameters
 % nb = How many random testing/training splits (do 1,000 for paper)
+params.randomize_soz = 0; % randomize SOZ (to test that AUC is 0.5); should be zero for paper
 do_plot = 0;
 params.models = {'ana','ana_cov','ana_cov_ns','ana_cov_spikes','ana_cov_spikes_ns',}; % which models
 params.pretty_name = {'Anatomy','Add coverage density','Add connectivity','Add spike rates','All'};
@@ -123,7 +125,7 @@ params.do_glme = 1;
 glme_beta = nan(nb,1);
 for ib = 1:nb
     glme_stuff = individual_classifier(params);
-    beta = glme_stuff.model(5).glm.Coefficients{5,2}; % the 5th model is the one withe verything. Coefficient 5 is the ns one, I think.
+    beta = glme_stuff.model(5).glm.Coefficients{5,2}; % the 5th model is the one with everything. Coefficient 5 is the ns one.
     assert(strcmp(glme_stuff.model(5).glm.CoefficientNames{5},'vec_ns')) % make sure it's ns
     glme_beta(ib) = beta;
 end
@@ -194,7 +196,6 @@ localization (a categorical variable that can be MT, TN, OC, or nothing)
 
 
 %% Parameters
-%max_spikes = params.max_spikes; % max spikes/elecs/min to include in model
 which_atlas = params.which_atlas;
 prop_train = params.prop_train;
 do_norm = params.do_norm;
@@ -207,6 +208,7 @@ dens_model = params.dens_model;
 do_r2 = params.do_r2;
 sr = params.sr;
 test_implant = params.test_implant;
+randomize_soz = params.randomize_soz;
 
 %% File locations
 locations = fc_toolbox_locs;
@@ -288,6 +290,7 @@ for ip = 1:npts
 end
 
 if 0
+    % check reasonable, looks good
     table(elec_broad{110},labels{110})
 end
 
@@ -298,6 +301,7 @@ vec_soz = [];
 vec_pt_idx = [];
 vec_ns = [];
 vec_dens = [];
+vec_labels = {};
 
 %% GEt default search radius
 if isempty(sr)
@@ -314,13 +318,22 @@ for ip = 1:npts
     curr_ana_loc = elec_broad{ip};
     curr_ns = ns{ip};
     curr_loc = locs{ip};
+    curr_labels = labels{ip};
+    
+    if randomize_soz
+        nsoz = sum(curr_soz);
+        nelecs = length(curr_soz);
+        new_soz = randsample(nelecs,nsoz);
+        curr_soz = zeros(nelecs,1);
+        curr_soz(new_soz) = 1;
+    end
     
     if atlas_anatomy
         curr_ana_loc = arrayfun(@(x) num2str(x),curr_ana_loc,'uniformoutput',false);
     end
     
     % get density
-    density = estimate_coverage_density(curr_loc,sr);
+    density = estimate_coverage_density(curr_loc,sr,curr_labels);
         
     % normalize within patient
     if do_norm
@@ -339,6 +352,7 @@ for ip = 1:npts
     vec_soz = [vec_soz;curr_soz];
     vec_ns = [vec_ns;curr_ns];
     vec_pt_idx = [vec_pt_idx;repmat(ip,length(curr_soz),1)];
+    vec_labels = [vec_labels;curr_labels];
     
     % info on missing stuff
     if all(isnan(curr_rate))
@@ -364,8 +378,7 @@ for ip = 1:npts
 end
 
 %% Make table
-T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_dens);
-
+T = table(vec_soz,vec_pt_idx,vec_rate,vec_loc,vec_ns,vec_dens,vec_labels);
 
 %% Remove rows without localization
 assert(length(unique(T.vec_pt_idx))==npts); % assure I start with all patients
@@ -388,6 +401,15 @@ T(nan_rows,:) = [];
 % number excluded due to spikes
 n_exc_spikes = npts - n_exc_locs - length(unique(T.vec_pt_idx));
 
+%% Take a look at some of this
+if 0
+    start_row = 6e3;
+    end_row = start_row+100;
+    T(start_row:end_row,:)
+    % starting with row 6000, this goes from pt 65->66, and the first few
+    % rows for 66 are LA1-3, which are mesial temporal, very low ns, high
+    % density, and high spike rate
+end
 
 %% Get number of patients
 unique_pts = unique(T.vec_pt_idx);
