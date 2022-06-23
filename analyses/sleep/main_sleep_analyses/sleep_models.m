@@ -1,25 +1,18 @@
 function nmout = sleep_models(just_gray)
 
+%{
+This code executes the SOZ localization models for the spikes and sleep
+paper. Just_gray indictaes whether to do the analysis on only gray matter
+electrodes.
+%}
+
 %% Parameters
-durations = {1, 5, 10, 30, 60,[]};
+durations = {1, 5, 10, 30, 60,[]}; % durations to check for duration analysis
 
 
 %% Locations
 locations = fc_toolbox_locs;
-script_folder = locations.script_folder;
 addpath(genpath(locations.script_folder))
-results_folder = [locations.main_folder,'results/'];
-out_folder = [results_folder,'analysis/sleep/epilepsia/'];
-out_folder1 = [script_folder,'analyses/sleep/data/'];
-if ~exist(out_folder,'dir')
-    mkdir(out_folder)
-end
-
-%% Load out file and get roc stuff
-out = load([out_folder1,'out.mat']);
-out = out.out;
-
-
 
 %% Do the stats
 

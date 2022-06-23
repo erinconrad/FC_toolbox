@@ -22,19 +22,17 @@ for ib = 1:nb
     
     %}
     
-    assert(isfield(mout,'labels'))
-    % If this happens, it means model failed. I don't like this! 
+    if ~isfield(mout,'labels'), continue; end
+    % If this 
     
     coeff_names = mout.model.CoefficientNames(2:5);
     assert(isequal(coeff_names,coeff_names_expected))
     
-    % Get individual model coefficients
     for ic = 1:ncoeffs
         pt_stats(ib,ic) = mout.model.Coefficients{ic+1,2}; 
     end
 end
 
-%% Bootstap CI and p-values from individual model coefficients
 coeff_stats = nan(ncoeffs,4); % mean, lower CI, higher CI, p
 for ic = 1:ncoeffs
     tout = bootstrap_ci_and_p(squeeze(pt_stats(:,ic)));
