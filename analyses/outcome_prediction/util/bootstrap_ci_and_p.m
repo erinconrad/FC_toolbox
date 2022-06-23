@@ -12,7 +12,10 @@ I want two-tailed p-value of is A > B (or B>A). I will calculate
 1: (sum(C>=0)+1)/(length(C)+1)
 2: (sum(C<=0)+1)/(length(C)+1)
 
-Take the mininum of [1,2] and multiply this by 2 to get a 2-sided pvalue
+Take the mininum of [1,2] and multiply this by 2 to get a 2-sided pvalue.
+
+If only a single argument A then I will assume that I am testing whether A
+is bigger than or less than 0 (again using a 2 tailed approach).
 
 %}
 

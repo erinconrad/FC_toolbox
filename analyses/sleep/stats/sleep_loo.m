@@ -20,9 +20,9 @@ all_soz = out.bin_out.all_is_soz;
 
 
 %% LOO analysis - get distribution of individual patient AUCs
-pt_stats = nan(npts,6);
-pt_specific = cell(npts,3);
-all_roc = cell(npts,1);
+pt_stats = nan(npts,6); % first 4 are the model coefficients, 5 is AUC, 6 doesn't exist
+pt_specific = cell(npts,3); % model scores, then potential thresholds, then SOZs for each patient
+all_roc = cell(npts,1); % individual patient ROCs
 excluded = zeros(npts,4); % empty soz, empty testing, funny error, one label
 
 %% Notes on patient exclusions
@@ -42,6 +42,8 @@ for ip = 1:npts
         continue;
     else
         mout = updated_classifier_may2022(ip,1,[],[],just_gray);
+        % first argument indicates which patient to be held out as testing
+        % data.
         
         if mout.empty_testing == 1
             excluded(ip,2) = 1;
@@ -56,12 +58,14 @@ for ip = 1:npts
         end
         
         if ~isfield(mout,'labels'), continue; end
+        
+        % Get model coefficients
         for ic = 1:4
             pt_stats(ip,ic) = mout.model.Coefficients{ic+1,2}; 
         end
         
         
-        
+        % model ROC and other info
         curr_roc = [mout.X,mout.Y];
         all_roc{ip} = curr_roc;
 
@@ -77,7 +81,7 @@ for ip = 1:npts
     end
 end
 
-%% Unify roc
+%% Unify roc (single set of Xs and then the corresponding Ys for each model)
 [X,Y] = unify_roc(all_roc);
 
 

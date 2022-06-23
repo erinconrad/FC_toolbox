@@ -11,19 +11,27 @@ coeff_names_expected = {'vec_rate_sleep','vec_rate_wake','vec_rate_pre','vec_rat
 % Loop over bootstrap samples
 for ib = 1:nb
 
-    %% Do the classifier
-    mout = updated_classifier_may2022([],1,[],[],just_gray);
-    %{ 
-    first argument [] means don't leave any patients out (do bootstrap
-    sampling instead. Second argument 1 means do mixed effects model. 3rd
-    argument [] means not doing the wake vs sleep analysis. 4th argment []
-    means full duration. just_gray indicates whether to do all electrodes
-    or only gray matter.
+    % wrap in a while loop to retry if funny errors
+    while 1
+        %% Do the classifier
+        mout = updated_classifier_may2022([],1,[],[],just_gray);
+        %{ 
+        first argument [] means don't leave any patients out (do bootstrap
+        sampling instead. Second argument 1 means do mixed effects model. 3rd
+        argument [] means not doing the wake vs sleep analysis. 4th argment []
+        means full duration. just_gray indicates whether to do all electrodes
+        or only gray matter.
+
+        %}
     
-    %}
-    
-    assert(isfield(mout,'labels'))
-    % If this happens, it means model failed. I don't like this! 
+        if ~(isfield(mout,'labels'))
+        % If this happens, it means model failed. I don't like this! Retry
+            continue
+        else
+            % accept this model
+            break
+        end
+    end
     
     coeff_names = mout.model.CoefficientNames(2:5);
     assert(isequal(coeff_names,coeff_names_expected))
