@@ -1,10 +1,24 @@
 function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration,just_gray)
 
+%{
+This is the main function to do models for the spikes and sleep paper.
+Input parameters:
+- leave_out: which patient to keep as testing data. This is empty if doign
+bootstrap
+- do_glme: do mixed effects model? 1 for paper
+- wake_or_sleep: wake or sleep state. Empty if all states.
+- duration of interictal data to take. Empty if full duration
+- just_gray: only include gray matter electrodes?
+
+%}
+
+
+
 %% Parameters
-do_norm = 1;
+do_norm = 1; % normalize spike rates within patient?
 randomize_soz = 0; % negative control. If I shuffle the SOZ, I should not exceed chance AUC
 
-
+%% File locations
 locations = fc_toolbox_locs;
 addpath(genpath(locations.script_folder))
 script_folder = locations.script_folder;
@@ -24,7 +38,7 @@ rate_time = out.time_out.all_spikes;
 ws_time = out.time_out.all_ws;
 elec_locs = out.circ_out.all_elec_locs;
 
-%% Put data into friendly format
+%% Put data into single vectors
 vec_rate = [];
 vec_rate_sleep = [];
 vec_rate_wake = [];
@@ -32,8 +46,11 @@ vec_rate_post = [];
 vec_rate_pre = [];
 vec_pt_idx = [];
 vec_soz = [];
+
+% Loop over patients
 for ip = 1:length(pt_idx)
     
+    %% Get spike rates in different states
     curr_rate_sw = rate_sw{ip};
     curr_rate_post = rate_pre_post{ip}(:,2);
     curr_rate_pre = rate_pre_post{ip}(:,1);
@@ -62,7 +79,7 @@ for ip = 1:length(pt_idx)
     else
         curr_indices = 1:size(curr_rate_time,2);
     end
-    
+        
     nsoz = sum(curr_soz==1);
     nelecs = length(curr_soz);
     if randomize_soz == 1
@@ -87,6 +104,8 @@ for ip = 1:length(pt_idx)
     
     %% Take the average across times
     avg_segs_rates = nanmean(seg_rates,2);
+    
+    assert(all(curr_ws_time(segs)==1))
     
     if do_norm
         % normalize the rate across electrodes (this is so that patients
@@ -168,7 +187,7 @@ else
     
 end
 
-%% Train model with glm model
+%% Train model with glm(e) model
 
 if isempty(wake_or_sleep)
     if do_glme
@@ -199,6 +218,7 @@ else
         T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
         T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
         try
+            % just the model with the rate in that specific state
             glm = fitglme(T_train,...
                 'vec_soz ~ vec_rate + (1|vec_pt_idx)',...
                 'Distribution','Binomial');

@@ -1,6 +1,6 @@
 function all_aucs = sleep_duration(durations,just_gray)
 
-nb = 1e1;
+nb = 1e1; % just 10 otherwise this will take weeks to run
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -23,7 +23,7 @@ all_soz = out.bin_out.all_is_soz;
 
 %% Initialize stuff
 ndurs = length(durations);
-all_aucs = nan(2,ndurs,npts,nb); % wake/sleep, then durations, then nbs
+all_aucs = nan(2,ndurs,npts,nb); % wake/sleep, then durations, then patient, then nbs
 
 % Loop over wake and sleep
 for iws = 1:2
