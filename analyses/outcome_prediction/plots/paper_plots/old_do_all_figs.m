@@ -348,12 +348,98 @@ print(gcf,[plot_folder,fig_name],'-dpng')
 fclose(fid);
 
 %% Figure 3 and supplemental fig 4- confusion matrixes
-lat_info(1) = brain_out.lat_info;
-lat_info(2) = aal_out.lat_info;
-fid = fopen([plot_folder,'results.html'],'a');
-sfid = fopen([plot_folder,'supplemental_results.html'],'a');
-lat_model_figure(lat_info,fid,sfid,brain_out,aal_out)
 
+for ia = 1:2
+    
+    figure
+    set(gcf,'position',[1 100 900 370])
+    tiledlayout(1,2,'tilespacing','compact','padding','tight');
+    
+    if ia == 1
+        atlas_out = brain_out;
+        fig_name = 'Fig 3';
+        fid = fopen([plot_folder,'results.html'],'a');
+        fprintf(fid,'<p><br><b>Epilepsy lateralization</b></br>');
+        fprintf(fid,['We asked how well intra-hemispheric functional connectivity '...
+            'could lateralize epilepsy.']);
+    else
+        atlas_out = aal_out;  
+        fig_name = 'Fig S4';
+        fid = fopen([plot_folder,'supplemental_results.html'],'a');
+        fprintf(fid,'<p><br><b>Epilepsy lateralization - AAL atlas</b></br>');
+        fprintf(fid,['We repeated the epilepsy lateralization analysis using the AAL '...
+            'atlas rather than the Brainnetome atlas.']);
+    end
+    
+    unpack_any_struct(atlas_out);
+    
+    fprintf(fid,[' We restricted analysis to patients with unilateral epilepsy '...
+        'and at least two symmetrically-implanted atlas regions in '...
+        'each hemisphere, which allowed us to calculate intra-hemispheric connectivity (%d patients).'],...
+        atlas_out.n_analyses.n_holo_hem);
+    
+    fprintf(fid,[' We predicted that the hemisphere with lower average intrinsic connectivity '...
+        'was the side of the SOZ.']);
+
+    for i = 1:2 % connectivity then spikes
+
+        if i == 1
+            conf_out = conf_out_fc;
+            ttext = 'Connectivity';
+            fprintf(fid,[' Our prediction was %1.1f%% accurate (PPV for identifying right-sided epilepsy %1.1f%%, NPV %1.1f%%) '...
+                'at lateralizing the SOZ.'],conf_out.accuracy*100,...
+                conf_out.ppv*100,conf_out.npv*100);
+        else
+            conf_out = conf_out_spikes;
+            ttext = 'Spikes';
+            if ia == 1
+                fprintf(fid,[' For comparison, a prediction using spike rates '...
+                    '(predicting the hemisphere of the SOZ to be the hemisphere with more spikes, restricting regions to '...
+                    'those with symmetric coverage) was %1.1f%% accurate (PPV for identifying right-sided epilepsy %1.1f%%, NPV %1.1f%%) '...
+                    'at lateralizing the SOZ (%s).'],conf_out.accuracy*100,...
+                    conf_out.ppv*100,conf_out.npv*100,fig_name);
+            else
+                fprintf(fid,[' For comparison, a prediction using spike rates '...
+                    '(predicting the hemisphere of the SOZ to be the hemisphere with more spikes, restricting regions to '...
+                    'those with symmetric coverage) was %1.1f%% accurate (PPV for identifying right-sided epilepsy %1.1f%%, NPV %1.1f%%) '...
+                    'at lateralizing the SOZ (%s).'],conf_out.accuracy*100,...
+                    conf_out.ppv*100,conf_out.npv*100,fig_name);
+            end
+            
+            if ia == 1
+                fprintf(fid,[' Results were similar using the AAL atlas '...
+                    '(Supplemental Results, Fig S4).']);
+            end
+        end
+
+        nexttile
+        turn_nans_gray([1 0;0 1])
+        colormap(gca,[0.8500, 0.3250, 0.0980;0, 0.4470, 0.7410])
+        xticks(1:conf_out.nclasses)
+        xticklabels(conf_out.classes)
+        yticks(1:conf_out.nclasses)
+        yticklabels(conf_out.classes)
+        xlabel(conf_out.xlabel)
+        ylabel(conf_out.ylabel)
+        hold on
+        for ic = 1:conf_out.nclasses
+            for jc = 1:conf_out.nclasses
+                text(ic,jc,sprintf('%d',conf_out.mat(jc,ic)),'horizontalalignment','center','fontsize',25,'fontweight','bold')
+            end
+        end
+        title(sprintf('%s Accuracy: %1.1f%%\nPPV: %1.1f%%, NPV: %1.1f%%',ttext,...
+            conf_out.accuracy*100,...
+            conf_out.ppv*100,conf_out.npv*100))
+        set(gca,'fontsize',20)
+    end
+    annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+    annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+    print(gcf,[plot_folder,fig_name],'-dpng')
+    
+    fprintf(fid,[' These results indicate that reduced intra-hemispheric connectivity '...
+        'can lateralize epilepsy.</p>']);
+    fclose(fid);
+end
 
 %% Figure 4 - correlation between spikes and FC
 unpack_any_struct(corr_out);
@@ -442,6 +528,12 @@ end
 
 fclose(fid);
 print(gcf,[plot_folder,fig_name],'-dpng')
+
+%% Figure 5 - null model construction
+if doing_from_github == 0 || doing_from_github == 2
+    null_model_conceptual
+end
+end
 
 %% Table 2 - model comparisons
 model_comp_table

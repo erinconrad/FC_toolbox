@@ -166,6 +166,9 @@ for im = 1:2
         % Get spikes
         gdf = detector_alt(values,fs);
         fprintf('\nDetected %d spikes\n',size(gdf,1));
+        
+        % coherence
+        coh = coherence_calc(values,fs);
 
         % save
         out.montage(im).name = montage;

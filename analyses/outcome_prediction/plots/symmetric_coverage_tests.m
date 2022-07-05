@@ -453,6 +453,9 @@ end
 
 conf_out_spikes = confusion_matrix(predicted,lats_for_conf,0);
 
+%% Laterality model
+lat_info = laterality_loo(hemi_lr,hemi_lr_spikes,soz_lats);
+
 %% Get average L-R connectivity for each patient
 %{
 lr_conn = nan(npts,1);
@@ -491,6 +494,7 @@ nout.conf_out_fc = conf_out_fc;
 nout.conf_out_spikes = conf_out_spikes;
 nout.bin_soz = bin_soz;
 nout.all_bin_contra_soz = all_bin_contra_soz;
+nout.lat_info = lat_info;
 if no_symm_cov
     save([plot_folder,'no_symm_cov_',which_atlas,'.mat'],'nout');
 else

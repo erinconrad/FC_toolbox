@@ -27,14 +27,10 @@ symmetric_coverage_tests('aal_bernabei')
 fprintf('\nDoing spike analyses...\n');
 spike_fc_correlation
 
-%% Density model
-fprintf('\nFinding optimal search radius for density model...\n');
-erin_dens_model
-
 %% SOZ classifier
 fprintf('\nDoing classifier to predict SOZ vs non-SOZ (takes a while if many training/testing splits)...\n');
-soz_classifier('brainnetome',n_test_train_splits)
-soz_classifier('aal_bernabei',n_test_train_splits)
+simpler_classifier('brainnetome',n_test_train_splits)
+simpler_classifier('aal_bernabei',n_test_train_splits)
 
 %% Plots
 fprintf('\nGenerating plots...\n');

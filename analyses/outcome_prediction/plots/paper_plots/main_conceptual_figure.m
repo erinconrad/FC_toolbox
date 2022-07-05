@@ -79,10 +79,11 @@ ylabel('Anatomical region')
 title('Anatomical variability in connectivity')
 set(gca,'fontsize',20)
 
-%% C: Density
+%% C: Density EDITED TO HAVE SIMPLER SEARCH RADIUS
 p = 102;
 locs = data.all_locs{p};
-sr = calculate_default_search_radius(data.all_locs);
+%sr = calculate_default_search_radius(data.all_locs);
+sr = define_sr_maxD(locs);
 density = estimate_coverage_density(locs,sr);
 ax4 = nexttile([2 1]);
 scatter3(locs(:,1),locs(:,2),locs(:,3),100,density,'filled',...

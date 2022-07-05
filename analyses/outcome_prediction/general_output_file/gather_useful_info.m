@@ -36,6 +36,8 @@ all_locs = cell(npts,1);
 all_coh = cell(npts,1);
 all_stereo = nan(npts,1);
 all_good_spikes = nan(npts,1);
+all_ad_wake = cell(npts,1);
+all_ad_sleep = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -58,6 +60,7 @@ for p = 1:npts
     all_stereo(p) = clinical.stereo;
     good_spikes = summ.good_spikes;
     all_good_spikes(p) = good_spikes;
+    ad = summ.ad;
     
     all_names{p} = name;
     
@@ -85,6 +88,26 @@ for p = 1:npts
     locs(ekg,:) = [];
     coh(ekg,:,:) = [];
     coh(:,ekg,:) = [];
+    
+    %% Sleep
+    % average across electrodes to get single value for each time
+    ad_avg = nanmean(ad,1);
+
+    % normalize across times
+    norm_ad = (ad_avg-nanmedian(ad_avg))./iqr(ad_avg);
+
+    % get the sleep/wake cut-off (seemed to do the best job in a test of 10 patients)
+    disc = -0.4054;
+
+    % classify as sleep or wake
+    sleep = norm_ad <= disc; 
+    wake = norm_ad > disc;
+    
+    %% ADR wake and sleep
+    ad_wake = nanmean(ad(:,wake),2);
+    ad_sleep = nanmean(ad(:,sleep),2);
+    all_ad_wake{p} = ad_wake;
+    all_ad_sleep{p} = ad_sleep;
     
     %% SOZ bin
     all_soz_bin{p} = soz_bin;
@@ -139,6 +162,8 @@ out.all_labels = all_labels;
 out.all_names = all_names;
 out.all_stereo = all_stereo;
 out.good_spikes = all_good_spikes;
+out.all_ad_wake = all_ad_wake;
+out.all_ad_sleep = all_ad_sleep;
 
 
 %% Save
