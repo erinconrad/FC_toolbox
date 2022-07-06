@@ -1,5 +1,6 @@
 function compare_fc_pre_during_spikes(overwrite)
 
+rng(0)
 N = 100;
 surround = 3;
 tw = 2;
@@ -83,6 +84,9 @@ for l = 1:npts
     sp_chs_corr = nan(N,2);
     single_ch_corr = nan(N,2);
     
+    all_chs_coh = nan(N,2);
+    single_ch_coh = nan(N,2);
+    
     %% Loop over these spikes ang grab data
     for is = 1:N
         if mod(is,10) == 1
@@ -139,43 +143,44 @@ for l = 1:npts
         pre_spike_period = 1:round(fs*tw); %3 seconds before spike to 1 second before spike
         spike_period = round(fs*tw) + 1 : round(fs*2*tw); % 1 second before spike to 1 second after spike
         
-        
-        
+        %% PC
         % pre spike all channels
         clip = values(pre_spike_period,:);
         pc = corrcoef(clip);
         pc(logical(eye(size(pc)))) = nan;
         all_chs_corr(is,1) = nanmean(pc,'all');
         
+        % pre spike single spike channel
+        single_ch_corr(is,1) = nanmean(pc(:,sp_ch));
+        
         % spike all channels
         clip = values(spike_period,:);
         pc = corrcoef(clip);
         pc(logical(eye(size(pc)))) = nan;
         all_chs_corr(is,2) = nanmean(pc,'all');
-        
-        % pre spike spike channels
-        clip = values(pre_spike_period,sp_chs);
-        pc = corrcoef(clip);
-        pc(logical(eye(size(pc)))) = nan;
-        sp_chs_corr(is,1) = nanmean(pc,'all');
-        
-        % spike spike channels
-        clip = values(spike_period,sp_chs);
-        pc = corrcoef(clip);
-        pc(logical(eye(size(pc)))) = nan;
-        sp_chs_corr(is,2) = nanmean(pc,'all');
-        
-        % pre spike single spike channel
-        clip = values(pre_spike_period,:);
-        pc = corrcoef(clip);
-        pc(logical(eye(size(pc)))) = nan;
-        single_ch_corr(is,1) = nanmean(pc(:,sp_ch));
-        
+
         % spike single spike channel
-        clip = values(spike_period,:);
-        pc = corrcoef(clip);
-        pc(logical(eye(size(pc)))) = nan;
         single_ch_corr(is,2) = nanmean(pc(:,sp_ch));
+        
+        %% Coherence
+        % pre-spike all channels
+        clip = values(pre_spike_period,:);
+        coh = broadband_coherence(clip,fs);
+        coh(logical(eye(size(coh)))) = nan;
+        all_chs_coh(is,1) = nanmean(coh,'all');
+        
+        % pre-spike single spike channel
+        single_ch_coh(is,1) = nanmean(coh(:,sp_ch));
+        
+        % spike all channels
+        clip = values(spike_period,:);
+        coh = broadband_coherence(clip,fs);
+        coh(logical(eye(size(coh)))) = nan;
+        all_chs_coh(is,2) = nanmean(coh,'all');
+         
+        % spike all single spike channel
+        single_ch_coh(is,2) = nanmean(coh(:,sp_ch));
+        
         
         
         if 0
@@ -192,8 +197,54 @@ for l = 1:npts
     end
     
     spout.all_chs_corr = all_chs_corr;
-    spout.sp_chs_corr = sp_chs_corr;
     spout.single_ch_corr = single_ch_corr;
+    spout.all_chs_coh = all_chs_coh;
+    spout.single_ch_coh = single_ch_coh;
     save([out_folder,name,'.mat'],'spout');
+
+end
+end
+
+
+function all_coherence = broadband_coherence(values,fs)
+
+hws = 1;
+overlaps = 0.5;
+band = [1 70];
+
+nchs = size(values,2);
+
+% convert hamming window and overlap from seconds to segments
+hw = round(hws*fs);
+overlap = round(overlaps*fs);
+
+%% initialize output vector
+all_coherence = nan(nchs,nchs);
+for ich = 1:nchs
+    curr_values = values(:,ich);
+    curr_values(isnan(curr_values)) = nanmean(curr_values);
+    values(:,ich) = curr_values;
+end
+
+for ich = 1:nchs
+    
+    if any(isnan(values(:,ich))), continue; end
+    
+    for jch = 1:ich-1
+        
+        if any(isnan(values(:,jch))), continue; end
+        
+        %% Calculate coherence
+        [cxy,freq] = mscohere(values(:,ich),values(:,jch),hw,overlap,[],fs);
+        
+        %% Average coherence in frequency bins of interest
+        all_coherence(ich,jch) = ...
+            nanmean(cxy(freq >= band(1) & freq <= band(2)));
+
+        all_coherence(jch,ich) = ...
+            nanmean(cxy(freq >= band(1) & freq <= band(2)));
+        
+    end
+end
 
 end
