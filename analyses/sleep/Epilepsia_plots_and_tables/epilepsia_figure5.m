@@ -208,18 +208,22 @@ fprintf(fid,['To provide an example of real-world classifier performance, we sel
 %% PPVs and NPVs for each patient
 % Sort lowest to highest AUC
 nexttile
-[~,I] = sort(ppv);
+[~,I] = sort(aucs);
+plot(1:length(aucs),sort(aucs),'ko','linewidth',2)
+%{
+hold on
 plot(1:length(ppv),ppv(I),'o','color',[0, 0.4470, 0.7410],'linewidth',2)
 hold on
-plot(1:length(ppv),npv(I),'ko','linewidth',2)
+plot(1:length(ppv),npv(I),'o','linewidth',2)
+%}
 %plot(1:length(aucs),sort(aucs),'ko','linewidth',2)
-legend({'PPV','NPV'},'fontsize',15,'location','southeast')
-%title('Individual patient accuracies')
-title('Individual patient PPV and NPV')
+%legend({'AUC'},'fontsize',15,'location','southeast')
+title('Individual patient accuracies')
+%title('Individual patient PPV and NPV')
 set(gca,'fontsize',15)
 xlabel('Patient')
 %ylabel('AUC')
-ylabel('PPV or NPV')
+ylabel('AUC')
 
 fprintf(fid,'Model performance was highly variable across patients (Fig 5C).');
 
@@ -227,73 +231,73 @@ fprintf(fid,'Model performance was highly variable across patients (Fig 5C).');
 
 % Implant type
 nexttile
-plot(1+randn(sum(stereo),1)*0.05,ppv(stereo),'o','linewidth',2,'color',myColours(1,:))
+plot(1+randn(sum(stereo),1)*0.05,aucs(stereo),'o','linewidth',2,'color',myColours(1,:))
 hold on
-plot(2+randn(sum(~stereo),1)*0.05,ppv(~stereo),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
+plot(2+randn(sum(~stereo),1)*0.05,aucs(~stereo),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
 xticks([1 2])
 xticklabels({'Stereo-EEG','Grid/strip/depths'});
-ylabel('Classification PPV')
+ylabel('Classification AUC')
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k','linewidth',2)
-text(1.5,ytext,get_p_text(ranksum(ppv(stereo),ppv(~stereo))),...
+text(1.5,ytext,get_p_text(ranksum(aucs(stereo),aucs(~stereo))),...
     'fontsize',15,'horizontalalignment','center')
 ylim(nylim)
 xlim([0.5 2.5])
-title('Positive predictive value (PPV) by implant strategy')
+title('AUC by implant strategy')
 set(gca,'fontsize',15)
 
-[p,~,stats] = ranksum(ppv(stereo),ppv(~stereo));
+[p,~,stats] = ranksum(aucs(stereo),aucs(~stereo));
 % text
 W = stats.ranksum;
-nt = sum(~(isnan(ppv(stereo))));
-ne = sum(~(isnan(ppv(~stereo))));
+nt = sum(~(isnan(aucs(stereo))));
+ne = sum(~(isnan(aucs(~stereo))));
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
 fprintf(fid,[' Patients with stereo-EEG implantations had similar '...
-    'classification PPV '...
+    'classification AUC '...
     '(median %1.2f) to those with grid/strip/depth implantations'...
     ' (median %1.2f) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>stereo</sub></i> = %d, <i>N<sub>not-stereo</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig 5D).'],nanmedian(ppv(stereo)),nanmedian(ppv(~stereo)),...
+    ' %1.1f, %s) (Fig 5D).'],nanmedian(aucs(stereo)),nanmedian(aucs(~stereo)),...
     nt,ne,U,get_p_html(p));
 
 % Localization
 nexttile
-plot(1+randn(sum(temporal),1)*0.05,ppv(temporal),'o','linewidth',2,'color',myColours(2,:))
+plot(1+randn(sum(temporal),1)*0.05,aucs(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
-plot(2+randn(sum(extra),1)*0.05,ppv(extra),'o','linewidth',2,'color',myColours(3,:))
+plot(2+randn(sum(extra),1)*0.05,aucs(extra),'o','linewidth',2,'color',myColours(3,:))
 xticks([1 2])
 xticklabels({'Temporal lobe epilepsy','Extra-temporal lobe epilepsy'});
-ylabel('Classification PPV')
+ylabel('Classification AUC')
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k','linewidth',2)
-text(1.5,ytext,get_p_text(ranksum(ppv(temporal),ppv(extra))),...
+text(1.5,ytext,get_p_text(ranksum(aucs(temporal),aucs(extra))),...
     'fontsize',15,'horizontalalignment','center')
 ylim(nylim)
 xlim([0.5 2.5])
-title('Positive predictive value (PPV) by seizure localization')
+title('AUC by seizure localization')
 set(gca,'fontsize',15)
-[p,~,stats] = ranksum(ppv(temporal),ppv(extra));
+[p,~,stats] = ranksum(aucs(temporal),aucs(extra));
 % text
 W = stats.ranksum;
-nt = sum(~(isnan(ppv(temporal))));
-ne = sum(~(isnan(ppv(extra))));
+nt = sum(~(isnan(aucs(temporal))));
+ne = sum(~(isnan(aucs(extra))));
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
 fprintf(fid,[' Patients with temporal lobe epilepsy had higher '...
-    'classification PPV '...
+    'classification AUC '...
     '(median %1.2f) relative to those with extra-temporal'...
     ' lobe epilepsy (median %1.2f) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig 5E).</p>'],nanmedian(ppv(temporal)),nanmedian(ppv(extra)),...
+    ' %1.1f, %s) (Fig 5E).</p>'],nanmedian(aucs(temporal)),nanmedian(aucs(extra)),...
     nt,ne,U,get_p_html(p));
 
 

@@ -241,8 +241,8 @@ annotation('textbox',[0.685 0.915 0.1 0.1],'String','C','fontsize',25,'linestyle
 
 print([out_folder,'Fig4'],'-depsc')
 close(gcf)
-close(fid)
-close(sfid)
+fclose(fid)
+fclose(sfid)
 
 %% Bonus analysis (probably supplemental figure) looking for pre-ictal spike change
 %{

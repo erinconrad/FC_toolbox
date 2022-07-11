@@ -1,4 +1,4 @@
-function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration,just_gray)
+function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration,just_gray,pre_hypothesis)
 
 %{
 This is the main function to do models for the spikes and sleep paper.
@@ -9,10 +9,11 @@ bootstrap
 - wake_or_sleep: wake or sleep state. Empty if all states.
 - duration of interictal data to take. Empty if full duration
 - just_gray: only include gray matter electrodes?
-
+- pre_hypothesis: add in number of regions for supplemental pre-implant
+hypothesis analysis? 1 if yes, 0 if no
 %}
 
-
+assert(do_glme==1)
 
 %% Parameters
 do_norm = 1; % normalize spike rates within patient?
@@ -37,6 +38,10 @@ rate_pre_post = out.sz_out.pre_post_ictal_rates;
 rate_time = out.time_out.all_spikes;
 ws_time = out.time_out.all_ws;
 elec_locs = out.circ_out.all_elec_locs;
+elec_lats = out.circ_out.all_elec_lats;
+
+%% Get loc_lat_count
+loc_lat_count = count_locs_and_lats(elec_locs,elec_lats);
 
 %% Put data into single vectors
 vec_rate = [];
@@ -46,6 +51,8 @@ vec_rate_post = [];
 vec_rate_pre = [];
 vec_pt_idx = [];
 vec_soz = [];
+vec_curr_loc_count = [];
+vec_curr_lat_count = [];
 
 % Loop over patients
 for ip = 1:length(pt_idx)
@@ -57,6 +64,8 @@ for ip = 1:length(pt_idx)
     curr_soz = (soz{ip})';
     curr_rate_time = rate_time{ip};
     curr_locs = elec_locs{ip};
+    curr_loc_count = loc_lat_count(ip,1);
+    curr_lat_count = loc_lat_count(ip,2);
     
     %% remove non-gray matter?
     
@@ -104,8 +113,9 @@ for ip = 1:length(pt_idx)
     
     %% Take the average across times
     avg_segs_rates = nanmean(seg_rates,2);
-    
-    assert(all(curr_ws_time(segs)==1))
+    if ~isempty(wake_or_sleep)
+        assert(all(curr_ws_time(segs)==1))
+    end
     
     if do_norm
         % normalize the rate across electrodes (this is so that patients
@@ -127,6 +137,8 @@ for ip = 1:length(pt_idx)
     vec_rate_post = [vec_rate_post;curr_rate_post];
     
     vec_pt_idx = [vec_pt_idx;repmat(pt_idx(ip),length(curr_rate_post),1)];
+    vec_curr_loc_count = [vec_curr_loc_count;repmat(curr_loc_count,length(curr_rate_post),1)];
+    vec_curr_lat_count = [vec_curr_lat_count;repmat(curr_lat_count,length(curr_rate_post),1)];
     
     vec_soz = [vec_soz;curr_soz];
     vec_rate = [vec_rate;avg_segs_rates];
@@ -134,7 +146,8 @@ for ip = 1:length(pt_idx)
 end
 
 %% Make table
-T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,vec_rate_pre,vec_rate_post,vec_rate);
+T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,...
+    vec_rate_pre,vec_rate_post,vec_rate,vec_curr_loc_count,vec_curr_lat_count);
 
 %% Remove nan and inf rows
 if isempty(wake_or_sleep)
@@ -144,6 +157,11 @@ else
     nan_rows = isnan(T.vec_rate)| isnan(T.vec_soz) | isnan(T.vec_pt_idx);
 end
 T(nan_rows,:) = [];
+
+if pre_hypothesis == 1
+    nan_rows = isnan(T.vec_curr_loc_count) | isnan(T.vec_curr_lat_count);
+    T(nan_rows,:) = [];
+end
 
 %% Divide into training and testing data
 % Are we doing LOO and if so which
@@ -188,11 +206,30 @@ else
 end
 
 %% Train model with glm(e) model
+T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
+T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
 
 if isempty(wake_or_sleep)
-    if do_glme
-        T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
-        T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
+ 
+    if pre_hypothesis == 1
+        try
+            glm = fitglme(T_train,...
+                'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post + vec_curr_loc_count+ vec_curr_lat_count+ (1|vec_pt_idx)',...
+                'Distribution','Binomial');
+        catch ME
+
+            if contains(ME.message,'NaN or Inf values are not allowed in X.')
+                   mout.AUC = nan;
+                   mout.funny_error = 1;
+                   return
+            else
+                error('what');
+            end
+
+        end
+    else
+
+    
         try
             glm = fitglme(T_train,...
                 'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post + (1|vec_pt_idx)',...
@@ -208,15 +245,28 @@ if isempty(wake_or_sleep)
             end
 
         end
-    else
-        glm = fitglm(T_train,...
-            'vec_soz ~ vec_rate_wake + vec_rate_sleep + vec_rate_pre + vec_rate_post',...
-            'Distribution','Binomial');
     end
+    
 else
-    if do_glme
-        T_train.vec_pt_idx = nominal(T_train.vec_pt_idx);
-        T_test.vec_pt_idx = nominal(T_test.vec_pt_idx);
+    
+    if pre_hypothesis == 1
+        try
+            glm = fitglme(T_train,...
+                'vec_soz ~ vec_rate + vec_curr_loc_count+ vec_curr_lat_count+ (1|vec_pt_idx)',...
+                'Distribution','Binomial');
+        catch ME
+
+            if contains(ME.message,'NaN or Inf values are not allowed in X.')
+                   mout.AUC = nan;
+                   mout.funny_error = 1;
+                   return
+            else
+                error('what');
+            end
+
+        end
+    else
+
         try
             % just the model with the rate in that specific state
             glm = fitglme(T_train,...
@@ -232,11 +282,8 @@ else
                 error('what');
             end
         end
-    else
-        glm = fitglm(T_train,...
-            'vec_soz ~ vec_rate ',...
-            'Distribution','Binomial');
     end
+    
 end
     
 %% Test model on testing data

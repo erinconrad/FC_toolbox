@@ -1,7 +1,7 @@
-function [coeff_names,coeff_stats] = sleep_model_bootstrap_stats(just_gray)
+function [coeff_names,coeff_stats] = sleep_model_bootstrap_stats(just_gray,pre_implant)
 
 
-nb = 1e3; % number of bootstrap samples
+nb = 1e3; % number of bootstrap samples, should be 1e3
 
 %% Establish the fixed effects
 ncoeffs = 4;
@@ -14,7 +14,7 @@ for ib = 1:nb
     % wrap in a while loop to retry if funny errors
     while 1
         %% Do the classifier
-        mout = updated_classifier_may2022([],1,[],[],just_gray);
+        mout = updated_classifier_may2022([],1,[],[],just_gray,pre_implant);
         %{ 
         first argument [] means don't leave any patients out (do bootstrap
         sampling instead. Second argument 1 means do mixed effects model. 3rd

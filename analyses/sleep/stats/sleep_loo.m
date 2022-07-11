@@ -1,4 +1,4 @@
-function [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray)
+function [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray,pre_implant)
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -41,7 +41,7 @@ for ip = 1:npts
         excluded(ip,1) = 1;
         continue;
     else
-        mout = updated_classifier_may2022(ip,1,[],[],just_gray);
+        mout = updated_classifier_may2022(ip,1,[],[],just_gray,pre_implant);
         % first argument indicates which patient to be held out as testing
         % data.
         

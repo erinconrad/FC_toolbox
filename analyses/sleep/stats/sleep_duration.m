@@ -1,4 +1,4 @@
-function all_aucs = sleep_duration(durations,just_gray)
+function all_aucs = sleep_duration(durations,just_gray,pre_implant)
 
 nb = 1e1; % just 10 otherwise this will take weeks to run
 
@@ -42,7 +42,7 @@ for iws = 1:2
             else
                 
                 for ib = 1:nb
-                    mout = updated_classifier_may2022(ip,1,iws,duration,just_gray);
+                    mout = updated_classifier_may2022(ip,1,iws,duration,just_gray,pre_implant);
                     all_aucs(iws,id,ip,ib) = mout.AUC;
                     
                     % if doing the full duration then there's no need to do

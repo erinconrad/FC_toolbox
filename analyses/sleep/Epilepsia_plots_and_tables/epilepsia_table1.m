@@ -19,6 +19,9 @@ out_folder1 = [scripts_folder,'analyses/sleep/data/'];
 out = load([out_folder1,'out.mat']);
 out = out.out;
 n_sleep_wake = out.bin_out.n_sleep_wake;
+elec_locs = out.circ_out.all_elec_locs;
+elec_lats = out.circ_out.all_elec_lats;
+[loc_lat_count,patient_locs] = count_locs_and_lats(locs,lats);
 
 %% Load validation file
 val_T = readtable(['Manual validation.xlsx']);
