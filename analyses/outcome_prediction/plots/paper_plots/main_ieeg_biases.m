@@ -23,10 +23,6 @@ fprintf('\nDoing symmetric coverage tests...\n');
 symmetric_coverage_tests('brainnetome')
 symmetric_coverage_tests('aal_bernabei')
 
-%% Spike-FC correlation
-fprintf('\nDoing spike analyses...\n');
-spike_fc_correlation
-
 %% SOZ classifier
 fprintf('\nDoing classifier to predict SOZ vs non-SOZ (takes a while if many training/testing splits)...\n');
 simpler_classifier('brainnetome',n_test_train_splits)

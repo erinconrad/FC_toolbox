@@ -15,8 +15,8 @@ data = data.out;
 
 %% initialize figure
 figure
-set(gcf,'position',[10 10 1400 400])
-t1 = tiledlayout(2,3,'tilespacing','tight','padding','tight');
+set(gcf,'position',[10 10 1000 700])
+t1 = tiledlayout(4,2,'tilespacing','compact','padding','tight');
 
 
 %% A: incomplete electrode coverage
@@ -100,10 +100,41 @@ grid off
 set(gca,'visible','off')
 view(-57.5,-23)
 
+%% D: SPikes
+spout = get_spikes_and_corr;
+times = spout.times;
+sp_chs = spout.sp_chs;
+values = spout.values;
+mean_times = spout.mean_times;
+all_corrs = spout.all_corrs;
+window = spout.window;
 
+
+nexttile
+offset = 0;
+for isp = 1:length(sp_chs)
+    plot(times,values(:,sp_chs(isp))-offset,'k','linewidth',2)
+    hold on
+    if isp < length(sp_chs)
+        offset = offset - (min(values(:,sp_chs(isp))) - max(values(:,sp_chs(isp+1))));
+    end
+end
+title('Spikes alter connectivity')
+xticklabels([])
+yticklabels([])
+ylabel('Amplitude')
+set(gca,'fontsize',20)
+
+nexttile
+plot(mean_times,all_corrs,'linewidth',3)
+xlim([0 window])
+yticklabels([])
+xlabel('Time (s)')
+ylabel('Correlation (r)')
+set(gca,'fontsize',20)
 
 %% text first plot
-text(ax3,mean(locs(:,1))-120,mean(locs(:,2)),max(locs(:,3))+127,...
+text(ax3,mean(locs(:,1)),mean(locs(:,2)),max(locs(:,3))+92,...
     sprintf('Incomplete electrode sampling'),'fontsize',23,...
     'horizontalalignment','center','fontweight','bold')
 text(ax4,mean(locs(:,1)),mean(locs(:,2))-15,max(locs(:,3))+49,...
@@ -112,8 +143,9 @@ text(ax4,mean(locs(:,1)),mean(locs(:,2))-15,max(locs(:,3))+49,...
 
 %% Annotations
 annotation('textbox',[0 0.90 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.32 0.90 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0.69 0.90 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.47 0.90 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.46 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.47 0.46 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
 print(gcf,[plot_folder,'Fig 1'],'-dpng')
 

@@ -1,5 +1,6 @@
 function null_model_conceptual
 
+
 which_atlas = 'brainnetome';
 
 %% Get file locs
@@ -52,7 +53,7 @@ broad_A(non_zero_A) = broad_nums(A(non_zero_A));
 broad_A(isnan(broad_A)) = 0;
 
 %% Prep figure
-fig_name = 'Fig 5';
+fig_name = 'Fig 4';
 figure
 set(gcf,'position',[10 10 1000 700])
 tiledlayout(2,2,'tilespacing','tight','padding','compact')
