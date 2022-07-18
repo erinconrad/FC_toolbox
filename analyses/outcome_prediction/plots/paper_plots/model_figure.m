@@ -157,7 +157,7 @@ for ia = 1:2
     end
     
     legend(legp,{'Null model','Connectivity','Spikes','All'},...
-    'fontsize',20,'position',[0.5108 0.130 0.1438 0.1192]);
+    'fontsize',20,'position',[0.5108 0.120 0.1438 0.1192]);
     legend boxoff
     xticks(txticklocs)
     xticklabels(txticklabels)

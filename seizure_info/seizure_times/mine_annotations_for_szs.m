@@ -14,6 +14,8 @@ poss_sz_text = {};
 poss_sz_start = [];
 files = [];
 names = [];
+which_ann = [];
+which_event = [];
 for p = 1:length(pt)
 for f = 1:length(pt(p).ieeg.file)
     
@@ -43,6 +45,8 @@ for f = 1:length(pt(p).ieeg.file)
                 poss_sz_start = [poss_sz_start;pt(p).ieeg.file(f).ann(a).event(i).start];
                 files = [files;f];
                 names = [names;pt(p).name];
+                which_ann = [which_ann;a];
+                which_event = [which_event;i];
 
             end
         end
@@ -54,7 +58,7 @@ for f = 1:length(pt(p).ieeg.file)
 end
 end
 
-T = table(names,files,poss_sz_start,poss_sz_text);
+T = table(names,files,poss_sz_start,poss_sz_text,which_ann,which_event);
 writetable(T,[out_folder,'possible_sz_annotations.csv'])
 
 

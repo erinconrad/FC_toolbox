@@ -51,7 +51,7 @@ while 1
     found_pt = 0;
     
     % Base name
-    if i < 100
+    if ismember(i,[69,71,76,77,93,94,96,97,98])
         base_ieeg_name = sprintf('HUP0%d_phaseII',i);
     else
         base_ieeg_name = sprintf('HUP%d_phaseII',i);
@@ -103,6 +103,7 @@ while 1
             pt(p).ieeg.file(dcount).chLabels = session.data.channelLabels(:,1);
             pt(p).ieeg.file(dcount).duration = session.data.rawChannels(1).get_tsdetails.getDuration/(1e6); % convert from microseconds
             
+            clear ann
             % Add annotations
             n_layers = length(session.data.annLayer);
     
@@ -111,6 +112,7 @@ while 1
             end
 
             for ai = 1:n_layers
+                clear event
                 a=session.data.annLayer(ai).getEvents(0);
                 n_ann = length(a);
                 for k = 1:n_ann

@@ -17,6 +17,9 @@ switch which_step
         % Get pt info from ieeg.org and add to pt struct
         fprintf('\nGetting ieeg.org info\n');
         find_intracranial_pts(first_and_last_ieeg_nums);
+        
+        % Fix annotations
+        fix_annotations
 
         % electrode locs
         fprintf('\nGetting electrode locs\n');
