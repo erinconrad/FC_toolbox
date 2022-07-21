@@ -1,6 +1,6 @@
 %{
 This folder contains the scripts to perform the analyses from the
-Intracranial EEG Network Biases paper. 
+Intracranial EEG Network Spatial Biases paper. 
 
 The code for this analysis can be found at:
 /Users/erinconrad/Desktop/research/FC_toolbox/scripts/analyses/outcome_prediction/plots/paper_plots/
@@ -31,8 +31,8 @@ will default to 1,000 (the number used in the paper). It will take several
 hours to run this with 1,000 splits. To run it in a few minutes, try 10-20
 splits.
 
-The takes intermediate datasets that contain functional networks, spike
-rate data, at atlas parcellations for each patient. It runs the main 
+The takes intermediate datasets that contain functional networks and 
+atlas parcellations for each patient. It runs the main 
 analyses and generates figures and the results section text.
 %}
 

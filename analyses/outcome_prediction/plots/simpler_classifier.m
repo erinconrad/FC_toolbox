@@ -27,10 +27,12 @@ for im = 1:nmodels
 end
 
 %% Load density model (this is how I get the search radius)
+%{
 mout = load([locations.paper_plot_folder,'dens_model.mat']);
 mout = mout.out;
 resid = mout.resid;
 params.resid = resid;
+%}
 
 
 params.which_atlas = which_atlas;
