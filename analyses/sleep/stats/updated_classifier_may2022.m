@@ -41,7 +41,7 @@ elec_locs = out.circ_out.all_elec_locs;
 elec_lats = out.circ_out.all_elec_lats;
 
 %% Get loc_lat_count
-loc_lat_count_struct = count_locs_and_lats(elec_locs,elec_lats);
+%loc_lat_count_struct = count_locs_and_lats(elec_locs,elec_lats);
 
 %% Put data into single vectors
 vec_rate = [];
@@ -51,8 +51,8 @@ vec_rate_post = [];
 vec_rate_pre = [];
 vec_pt_idx = [];
 vec_soz = [];
-vec_curr_loc_count = [];
-vec_curr_lat_count = [];
+%vec_curr_loc_count = [];
+%vec_curr_lat_count = [];
 
 % Loop over patients
 for ip = 1:length(pt_idx)
@@ -64,8 +64,10 @@ for ip = 1:length(pt_idx)
     curr_soz = (soz{ip})';
     curr_rate_time = rate_time{ip};
     curr_locs = elec_locs{ip};
+    %{
     curr_loc_count = loc_lat_count_struct.loc_lat_count(ip,1);
     curr_lat_count = loc_lat_count_struct.loc_lat_count(ip,2);
+    %}
     
     %% remove non-gray matter?
     
@@ -137,8 +139,11 @@ for ip = 1:length(pt_idx)
     vec_rate_post = [vec_rate_post;curr_rate_post];
     
     vec_pt_idx = [vec_pt_idx;repmat(pt_idx(ip),length(curr_rate_post),1)];
+    
+    %{
     vec_curr_loc_count = [vec_curr_loc_count;repmat(curr_loc_count,length(curr_rate_post),1)];
     vec_curr_lat_count = [vec_curr_lat_count;repmat(curr_lat_count,length(curr_rate_post),1)];
+    %}
     
     vec_soz = [vec_soz;curr_soz];
     vec_rate = [vec_rate;avg_segs_rates];
@@ -147,7 +152,7 @@ end
 
 %% Make table
 T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,...
-    vec_rate_pre,vec_rate_post,vec_rate,vec_curr_loc_count,vec_curr_lat_count);
+    vec_rate_pre,vec_rate_post,vec_rate);
 
 %% Remove nan and inf rows
 if isempty(wake_or_sleep)
@@ -158,10 +163,12 @@ else
 end
 T(nan_rows,:) = [];
 
+%{
 if pre_hypothesis == 1
     nan_rows = isnan(T.vec_curr_loc_count) | isnan(T.vec_curr_lat_count);
     T(nan_rows,:) = [];
 end
+%}
 
 %% Divide into training and testing data
 % Are we doing LOO and if so which
@@ -250,6 +257,8 @@ if isempty(wake_or_sleep)
 else
     
     if pre_hypothesis == 1
+        error('why are you doing this?\n');
+        
         try
             glm = fitglme(T_train,...
                 'vec_soz ~ vec_rate + vec_curr_loc_count+ vec_curr_lat_count+ (1|vec_pt_idx)',...
