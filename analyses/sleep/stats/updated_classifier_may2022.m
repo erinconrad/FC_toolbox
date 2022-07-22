@@ -41,7 +41,7 @@ elec_locs = out.circ_out.all_elec_locs;
 elec_lats = out.circ_out.all_elec_lats;
 
 %% Get loc_lat_count
-loc_lat_count = count_locs_and_lats(elec_locs,elec_lats);
+loc_lat_count_struct = count_locs_and_lats(elec_locs,elec_lats);
 
 %% Put data into single vectors
 vec_rate = [];
@@ -64,8 +64,8 @@ for ip = 1:length(pt_idx)
     curr_soz = (soz{ip})';
     curr_rate_time = rate_time{ip};
     curr_locs = elec_locs{ip};
-    curr_loc_count = loc_lat_count(ip,1);
-    curr_lat_count = loc_lat_count(ip,2);
+    curr_loc_count = loc_lat_count_struct.loc_lat_count(ip,1);
+    curr_lat_count = loc_lat_count_struct.loc_lat_count(ip,2);
     
     %% remove non-gray matter?
     
