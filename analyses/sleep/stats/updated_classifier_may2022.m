@@ -108,7 +108,12 @@ for ip = 1:length(pt_idx)
     end
     
     %% Get random sample of nsegments_to_take from curr_indices
-    segs = randsample(curr_indices,nsegments_to_take);
+    % fix for weird thing
+    if length(curr_indices) == 1
+        segs = curr_indices;
+    else
+        segs = randsample(curr_indices,nsegments_to_take);
+    end
     
     %% Get the rates in those
     seg_rates = curr_rate_time(:,segs);
