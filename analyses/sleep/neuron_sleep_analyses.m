@@ -81,15 +81,16 @@ end
 
 neuron_figure2
 
+neuron_supplemental_fig1
+
+neuron_supplemental_fig2
+
 neuron_figure3
 
 neuron_figure4
 
-neuron_figure5
 
-neuron_supplemental_fig1
-
-neuron_supplemental_fig2
+neuron_supplemental_fig3
 
 if ~doing_from_github
     neuron_table1 % this needs a raw data file to run (which is large)
