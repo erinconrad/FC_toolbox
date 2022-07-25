@@ -1,7 +1,7 @@
 function basic_outcome_info
 
 use_raw = 1;
-which_year = 1;
+which_year = 2;
 
 %% Get file locs
 locations = fc_toolbox_locs;

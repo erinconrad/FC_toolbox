@@ -6,6 +6,8 @@ what happens to spikes, etc., with sleep. It output an out.mat into the
 data folder to be used for plots and statistical tests.
 %}
 
+rng(0)
+
 %% Parameters to change
 doing_from_github = 1; % change to 1 if doing from github
 
