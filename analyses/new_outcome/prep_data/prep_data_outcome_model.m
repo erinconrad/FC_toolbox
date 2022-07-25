@@ -38,6 +38,7 @@ all_stereo = nan(npts,1);
 all_good_spikes = nan(npts,1);
 all_two_year_ilae = cell(npts,1);
 all_two_year_engel = cell(npts,1);
+all_surgery = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -122,9 +123,10 @@ for p = 1:npts
     all_corrs_sp{p} = corr_sp;
     all_corrs_pear{p} = corr_pear;
     
-    %% Outcome
+    %% Outcome and surgery
     all_two_year_ilae{p} = clinical.ilae{2};
     all_two_year_engel{p} = clinical.engel{2};
+    all_surgery{p} = clinical.surgery;
 
 end
 
@@ -147,6 +149,7 @@ out.all_stereo = all_stereo;
 out.good_spikes = all_good_spikes;
 out.all_two_year_ilae = all_two_year_ilae;
 out.all_two_year_engel = all_two_year_engel;
+out.all_surgery = all_surgery;
 
 
 %% Save

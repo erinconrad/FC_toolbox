@@ -1,6 +1,6 @@
 function basic_outcome_info
 
-use_raw = 1;
+use_raw = 0;
 which_year = 2;
 
 %% Get file locs
@@ -75,6 +75,8 @@ else
 
     table(engel_cats,engel_counts)
     table(ilae_cats,ilae_counts)
+    
+    
     
 end
 
