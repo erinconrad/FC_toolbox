@@ -175,7 +175,7 @@ out.all_anatomy = all_anatomy;
 out.all_aal = all_aal;
 out.all_brainnetome = all_brainnetome;
 out.aal_names = aal.atlas_names;
-out.brainnetome_names = brainnetome.atlas_names;
+out.brainnetome_names = brainnetome.atlas
 
 
 %% Save
