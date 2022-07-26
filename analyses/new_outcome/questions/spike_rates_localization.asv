@@ -1,0 +1,27 @@
+function spike_rates_localization
+
+%% Get file locs
+locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+inter_folder = [results_folder,'analysis/new_outcome/data/'];
+data_folder = [locations.main_folder,'data/'];
+
+% add script folder to path
+scripts_folder = locations.script_folder;
+addpath(genpath(scripts_folder));
+
+%% Load data file
+data = load([inter_folder,'main_out.mat']);
+data = data.out;
+
+%% get variables of interest
+good_spikes = data.good_spikes;
+spike_rates = data.all_spikes;
+locs = data.all_soz_locs;
+lats = data.all_soz_lats;
+
+%% Parse localizations
+mt = strcmp(locs,'mesial temporal'
+
+
+end
