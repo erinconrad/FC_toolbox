@@ -27,14 +27,20 @@ spike_rates = data.all_spikes;
 %% get atlas
 switch which_atlas
     case 'aal'
-    atlas = data.all_aal;
-    atlas_names = data.aal_names;
+        atlas = data.all_aal;
+        atlas_names = data.aal_names;
+    case 'brainnetome'
+        atlas = data.all_brainnetome;
+        atlas_names = data.brainnetome_names;
+    
 end
 
 %% Get outcome
 switch which_outcome
     case 'ilae'
         outcome = ilae;
+    case 'engel'
+        outcome = engel;
 end
 
 %% Parse surgery

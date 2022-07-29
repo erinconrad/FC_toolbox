@@ -1,7 +1,13 @@
-function [Ttrain,Ttest] = spike_loc_correspondence
+function spike_loc_correspondence
 
-%% which atlas
+% Seed RNG
+rng(0)
+
+%% Parameters
 which_atlas = 'aal'; 
+which_localization = 'broad';
+N = 1e3;
+split = 2/3;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -34,7 +40,7 @@ switch which_atlas
         atlas = aal;
         atlas_names = aal_atlas_names;
     case 'brainnetome'
-        atlas = 'brainnetome';
+        atlas = brainnetome;
         atlas_names = brainnetome_atlas_names;
     
 end
@@ -58,6 +64,16 @@ end
 
 %% Break atlas into categories
 broad_regions = localize_regions(atlas_names,which_atlas);
+non_empty_broad_regions = (cellfun(@(x) ~isempty(x),broad_regions));
+non_empty_names = broad_regions(non_empty_broad_regions);
+if strcmp(which_localization,'broad')
+    non_empty_names = cellfun(@(x) strrep(x,'mesial temporal','temporal'),...
+        non_empty_names,'uniformoutput',false);
+    non_empty_names = cellfun(@(x) strrep(x,'temporal neocortical','temporal'),...
+        non_empty_names,'uniformoutput',false);
+end
+broad_regions(non_empty_broad_regions) = non_empty_names;
+
 
 %% Get broad regional identities of each electrode
 elec_broad_names = cellfun(@(x) elec_broad(x,atlas_names,broad_regions),...
@@ -105,7 +121,7 @@ yticklabels(unique_regions)
 end
 
 %% Homogenize and combine soz locs and lats
-comb = cellfun(@(x,y) homogenize_soz_locs_lats(x,y),soz_locs,soz_lats,'uniformoutput',false);
+comb = cellfun(@(x,y) homogenize_soz_locs_lats(x,y,which_localization),soz_locs,soz_lats,'uniformoutput',false);
 
 %% Build matrix of spike rates by location and SOZ localization
 soz_names = unique(comb);
@@ -126,8 +142,8 @@ end
 %% show it
 if 0
 figure
-set(gcf,'position',[10 10 1400 900])
-tiledlayout(1,2,'tilespacing','tight','padding','tight')
+set(gcf,'position',[10 10 1400 400])
+tiledlayout(1,2,'tilespacing','tight')
 
 nexttile
 turn_nans_gray(spikes_prop)
@@ -182,45 +198,44 @@ prop_elecs(:,to_remove) = [];
 assert(sum(all(isnan(perc_spikes_broad),1)') == 0)
 
 %% Make spikes_broad that are nans zeros
+% This introduces a bias wherein
 perc_spikes_broad(isnan(perc_spikes_broad)) = 0;
 
-%% Add a variable that encapsulates broad or focal
-bf_onset = cell(length(comb),1);
-bf_onset(contains(comb,'bilateral')) = {'bilateral'};
-bf_onset(contains(comb,'left')) = {'left'};
-bf_onset(contains(comb,'right')) = {'right'};
 
 %% Put data into table
-
 % Build variable names
 elec_num_vars = cellfun(@(x) sprintf('%s proportion elecs',x),unique_regions,'uniformoutput',false);
 spike_vars = cellfun(@(x) sprintf('%s proportion spikes',x),unique_regions,'uniformoutput',false);
 comb_var = 'SOZ';
-bf_onset_var = 'Broad or focal';
 
-T = table(bf_onset,comb,prop_elecs',perc_spikes_broad','variablenames',{bf_onset_var,comb_var,'Var1','Var2'});
+T = table(comb,prop_elecs',perc_spikes_broad','variablenames',{comb_var,'Var1','Var2'});
 T = splitvars(T,{'Var1','Var2'},'newVariableNames',{elec_num_vars',spike_vars'});
 
-%% Randomly split into training and testing
-prop_train = 2/3;
-npts_remain = size(T,1);
-num_train = round(prop_train*npts_remain);
-training_pts = randsample(npts_remain,num_train);
-pt_index = 1:npts_remain;
-training_pts = ismember(pt_index,training_pts);
-testing_pts = ~training_pts;
+%% Train and test models
+% Null model: only takes into account number of electrodes in each location
+[CNull,ANull] = train_test(T,N,split,@sozClassNull);
 
-Ttrain = T(training_pts,:);
-Ttest = T(testing_pts,:);
-%% PCA - think about sampling bias
-%{
-perc_spikes_broad_pca = perc_spikes_broad;
+% Full model: only takes into account number of electrodes in each location
+[CFull,AFull] = train_test(T,N,split,@sozClassFull);
 
-% remove patients with all nans
+%% Show confusion matrices
+figure
+set(gcf,'position',[10 10 1400 400])
+tiledlayout(1,2,'tilespacing','tight','padding','tight')
 
+% Null
+nexttile
+meanCNull = mean(CNull,3);
+show_confusion(meanCNull,soz_names,...
+    'Predicted SOZ','True SOZ','Null model',ANull);
 
-perc_spikes_broad_pca(isnan(perc_spikes_broad_pca)) = 0;
-[coeff,score,latent,tsquared,explained,mu] = pca(perc_spikes_broad_pca');
-%}
+% Full
+nexttile
+meanCFull = mean(CFull,3);
+show_confusion(meanCFull,soz_names,...
+    'Predicted SOZ','True SOZ','Full model',AFull);
+
+%% Bootstrap CI?
+out = bootstrap_ci_and_p(ANull,AFull);
 
 end

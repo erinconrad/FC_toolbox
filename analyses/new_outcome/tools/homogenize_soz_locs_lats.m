@@ -1,18 +1,32 @@
-function comb = homogenize_soz_locs_lats(loc,lat)
+function comb = homogenize_soz_locs_lats(loc,lat,which_localization)
 
+switch which_localization
+    case 'fine'
+        if strcmp(loc,'mesial temporal')
+            loc = 'mesial temporal';
+        elseif strcmp(loc,'other cortex')
+            loc = 'other cortex';
+        elseif strcmp(loc,'temporal neocortical')
+            loc = 'temporal neocortical';
+        elseif strcmp(loc,'multifocal') || contains(loc,'diffuse')
+            loc = 'multifocal/diffuse';
+        else
+            loc = [];
+        end
+        
+    case 'broad'
+        if contains(loc,'temporal')
+            loc = 'temporal';
+        elseif strcmp(loc,'other cortex')
+            loc = 'other cortex';
+        elseif strcmp(loc,'multifocal') || contains(loc,'diffuse')
+            loc = 'multifocal/diffuse';
+        else
+            loc = [];
+        end
 
-if strcmp(loc,'mesial temporal')
-    loc = 'mesial temporal';
-elseif strcmp(loc,'other cortex')
-    loc = 'other cortex';
-elseif strcmp(loc,'temporal neocortical')
-    loc = 'temporal neocortical';
-elseif strcmp(loc,'multifocal') || contains(loc,'diffuse')
-    loc = 'multifocal/diffuse';
-else
-    loc = [];
 end
-
+        
 if strcmp(lat,'left')
     lat = 'left';
 elseif strcmp(lat,'right')
@@ -36,5 +50,10 @@ else
     comb = sprintf('%s %s',lat,loc);
 end
 
+if strcmp(which_localization,'broad')
+    if contains(comb,'diffuse')
+        comb = 'bilateral/diffuse';
+    end
+end
 
 end

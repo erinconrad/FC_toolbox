@@ -13,6 +13,14 @@ switch type
         else
             outcome_num = 0;
         end
+        
+    case 'engel'
+        if strcmp(outcome,'IA') || strcmp(outcome,'IB') || ...
+                strcmp(outcome,'IC') || strcmp(outcome, 'ID')
+            outcome_num = 1;
+        else
+            outcome_num = 0;
+        end
             
         
 end
