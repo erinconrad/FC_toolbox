@@ -2,6 +2,10 @@ function locs = localize_regions(names,atlas)
 
 locs = cell(length(names),1);
 
+if strcmp(atlas,'aal')
+    atlas = 'aal_bernabei';
+end
+
 switch atlas
     
     case 'aal_bernabei'

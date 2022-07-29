@@ -1,4 +1,4 @@
-function unpaired_plot(a,b,xlabs,ylab)
+function stats = unpaired_plot(a,b,xlabs,ylab)
 
 na = length(a);
 nb = length(b);
@@ -9,7 +9,10 @@ xticks([1 2])
 xticklabels(xlabs)
 ylabel(ylab)
 
-p = ranksum(a,b);
+[p,~,stats_stuff] = ranksum(a,b);
+stats.p = p;
+stats.ns = [sum(~isnan(a)) sum(~isnan(b))];
+stats.ranksum = stats_stuff.ranksum;
 yl = ylim;
 ybar = yl(1)+(yl(2)-yl(1))*1.1;
 ytext = yl(1)+(yl(2)-yl(1))*1.15;

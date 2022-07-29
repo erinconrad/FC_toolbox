@@ -26,9 +26,9 @@ various other paths. Here is an example of what it would look like:
         locations.script_folder = [path to this code base]
 
     end
-4) Navigate to the analyses/sleep/plots and tables/ folder
+4) Navigate to the analyses/sleep/PNAS_plots_and_tables/ folder
 5) Run the following command:
->> sleep_plots_and_tables
+>> pnas_plots_and_tables
 
 This command take an intermediate dataset called out.mat which contains
 summary level information on spike rates for each patient and will execute
