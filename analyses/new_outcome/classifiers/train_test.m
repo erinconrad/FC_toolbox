@@ -1,4 +1,4 @@
-function [confusion,test_accuracy] = train_test(T,N,perc_train,model)
+function [confusion,test_accuracy] = train_test(T,N,perc_train,model,forn)
 
 confusion = cell(N,1);
 test_accuracy = nan(N,1);
@@ -19,10 +19,14 @@ for ib = 1:N
         Ttest = T(testing,:);
 
         %% Train the model
-        tc = model(Ttrain);
+        tc = model(Ttrain,forn);
 
         %% Predict the model on the testing data
-        predClass = tc.predictFcn(Ttest);
+        if isfield(tc,'predictFcn')
+            predClass = tc.predictFcn(Ttest);
+        else
+            predClass = predict(tc,Ttest);
+        end
         trueClass = Ttest.SOZ;
 
 

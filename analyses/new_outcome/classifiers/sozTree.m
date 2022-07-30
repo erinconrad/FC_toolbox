@@ -1,4 +1,4 @@
-function [trainedClassifier, validationAccuracy] = sozClassNull(trainingData)
+function [trainedClassifier, validationAccuracy] = sozTree(trainingData,forn)
 % [trainedClassifier, validationAccuracy] = trainClassifier(trainingData)
 % Returns a trained classifier and its accuracy. This code recreates the
 % classification model trained in Classification Learner app. Use the
@@ -44,10 +44,16 @@ function [trainedClassifier, validationAccuracy] = sozClassNull(trainingData)
 % This code processes the data into the right shape for training the
 % model.
 inputTable = trainingData;
-predictorNames = {'left other cortex proportion elecs', 'left temporal proportion elecs', 'right other cortex proportion elecs', 'right temporal proportion elecs'};
+
+switch forn
+    case 'full'
+        predictorNames = {'left other cortex proportion elecs', 'left temporal proportion elecs', 'right other cortex proportion elecs', 'right temporal proportion elecs', 'left other cortex proportion spikes', 'left temporal proportion spikes', 'right other cortex proportion spikes', 'right temporal proportion spikes'};
+    case 'null'
+        predictorNames = {'left other cortex proportion elecs', 'left temporal proportion elecs', 'right other cortex proportion elecs', 'right temporal proportion elecs'};
+end
+
 predictors = inputTable(:, predictorNames);
 response = inputTable.SOZ;
-isCategoricalPredictor = [false, false, false, false];
 
 % Train a classifier
 % This code specifies all the classifier options and trains the classifier.
@@ -65,19 +71,10 @@ treePredictFcn = @(x) predict(classificationTree, x);
 trainedClassifier.predictFcn = @(x) treePredictFcn(predictorExtractionFcn(x));
 
 % Add additional fields to the result struct
-trainedClassifier.RequiredVariables = {'left other cortex proportion elecs', 'left temporal proportion elecs', 'right other cortex proportion elecs', 'right temporal proportion elecs'};
+trainedClassifier.RequiredVariables = predictorNames;
 trainedClassifier.ClassificationTree = classificationTree;
 trainedClassifier.About = 'This struct is a trained model exported from Classification Learner R2021a.';
 trainedClassifier.HowToPredict = sprintf('To make predictions on a new table, T, use: \n  yfit = c.predictFcn(T) \nreplacing ''c'' with the name of the variable that is this struct, e.g. ''trainedModel''. \n \nThe table, T, must contain the variables returned by: \n  c.RequiredVariables \nVariable formats (e.g. matrix/vector, datatype) must match the original training data. \nAdditional variables are ignored. \n \nFor more information, see <a href="matlab:helpview(fullfile(docroot, ''stats'', ''stats.map''), ''appclassification_exportmodeltoworkspace'')">How to predict using an exported model</a>.');
-
-% Extract predictors and response
-% This code processes the data into the right shape for training the
-% model.
-inputTable = trainingData;
-predictorNames = {'left other cortex proportion elecs', 'left temporal proportion elecs', 'right other cortex proportion elecs', 'right temporal proportion elecs'};
-predictors = inputTable(:, predictorNames);
-response = inputTable.SOZ;
-isCategoricalPredictor = [false, false, false, false];
 
 % Perform cross-validation
 partitionedModel = crossval(trainedClassifier.ClassificationTree, 'KFold', 5);

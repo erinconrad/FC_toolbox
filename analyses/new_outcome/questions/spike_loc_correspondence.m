@@ -6,7 +6,7 @@ rng(0)
 %% Parameters
 which_atlas = 'aal'; 
 which_localization = 'broad';
-N = 1e3;
+N = 1e2;
 split = 2/3;
 
 %% Get file locs
@@ -213,10 +213,9 @@ T = splitvars(T,{'Var1','Var2'},'newVariableNames',{elec_num_vars',spike_vars'})
 
 %% Train and test models
 % Null model: only takes into account number of electrodes in each location
-[CNull,ANull] = train_test(T,N,split,@sozClassNull);
-
+[CNull,ANull] = train_test(T,N,split,@sozTree,'null');
 % Full model: only takes into account number of electrodes in each location
-[CFull,AFull] = train_test(T,N,split,@sozClassFull);
+[CFull,AFull] = train_test(T,N,split,@sozTree,'full');
 
 %% Show confusion matrices
 figure

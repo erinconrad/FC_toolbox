@@ -21,12 +21,8 @@ for ir = 1:size(T,1)
     %rname = T.ieegportalsubjno{ir};
     rname = T.hupsubjno(ir);
     
-    % fix for hup139
-    if isnan(rname)
-        if T.record_id(ir) == 307
-            rname = 139;
-        end
-    end
+    
+    
     % find the hup***_ string
     
     %{
@@ -91,83 +87,42 @@ for ir = 1:size(T,1)
             pt(ip).clinical.surgery = surg;
             
             % resection hemisphere
-            if T.demog_hemi(ir) == 2  
-                resection_lat = 'right';
-            elseif T.demog_hemi(ir) == 3
-                resection_lat = 'left';
-            else
-                resection_lat = 'na';
-            end
+            resection_lat = T.demog_hemi(ir);
             pt(ip).clinical.resection_lat = resection_lat;
             
             % resection type
-            if T.demog_resectiontype___1(ir) == 1
-                if contains(T.ieeg_resectarea(ir),'temporal lobe') ||...
-                        T.demog_resectiontype___2(ir) == 1 || ...
-                        T.demog_resectiontype___3(ir) == 1
-                    resection_type = 'ATL';
-                else
-                    resection_type = 'neocortical';
-                end
-            elseif T.demog_resectiontype___2(ir) == 1
+            if T.demog_resection_type___1(ir) == 1
+                resection_type = 'neocortical';
+            elseif T.demog_resection_type___2(ir) == 1
                 resection_type = 'ATL';
-            elseif T.demog_resectiontype___3(ir) == 1
-                if contains(T.ieeg_resectarea(ir),'temporal lobe') || T.demog_resectiontype___2(ir) == 1
+            elseif T.demog_resection_type___3(ir) == 1
+                if contains(T.ieeg_resectarea(ir),'temporal lobe') || T.demog_resection_type___2(ir) == 1
                     resection_type = 'ATL';
                 else
                     resection_type = 'selective amygdalohippocampectomy';
                 end
-            elseif T.demog_resectiontype___4(ir) == 1
+            elseif T.demog_resection_type___4(ir) == 1
                 resection_type = 'corpus callosotomy';
-            elseif T.demog_resectiontype___5(ir) == 1
+            elseif T.demog_resection_type___5(ir) == 1
                 resection_type = 'Multiple subpial transection';
-            elseif T.demog_resectiontype___6(ir) == 1
+            elseif T.demog_resection_type___6(ir) == 1
                 resection_type = 'Radio surgery';
-            elseif T.demog_resectiontype___7(ir) == 1
+            elseif T.demog_resection_type___7(ir) == 1
                 resection_type = 'Hemispherectomy';
-            elseif T.demog_resectiontype___8(ir) == 1
+            elseif T.demog_resection_type___8(ir) == 1
                 resection_type = 'therapeutic brain stimulation';
-            elseif T.demog_resectiontype___9(ir) == 1
+            elseif T.demog_resection_type___9(ir) == 1
                 resection_type = 'other';
-            else
-                resection_type = 'na';
             end
             pt(ip).clinical.resection_loc = resection_type;
             
             % ablation lateralization
-            if T.la_lat_1(ir) == 1
-                ablation_lat = 'right';
-            elseif T.la_lat_1(ir) == 2
-                ablation_lat = 'left';
-            else
-                ablation_lat = 'na';
-            end
+            ablation_lat = T.la_lat__1(ir);
             pt(ip).clinical.ablation_lat = ablation_lat;
             
             % Ablation region
             if T.la_region_1___1(ir) == 1
-                if T.la_region_1___2(ir) == 1
-                    ablation_loc = 'mesial temporal';
-                else
-                    
-                    ablation_loc = 'temporal neocortical';
-                end
-            elseif T.la_region_1___2(ir) == 1
-                ablation_loc = 'mesial temporal';
-            elseif T.la_region_1___3(ir) == 1
-                ablation_loc = 'frontal';
-            elseif T.la_region_1___4(ir) == 1
-                ablation_loc = 'insula';
-            elseif T.la_region_1___5(ir) == 1
-                ablation_loc = 'cingulate';
-            elseif T.la_region_1___6(ir) == 1
-                ablation_loc = 'parietal';
-            elseif T.la_region_1___9(ir) == 1
-                ablation_loc = 'other';
-            else
-                ablation_loc = 'NA';
-            end
-            pt(ip).clinical.ablation_loc = ablation_loc;
+                ablation_loc = 'temporal neocortical
             
             % ILAE outcome
             tilae = [T.demog_ilae1year(ir) T.demog_ilae2years(ir)];
