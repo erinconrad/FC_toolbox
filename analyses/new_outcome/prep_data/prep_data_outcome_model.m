@@ -42,6 +42,10 @@ all_surgery = cell(npts,1);
 all_anatomy = cell(npts,1);
 all_aal = cell(npts,1);
 all_brainnetome = cell(npts,1);
+all_resec_lat = cell(npts,1);
+all_resec_loc = cell(npts,1);
+all_ablate_lat = cell(npts,1);
+all_ablate_loc = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -148,6 +152,10 @@ for p = 1:npts
     all_two_year_ilae{p} = clinical.ilae{2};
     all_two_year_engel{p} = clinical.engel{2};
     all_surgery{p} = clinical.surgery;
+    all_resec_lat{p} = clinical.resection_lat;
+    all_resec_loc{p} = clinical.resection_loc;
+    all_ablate_lat{p} = clinical.ablation_lat;
+    all_ablate_loc{p} = clinical.ablation_loc;
 
 end
 
@@ -171,6 +179,10 @@ out.good_spikes = all_good_spikes;
 out.all_two_year_ilae = all_two_year_ilae;
 out.all_two_year_engel = all_two_year_engel;
 out.all_surgery = all_surgery;
+out.all_resec_lat = all_resec_lat;
+out.all_resec_loc = all_resec_loc;
+out.all_ablate_lat = all_ablate_lat;
+out.all_ablate_loc = all_ablate_loc;
 out.all_anatomy = all_anatomy;
 out.all_aal = all_aal;
 out.all_brainnetome = all_brainnetome;
