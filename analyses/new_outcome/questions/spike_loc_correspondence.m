@@ -109,7 +109,7 @@ elec_broad_names = cellfun(@(x) elec_broad(x,atlas_names,broad_regions),...
     atlas,'uniformoutput',false);
 
 %% Compare atlas names to regions
-if 0
+if 1
     table(broad_regions,atlas_names)
     table(elec_broad_names{1},anatomy{1})
 end

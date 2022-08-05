@@ -35,11 +35,16 @@ which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 %% CAR montage
 [car_values,car_labels] = car_montage(values,which_chs,clean_labels);
 
+%% Bipolar montage
+[bipolar_values,~,bipolar_labels,chs_in_bipolar,which_chs_bipolar] = ...
+    bipolar_montage(values,chLabels,which_chs,[],[],name);
+
 is_run_car = ismember((1:length(clean_labels))',which_chs);
+is_run_bipolar = ismember((1:length(clean_labels))',which_chs_bipolar);
 
 %% Calculate network
 % Loop over montages
-for im = 2
+for im = 1:2
    
     
     if im == 1
@@ -70,7 +75,18 @@ for im = 2
     skip = find(~is_run);
     
     %% Get coherence
-    coh = coherence_calc(run_values,fs);
+    
+    coh = faster_coherence_calc(run_values,fs);
+    %old_coh = coherence_calc(run_values,fs);
+  
+    
+    if 0
+        figure
+        nexttile
+        turn_nans_gray(new_coh(:,:,2))
+        nexttile
+        turn_nans_gray(old_coh(:,:,2))
+    end
     
     %% Get bandpower
     bp = bp_calc(run_values,fs,skip);
@@ -104,6 +120,14 @@ if show_data
     %pause
     %close(gcf)
     clear tout
+end
+
+if 0
+    figure
+    nexttile
+    turn_nans_gray(out.montage(1).coh(:,:,2))
+    nexttile
+    turn_nans_gray(out.montage(2).coh(:,:,2))
 end
 
 
