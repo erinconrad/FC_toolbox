@@ -34,7 +34,6 @@ all_names = cell(npts,1);
 all_fc = cell(npts,1);
 all_locs = cell(npts,1);
 all_coh = cell(npts,1);
-all_bp = cell(npts,1);
 all_stereo = nan(npts,1);
 all_good_spikes = nan(npts,1);
 all_two_year_ilae = cell(npts,1);
@@ -100,7 +99,7 @@ for p = 1:npts
     coh(:,ekg,:) = [];
     anatomy(ekg) = [];
     all_anatomy{p} = anatomy;
-    bp(ekg,:,:) = [];
+    bp(ekg,:,:) = 
     
     
     %% SOZ bin
@@ -132,7 +131,6 @@ for p = 1:npts
     all_fc{p} = fc;
     all_locs{p} = locs;
     all_coh{p} = coh;
-    all_bp{p} = nanmean(bp,3);
     
     %% Correlate average ns and spikes
     avg_corr_sp = corr(avg_spikes,avg_ns,'rows','pairwise','type','spearman');
@@ -192,7 +190,6 @@ out.all_aal = all_aal;
 out.all_brainnetome = all_brainnetome;
 out.aal_names = aal.atlas_names;
 out.brainnetome_names = brainnetome.atlas_names;
-out.all_bp = all_bp;
 
 
 %% Save

@@ -1,6 +1,6 @@
 function lr_spike_asymmetry_outcome
 
-which_atlas = 'aal';
+which_atlas = 'brainnetome';
 which_outcome = 'ilae';
 
 %% Get file locs
@@ -23,6 +23,8 @@ engel = data.all_two_year_engel;
 surgery = data.all_surgery;
 good_spikes = data.good_spikes;
 spike_rates = data.all_spikes;
+locs = data.all_locs;
+soz = data.all_soz_bin;
 
 %% get atlas
 switch which_atlas
@@ -76,11 +78,59 @@ R = mean_lr_spike_rate(:,2);
 ai = max([L./(L+R),R./(L+R)],[],2);
 alt_ai = abs(L-R)./(L+R);
 
+%% Also get weighted dispersion of spikes
+SD = cellfun(@(x,y) weighted_standard_distance(x,y),locs,spike_rates);
+SD(SD>1e10) = nan;
+
+% Also weighted dispersion of electrodes
+SDE = cellfun(@(x) weighted_standard_distance(x,[]),locs);
+SDE(SDE>1e10) = nan;
+SDnorm = SD./SDE;
+
+% Weighted dispersion of soz
+SDSz = cellfun(@(x,y) weighted_standard_distance(x,y),locs,soz);
+SDSznorm = SDSz./SDE;
+
+%% Does weighted dispersion correlate with ai?
+% yeah pretty negative correlation, implying that a greater asymmetry index
+% implies LOWER weighted dispersion (spikes are more focal)
+if 0
+figure
+plot(ai,SD,'o')
+end
+
+%% Does spike spatial dispersion correlate with electrode spatial dispersion and SOZ spatial dispersion?
+% Yes, so important to control for the others when predicting outcome
+if 0 
+   figure
+   nexttile
+   plot(SD,SDE,'o')
+    
+   nexttile
+   plot(SD,SDSz,'o')
+end
 
 %% Plot
+figure
+set(gcf,'position',[440 442 1400 355])
+tiledlayout(1,3,'tilespacing','tight','padding','tight')
+nexttile
 stats = unpaired_plot(ai(outcome_num==1 & complete),...
     ai(outcome_num==0 & complete),{'Good outcome','bad outcome'},'Mean abs diff spike rate');
 set(gca,'fontsize',20)
+title('Spike asymmetry')
+
+nexttile
+stats2 = unpaired_plot(SDnorm(outcome_num==1 & complete),...
+    SDnorm(outcome_num==0 & complete),{'Good outcome','bad outcome'},'Spike spatial dispersion');
+set(gca,'fontsize',20)
+title('Spike spatial spread')
+
+nexttile
+stats3 = unpaired_plot(SDSznorm(outcome_num==1 & complete),...
+    SDSznorm(outcome_num==0 & complete),{'Good outcome','bad outcome'},'SOZ spatial dispersion');
+set(gca,'fontsize',20)
+title('SOZ spatial spread')
 
 
 end

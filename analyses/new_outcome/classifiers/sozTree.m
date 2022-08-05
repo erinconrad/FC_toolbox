@@ -1,4 +1,4 @@
-function [trainedClassifier, validationAccuracy] = sozTree(trainingData,forn)
+function [trainedClassifier] = sozTree(trainingData,forn)
 % [trainedClassifier, validationAccuracy] = trainClassifier(trainingData)
 % Returns a trained classifier and its accuracy. This code recreates the
 % classification model trained in Classification Learner app. Use the
@@ -8,6 +8,8 @@ function [trainedClassifier, validationAccuracy] = sozTree(trainingData,forn)
 %  Input:
 %      trainingData: A table containing the same predictor and response
 %       columns as those imported into the app.
+%      forn: A string either "null" or "full" indicating whether to run the
+%       model with just the null variables or all predictors.
 %
 %  Output:
 %      trainedClassifier: A struct containing the trained classifier. The
@@ -57,13 +59,14 @@ response = inputTable.SOZ;
 
 % Train a classifier
 % This code specifies all the classifier options and trains the classifier.
+
+%
 classificationTree = fitctree(...
     predictors, ...
     response, ...
     'SplitCriterion', 'gdi', ...
     'MaxNumSplits', 100, ...
-    'Surrogate', 'off', ...
-    'ClassNames', {'bilateral/diffuse'; 'left other cortex'; 'left temporal'; 'right other cortex'; 'right temporal'});
+    'Surrogate', 'off');
 
 % Create the result struct with predict function
 predictorExtractionFcn = @(t) t(:, predictorNames);
@@ -75,12 +78,3 @@ trainedClassifier.RequiredVariables = predictorNames;
 trainedClassifier.ClassificationTree = classificationTree;
 trainedClassifier.About = 'This struct is a trained model exported from Classification Learner R2021a.';
 trainedClassifier.HowToPredict = sprintf('To make predictions on a new table, T, use: \n  yfit = c.predictFcn(T) \nreplacing ''c'' with the name of the variable that is this struct, e.g. ''trainedModel''. \n \nThe table, T, must contain the variables returned by: \n  c.RequiredVariables \nVariable formats (e.g. matrix/vector, datatype) must match the original training data. \nAdditional variables are ignored. \n \nFor more information, see <a href="matlab:helpview(fullfile(docroot, ''stats'', ''stats.map''), ''appclassification_exportmodeltoworkspace'')">How to predict using an exported model</a>.');
-
-% Perform cross-validation
-partitionedModel = crossval(trainedClassifier.ClassificationTree, 'KFold', 5);
-
-% Compute validation predictions
-[validationPredictions, validationScores] = kfoldPredict(partitionedModel);
-
-% Compute validation accuracy
-validationAccuracy = 1 - kfoldLoss(partitionedModel, 'LossFun', 'ClassifError');

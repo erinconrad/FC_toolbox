@@ -22,7 +22,7 @@ imagesc(Ccolor)
 hold on
 for ic = 1:nclasses
     for jc = 1:nclasses
-        text(ic,jc,sprintf('%1.1f',C(jc,ic)),...
+        text(ic,jc,sprintf('%1.2f',C(jc,ic)),...
             'horizontalalignment','center','fontsize',20,'fontweight','bold')
     end
 end

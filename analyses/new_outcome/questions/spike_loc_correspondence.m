@@ -1,13 +1,16 @@
 function spike_loc_correspondence
 
-% Seed RNG
-rng(0)
-
 %% Parameters
+rm_bad_outcome_focal = 0;
+which_outcome = 'ilae';
 which_atlas = 'aal'; 
 which_localization = 'broad';
 N = 1e2;
 split = 2/3;
+
+%% Seed RNG
+rng(0)
+
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -26,6 +29,7 @@ data = data.out;
 %% get variables of interest
 good_spikes = data.good_spikes;
 spike_rates = data.all_spikes;
+locs = data.all_locs;
 aal_atlas_names = data.aal_names;
 brainnetome_atlas_names = data.brainnetome_names;
 aal = data.all_aal;
@@ -34,6 +38,9 @@ npts = length(good_spikes);
 soz_locs = data.all_soz_locs;
 soz_lats = data.all_soz_lats;
 anatomy = data.all_anatomy;
+ilae = data.all_two_year_ilae;
+engel = data.all_two_year_engel;
+surgery = data.all_surgery;
 
 switch which_atlas
     case 'aal'
@@ -44,6 +51,28 @@ switch which_atlas
         atlas_names = brainnetome_atlas_names;
     
 end
+
+%% Get outcome
+switch which_outcome
+    case 'ilae'
+        outcome = ilae;
+    case 'engel'
+        outcome = engel;
+end
+
+%% Find good and bad outcome
+outcome_num = cellfun(@(x) parse_outcome(x,which_outcome),outcome);
+outcome_cat = cell(length(outcome_num),1);
+outcome_cat(outcome_num==1) = {'good'};
+outcome_cat(outcome_num==0) = {'bad'};
+
+%% Parse surgery
+resection_or_ablation = cellfun(@(x) ...
+    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
+    surgery);
+
+%% Find those with non-empty outcomes
+non_empty = cellfun(@(x) ~isempty(x), outcome);
 
 %% convert spikes to atlas space
 spikes_bin = cellfun(@(x,y) bin_univariate_atlas(x,y,atlas_names),...
@@ -120,6 +149,28 @@ yticks(1:size(spikes_broad,1))
 yticklabels(unique_regions)    
 end
 
+%% Handy visualization technique: show all electrodes and their broad regional localization, along with clinical anatomy
+if 0
+    cmap = colormap(lines(nregions));
+    cmap = [0.7 0.7 0.7;cmap];
+    i = 115;
+    curr_elecs = elec_broad_names{i};
+    for j = 1:length(curr_elecs)
+        if isempty(curr_elecs{j})
+            curr_elecs{j} = '';
+        end
+    end
+    [ia,ib] = ismember(curr_elecs,unique_regions);
+    figure
+    set(gcf,'position',[10 10 1300 900])
+    scatter3(locs{i}(:,1),locs{i}(:,2),locs{i}(:,3),150,ib,'filled');
+    hold on
+    text(locs{i}(:,1),locs{i}(:,2),locs{i}(:,3),anatomy{i});
+    colormap(cmap)
+    c = colorbar('ticks',0:nregions,'ticklabels',['none';unique_regions]);
+    
+end
+
 %% Homogenize and combine soz locs and lats
 comb = cellfun(@(x,y) homogenize_soz_locs_lats(x,y,which_localization),soz_locs,soz_lats,'uniformoutput',false);
 
@@ -173,6 +224,12 @@ xlabel('Spike region')
     
 end
 
+%% Mark patients with "focal" SOZ designations who have poor outcome or no surgery
+non_diffuse = cellfun(@(x) ~contains(x,'diffuse'),comb);
+diffuse = cellfun(@(x) contains(x,'diffuse'),comb);
+
+focal_no_surg_or_poor_outcome = non_diffuse & (~resection_or_ablation | ~non_empty | outcome_num == 0);
+
 %% Remove patients with all missing data
 
 % Find patients without atlas localizations
@@ -186,19 +243,17 @@ no_soz = strcmp(comb,' ');
 assert(isequal(no_atlas | ~good_spikes,all(isnan(perc_spikes_broad),1)'))
 
 % prep those to remove
-to_remove = no_atlas | ~good_spikes | no_soz;
+if rm_bad_outcome_focal
+    to_remove = no_atlas | ~good_spikes | no_soz | focal_no_surg_or_poor_outcome;
+else
+    to_remove = no_atlas | ~good_spikes | no_soz;
+end
 
-% Remove the patients
-perc_spikes_broad(:,to_remove) = [];
-comb(to_remove) = [];
-spikes_broad(:,to_remove) = [];
-prop_elecs(:,to_remove) = [];
-
-% confirm no more missing data
-assert(sum(all(isnan(perc_spikes_broad),1)') == 0)
 
 %% Make spikes_broad that are nans zeros
-% This introduces a bias wherein
+% This introduces a bias wherein there will be no spikes where clinicians
+% don't place electrodes. I am controlling for this bias by including
+% electrode locations as a null model.
 perc_spikes_broad(isnan(perc_spikes_broad)) = 0;
 
 
@@ -211,13 +266,20 @@ comb_var = 'SOZ';
 T = table(comb,prop_elecs',perc_spikes_broad','variablenames',{comb_var,'Var1','Var2'});
 T = splitvars(T,{'Var1','Var2'},'newVariableNames',{elec_num_vars',spike_vars'});
 
+%% Remove things to remove
+T_rm = T; T_rm(to_remove,:) = [];
+
 %% Train and test models
+if 0
 % Null model: only takes into account number of electrodes in each location
-[CNull,ANull] = train_test(T,N,split,@sozTree,'null');
+fprintf('\nTraining null model\n');
+[CNull,ANull] = train_test(T_rm,N,split,@sozTree,'null');
+fprintf('\nTraining full model\n');
 % Full model: only takes into account number of electrodes in each location
-[CFull,AFull] = train_test(T,N,split,@sozTree,'full');
+[CFull,AFull] = train_test(T_rm,N,split,@sozTree,'full');
 
 %% Show confusion matrices
+
 figure
 set(gcf,'position',[10 10 1400 400])
 tiledlayout(1,2,'tilespacing','tight','padding','tight')
@@ -236,5 +298,35 @@ show_confusion(meanCFull,soz_names,...
 
 %% Bootstrap CI?
 out = bootstrap_ci_and_p(ANull,AFull);
+end
+
+%% Next question - does the regional localization predict outcome for those who had surgery
+surg_non_empty = resection_or_ablation & non_empty;
+T_out = addvars(T,outcome_num,'NewVariableNames','outcome');
+to_remove = ~surg_non_empty | no_atlas | ~good_spikes;
+T_out_rm = T_out; T_out_rm(to_remove,:) = [];
+
+[OCNull,OANull] = train_test(T_out_rm,N,split,@outcome_logistic_regression,'null');
+fprintf('\nTraining full model\n');
+% Full model: only takes into account number of electrodes in each location
+[OCFull,OAFull] = train_test(T_out_rm,N,split,@outcome_logistic_regression,'full');
+
+%% Show confusion matrices
+
+figure
+set(gcf,'position',[10 10 1400 400])
+tiledlayout(1,2,'tilespacing','tight','padding','tight')
+
+% Null
+nexttile
+meanCNull = mean(OCNull,3);
+show_confusion(meanCNull,{'good','bad'},...
+    'Predicted Outcome','True Outcome','Null model',OANull);
+
+% Full
+nexttile
+meanCFull = mean(OCFull,3);
+show_confusion(meanCFull,{'good','bad'},...
+    'Predicted Outcome','True Outcome','Full model',OAFull);
 
 end

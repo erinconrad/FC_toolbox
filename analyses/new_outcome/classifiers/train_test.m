@@ -27,14 +27,29 @@ for ib = 1:N
         else
             predClass = predict(tc,Ttest);
         end
-        trueClass = Ttest.SOZ;
+        
+        if isequal(model,@outcome_logistic_regression)
+            predClassOld = predClass;
+            predClass = cell(length(predClassOld),1);
+            predClass(predClassOld > 0.5) = {'good'};
+            predClass(predClassOld <= 0.5) = {'bad'};
+            trueClassOld = Ttest.outcome;
+            trueClass = cell(length(trueClassOld),1);
+            trueClass(trueClassOld > 0.5) = {'good'};
+            trueClass(trueClassOld <= 0.5) = {'bad'};
+            
+        elseif isequal(model,@sozTree)
+            trueClass = Ttest.SOZ;
+        end
+        
 
 
         C = confusionmat(trueClass,predClass);
         accuracy = sum(cellfun(@(x,y) strcmp(x,y),trueClass,predClass))/numel(predClass);
         
         % Reject if funny errors
-        if size(C,1) == 4
+        if size(C,1) ~=5 && isequal(model,@sozTree)
+            
             continue
         else
             confusion{ib} = C;

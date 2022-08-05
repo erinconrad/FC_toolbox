@@ -5,7 +5,10 @@ Question: does a higher overlap between the highest spiking electrodes and
 the SOZ portend a better outcome?
 
 Different overlap metrics:
-1) % of all spikes in the SOZ electrodes (seems easy)
+1) % of all spikes in the SOZ electrodes (seems easy, no effect)
+2) something with rank
+3) is highest spiker in SOZ?
+4) Some measure of distance of spikes from SOZ
 
 But should I control for % of elecs in SOZ?
 
@@ -17,7 +20,6 @@ elecs that are in SOZ, or potentially just the number of elecs in SOZ.
 %}
 
 which_outcome = 'ilae';
-
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -40,6 +42,7 @@ surgery = data.all_surgery;
 good_spikes = data.good_spikes;
 spike_rates = data.all_spikes;
 soz = data.all_soz_bin;
+locs = data.all_locs;
 
 %% Get outcome
 switch which_outcome
@@ -64,22 +67,43 @@ non_empty = cellfun(@(x) ~isempty(x), outcome);
 complete = non_empty & resection_or_ablation & good_spikes;
 
 %% Find percentage of spikes in soz
-perc_spikes_soz = cellfun(@(X,Y) nansum(X(Y==1))/nansum(X)*100,spike_rates,soz);
+%perc_spikes_soz = cellfun(@(X,Y) nansum(X(Y==1))/nansum(X)*100,spike_rates,soz);
+p_spikes_soz = cellfun(@(X,Y) perc_spikes_soz(X,Y),spike_rates,soz);
 
 if 0
     i = 31;
     table(data.all_labels{i},spike_rates{i},soz{i})
-    table((1:length(outcome))',data.all_names,perc_spikes_soz,outcome)
+    table((1:length(outcome))',data.all_names,p_spikes_soz,outcome)
 end
 
 %% Normalize
 perc_elecs_soz = cellfun(@(X) sum(X==1)/length(X)*100,soz);
-num_elecs_soz = cellfun(@(X) sum(X==1),soz);
-perc_spikes_norm = perc_spikes_soz./num_elecs_soz;
+p_spikes_norm = p_spikes_soz./perc_elecs_soz;
+
+%% Other way, something about rank
+[pW,W] = cellfun(@(x,y) ranksum_stat(x,y),spike_rates,soz);
+
+%% Show some examples
+if 0
+    figure
+    for i = 1:120
+    
+    
+    scatter3(locs{i}(:,1),locs{i}(:,2),locs{i}(:,3),100,spike_rates{i},'filled')
+    hold on
+    scatter3(locs{i}(logical(soz{i}),1),locs{i}(logical(soz{i}),2),locs{i}(logical(soz{i}),3),50,'r','filled','p')
+    title(sprintf('%1.1f%%, norm = %1.1f',p_spikes_soz(i)),p_spikes_norm(i))
+    pause
+    hold off
+    end
+end
+
+
+
 
 %% Plot
-stats = unpaired_plot(perc_spikes_norm(outcome_num==1 & complete),...
-    perc_spikes_norm(outcome_num==0 & complete),{'Good outcome','bad outcome'},'Percent of spikes in SOZ');
+stats = unpaired_plot(p_spikes_norm(outcome_num==1 & complete),...
+    p_spikes_norm(outcome_num==0 & complete),{'Good outcome','bad outcome'},'Normalized spike overlap');
 set(gca,'fontsize',20)
 
 end
