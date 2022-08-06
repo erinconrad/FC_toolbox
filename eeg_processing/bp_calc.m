@@ -11,7 +11,10 @@ nchs = size(run_values,2);
 all_power = nan(nchs,nfreqs);
 
 % turn skip channels into zeros
-run_values(:,skip) = 0;
+all_skip = skip & all(isnan(run_values),1);
+run_values(:,all_skip) = 0;
+
+% sam
 
 for f = 1:nfreqs
     curr_freq = freqs(f,:);
@@ -20,7 +23,7 @@ for f = 1:nfreqs
 
 end
 
-all_power(skip,:) = nan;
+all_power(all_skip,:) = nan;
 
 
 end
