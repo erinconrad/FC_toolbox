@@ -23,8 +23,7 @@ for f = 1:nfreqs
 
 end
 
-all_power(skip,:) = nan;
-all_power(all(isnan(run_values),1),:) = nan;
+all_power(all_skip,:) = nan;
 
 
 end
