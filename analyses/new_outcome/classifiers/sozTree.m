@@ -47,11 +47,16 @@ function [trainedClassifier] = sozTree(trainingData,forn)
 % model.
 inputTable = trainingData;
 
+% Get variableNames
+varNames = inputTable.Properties.VariableNames;
+elecNames = varNames(contains(varNames,'elecs'));
+spikeNames = varNames(contains(varNames,'spikes'));
+
 switch forn
     case 'full'
-        predictorNames = {'left other cortex proportion elecs', 'left temporal proportion elecs', 'right other cortex proportion elecs', 'right temporal proportion elecs', 'left other cortex proportion spikes', 'left temporal proportion spikes', 'right other cortex proportion spikes', 'right temporal proportion spikes'};
+        predictorNames = [elecNames,spikeNames];
     case 'null'
-        predictorNames = {'left other cortex proportion elecs', 'left temporal proportion elecs', 'right other cortex proportion elecs', 'right temporal proportion elecs'};
+        predictorNames = elecNames;
 end
 
 predictors = inputTable(:, predictorNames);

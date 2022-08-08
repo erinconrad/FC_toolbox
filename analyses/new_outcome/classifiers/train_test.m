@@ -38,7 +38,7 @@ for ib = 1:N
             trueClass(trueClassOld > 0.5) = {'good'};
             trueClass(trueClassOld <= 0.5) = {'bad'};
             
-        elseif isequal(model,@sozTree)
+        elseif isequal(model,@sozTree) || isequal(model,@sozTreePCA)
             trueClass = Ttest.SOZ;
         end
         

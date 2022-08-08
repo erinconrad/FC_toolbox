@@ -24,6 +24,17 @@ switch which_localization
         else
             loc = [];
         end
+        
+    case 'broad_soz'
+        if contains(loc,'temporal')
+            loc = 'temporal';
+        elseif strcmp(loc,'other cortex')
+            loc = 'other cortex';
+        elseif strcmp(loc,'multifocal') || contains(loc,'diffuse')
+            loc = 'multifocal/diffuse';
+        else
+            loc = [];
+        end
 
 end
         
@@ -50,7 +61,7 @@ else
     comb = sprintf('%s %s',lat,loc);
 end
 
-if strcmp(which_localization,'broad')
+if strcmp(which_localization,'broad') || strcmp(which_localization,'broad_soz')
     if contains(comb,'diffuse')
         comb = 'bilateral/diffuse';
     end

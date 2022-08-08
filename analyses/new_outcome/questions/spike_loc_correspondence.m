@@ -1,10 +1,11 @@
 function spike_loc_correspondence
 
 %% Parameters
+do_pca = 1;
 rm_bad_outcome_focal = 0;
 which_outcome = 'ilae';
 which_atlas = 'aal'; 
-which_localization = 'broad';
+which_localization = 'soz';
 N = 1e2;
 split = 2/3;
 
@@ -109,7 +110,7 @@ elec_broad_names = cellfun(@(x) elec_broad(x,atlas_names,broad_regions),...
     atlas,'uniformoutput',false);
 
 %% Compare atlas names to regions
-if 1
+if 0
     table(broad_regions,atlas_names)
     table(elec_broad_names{1},anatomy{1})
 end
@@ -140,6 +141,7 @@ end
 
 %% Also get percentage of spikes in that region
 perc_spikes_broad = spikes_broad./nansum(spikes_broad,1)*100;
+
 
 %% Look at it
 if 0
@@ -174,6 +176,9 @@ end
 %% Homogenize and combine soz locs and lats
 comb = cellfun(@(x,y) homogenize_soz_locs_lats(x,y,which_localization),soz_locs,soz_lats,'uniformoutput',false);
 
+%% Get counts in each region
+
+
 %% Build matrix of spike rates by location and SOZ localization
 soz_names = unique(comb);
 soz_names(strcmp(soz_names,' ')) = [];
@@ -182,13 +187,16 @@ nsozs = length(soz_names);
 spikes_abs = nan(nsozs,nregions);
 spikes_prop = nan(nsozs,nregions);
 elecs_prop = nan(nsozs,nregions);
+num_soz = nan(nsozs,1);
 for is = 1:nsozs
+    num_soz(is) = sum(strcmp(soz_names{is},comb));
     for ir = 1:nregions
         spikes_abs(is,ir) = nanmean(spikes_broad(ir,strcmp(soz_names{is},comb)));
         spikes_prop(is,ir) = nanmean(perc_spikes_broad(ir,strcmp(soz_names{is},comb)));
         elecs_prop(is,ir) = nanmean(prop_elecs(ir,strcmp(soz_names{is},comb)));
     end
 end
+
 
 %% show it
 if 0
@@ -255,7 +263,11 @@ end
 % don't place electrodes. I am controlling for this bias by including
 % electrode locations as a null model.
 perc_spikes_broad(isnan(perc_spikes_broad)) = 0;
+spikes_broad(isnan(spikes_broad)) = 0;
 
+%% Normalize for pca
+num_elecs_norm = (num_elecs - mean(num_elecs,1))./nanstd(num_elecs,[],1);
+spikes_broad_norm = (spikes_broad - mean(spikes_broad,1))./nanstd(spikes_broad,[],1);
 
 %% Put data into table
 % Build variable names
@@ -264,40 +276,51 @@ spike_vars = cellfun(@(x) sprintf('%s proportion spikes',x),unique_regions,'unif
 comb_var = 'SOZ';
 
 T = table(comb,prop_elecs',perc_spikes_broad','variablenames',{comb_var,'Var1','Var2'});
+%T = table(comb,spikes_broad_norm',num_elecs_norm','variablenames',{comb_var,'Var1','Var2'});
 T = splitvars(T,{'Var1','Var2'},'newVariableNames',{elec_num_vars',spike_vars'});
 
 %% Remove things to remove
 T_rm = T; T_rm(to_remove,:) = [];
 
 %% Train and test models
-if 0
-% Null model: only takes into account number of electrodes in each location
-fprintf('\nTraining null model\n');
-[CNull,ANull] = train_test(T_rm,N,split,@sozTree,'null');
-fprintf('\nTraining full model\n');
-% Full model: only takes into account number of electrodes in each location
-[CFull,AFull] = train_test(T_rm,N,split,@sozTree,'full');
+if 1
+    % Null model: only takes into account number of electrodes in each location
+    fprintf('\nTraining null model\n');
+    if do_pca
+        [CNull,ANull] = train_test(T_rm,N,split,@sozTreePCA,'null');
+    else
+        [CNull,ANull] = train_test(T_rm,N,split,@sozTree,'null');
+    end
+    fprintf('\nTraining full model\n');
+    % Full model: only takes into account number of electrodes in each location
+    if do_pca
+        [CFull,AFull] = train_test(T_rm,N,split,@sozTreePCA,'full');
+    else
+        [CFull,AFull] = train_test(T_rm,N,split,@sozTree,'full');
+    end
 
-%% Show confusion matrices
+    %% Show confusion matrices
 
-figure
-set(gcf,'position',[10 10 1400 400])
-tiledlayout(1,2,'tilespacing','tight','padding','tight')
+    figure
+    set(gcf,'position',[10 10 1400 400])
+    tiledlayout(1,2,'tilespacing','tight','padding','tight')
 
-% Null
-nexttile
-meanCNull = mean(CNull,3);
-show_confusion(meanCNull,soz_names,...
-    'Predicted SOZ','True SOZ','Null model',ANull);
+    % Null
+    nexttile
+    meanCNull = mean(CNull,3);
+    show_confusion(meanCNull,soz_names,...
+        'Predicted SOZ','True SOZ','Null model',ANull);
 
-% Full
-nexttile
-meanCFull = mean(CFull,3);
-show_confusion(meanCFull,soz_names,...
-    'Predicted SOZ','True SOZ','Full model',AFull);
+    % Full
+    nexttile
+    meanCFull = mean(CFull,3);
+    show_confusion(meanCFull,soz_names,...
+        'Predicted SOZ','True SOZ','Full model',AFull);
+    
 
-%% Bootstrap CI?
-out = bootstrap_ci_and_p(ANull,AFull);
+
+    %% Bootstrap CI?
+    out = bootstrap_ci_and_p(ANull,AFull);
 end
 
 %% Next question - does the regional localization predict outcome for those who had surgery
