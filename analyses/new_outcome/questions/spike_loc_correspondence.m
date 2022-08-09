@@ -5,7 +5,7 @@ do_pca = 1;
 rm_bad_outcome_focal = 0;
 which_outcome = 'ilae';
 which_atlas = 'aal'; 
-which_localization = 'soz';
+which_localization = 'broad';
 N = 1e2;
 split = 2/3;
 
