@@ -1,6 +1,6 @@
 function lr_spike_asymmetry_outcome
 
-which_atlas = 'brainnetome';
+which_atlas = 'aal';
 which_outcome = 'ilae';
 
 %% Get file locs
@@ -54,7 +54,7 @@ resection_or_ablation = cellfun(@(x) ...
 non_empty_outcome = cellfun(@(x) ~isempty(x), outcome);
 
 %% Define complete
-complete = non_empty_outcome & resection_or_ablation;
+complete = non_empty_outcome & resection_or_ablation & good_spikes;
 
 %% Find good and bad outcome
 outcome_num = cellfun(@(x) parse_outcome(x,which_outcome),outcome);
