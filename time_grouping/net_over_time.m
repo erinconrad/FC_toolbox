@@ -57,10 +57,10 @@ for f = 1:nfiles
     
     for m = 1:nmontages
         net_montage{m} = nan(nchs*(nchs-1)/2,nruns);
-        coh_montage{m} = nan(nchs*(nchs-1)/2,nfreqs,nruns);
+        coh_montage{m} = nan(nchs*(nchs-1)/2,nfreqs1,nruns);
         spikes_montage{m} = nan(nchs,nruns);
         ad_montage{m} = nan(nchs,nruns);
-        bp_montage{m} = nan(nchs,nfreqs,nruns);
+        bp_montage{m} = nan(nchs,nfreqs2,nruns);
         coa_montage{m} = nan(nchs*(nchs-1)/2,nruns);
         rl_montage{m} = nan(nchs,nruns);
         leader_montage{m} = nan(nchs,nruns);
