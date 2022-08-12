@@ -23,7 +23,8 @@ out.run_center = nan(n_runs_total,1);
 out.file_index = nan(n_runs_total,1);
 out.times = nan(n_runs_total,1);
 out.mod_midnight = nan(n_runs_total,1);
-nfreqs = size(out.file(1).montage(2).coh,2);
+nfreqs1 = size(out.file(1).montage(2).coh,2);
+nfreqs2 = size(out.file(1).montage(2).bp,2);
 
 for m  = 1:nmontages
     %out.montage(m).net = nan(nchs,nchs,n_runs_total);
@@ -38,8 +39,8 @@ for m  = 1:nmontages
     out.montage(m).n_rm_ictal = 0;
     out.montage(m).seq_info = nan(2,n_runs_total);
     out.montage(m).leader_montage = nan(nchs,n_runs_total);
-    out.montage(m).coh = nan(nchs*(nchs-1)/2,nfreqs,n_runs_total);
-    out.montage(m).bp = nan(nchs,nfreqs,n_runs_total);
+    out.montage(m).coh = nan(nchs*(nchs-1)/2,nfreqs1,n_runs_total);
+    out.montage(m).bp = nan(nchs,nfreqs2,n_runs_total);
 end
 
 %% Find how to match labels in each file with these labels
@@ -112,7 +113,7 @@ for f = 1:nfiles
         % prep net_uw and coa_uw
         net_uw = nan(length(labels),length(labels),nruns);
         coa_uw = nan(length(labels),length(labels),nruns);
-        coh_uw = nan(length(labels),length(labels),nfreqs,nruns);
+        coh_uw = nan(length(labels),length(labels),nfreqs1,nruns);
         
         % unwrap net
         for r = 1:nruns
@@ -123,7 +124,7 @@ for f = 1:nfiles
             coa_uw(:,:,r) = coa_uw_temp;
             
             
-            for i_f = 1:nfreqs
+            for i_f = 1:nfreqs1
                 coh_uw(:,:,i_f,r) = wrap_or_unwrap_adjacency_fc_toolbox(coh(:,i_f,r));
             end
             
@@ -132,10 +133,10 @@ for f = 1:nfiles
         % prep new ones (size of full set of labels)
         new_net_uw = nan(nchs,nchs,nruns);
         new_coa_uw = nan(nchs,nchs,nruns);
-        new_coh_uw = nan(nchs,nchs,nfreqs,nruns);
+        new_coh_uw = nan(nchs,nchs,nfreqs1,nruns);
         new_spikes = nan(nchs,nruns);
         new_ad = nan(nchs,nruns);
-        new_bp = nan(nchs,nfreqs,nruns);
+        new_bp = nan(nchs,nfreqs2,nruns);
         %new_coi_ch = nan(nchs,nruns);
         new_rl = nan(nchs,nruns);
         new_labels = cell(nchs,1);
@@ -156,7 +157,7 @@ for f = 1:nfiles
         % rewrap the net and coa
         new_net = nan(nchs*(nchs-1)/2,nruns);
         new_coa = nan(nchs*(nchs-1)/2,nruns);
-        new_coh = nan(nchs*(nchs-1)/2,nfreqs,nruns);
+        new_coh = nan(nchs*(nchs-1)/2,nfreqs1,nruns);
         for r = 1:nruns
             new_net_temp = wrap_or_unwrap_adjacency_fc_toolbox(new_net_uw(:,:,r));
             new_net(:,r) = new_net_temp;
@@ -165,7 +166,7 @@ for f = 1:nfiles
             new_coa_temp = wrap_or_unwrap_adjacency_fc_toolbox(new_coa_uw(:,:,r));
             new_coa(:,r) = new_coa_temp;
             
-            for i_f = 1:nfreqs
+            for i_f = 1:nfreqs1
                 new_coh(:,i_f,r) = wrap_or_unwrap_adjacency_fc_toolbox(new_coh_uw(:,:,i_f,r));
             end
         end
