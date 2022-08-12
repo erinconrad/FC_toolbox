@@ -205,6 +205,9 @@ end
 %% Now define broad spike rates to be zero for PCA
 spikes_broad(isnan(spikes_broad)) = 0;
 
+%% Normalize spikes broad
+spikes_broad = spikes_broad./sum(spikes_broad,2);
+
 %% Construct table
 full = [outcome_num,spikes_broad,num_elecs];
 predictorNames = [(cellfun(@(x) sprintf('%s_spikes',x),unique_regions,'uniformoutput',false))',...
@@ -221,5 +224,6 @@ TNull = array2table(null,'variablenames',[responseName,predictorNamesNull]);
 [trueClass,predClass,AUC] = more_general_train_test(T,1e2,2/3,@log_regression_PCA,predictorNames,responseName);
 [trueClassNull,predClassNull,AUCNull] = more_general_train_test(TNull,1e2,2/3,@log_regression_PCA,predictorNamesNull,responseName);
 
-
+mean(AUC)
+mean(AUCNull)
 end

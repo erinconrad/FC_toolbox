@@ -43,7 +43,7 @@ function [trainedClassifier, validationAccuracy] = log_regression_PCA(trainingDa
 % Extract predictors and response
 % This code processes the data into the right shape for training the
 % model.
-percExp = 0.8;
+percExp = 0.9;
 inputTable = trainingData;
 %predictorNames = {'left mesial temporal_spikes', 'left other cortex_spikes', 'left temporal neocortical_spikes', 'right mesial temporal_spikes', 'right other cortex_spikes', 'right temporal neocortical_spikes', 'left mesial temporal_elecs', 'left other cortex_elecs', 'left temporal neocortical_elecs', 'right mesial temporal_elecs', 'right other cortex_elecs', 'right temporal neocortical_elecs'};
 predictors = inputTable(:, predictorNames);

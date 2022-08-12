@@ -30,7 +30,7 @@ for f = 1:nfiles
     
     % get nfreqs
     %if exist(
-    nfreqs = 5;%size(pc.file(f).run(first_coh).cohere_out.montage(2).bp,2);
+    nfreqs = 6;%size(pc.file(f).run(first_coh).cohere_out.montage(2).bp,2);
     
     % Get seizure times
     if ~isfield(pt(j).ieeg.file(f),'sz_times')

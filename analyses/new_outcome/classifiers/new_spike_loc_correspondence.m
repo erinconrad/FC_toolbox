@@ -1,11 +1,12 @@
-function spike_loc_correspondence
+function new_spike_loc_correspondence
 
 %% Parameters
-do_pca = 1;
+do_pca = 0;
 rm_bad_outcome_focal = 0;
 which_outcome = 'ilae';
 which_atlas = 'aal'; 
-which_localization = 'broad';
+predictor_granularity = 'broad';
+response_granularity = 'broad';
 N = 1e2;
 split = 2/3;
 
@@ -76,9 +77,19 @@ resection_or_ablation = cellfun(@(x) ...
 non_empty = cellfun(@(x) ~isempty(x), outcome);
 
 %% convert spikes to atlas space
+nregions = length(atlas_names);
 spikes_bin = cellfun(@(x,y) bin_univariate_atlas(x,y,atlas_names),...
     spike_rates,atlas,'uniformoutput',false);
 spikes_bin = horzcat(spikes_bin{:}); % I still havent removed bad spikes, but they should all be nans
+
+%% Same with numbers of elecs
+nelecs_bin = nan(nregions,npts);
+for ip = 1:npts
+    curr_elecs_atlas = atlas{ip};
+    for ir = 1:length(atlas_names)
+        nelecs_bin(ir,ip) = sum(strcmp(curr_elecs_atlas,atlas_names{ir}));
+    end
+end
 
 
 %% Confirm patients with bad spikes have all nans for spike rates
@@ -96,7 +107,7 @@ end
 broad_regions = localize_regions(atlas_names,which_atlas);
 non_empty_broad_regions = (cellfun(@(x) ~isempty(x),broad_regions));
 non_empty_names = broad_regions(non_empty_broad_regions);
-if strcmp(which_localization,'broad')
+if strcmp(predictor_granularity,'broad')
     non_empty_names = cellfun(@(x) strrep(x,'mesial temporal','temporal'),...
         non_empty_names,'uniformoutput',false);
     non_empty_names = cellfun(@(x) strrep(x,'temporal neocortical','temporal'),...
@@ -174,7 +185,7 @@ if 0
 end
 
 %% Homogenize and combine soz locs and lats
-comb = cellfun(@(x,y) homogenize_soz_locs_lats(x,y,which_localization),soz_locs,soz_lats,'uniformoutput',false);
+comb = cellfun(@(x,y) homogenize_soz_locs_lats(x,y,response_granularity),soz_locs,soz_lats,'uniformoutput',false);
 
 %% Get counts in each region
 
@@ -278,6 +289,24 @@ comb_var = 'SOZ';
 T = table(comb,prop_elecs',perc_spikes_broad','variablenames',{comb_var,'Var1','Var2'});
 %T = table(comb,spikes_broad_norm',num_elecs_norm','variablenames',{comb_var,'Var1','Var2'});
 T = splitvars(T,{'Var1','Var2'},'newVariableNames',{elec_num_vars',spike_vars'});
+
+
+
+%% Also prepare table for original atlas
+spikes_bin(isnan(spikes_bin)) = 0;
+nelecs_bin(isnan(nelecs_bin)) = 0;
+spikes_bin = spikes_bin./sum(spikes_bin,1)*100;
+nelecs_bin = spikes_bin./sum(nelecs_bin,1)*100;
+
+elec_num_vars = cellfun(@(x) sprintf('%s proportion elecs',x),atlas_names,'uniformoutput',false);
+spike_vars = cellfun(@(x) sprintf('%s proportion spikes',x),atlas_names,'uniformoutput',false);
+To = table(comb,spikes_bin',nelecs_bin','variablenames',{comb_var,'Var1','Var2'});
+To = splitvars(To,{'Var1','Var2'},'newVariableNames',{elec_num_vars',spike_vars'});
+
+if strcmp(predictor_granularity,'atlas')
+    T = To;
+    
+end
 
 %% Remove things to remove
 T_rm = T; T_rm(to_remove,:) = [];

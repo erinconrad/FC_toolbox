@@ -43,7 +43,7 @@ function [trainedClassifier, validationAccuracy] = sozTreePCA(trainingData,forn)
 % Extract predictors and response
 % This code processes the data into the right shape for training the
 % model.
-keepVar = 0.90;
+keepVar = 0.80;
 inputTable = trainingData;
 
 

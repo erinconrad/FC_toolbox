@@ -1,6 +1,6 @@
 function lr_spike_asymmetry_outcome
 
-which_atlas = 'aal';
+which_atlas = 'brainnetome';
 which_outcome = 'ilae';
 
 %% Get file locs
