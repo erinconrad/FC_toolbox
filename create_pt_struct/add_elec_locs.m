@@ -1,6 +1,6 @@
 function add_elec_locs
 
-overwrite = 0;
+overwrite = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;

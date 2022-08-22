@@ -16,12 +16,23 @@ end
 %% Get file locs and set script path
 locations = fc_toolbox_locs;
 scripts_folder = locations.script_folder;
+plot_folder = locations.paper_plot_folder;
 addpath(genpath(scripts_folder));
 
 %% Symmetric coverage tests (both atlases)
 fprintf('\nDoing symmetric coverage tests...\n');
-symmetric_coverage_tests('brainnetome')
-symmetric_coverage_tests('aal_bernabei')
+symmetric_coverage_tests('brainnetome',0)
+symmetric_coverage_tests('aal_bernabei',0)
+
+%% Symmetric coverage tests for post-review analysis
+% Testing if I get similar result if I subsample electrodes
+nb = 1e2;
+for ib = 1:nb
+   nbrain_out(ib) = symmetric_coverage_tests('brainnetome',1);
+   naal_out(ib) = symmetric_coverage_tests('aal_bernabei',1);
+end
+save([plot_folder,'nbrain_out.mat'],'nbrain_out')
+save([plot_folder,'naal_out.mat'],'naal_out')
 
 %% SOZ classifier
 fprintf('\nDoing classifier to predict SOZ vs non-SOZ (takes a while if many training/testing splits)...\n');

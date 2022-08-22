@@ -2,6 +2,7 @@ function lr_spike_asymmetry_outcome
 
 which_atlas = 'brainnetome';
 which_outcome = 'ilae';
+restrict_mt = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -24,6 +25,8 @@ surgery = data.all_surgery;
 good_spikes = data.good_spikes;
 spike_rates = data.all_spikes;
 locs = data.all_locs;
+labels = data.all_labels;
+anatomy = data.all_anatomy;
 soz = data.all_soz_bin;
 
 %% get atlas
@@ -31,11 +34,16 @@ switch which_atlas
     case 'aal'
         atlas = data.all_aal;
         atlas_names = data.aal_names;
+        mt_names = {'Hippocampus','Amygdala'};
     case 'brainnetome'
         atlas = data.all_brainnetome;
         atlas_names = data.brainnetome_names;
+        mt_names = {'Amyg','Hipp'};
     
 end
+
+%% Define names corresponding to mesial temporal (not used in paper)
+%mt = cellfun(@(x) ismember(x,mt_names),atlas,'uniformoutput',false);
 
 %% Get outcome
 switch which_outcome
@@ -63,18 +71,28 @@ outcome_num = cellfun(@(x) parse_outcome(x,which_outcome),outcome);
 assert(isequal(cellfun(@(x) all(isnan(x)),spike_rates),~good_spikes))
 
 %% Define L-R lateralizations
-atlas_lat = lateralize_regions_simple(atlas_names);
-elec_lats = cellfun(@(x) elec_broad(x,atlas_names,atlas_lat), atlas,'uniformoutput',false);
+if strcmp(which_atlas,'labels')
+    elec_lats = cellfun(@(x,y) label_and_anatomy_lat_determination(x,y),labels,anatomy,'uniformoutput',false);
+else
+    atlas_lat = lateralize_regions_simple(atlas_names);
+    elec_lats = cellfun(@(x) elec_broad(x,atlas_names,atlas_lat), atlas,'uniformoutput',false);
+end
 
 %% Get average left and right spike rates
-mean_lr_spike_rate = cellfun(@(x,y) [nanmean(x(strcmp(y,'L'))) nanmean(x(strcmp(y,'R')))],...
+if restrict_mt
+    mt_lr = cellfun(@(x,y) return_bilateral_mesial_temporal_spikes(x,y,which_atlas),...
+        spike_rates,atlas,'uniformoutput',false);
+    mean_lr_spike_rate = cell2mat(mt_lr);
+else
+    mean_lr_spike_rate = cellfun(@(x,y) [nanmean(x(strcmp(y,'L'))) nanmean(x(strcmp(y,'R')))],...
     spike_rates,elec_lats,'uniformoutput',false);
-mean_lr_spike_rate = cell2mat(mean_lr_spike_rate);
-
+    mean_lr_spike_rate = cell2mat(mean_lr_spike_rate);
+end
 
 %% Get two different asymmetric indices
 L = mean_lr_spike_rate(:,1);
 R = mean_lr_spike_rate(:,2);
+
 ai = max([L./(L+R),R./(L+R)],[],2);
 alt_ai = abs(L-R)./(L+R);
 

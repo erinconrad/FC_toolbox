@@ -1,5 +1,9 @@
 function [locs,lats,loc_nums] = lateralize_regions(regions,atlas)
 
+if strcmp(atlas,'aal')
+    atlas = 'aal_bernabei';
+end
+
 nregions = length(regions);
 locs = cell(nregions,1);
 lats = cell(nregions,1);
@@ -12,6 +16,10 @@ switch atlas
     case 'brainnetome'
     
         for i = 1:nregions
+            
+            if isempty(regions{i}) || strcmp(regions{i},' ')
+                continue;
+            end
             lats{i} = regions{i}(end);
             locs{i} = regions{i}(1:end-2);
             if i > 1
@@ -31,6 +39,9 @@ switch atlas
     case 'aal'
         locs{1} = regions{1};
         for i = 2:nregions
+            if isempty(regions{i}) || strcmp(regions{i},' ')
+                continue;
+            end
             lats{i} = regions{i}(end);
             locs{i} = regions{i}(1:end-2);
             if i > 1
@@ -47,6 +58,9 @@ switch atlas
     case 'aal_bernabei'
         
         for i = 1:nregions
+            if isempty(regions{i}) || strcmp(regions{i},' ')
+                continue;
+            end
             if strcmp(regions{i}(end-1:end),'_R') || strcmp(regions{i}(end-1:end),'_L')
                 lats{i} = regions{i}(end);
                 locs{i} = regions{i}(1:end-2);

@@ -38,6 +38,13 @@ aal_out = aal_out.nout;
 brain_out = load([model_folder,'symm_cov_brainnetome.mat']);
 brain_out = brain_out.nout;
 
+sub_brain = load([model_folder,'nbrain_out.mat']);
+sub_brain = sub_brain.nbrain_out;
+
+
+sub_aal = load([model_folder,'naal_out.mat']);
+sub_aal = sub_aal.naal_out;
+
 % Spike-fc corr
 corr_out = load([model_folder,'spike_analysis.mat']);
 corr_out = corr_out.nout;
@@ -47,11 +54,14 @@ corr_out = corr_out.nout;
 fid = fopen([plot_folder,'results.html'],'a');
 fprintf(fid,['<p>We included all patients who had available electrode localizations (%d patients), although the number '...
     'of patients analyzed varied by analysis, as noted in the results of individual '...
-    'analyses. Patients were heterogeneous by age, sex, seizure localization ',...
+    'analyses. Patients were heterogeneous by age, sex, seizure onset zone localization ',...
     'and lateralization, and implant strategy (Table 1).</p>'],sum(corr_out.pts_with_any_locs));
 fclose(fid);
 
 if 1
+    
+%% Supplemental Figure 2 - electrode subsampling test
+subsample_elecs_test(sub_brain,sub_aal,plot_folder,corr_out)
 
 %% Fig 1 - conceptual fig
 if doing_from_github == 0

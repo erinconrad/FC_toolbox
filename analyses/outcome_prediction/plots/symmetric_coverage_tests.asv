@@ -87,10 +87,8 @@ assert(sum(left)==sum(right));
 
 %% Construct atlas (regions x regions x patients)
 % orig_atlas
-%{
 orig_atlas = rebuild_atlas(fc,rate,atlas_elec_labels,...
     atlas_elec_regions,atlas_nums,labels,soz,coh,0,locs,lats);
-%}
 
 % Puts FC, spikes, etc. from electrode space into atlas space
 [atlas,spikes,bin_soz,coh] = rebuild_atlas(fc,rate,atlas_elec_labels,...
@@ -118,7 +116,7 @@ left = left(lr_order);
 right = right(lr_order);
 neither_lat = neither_lat(lr_order);
 atlas = atlas(lr_order,lr_order,:);
-%orig_atlas = orig_atlas(lr_order,lr_order,:);
+orig_atlas = orig_atlas(lr_order,lr_order,:);
 coh = coh(lr_order,lr_order,:,:);
 names = names(lr_order);
 locs = locs(lr_order);
@@ -159,7 +157,7 @@ mt = contains(names,mt_names);
 %% First, build symmetric coverage atlas
 % Build atlas for correlation and get indices of bilateral coverage regions
 [symm_cov_atlas,all_bilateral] = build_symmetric_coverage_atlas(atlas,locs,lats);
-%[symm_cov_atlas_orig,all_bilateral_orig] = build_symmetric_coverage_atlas(orig_atlas,locs,lats);
+[symm_cov_atlas_orig,all_bilateral_orig] = build_symmetric_coverage_atlas(orig_atlas,locs,lats);
 
 if ~no_symm_cov
     atlas = symm_cov_atlas; % redefine the FC atlas to be the symmetric coverage atlas

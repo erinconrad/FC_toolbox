@@ -1,4 +1,4 @@
-function nout = symmetric_coverage_tests(which_atlas,force_same_num)
+function symmetric_coverage_tests(which_atlas)
 
 %{
 This performs the analysis comparing connectivity to the SOZ to the region
@@ -86,17 +86,9 @@ neither_lat = ~left & ~right;
 assert(sum(left)==sum(right));
 
 %% Construct atlas (regions x regions x patients)
-% orig_atlas
-%{
-orig_atlas = rebuild_atlas(fc,rate,atlas_elec_labels,...
-    atlas_elec_regions,atlas_nums,labels,soz,coh,0,locs,lats);
-%}
-
 % Puts FC, spikes, etc. from electrode space into atlas space
 [atlas,spikes,bin_soz,coh] = rebuild_atlas(fc,rate,atlas_elec_labels,...
-    atlas_elec_regions,atlas_nums,labels,soz,coh,force_same_num,locs,lats);
-
-
+    atlas_elec_regions,atlas_nums,labels,soz,coh);
 
 %% Compare some elec labels to atlas labels
 % making sure that LA is left amygdala, etc...
@@ -118,7 +110,6 @@ left = left(lr_order);
 right = right(lr_order);
 neither_lat = neither_lat(lr_order);
 atlas = atlas(lr_order,lr_order,:);
-%orig_atlas = orig_atlas(lr_order,lr_order,:);
 coh = coh(lr_order,lr_order,:,:);
 names = names(lr_order);
 locs = locs(lr_order);
@@ -159,7 +150,6 @@ mt = contains(names,mt_names);
 %% First, build symmetric coverage atlas
 % Build atlas for correlation and get indices of bilateral coverage regions
 [symm_cov_atlas,all_bilateral] = build_symmetric_coverage_atlas(atlas,locs,lats);
-%[symm_cov_atlas_orig,all_bilateral_orig] = build_symmetric_coverage_atlas(orig_atlas,locs,lats);
 
 if ~no_symm_cov
     atlas = symm_cov_atlas; % redefine the FC atlas to be the symmetric coverage atlas
@@ -435,11 +425,7 @@ if 0
 end
 
 % Calculate confusion matrix
-if force_same_num == 1
-    conf_out_fc = [];
-else
-    conf_out_fc = confusion_matrix(predicted,lats_for_conf,0);
-end
+conf_out_fc = confusion_matrix(predicted,lats_for_conf,0);
 
 % Get numbers for above analysis
 n_conf_fc = length(predicted);
@@ -465,15 +451,10 @@ if 0
     table(lats_for_conf,predicted)
 end
 
-if force_same_num == 1
-    lat_info = []
-    conf_out_spikes = [];
-else
-    conf_out_spikes = confusion_matrix(predicted,lats_for_conf,0);
+conf_out_spikes = confusion_matrix(predicted,lats_for_conf,0);
 
 %% Laterality model
 lat_info = laterality_loo(hemi_lr,hemi_lr_spikes,soz_lats);
-end
 
 %% Get average L-R connectivity for each patient
 %{
@@ -498,7 +479,6 @@ end
 
 
 %% Output data for plots
-
 nout.soz_lats = soz_lats;
 nout.all_bilateral = all_bilateral;
 nout.left = left;
@@ -516,13 +496,10 @@ nout.bin_soz = bin_soz;
 nout.all_bin_contra_soz = all_bin_contra_soz;
 nout.lat_info = lat_info;
 nout.atlas_names = names;
-
-if force_same_num == 0
 if no_symm_cov
     save([plot_folder,'no_symm_cov_',which_atlas,'.mat'],'nout');
 else
     save([plot_folder,'symm_cov_',which_atlas,'.mat'],'nout');
-end
 end
 
 if do_plots

@@ -1,6 +1,6 @@
 function spikes_predict_bilaterality
 
-which_atlas = 'aal';
+which_atlas = 'brainnetome';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -20,6 +20,9 @@ data = data.out;
 good_spikes = data.good_spikes;
 spike_rates = data.all_spikes;
 locs = data.all_locs;
+labels = data.all_labels;
+
+anatomy = data.all_anatomy;
 soz = data.all_soz_bin;
 soz_lats = data.all_soz_lats;
 
@@ -43,8 +46,12 @@ unilat = strcmp(soz_lats,'left') | strcmp(soz_lats,'right');
 assert(isequal(cellfun(@(x) all(isnan(x)),spike_rates),~good_spikes))
 
 %% Define L-R lateralizations
-atlas_lat = lateralize_regions_simple(atlas_names);
-elec_lats = cellfun(@(x) elec_broad(x,atlas_names,atlas_lat), atlas,'uniformoutput',false);
+if strcmp(which_atlas,'labels')
+    elec_lats = cellfun(@(x,y) label_and_anatomy_lat_determination(x,y),labels,anatomy,'uniformoutput',false);
+else
+    atlas_lat = lateralize_regions_simple(atlas_names);
+    elec_lats = cellfun(@(x) elec_broad(x,atlas_names,atlas_lat), atlas,'uniformoutput',false);
+end
 
 %% Get average left and right spike rates
 mean_lr_spike_rate = cellfun(@(x,y) [nanmean(x(strcmp(y,'L'))) nanmean(x(strcmp(y,'R')))],...
@@ -67,7 +74,7 @@ SDE = cellfun(@(x) weighted_standard_distance(x,[]),locs);
 SDE(SDE>1e10) = nan;
 SDnorm = SD./SDE;
 
-unpaired_plot(ai(unilat),ai(bilat),{'Unilateral','Bilateral'},'Asymmetry index')
+unpaired_plot(alt_ai(unilat),alt_ai(bilat),{'Unilateral','Bilateral'},'Asymmetry index')
 
 
 end

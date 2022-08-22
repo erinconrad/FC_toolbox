@@ -35,56 +35,13 @@ for ia = 1:2
 
     % Show bilateral coverage
     nexttile([1 3])
-    
-    bilat_cov = atlas_out.all_bilateral(~atlas_out.neither_lat,:);
-    left_bilat_cov = bilat_cov(atlas_out.left==1,:);
-    left_names = atlas_out.atlas_names(atlas_out.left == 1);
-    pm = turn_nans_gray(left_bilat_cov);
-    xticklabels([])
-    yticks(1:size(left_bilat_cov,1))
-    %yticklabels(left_names);
-    yticklabels([])
-    hold on
-    xl = xlim;
-    new_xl = [xl(1) - 0.15*(xl(2)-xl(1)),xl(2)];
-    line_pos = xl(1) - 0.09*(xl(2)-xl(1));
-    arrow_pos = xl(1) - 0.04*(xl(2)-xl(1));
-    xlim(new_xl)
+    pretty_matrix(atlas_out.all_bilateral(~atlas_out.neither_lat,:),...
+        {'Left','Right'},sum(atlas_out.left),[],1);
     colormap(gca,[0.5,0.5,0.5;1 1 1]);
     title('Regions with symmetric coverage')
     xlabel('Patient')
     ylabel('Region')
     set(gca,'fontsize',20)
-    
-    %% Also show some of the clusters
-    if ia == 1
-        % Show temporal neocortical cluster
-        mid_pos = 47;
-        text(line_pos,mid_pos,'Lateral\newlinetemporal','horizontalalignment','center',...
-    'rotation',90,'fontsize',20)
-    	text(arrow_pos,mid_pos,'\rightarrow','fontsize',20,'horizontalalignment','left','fontweight', 'bold')
-        
-        % Show mesial temporal cluster
-        mid_pos = 108;
-        text(line_pos,mid_pos,'Mesial\newlinetemporal','horizontalalignment','center',...
-    'rotation',90,'fontsize',20)
-        text(arrow_pos,mid_pos,'\rightarrow','fontsize',20,'horizontalalignment','left','fontweight', 'bold')
-    else
-        
-        % Show mesial tempora;
-        mid_pos = 19;
-        text(line_pos,mid_pos,'Mesial\newlinetemporal','horizontalalignment','center',...
-    'rotation',90,'fontsize',20)
-        text(arrow_pos,mid_pos,'\rightarrow','fontsize',20,'horizontalalignment','left','fontweight', 'bold')
-        
-        % show lateral temporal
-        mid_pos = 43;
-        text(line_pos,mid_pos,'Lateral\newlinetemporal','horizontalalignment','center',...
-    'rotation',90,'fontsize',20)
-    	text(arrow_pos,mid_pos,'\rightarrow','fontsize',20,'horizontalalignment','left','fontweight', 'bold')
-        
-    end
-        
 
     fprintf(fid,[' Across patients, there were on average %1.1f (range %d-%d) anatomical regions '...
         ' (%1.1f when separately counting left and right) with bilateral electrode coverage. '...
@@ -100,8 +57,8 @@ for ia = 1:2
     title('Average connectivity (symmetric coverage only)')
     xlabel('Region')
     set(gca,'fontsize',20)
-    fprintf(fid,[' Visually, in a network averaged across patients, network edges in the hemisphere opposite the SOZ region were '...
-        'stronger than those in the hemisphere of the SOZ region (%sB, brighter colors indicate higher connectivity).</p>'],fig_name);
+    fprintf(fid,[' Visually, in a network averaged across patients, network edges in the hemisphere opposite the SOZ were '...
+        'stronger than those in the hemisphere of the SOZ (%sB, brighter colors indicate higher connectivity).</p>'],fig_name);
 
     % Show tests
     %need TO ADD N FOR EACH TEST
@@ -109,12 +66,12 @@ for ia = 1:2
     stats = paired_plot(atlas_out.soz_all,'Connectivity',{'to SOZ','to contralateral region'});
     title({'Connectivity','to SOZ vs. contralateral'})
     set(gca,'fontsize',20)
-    fprintf(fid,['<p>We compared the average connectivity to the SOZ region with that to the '...
-        'region contralateral to the SOZ. We included patients who had electrode coverage of both the SOZ region '...
+    fprintf(fid,['<p>We compared the average connectivity to the SOZ with that to the '...
+        'region contralateral to the SOZ. We included patients who had electrode coverage of both the SOZ '...
         'and the contralateral region in this analysis (%d patients).'],...
         atlas_out.n_analyses.n_soz_all);
 
-    fprintf(fid,[' The average connectivity to the SOZ region (median %s) was lower than that to '...
+    fprintf(fid,[' The average connectivity to the SOZ (median %s) was lower than that to '...
         ' the region contralateral to the SOZ (median %s) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (%sC).</p>'],...
         pretty_exp_html(stats.medians(1)),pretty_exp_html(stats.medians(2)),stats.Tpos,get_p_html(stats.pval),fig_name);
 
@@ -137,7 +94,7 @@ for ia = 1:2
     stats = paired_plot(atlas_out.soz_intra,'Intrinsic connectivity',{'in SOZ','in contralateral region'},1);
     title({'Intrinsic connectivity','in SOZ vs contralateral region'})
     set(gca,'fontsize',20)
-    fprintf(fid,['<p>We next compared the intrinsic connectivity within the SOZ regions '...
+    fprintf(fid,['<p>We next compared the intrinsic connectivity within the SOZ '...
         'and that of the contralateral region. For this analysis we included '...
         'patients whose SOZ spanned at least two atlas regions, and who had electrode coverage '...
         'of these regions and of the contralateral regions (%d patients).'],...
