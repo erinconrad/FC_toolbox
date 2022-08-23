@@ -45,17 +45,21 @@ sub_brain = sub_brain.nbrain_out;
 sub_aal = load([model_folder,'naal_out.mat']);
 sub_aal = sub_aal.naal_out;
 
+    %% Supplemental Figure 2 and 3 - electrode subsampling test
+subsample_elecs_test(sub_brain,sub_aal,plot_folder)
+
 
 %% Prep some general results
 fid = fopen([plot_folder,'results.html'],'a');
 fprintf(fid,['<p>We included all patients who had available electrode localizations (%d patients), although the number '...
     'of patients analyzed varied by analysis, as noted in the results of individual '...
     'analyses. Patients were heterogeneous by age, sex, seizure onset zone localization ',...
-    'and lateralization, and implant strategy (Table 1).</p>'],sum(corr_out.pts_with_any_locs));
+    'and lateralization, and implant strategy (Table 1).</p>'],sum(aal_out.pts_with_any_locs));
 fclose(fid);
 
 if 1
     
+
 
 %% Fig 1 - conceptual fig
 if doing_from_github == 0
@@ -68,8 +72,7 @@ end
 % Prep section in text
 symmetric_cov_figure(brain_out,aal_out,plot_folder)
 
-%% Supplemental Figure 2 and 3 - electrode subsampling test
-subsample_elecs_test(sub_brain,sub_aal,plot_folder)
+
 
 %% Supplemental Fig 4 - coherence (both atlases)
 coherence_plots(brain_out,aal_out,plot_folder,freqs)
