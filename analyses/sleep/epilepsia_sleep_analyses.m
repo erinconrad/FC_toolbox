@@ -51,10 +51,10 @@ sz_out = seizure_time_histogram(disc);
 %% Do sleep models
 fprintf('\nDoing sleep models\n');
 fprintf('\nDoing all electrodes model\n');
-model_out = sleep_models(0,0);
+model_out = sleep_models(0);
 
 fprintf('\nDoing gray matter electrodes model\n');
-model_out_gray = sleep_models(1,0);
+model_out_gray = sleep_models(1);
 
 
 %% Put together
