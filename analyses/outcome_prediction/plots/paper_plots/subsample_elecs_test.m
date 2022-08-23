@@ -1,4 +1,4 @@
-function subsample_elecs_test(brain_out,aal_out,plot_folder,corr_out)
+function subsample_elecs_test(brain_out,aal_out,plot_folder)
 
 
 
@@ -188,16 +188,8 @@ for ia = 1:2
     annotation('textbox',[0.68 0.48 0.1 0.1],'String','E','fontsize',30,'linestyle','none')
 
     print(gcf,[plot_folder,fig_name],'-dpng')
-    
-    if ia == 1
-        fprintf(fid,[' Results were similar when using the AAL rather than the Brainnetome '...
-            'atlas for parcellating brain regions (Supplemental Results; Fig S1).']);
-    end
-    
-    
-    fprintf(fid,[' Results when studying coherence rather than Pearson correlation networks '...
-        'were more heterogeneous, seen for different frequency bands in the two different atlases '...
-        '(Supplemental Results; Fig S2).</p>']);
+
+
     fclose(fid);
 end
 

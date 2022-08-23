@@ -1,12 +1,13 @@
-function [coeff_names,coeff_stats] = sleep_model_bootstrap_stats(just_gray,pre_implant)
+function [coeff_names,coeff_stats] = sleep_model_bootstrap_stats(just_gray)
 
 
 nb = 1e3; % number of bootstrap samples, should be 1e3
 
 %% Establish the fixed effects
-ncoeffs = 4;
+coeff_names_expected = {'vec_rate_sleep','vec_rate_wake','vec_rate_pre',...
+    'vec_rate_post','vec_mri_lesional','vec_concordant_loc','vec_concordant_lat'};
+ncoeffs = length(coeff_names_expected);
 pt_stats = nan(nb,ncoeffs);
-coeff_names_expected = {'vec_rate_sleep','vec_rate_wake','vec_rate_pre','vec_rate_post'};
 
 % Loop over bootstrap samples
 for ib = 1:nb
@@ -14,27 +15,28 @@ for ib = 1:nb
     % wrap in a while loop to retry if funny errors
     while 1
         %% Do the classifier
-        mout = updated_classifier_may2022([],1,[],[],just_gray,pre_implant);
+        mout = classifier_with_preimplant([],[],[],just_gray);
         %{ 
         first argument [] means don't leave any patients out (do bootstrap
-        sampling instead. Second argument 1 means do mixed effects model. 3rd
-        argument [] means not doing the wake vs sleep analysis. 4th argment []
+        sampling instead. 2nd
+        argument [] means not doing the wake vs sleep analysis. 3rd argment []
         means full duration. just_gray indicates whether to do all electrodes
         or only gray matter.
 
         %}
     
         if ~(isfield(mout,'labels'))
-        % If this happens, it means model failed. I don't like this! Retry
+        % If this happens, it means model failed. Retry
             continue
         else
+            assert(~isnan(mout.AUC)) % I don't want any nans because they will mess with my bootstrap analysis
             % accept this model
             break
         end
     end
     
-    coeff_names = mout.model.CoefficientNames(2:5);
-    assert(isequal(coeff_names,coeff_names_expected))
+    coeff_names = mout.model.CoefficientNames(2:8);
+   % assert(isequal(coeff_names,coeff_names_expected)) % dumb error
     
     % Get individual model coefficients
     for ic = 1:ncoeffs

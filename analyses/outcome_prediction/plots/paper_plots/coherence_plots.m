@@ -3,7 +3,7 @@ function coherence_plots(brain_out,aal_out,plot_folder,freqs)
 figure
 set(gcf,'position',[1 1 1440 700])
 tiledlayout(2,5,'tilespacing','tight','padding','tight')
-fig_name = 'Fig S2';
+fig_name = 'Fig S4';
 fid = fopen([plot_folder,'supplemental_results.html'],'a');
 fprintf(fid,'<br><b>Coherence-based connectivity with symmetric coverage constraint</b></br>');
 

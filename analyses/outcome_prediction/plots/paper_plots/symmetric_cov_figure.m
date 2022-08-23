@@ -1,4 +1,4 @@
-function symmetric_cov_figure(brain_out,aal_out,plot_folder,corr_out)
+function symmetric_cov_figure(brain_out,aal_out,plot_folder)
 
 for ia = 1:2
     
@@ -90,7 +90,7 @@ for ia = 1:2
         ' (%1.1f when separately counting left and right) with bilateral electrode coverage. '...
         '%d of %d patients had regions with bilateral electrode coverage (%sA).'],...
         mean(atlas_out.n_coverage.nsymmetric),min(atlas_out.n_coverage.nsymmetric),max(atlas_out.n_coverage.nsymmetric),...
-        mean(atlas_out.n_coverage.nsymmetric)*2,atlas_out.n_coverage.any_symmetric,sum(corr_out.pts_with_any_locs),fig_name);
+        mean(atlas_out.n_coverage.nsymmetric)*2,atlas_out.n_coverage.any_symmetric,sum(atlas_out.pts_with_any_locs),fig_name);
 
     % Show atlas
     nexttile([1 3])
@@ -166,7 +166,7 @@ for ia = 1:2
     
     fprintf(fid,[' Results when studying coherence rather than Pearson correlation networks '...
         'were more heterogeneous, seen for different frequency bands in the two different atlases '...
-        '(Supplemental Results; Fig S2).</p>']);
+        '(Supplemental Results; Fig S4).</p>']);
     fclose(fid);
 end
 

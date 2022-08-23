@@ -28,8 +28,12 @@ symmetric_coverage_tests('aal_bernabei',0)
 % Testing if I get similar result if I subsample electrodes
 nb = 1e2;
 for ib = 1:nb
-   nbrain_out(ib) = symmetric_coverage_tests('brainnetome',1);
-   naal_out(ib) = symmetric_coverage_tests('aal_bernabei',1);
+   a = symmetric_coverage_tests('brainnetome',1);
+   a = rmfield(a,'soz_non_soz_ordered_atlas'); % large, don't need
+   nbrain_out(ib) = a;
+   a = symmetric_coverage_tests('aal_bernabei',1);
+   a = rmfield(a,'soz_non_soz_ordered_atlas'); % large, don't need
+   naal_out(ib) = a;
 end
 save([plot_folder,'nbrain_out.mat'],'nbrain_out')
 save([plot_folder,'naal_out.mat'],'naal_out')
@@ -41,6 +45,6 @@ simpler_classifier('aal_bernabei',n_test_train_splits)
 
 %% Plots
 fprintf('\nGenerating plots...\n');
-do_all_figs(doing_from_github) 
+%do_all_figs(doing_from_github) 
 
 end

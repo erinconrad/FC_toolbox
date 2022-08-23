@@ -1,4 +1,4 @@
-function [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray,pre_implant)
+function [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray)
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -20,7 +20,7 @@ all_soz = out.bin_out.all_is_soz;
 
 
 %% LOO analysis - get distribution of individual patient AUCs
-pt_stats = nan(npts,6); % first 4 are the model coefficients, 5 is AUC, 6 doesn't exist
+pt_stats = nan(npts,8); % first 7 are the model coefficients, 8 is AUC
 pt_specific = cell(npts,3); % model scores, then potential thresholds, then SOZs for each patient
 all_roc = cell(npts,1); % individual patient ROCs
 excluded = zeros(npts,4); % empty soz, empty testing, funny error, one label
@@ -41,7 +41,8 @@ for ip = 1:npts
         excluded(ip,1) = 1;
         continue;
     else
-        mout = updated_classifier_may2022(ip,1,[],[],just_gray,pre_implant);
+        mout = classifier_with_preimplant(ip,[],[],just_gray);
+        %mout = updated_classifier_may2022(ip,1,[],[],just_gray,pre_implant);
         % first argument indicates which patient to be held out as testing
         % data.
         
@@ -60,7 +61,7 @@ for ip = 1:npts
         if ~isfield(mout,'labels'), continue; end
         
         % Get model coefficients
-        for ic = 1:4
+        for ic = 1:7
             pt_stats(ip,ic) = mout.model.Coefficients{ic+1,2}; 
         end
         
@@ -70,9 +71,7 @@ for ip = 1:npts
         all_roc{ip} = curr_roc;
 
         
-        pt_stats(ip,5) = mout.AUC;
-       % pt_stats(ip,6) = mout.PPV;
-       % pt_stats(ip,7) = mout.NPV;
+        pt_stats(ip,8) = mout.AUC;
         
         pt_specific{ip,1} = mout.scores;
         pt_specific{ip,2} = mout.T;

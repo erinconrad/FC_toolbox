@@ -39,6 +39,15 @@ labels = out.all_labels;
 fc = out.all_fc;
 coh = out.all_coh;
 
+%% Get total n for main result n
+any_locs = zeros(npts,1);
+for ip = 1:npts
+   if any(~isnan(out.all_locs{ip}),'all')
+       any_locs(ip) = 1;
+   end
+end
+nout.pts_with_any_locs = (any_locs);
+
 % Soz lats
 soz_lats = out.all_soz_lats;
 right_lat = strcmp(soz_lats,'right');
@@ -466,7 +475,7 @@ if 0
 end
 
 if force_same_num == 1
-    lat_info = []
+    lat_info = [];
     conf_out_spikes = [];
 else
     conf_out_spikes = confusion_matrix(predicted,lats_for_conf,0);

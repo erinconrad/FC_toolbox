@@ -45,10 +45,6 @@ sub_brain = sub_brain.nbrain_out;
 sub_aal = load([model_folder,'naal_out.mat']);
 sub_aal = sub_aal.naal_out;
 
-% Spike-fc corr
-corr_out = load([model_folder,'spike_analysis.mat']);
-corr_out = corr_out.nout;
-
 
 %% Prep some general results
 fid = fopen([plot_folder,'results.html'],'a');
@@ -60,8 +56,6 @@ fclose(fid);
 
 if 1
     
-%% Supplemental Figure 2 - electrode subsampling test
-subsample_elecs_test(sub_brain,sub_aal,plot_folder,corr_out)
 
 %% Fig 1 - conceptual fig
 if doing_from_github == 0
@@ -72,12 +66,15 @@ end
 %% Figure 2 - symmetric coverage test for brainnetome and Supplemental Fig 1 (same but AAL)
 % NEED TO THINK ABOUT N
 % Prep section in text
-symmetric_cov_figure(brain_out,aal_out,plot_folder,corr_out)
+symmetric_cov_figure(brain_out,aal_out,plot_folder)
 
-%% Supplemental Fig 2 - coherence (both atlases)
+%% Supplemental Figure 2 and 3 - electrode subsampling test
+subsample_elecs_test(sub_brain,sub_aal,plot_folder)
+
+%% Supplemental Fig 4 - coherence (both atlases)
 coherence_plots(brain_out,aal_out,plot_folder,freqs)
 
-%% Figure 3 and Figure S3 - confusion matrixes
+%% Figure 3 and Figure S5 - confusion matrixes
 lat_info(1) = brain_out.lat_info;
 lat_info(2) = aal_out.lat_info;
 lat_model_figure(lat_info,plot_folder)
@@ -88,7 +85,7 @@ model_comp_table
 %% Figure 4 - null model
 null_model_conceptual
 
-%% Figure 5 and Fig S4 - model
+%% Figure 5 and Fig S6 - model
 model_figure(brain_model,aal_model,plot_folder,doing_from_github)
 
 %% Table S2 - sEEG vs grid/strip/depth implantation
