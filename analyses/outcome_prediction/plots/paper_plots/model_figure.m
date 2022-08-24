@@ -24,7 +24,7 @@ for ia = 1:2
     else
         fname = 'supplemental_results.html';
         model = aal_model;
-        fig_name = 'Fig S6';
+        fig_name = 'Fig S5';
         fid = fopen([plot_folder,fname],'a');
         fprintf(fid,'<p><br><b>Predicting SOZ - AAL atlas</b></br>');
         fprintf(fid,['We repeated the classification analysis using the AAL atlas '...

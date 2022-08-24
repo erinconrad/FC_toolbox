@@ -45,9 +45,6 @@ sub_brain = sub_brain.nbrain_out;
 sub_aal = load([model_folder,'naal_out.mat']);
 sub_aal = sub_aal.naal_out;
 
-    %% Supplemental Figure 2 and 3 - electrode subsampling test
-subsample_elecs_test(sub_brain,sub_aal,plot_folder)
-
 
 %% Prep some general results
 fid = fopen([plot_folder,'results.html'],'a');
@@ -72,9 +69,11 @@ end
 % Prep section in text
 symmetric_cov_figure(brain_out,aal_out,plot_folder)
 
+%% Supplemental Figure 2 - electrode subsampling test
+subsample_elecs_test(sub_brain,sub_aal,plot_folder)
 
 
-%% Supplemental Fig 4 - coherence (both atlases)
+%% Supplemental Fig 3 - coherence (both atlases)
 coherence_plots(brain_out,aal_out,plot_folder,freqs)
 
 %% Figure 3 and Figure S5 - confusion matrixes

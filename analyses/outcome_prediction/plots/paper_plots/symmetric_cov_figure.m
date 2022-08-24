@@ -166,7 +166,7 @@ for ia = 1:2
     
     fprintf(fid,[' Results when studying coherence rather than Pearson correlation networks '...
         'were more heterogeneous, seen for different frequency bands in the two different atlases '...
-        '(Supplemental Results; Fig S4).</p>']);
+        '(Supplemental Results; Fig S3).</p>']);
     fclose(fid);
 end
 

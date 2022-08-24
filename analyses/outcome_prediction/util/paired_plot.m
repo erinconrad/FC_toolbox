@@ -56,8 +56,8 @@ yl = ylim;
 px = xl(1) + 0.01*(xl(2)-xl(1));
 py = yl(1) + 0.99*(yl(2)-yl(1));
 text(px,py,get_p_text(pval),'verticalalignment','top','fontsize',15)
-legtext1 = sprintf('Higher %s',xlabels{2});
-legtext2 = sprintf('Lower %s',xlabels{2});
+legtext1 = sprintf('Higher %s',strrep(xlabels{2},'\n',''));
+legtext2 = sprintf('Lower %s',strrep(xlabels{2},'\n',''));
 legtext3 = 'Equal';
 
 if ~skip_legend

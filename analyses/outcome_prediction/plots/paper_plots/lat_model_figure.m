@@ -2,7 +2,7 @@ function lat_model_figure(lat_info,plot_folder)
 which_models = 1:3;
 
 main_fig_name = 'Fig 3';
-supp_fig_name = 'Fig S5';
+supp_fig_name = 'Fig S4';
     
 
 for ia = 1:2
