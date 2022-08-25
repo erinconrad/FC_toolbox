@@ -161,6 +161,9 @@ for ia = 1:2
     if ia == 1
         fprintf(fid,[' Results were similar when using the AAL rather than the Brainnetome '...
             'atlas for parcellating brain regions (Supplemental Results; Fig S1).']);
+        fprintf(fid,[' Results were also similar in our supplemental analysis in which we subsampled electrodes to '...
+            'achieve equivalent numbers of electrodes contributing to a given region '...
+            'and its contralateral region (Supplemental Results; Fig S2).']);
     end
     
     

@@ -60,7 +60,7 @@ atlas_nums = atlas_out.atlas_nums;
 names = atlas_out.atlas_names;
 [locs,lats] = lateralize_regions(names,which_atlas);
 atlas = rebuild_atlas(fc,rate,atlas_elec_labels,...
-    atlas_elec_regions,atlas_nums,labels,soz,coh);
+    atlas_elec_regions,atlas_nums,labels,soz,coh,0,locs,lats);
 lr_order = reorder_lr(locs,lats);
 atlas = atlas(lr_order,lr_order,:);
 

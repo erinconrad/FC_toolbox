@@ -13,7 +13,7 @@ for ia = 1:2
         atlas_out = brain_out;
         fid = fopen([plot_folder,'supplemental_results.html'],'a');
         fprintf(fid,'<p><br><b>Testing effect of electrode number on symmetric coverage-Brainnetome atlas</b></br>');
-        
+        tit_text = 'Brainnetome';
         
         fprintf(fid,['We next tested how the number of electrodes in each atlas region affected'...
             ' connectivity results in our symmetric coverage analysis, first using the Brainnetome atlas.']);
@@ -24,6 +24,7 @@ for ia = 1:2
         fprintf(fid,'<p><br><b>Testing effect of electrode number on symmetric coverage - AAL atlas</b></br>');        
         fprintf(fid,['We also tested how the number of electrodes in each atlas region affected'...
             ' connectivity results in our symmetric coverage analysis using the AAL atlas.']);
+        tit_text = 'AAL';
     end
     
     
@@ -55,7 +56,7 @@ for ia = 1:2
     nexttile
     count = count+1;
     stats = paired_plot(soz_all,'Connectivity',{'to SOZ','\nto contralateral region'});
-    title({'Connectivity','to SOZ vs. contralateral'})
+    title({'Connectivity','to SOZ vs. contralateral'},{[tit_text,' atlas']})
     set(gca,'fontsize',20)
     fprintf(fid,[' We compared the average connectivity to the SOZ region with that to the '...
         'region contralateral to the SOZ. ']);
@@ -67,7 +68,7 @@ for ia = 1:2
     nexttile
     count = count+1;
     stats = paired_plot(hemi,'Intra-hemispheric connectivity',{'in SOZ side','in non-SOZ side'},1);
-    title({'Hemispheric connectivity','ipsilateral vs. contralateral to SOZ'})
+    title({'Hemispheric connectivity','ipsilateral vs. contralateral to SOZ'},{[tit_text,' atlas']})
     set(gca,'fontsize',20)
     fprintf(fid,[' We next compared the intra-hemispheric connectivity between '...
         'the side of the SOZ and the contralateral hemisphere.']);
@@ -79,7 +80,7 @@ for ia = 1:2
     nexttile
     count = count+1;
     stats = paired_plot(soz_intra,'Intrinsic connectivity',{'in SOZ','in contralateral region'},1);
-    title({'Intrinsic connectivity','in SOZ vs contralateral region'})
+    title({'Intrinsic connectivity','in SOZ vs contralateral region'},{[tit_text,' atlas']})
     set(gca,'fontsize',20)
     fprintf(fid,[' We next compared the intrinsic connectivity within the SOZ regions '...
         'and that of the contralateral region.']);
@@ -95,7 +96,8 @@ for ia = 1:2
     
 end
 
-fprintf(fid,[' Overall, these results suggest that the number of electrodes contributing to a given '...
+fprintf(fid,[' Overall, the similarity of these results to the primary analysis in which we did not subsample electrodes within a region '...
+    'suggests that the number of electrodes contributing to a given '...
     'region does not have a large influence on the average inter-regional connectivity measurements.<p>']);
 
 % Add annotations
