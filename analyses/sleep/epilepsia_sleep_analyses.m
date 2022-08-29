@@ -74,7 +74,7 @@ out.model_out_gray = model_out_gray;
 save([out_folder,'out.mat'],'out')
 
 %% Do plots
-if 0
+if 1
 fprintf('\nDoing plots\n');
 if ~doing_from_github
     epilepsia_figure1 % this needs a raw data file to run (which is large)
