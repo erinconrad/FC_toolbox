@@ -12,9 +12,6 @@ epilepsia_supplemental_fig1
 
 epilepsia_supplemental_fig2
 
-%epilepsia_supplemental_fig3
-
-%epilepsia_supplemental_table1
 
 %epilepsia_table1 % needs to be done on computer with individual patient
 %files

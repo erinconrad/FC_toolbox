@@ -13,6 +13,7 @@ myColours = [0.1660, 0.540, 0.1880;...
 
 locations = fc_toolbox_locs;
 script_folder = locations.script_folder;
+addpath(genpath(script_folder))
 results_folder = [locations.main_folder,'results/'];
 out_folder1 = [script_folder,'analyses/sleep/data/'];
 

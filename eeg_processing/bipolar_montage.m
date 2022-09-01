@@ -1,5 +1,5 @@
-function [values,clean_labels,bipolar_labels,chs_in_bipolar,which_chs_bipolar,mid_locs,mid_anatomy] =...
-    bipolar_montage(values,chLabels,which_chs,locs,anatomy,name)
+function [values,clean_labels,bipolar_labels,chs_in_bipolar,mid_locs,mid_anatomy] =...
+    bipolar_montage(values,chLabels,locs,anatomy,name)
 
 %{
 This function takes a chunk of multi-channel EEG data, along with channel
@@ -15,12 +15,6 @@ values(:,ich) is defined to be nans.
 nchs = size(values,2);
 chs_in_bipolar = nan(nchs,2);
 old_values = values;
-which_chs_bipolar = [];
-
-%% Input variable handling
-if isempty(which_chs)
-    which_chs = 1:size(values,2);
-end
 
 %% Decompose chLabels
 [clean_labels,elecs,numbers] = decompose_labels(chLabels,name);
@@ -40,6 +34,10 @@ for ch = 1:nchs
 
     % get numerical portion
     label_num = numbers(ch);
+    
+    if label_num > 12
+        error('This might be a grid and so bipolar might be tricky');
+    end
 
     % see if there exists one higher
     label_num_higher = label_num + 1;
@@ -49,12 +47,7 @@ for ch = 1:nchs
         out = old_values(:,ch)-old_values(:,higher_ch);
         bipolar_label = [label,'-',higher_label];
         chs_in_bipolar(ch,:) = [ch,higher_ch];
-        
-        % Only make this a run channel if both members of the bipolar
-        % channel were run channels
-        if ismember(ch,which_chs) && ismember(higher_ch,which_chs)
-            which_chs_bipolar = [which_chs_bipolar;ch];
-        end
+      
         
     elseif strcmp(label,'FZ') % exception for FZ and CZ
         if sum(strcmp(clean_labels(:,1),'CZ')) > 0
@@ -63,9 +56,7 @@ for ch = 1:nchs
             bipolar_label = [label,'-','CZ'];
             chs_in_bipolar(ch,:) = [ch,higher_ch];
             
-            if ismember(ch,which_chs) && ismember(higher_ch,which_chs)
-                which_chs_bipolar = [which_chs_bipolar;ch];
-            end
+          
         end
         
     else
@@ -78,8 +69,6 @@ for ch = 1:nchs
     
     
 end
-
-which_chs_bipolar = unique(which_chs_bipolar);
 
 %% Get location of midpoint between the bipolar channels
 if ~isempty(locs)
