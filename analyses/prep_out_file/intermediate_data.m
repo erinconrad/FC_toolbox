@@ -130,7 +130,9 @@ for j = 1:npts
     leader = out.montage(m).leader_montage;
     mod_midnight = out.mod_midnight;
     coh = out.montage(m).coh;
+    coh_bi = out.montage(1).coh;
     bp = out.montage(m).bp;
+    bp_bi = out.montage(1).bp;
     
     %% Get sleep and wake indices
    
@@ -145,6 +147,7 @@ for j = 1:npts
     
     %% Get average coherence
     avg_coh = nanmean(coh,3);
+    avg_coh_bi = nanmean(coh_bi,3);
     
     
     %% Bipolar networks
@@ -307,7 +310,9 @@ for j = 1:npts
     summ.avg_fc_car_wake = avg_fc_car_wake;
     summ.avg_fc_car_sleep = avg_fc_car_sleep;
     summ.bp = bp;
+    summ.bp_bi = bp_bi;
     summ.avg_coh = avg_coh;
+    summ.avg_coh_bi = avg_coh_bi;
     summ.good_spikes = good_spikes;
     %summ.ge = ge;
 
