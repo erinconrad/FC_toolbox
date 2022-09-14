@@ -36,7 +36,7 @@ for ch = 1:nchs
     label_num = numbers(ch);
     
     if label_num > 12
-        error('This might be a grid and so bipolar might be tricky');
+        fprintf('\nThis might be a grid and so bipolar might be tricky\n');
     end
 
     % see if there exists one higher
