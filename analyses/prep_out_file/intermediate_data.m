@@ -214,7 +214,7 @@ for j = 1:npts
         % Get bipolar labels and locs
         which_chs = 1:length(elec_names);
         [~,~,~,bipolar_pair,~,mid_locs] = ...
-    bipolar_montage(nan(100,length(elec_names)),elec_names,which_chs,locs,[],name);
+    bipolar_montage(nan(100,length(elec_names)),elec_names,locs,[],name);
 
         % Indices of the loc/anatomy names that match the spike labels
         [lia,locb] = ismember(clean_labels,ana_name);
