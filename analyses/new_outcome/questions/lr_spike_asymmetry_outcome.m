@@ -1,6 +1,6 @@
 function lr_spike_asymmetry_outcome
 
-which_atlas = 'brainnetome';
+which_atlas = 'aal';
 which_outcome = 'ilae';
 restrict_mt = 0;
 

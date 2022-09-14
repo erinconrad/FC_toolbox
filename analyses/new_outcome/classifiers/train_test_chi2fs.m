@@ -1,4 +1,4 @@
-function [trueClass,predClass,AUC] = more_general_train_test(T,N,perc_train,model,predictors,response)
+function [trueClass,predClass,AUC] = train_test_chi2fs(T,N,perc_train,model,predictors,response,nscores)
 
 trueClass = cell(N,1);
 predClass = cell(N,1);
@@ -23,10 +23,16 @@ for ib = 1:N
         %if length(unique(Ttest.(response))) == 1, continue; end % try again if only 1 class
         if length(unique(Ttest.(response))) == 1, break; end 
 
+        %% do feature selection on the TRAINING data
+        idx = fscchi2(Ttrain,response);
+        best_predictors = predictors(idx(1:nscores));
+
         %% Train the model
-        tc = model(Ttrain,response,predictors);
+        tc = model(Ttrain,response,best_predictors);
 
-
+        % I don't think I need to restrict the parameters in the testing
+        % data because the model will only USE the ones available from the
+        % model trained on the training data
 
         %% Predict the model on the testing data
         if isfield(tc,'predictFcn')

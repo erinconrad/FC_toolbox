@@ -1,42 +1,23 @@
-function compare_features_laterality
+function T = compare_features_laterality
 
 %{
-I looked at a bunch of features, including:
-- spike rates
-- spike recruitment latency
-- average intra-hemispheric pearson correlation
-- average intra-hemispheric coherence
-- average bandpower
 
-For the most part (excluding some frequency bands), I am seeing a trend
-whereby unilateral patients have differences in these features between the
-left and right. However, if I exclude analysis to only those electrodes in
-mesial temporal region, the effect goes away. I am unaware of any other way
-to avoid spatial sampling bias. I could report these, and also include an
-electrode number asymmetry index, and then build a model to predict
-bilaterality using these features along with electrode number AI, with the
-null model being only electrode number AI? If the full model does not
-outperform the null model, then that would mean all of these other things
-probably just capture sampling?
-
-I should come up with a way to do dimensionality reduction. Could first
-play around with classification learner.
-
-ALSO, THINK ABOUT BIPOLAR REFERENCE. Should be easy if just doing
+- How to do feature selection for binary variables?
+- ALSO, THINK ABOUT BIPOLAR REFERENCE. Should be easy if just doing
 left-right.
 %}
 
-which_atlas = 'brainnetome';
-which_feature = 'enum';
-f = 3;
-restrict_mt = 0;
-spike_min = 0.1;
+%rng(0)
+
+which_atlas = 'aal';
+which_outcome = 'ilae';
+restrict_mt = 0; % make anything outside of MT nans
+spike_min = 0.1; % minimum spikes/min to calculate recruitment latency
 
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 inter_folder = [results_folder,'analysis/new_outcome/data/'];
-data_folder = [locations.main_folder,'data/'];
 
 % add script folder to path
 scripts_folder = locations.script_folder;
@@ -48,15 +29,36 @@ data = data.out;
 
  %% get variables of interest
 good_spikes = data.good_spikes;
+locs = data.all_locs;
 spike_rates = data.all_spikes;
 labels = data.all_labels;
 rl = data.all_rl;
 fc = data.all_fc;
+ilae = data.all_two_year_ilae;
+engel = data.all_two_year_engel;
+surgery = data.all_surgery;
 
 anatomy = data.all_anatomy;
 soz_lats = data.all_soz_lats;
 bp = data.all_bp;
 coh = data.all_coh;
+
+%% Get outcome
+switch which_outcome
+    case 'ilae'
+        outcome = ilae;
+    case 'engel'
+        outcome = engel;
+end
+
+%% Find good and bad outcome
+outcome_num = cellfun(@(x) parse_outcome(x,which_outcome),outcome);
+outcome = outcome_num;
+
+%% Parse surgery
+resection_or_ablation = cellfun(@(x) ...
+    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
+    surgery);
 
 %% Make new variable for electrode nums
 enums = cellfun(@(x) ones(length(x)),spike_rates,'uniformoutput',false);
@@ -123,6 +125,8 @@ mean_lr_spike_rate = cell2mat(mean_lr_spike_rate);
 L = mean_lr_spike_rate(:,1);
 R = mean_lr_spike_rate(:,2);
 spike_ai = asymmetry_index(L,R);
+spikesl = L;
+spikesr = R;
 
 %% RL asymmetry index
 mean_lr_rl = cellfun(@(x,y) [nanmean(x(strcmp(y,'L'))) nanmean(x(strcmp(y,'R')))],...
@@ -154,25 +158,131 @@ mean_lr_num = cellfun(@(x,y) [nansum(x(strcmp(y,'L'))) nansum(x(strcmp(y,'R')))]
     enums,elec_lats,'uniformoutput',false);
 mean_lr_num = cell2mat(mean_lr_num);
 enum_ai = asymmetry_index(mean_lr_num(:,1),mean_lr_num(:,2));
+enuml = mean_lr_num(:,1);
+enumr = mean_lr_num(:,2);
+
+%% Also get weighted dispersion of spikes
+SD = cellfun(@(x,y) weighted_standard_distance(x,y),locs,spike_rates);
+SD(SD>1e10) = nan;
+
+% Also weighted dispersion of electrodes
+SDE = cellfun(@(x) weighted_standard_distance(x,[]),locs);
+SDE(SDE>1e10) = nan;
+
+SDnorm = SD./SDE;
 
 %T = table(bilat,enum_ai,spike_ai);
-
-switch which_feature
-    case 'spikes'
-        unpaired_plot(spike_ai(bilat==0),spike_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
-    case 'bp'
-        unpaired_plot(bp_ai(bilat==0,f),bp_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
-    case 'rl'
-        unpaired_plot(rl_ai(bilat==0),rl_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
-    case 'fc'
-        unpaired_plot(fc_ai(bilat==0),fc_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
-    case 'coh'
-        unpaired_plot(coh_ai(bilat==0,f),coh_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
-    case 'enum'
-        unpaired_plot(enum_ai(bilat==0),enum_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
+if 0
+    which_feature = 'enum'; % only for plotting
+    f = 5; % only for plotting
+    switch which_feature
+        case 'spikes'
+            unpaired_plot(spike_ai(bilat==0),spike_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
+        case 'bp'
+            unpaired_plot(bp_ai(bilat==0,f),bp_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
+        case 'rl'
+            unpaired_plot(rl_ai(bilat==0),rl_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
+        case 'fc'
+            unpaired_plot(fc_ai(bilat==0),fc_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
+        case 'coh'
+            unpaired_plot(coh_ai(bilat==0,f),coh_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
+        case 'enum'
+            unpaired_plot(enum_ai(bilat==0),enum_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
+    end
+    
+    hold off
 end
 
-hold off
+if 1
+    f = 1;
+    figure; set(gcf,'position',[1 496 1440 301]);
+    tiledlayout(1,5)
+    nexttile
+    unpaired_plot(enum_ai(outcome==0),enum_ai(outcome==1),{'Bad','Good'},'Asymmetry index')
+    title('Electrode coverage')
+
+    nexttile
+    unpaired_plot(spike_ai(outcome==0),spike_ai(outcome==1),{'Bad','Good'},'Asymmetry index')
+    title('Spike rate')
+
+    nexttile
+    unpaired_plot(bp_ai(outcome==0,f),bp_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
+    title('Bandpower')
+
+    nexttile
+    unpaired_plot(coh_ai(outcome==0,f),coh_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
+    title('Coherence')
+
+    nexttile
+    unpaired_plot(rl_ai(outcome==0),rl_ai(outcome==1),{'Bad','Good'},'Asymmetry index')
+    title('Spike timing')
+
+end
+
+%% Table
+T = table(outcome,bilat,enum_ai,spike_ai,fc_ai,bp_ai,coh_ai,SD,SDE,SDnorm,enuml,enumr,spikesl,spikesr);
+%T = table(outcome,enuml,enumr,spikesl,spikesr);
+T = splitvars(T);
+
+%% Model to predict bilaterality
+if  0
+% Model parameters
+N = 1e2;
+perc_train = 2/3;
+response = 'bilat';
+model = @(x,y,z) fitglm(x,'ResponseVar',y,'PredictorVars',z,'Distribution','binomial');
+
+% Define predictors
+null_predictors = {'spike_ai'};
+full_predictors = {'bp_ai_1'};
+
+% Remove rows with missing predictors or response
+missing_response = ismissing(T.(response));
+missing_predictors = cellfun(@(x) ismissing(T.(x)),full_predictors,'UniformOutput',false);
+missing_predictors = horzcat(missing_predictors{:});
+missing_anything = any([missing_predictors,missing_response],2);
+T(missing_anything,:) = [];
+
+% Null model
+[trueClass_null,predClass_null,AUC_null] = more_general_train_test(T,N,perc_train,model,null_predictors,response);
+
+
+% FUll model
+[trueClass,predClass,AUC] = more_general_train_test(T,N,perc_train,model,full_predictors,response);
+end
+
+
+
+%% Model to predict outcome
+% Model parameters
+N = 1e2;
+perc_train = 2/3;
+response = 'outcome';
+model = @(x,y,z) fitglm(x,'ResponseVar',y,'PredictorVars',z,'Distribution','binomial');
+
+% Define predictors
+null_predictors = {'spike_ai'};
+full_predictors = {'spike_ai'};
+
+% Remove rows with missing predictors or response
+missing_response = ismissing(T.(response));
+missing_predictors = cellfun(@(x) ismissing(T.(x)),full_predictors,'UniformOutput',false);
+missing_predictors = horzcat(missing_predictors{:});
+missing_anything = any([missing_predictors,missing_response],2);
+
+% also remove those without resection/ablation
+%T(missing_anything | ~resection_or_ablation,:) = [];
+T(~resection_or_ablation,:) = [];
+
+% Null model
+[trueClass_null,predClass_null,AUC_null] = more_general_train_test(T,N,perc_train,model,null_predictors,response);
+
+
+% FUll model
+[trueClass,predClass,AUC] = more_general_train_test(T,N,perc_train,model,full_predictors,response);
+
+nanmean(AUC_null)
+nanmean(AUC)
 
 
 end
@@ -209,3 +319,4 @@ function x = rm_few_spikes(x,y,min_rate)
 x(y<min_rate) = nan;
 
 end
+

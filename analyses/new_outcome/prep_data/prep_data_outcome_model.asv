@@ -73,7 +73,7 @@ for p = 1:npts
     all_good_spikes(p) = good_spikes;
     anatomy = summ.anatomy;
     bp = summ.bp;
-    bipolar_locs = summ.bipolar_locs;
+    bipolar_locs = summ.biploar_locs;
     bipolar_fc = summ.avg_fc_bi;
     
     all_names{p} = name;
@@ -201,8 +201,6 @@ out.all_brainnetome = all_brainnetome;
 out.aal_names = aal.atlas_names;
 out.brainnetome_names = brainnetome.atlas_names;
 out.all_bp = all_bp;
-out.all_bipolar_fc = all_bipolar_fc;
-out.all_bipolar_locs = all_bipolar_locs;
 
 
 %% Save
