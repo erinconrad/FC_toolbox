@@ -94,6 +94,9 @@ for p = 1:npts
     % binary SOZ identification
     soz_bin = zeros(length(labels),1);
     soz_bin(ismember(labels,soz_labels)) = 1;
+
+    %% Unwrap bipolar coh
+    bipolar_coh = wrap_or_unwrap_adjacency_fc_toolbox(bipolar_coh);
     
     %% Remove non-intracranial
     ekg = find_non_intracranial(labels);
