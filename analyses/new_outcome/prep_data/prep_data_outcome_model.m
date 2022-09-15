@@ -49,6 +49,8 @@ all_ablate_lat = cell(npts,1);
 all_ablate_loc = cell(npts,1);
 all_bipolar_fc = cell(npts,1);
 all_bipolar_locs = cell(npts,1);
+all_bipolar_coh = cell(npts,1);
+all_bipolar_bp = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -75,6 +77,8 @@ for p = 1:npts
     bp = summ.bp;
     bipolar_locs = summ.bipolar_locs;
     bipolar_fc = summ.avg_fc_bi;
+    bipolar_coh = summ.avg_coh_bi;
+    bipolar_bp = summ.bp_bi;
     
     all_names{p} = name;
     
@@ -107,6 +111,8 @@ for p = 1:npts
     bp(ekg,:,:) = [];
     bipolar_locs(ekg,:) = [];
     bipolar_fc(ekg,:)=[]; bipolar_fc(:,ekg) = [];
+    bipolar_coh(ekg,:,:) = []; bipolar_coh(:,ekg,:) = [];
+    bipolar_bp(ekg,:,:) = [];
     
     
     %% SOZ bin
@@ -141,6 +147,8 @@ for p = 1:npts
     all_bp{p} = nanmean(bp,3);
     all_bipolar_fc{p} = bipolar_fc;
     all_bipolar_locs{p} = bipolar_locs;
+    all_bipolar_bp{p} = nanmean(bipolar_bp,3);
+    all_bipolar_coh{p} = bipolar_coh;
     
     %% Correlate average ns and spikes
     avg_corr_sp = corr(avg_spikes,avg_ns,'rows','pairwise','type','spearman');
@@ -203,6 +211,8 @@ out.brainnetome_names = brainnetome.atlas_names;
 out.all_bp = all_bp;
 out.all_bipolar_fc = all_bipolar_fc;
 out.all_bipolar_locs = all_bipolar_locs;
+out.all_bipolar_bp = all_bipolar_bp;
+out.all_bipolar_coh = all_bipolar_coh;
 
 
 %% Save
