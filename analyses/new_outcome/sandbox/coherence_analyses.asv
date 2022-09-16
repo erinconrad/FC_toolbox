@@ -1,0 +1,204 @@
+function coherence_analyses
+
+which_atlas = 'brainnetome';
+which_outcome = 'ilae';
+which_montage = 'bipolar';
+which_thing = 'coh';
+
+%% Get file locs
+locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+inter_folder = [results_folder,'analysis/new_outcome/data/'];
+
+% add script folder to path
+scripts_folder = locations.script_folder;
+addpath(genpath(scripts_folder));
+
+%% Load data file
+data = load([inter_folder,'main_out.mat']);
+data = data.out;
+
+%% get variables of interest
+ilae = data.all_two_year_ilae;
+engel = data.all_two_year_engel;
+surgery = data.all_surgery;
+soz_lats = data.all_soz_lats;
+
+
+switch which_montage
+    case 'bipolar'
+        coh = data.all_bipolar_coh;
+        fc = data.all_bipolar_fc;
+    case 'car'  
+        coh = data.all_coh;
+        fc = data.all_fc;
+end
+
+%% get atlas
+switch which_atlas
+    case 'aal'
+        atlas_names = data.aal_names;
+        switch which_montage
+            case 'car'
+                atlas = data.all_aal;
+            case 'bipolar'
+                atlas = data.all_bipolar_aal;
+        end
+    case 'brainnetome'
+        atlas_names = data.brainnetome_names;
+        switch which_montage
+            case 'car'
+                atlas = data.all_brainnetome;   
+            case 'bipolar'
+                atlas = data.all_bipolar_brainnetome;
+        end        
+end
+
+%% Get outcome
+switch which_outcome
+    case 'ilae'
+        outcome = ilae;
+    case 'engel'
+        outcome = engel;
+end
+
+%% Find good and bad outcome
+outcome_num = cellfun(@(x) parse_outcome(x,which_outcome),outcome);
+outcome = outcome_num;
+
+%% Parse surgery
+resection_or_ablation = cellfun(@(x) ...
+    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
+    surgery);
+
+%% Define laterality
+old_bilat = strcmp(soz_lats,'bilateral') | strcmp(soz_lats,'diffuse');
+unilat = strcmp(soz_lats,'left') | strcmp(soz_lats,'right');
+bilat = nan(length(old_bilat),1);
+bilat(old_bilat) = 1;
+bilat(unilat) = 0;
+right_lat = strcmp(soz_lats,'right');
+left_lat = strcmp(soz_lats,'left');
+
+%% Decide thing
+switch which_thing
+    case 'fc'
+        thing = fc;
+    case 'coh'
+        thing = coh;
+end
+
+%% Put into atlas
+thing_atlas = convert_to_atlas(thing,atlas,atlas_names);
+
+%% Atlas lateralizations
+[locs,lats] = lateralize_regions(atlas_names,which_atlas);
+left = strcmp(lats,'L');
+right = strcmp(lats,'R');
+neither_lat = ~left & ~right;
+
+% confirm atlas has as many on right as left
+assert(sum(left)==sum(right));
+
+%% Re-order atlas to be left then right then neither
+lr_order = reorder_lr(locs,lats); % get the order
+
+% Put everything into this order
+left = left(lr_order);
+right = right(lr_order);
+neither_lat = neither_lat(lr_order);
+atlas_names = atlas_names(lr_order);
+thing_atlas = thing_atlas(:,lr_order,lr_order,:);
+locs = locs(lr_order);
+lats = lats(lr_order);
+
+
+%% index of contralateral region for each region
+contra_index = nan(size(left));
+contra_index(1:sum(left)) = ([1:sum(left)])'+sum(left); % the right sided ones start after left, so contralateral ones for the first nleft are these
+contra_index(sum(left)+1:sum(left)*2) = ([1:sum(left)])';
+
+% make sure first half locs are same as last half locs
+assert(isequal(locs(1:sum(left)),locs(sum(left)+1:sum(left)*2)))
+assert(isequal(locs(contra_index(1:sum(left))),locs(contra_index(sum(left)+1:sum(left)*2))))
+
+%% Build symmetric coverage atlas
+[thing_symm_atlas,all_bilateral] = symmetric_coverage_atlas(thing_atlas,locs,lats);
+npts = size(thing_atlas,1);
+dims = ndims(thing_atlas);
+switch dims
+    case 3
+        hemi = nan(npts,2);
+    case 4
+        hemi = nan(npts,2,size(thing_atlas,4));
+end
+
+for ip = 1:npts
+    if right_lat(ip) == 1
+        ipsi_lats = strcmp(lats,'R');
+        contra_lats = strcmp(lats,'L');
+    elseif left_lat(ip) == 1
+        ipsi_lats = strcmp(lats,'L');
+        contra_lats = strcmp(lats,'R');
+    else
+        continue;
+    end
+
+    
+    switch dims
+        case 3
+            hemi(ip,:) = [nanmean(thing_symm_atlas(ip,ipsi_lats,ipsi_lats),'all'),...
+            nanmean(thing_symm_atlas(ip,contra_lats,contra_lats),'all')];
+        case 4
+            hemi(ip,:,:) = [nanmean(thing_symm_atlas(ip,ipsi_lats,ipsi_lats,:),[2 3]),...
+            nanmean(thing_symm_atlas(ip,contra_lats,contra_lats,:),[2 3])];
+        
+    end
+
+end
+
+if 0
+figure
+switch dims
+    case 3
+        paired_plot(hemi,'thing',{'soz','non-soz'});
+    case 4
+        nfreq = size(hemi,3);
+        for f = 1:nfreq
+            nexttile
+            paired_plot(hemi(:,:,f),'thing',{'soz','non-soz'});
+        end
+end
+end
+
+%% Restrict to mt
+% Define names corresponding to mesial temporal
+switch which_atlas
+    case 'aal'
+        mt_names = {'Hippocampus','Amygdala'};
+    case 'brainnetome'
+        mt_names = {'Amyg','Hipp'};
+end
+
+mt = contains(atlas_names,mt_names);
+mt_symm_thing = thing_symm_atlas;
+
+switch dims
+    case 3
+        mt_symm_thing(:,~mt,:) = nan; mt_symm_thing(:,:,~mt) = nan;
+        mt_lr = nan(npts,2);
+        mt_lr(:,1) = squeeze(nanmean(mt_symm_thing(:,strcmp(lats,'L'),strcmp(lats,'L')),[2 3]));
+        mt_lr(:,2) = squeeze(nanmean(mt_symm_thing(:,strcmp(lats,'R'),strcmp(lats,'R')),[2 3]));
+
+    case 4
+        mt_symm_thing(:,~mt,:,:) = nan; mt_symm_thing(:,:,~mt,:) = nan;
+        mt_lr = nan(npts,2,size(mt_symm_thing,4));
+        mt_lr(:,1,:) = squeeze(nanmean(mt_symm_thing(:,strcmp(lats,'L'),strcmp(lats,'L'),:),[2 3]));
+        mt_lr(:,2,:) = squeeze(nanmean(mt_symm_thing(:,strcmp(lats,'R'),strcmp(lats,'R'),:),[2 3]));
+        
+end
+
+% left and right intra mt
+
+
+end

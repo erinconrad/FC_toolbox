@@ -72,10 +72,11 @@ switch which_atlas
     case 'aal'
         atlas = data.all_aal;
         atlas_names = data.aal_names;
+        bi_atlas = data.all_bipolar_aal;
     case 'brainnetome'
         atlas = data.all_brainnetome;
         atlas_names = data.brainnetome_names;
-    
+        bi_atlas = data.all_bipolar_brainnetome;
 end
 
 %% Define bilateral patients
@@ -102,6 +103,9 @@ else
     atlas_lat = lateralize_regions_simple(atlas_names);
     elec_lats = cellfun(@(x) elec_broad(x,atlas_names,atlas_lat), atlas,'uniformoutput',false);
     elec_locs = cellfun(@(x) elec_broad(x,atlas_names,atlas_names), atlas,'uniformoutput',false);
+
+    bi_elec_lats = cellfun(@(x) elec_broad(x,atlas_names,atlas_lat), bi_atlas,'uniformoutput',false);
+    bi_elec_locs = cellfun(@(x) elec_broad(x,atlas_names,atlas_names), bi_atlas,'uniformoutput',false);
 end
 
 %% Restrict to mesial temporal?
@@ -116,6 +120,8 @@ if restrict_mt
     fc = cellfun(@(x,y) assign_x_nan_where_y_0(x,y), fc,mt,'uniformoutput',false);
     coh = cellfun(@(x,y) assign_x_nan_where_y_0(x,y), coh,mt,'uniformoutput',false);
     enums = cellfun(@(x,y) assign_x_nan_where_y_0(x,y), enums,mt,'uniformoutput',false);
+    bi_fc = cellfun(@(x,y) assign_x_nan_where_y_0(x,y), bi_fc,mt,'uniformoutput',false);
+    bi_coh = cellfun(@(x,y) assign_x_nan_where_y_0(x,y), bi_coh,mt,'uniformoutput',false);
 end
 
 
@@ -151,11 +157,24 @@ nanmean(x(strcmp(y,'R'),strcmp(y,'R')),'all')],...
 mean_lr_fc = cell2mat(mean_lr_fc);
 fc_ai = asymmetry_index(mean_lr_fc(:,1),mean_lr_fc(:,2));
 
+%% Bi FC
+mean_lr_bi_fc = cellfun(@(x,y) [nanmean(x(strcmp(y,'L'),strcmp(y,'L')),'all') ...
+nanmean(x(strcmp(y,'R'),strcmp(y,'R')),'all')],...
+    bi_fc,bi_elec_lats,'uniformoutput',false);
+mean_lr_bi_fc = cell2mat(mean_lr_bi_fc);
+bi_fc_ai = asymmetry_index(mean_lr_bi_fc(:,1),mean_lr_bi_fc(:,2));
+
 %% Coh
 mean_lr_coh = cellfun(@(x,y) [squeeze(nanmean(x(strcmp(y,'L'),strcmp(y,'L'),:),[1 2])) squeeze(nanmean(x(strcmp(y,'R'),strcmp(y,'R'),:),[1 2]))],...
     coh,elec_lats,'uniformoutput',false);
 mean_lr_coh2 = cat(3,mean_lr_coh{:});
 coh_ai = asymmetry_index(squeeze(mean_lr_coh2(:,1,:))',squeeze(mean_lr_coh2(:,2,:))');
+
+%% Bi Coh
+mean_lr_bi_coh = cellfun(@(x,y) [squeeze(nanmean(x(strcmp(y,'L'),strcmp(y,'L'),:),[1 2])) squeeze(nanmean(x(strcmp(y,'R'),strcmp(y,'R'),:),[1 2]))],...
+    bi_coh,bi_elec_lats,'uniformoutput',false);
+mean_lr_bi_coh2 = cat(3,mean_lr_bi_coh{:});
+bi_coh_ai = asymmetry_index(squeeze(mean_lr_bi_coh2(:,1,:))',squeeze(mean_lr_bi_coh2(:,2,:))');
 
 %% Enum
 mean_lr_num = cellfun(@(x,y) [nansum(x(strcmp(y,'L'))) nansum(x(strcmp(y,'R')))],...
@@ -164,6 +183,9 @@ mean_lr_num = cell2mat(mean_lr_num);
 enum_ai = asymmetry_index(mean_lr_num(:,1),mean_lr_num(:,2));
 enuml = mean_lr_num(:,1);
 enumr = mean_lr_num(:,2);
+
+%% Enum total
+enum_tot = enuml+enumr;
 
 %% Also get weighted dispersion of spikes
 SD = cellfun(@(x,y) weighted_standard_distance(x,y),locs,spike_rates);
@@ -177,7 +199,7 @@ SDnorm = SD./SDE;
 
 %T = table(bilat,enum_ai,spike_ai);
 if 0
-    which_feature = 'enum'; % only for plotting
+    which_feature = 'fc_bi'; % only for plotting
     f = 5; % only for plotting
     switch which_feature
         case 'spikes'
@@ -190,6 +212,10 @@ if 0
             unpaired_plot(fc_ai(bilat==0),fc_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
         case 'coh'
             unpaired_plot(coh_ai(bilat==0,f),coh_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
+        case 'bi_fc'
+            unpaired_plot(bi_fc_ai(bilat==0),bi_fc_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
+        case 'bi_coh'
+            unpaired_plot(bi_coh_ai(bilat==0,f),bi_coh_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
         case 'enum'
             unpaired_plot(enum_ai(bilat==0),enum_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
     end
@@ -197,10 +223,18 @@ if 0
     hold off
 end
 
-if 1
-    f = 1;
+if 0
+    f = 6;
     figure; set(gcf,'position',[1 496 1440 301]);
     tiledlayout(1,5)
+    nexttile
+    unpaired_plot(bp_ai(outcome==0,f),bp_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
+    title('Bandpower')
+
+    nexttile
+    unpaired_plot(coh_ai(outcome==0,f),coh_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
+    title('Coherence')
+    
     nexttile
     unpaired_plot(enum_ai(outcome==0),enum_ai(outcome==1),{'Bad','Good'},'Asymmetry index')
     title('Electrode coverage')
@@ -210,23 +244,21 @@ if 1
     title('Spike rate')
 
     nexttile
-    unpaired_plot(bp_ai(outcome==0,f),bp_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
-    title('Bandpower')
-
-    nexttile
-    unpaired_plot(coh_ai(outcome==0,f),coh_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
-    title('Coherence')
-
-    nexttile
-    unpaired_plot(rl_ai(outcome==0),rl_ai(outcome==1),{'Bad','Good'},'Asymmetry index')
-    title('Spike timing')
-
+    unpaired_plot(bi_coh_ai(outcome==0,f),bi_coh_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
+    title('Bipolar Coherence')
+    
+    %{
+    unpaired_plot(enum_tot(outcome==0),enum_tot(outcome==1),{'Bad','Good'},'Total number')
+    title('Electrodes')
+    %}
 end
 
 %% Table
-T = table(outcome,bilat,enum_ai,spike_ai,fc_ai,bp_ai,coh_ai,SD,SDE,SDnorm,enuml,enumr,spikesl,spikesr);
+%T = table(outcome,bilat,enum_ai,spike_ai,fc_ai,bp_ai,coh_ai,SD,SDE,SDnorm,enuml,enumr,spikesl,spikesr);
 %T = table(outcome,enuml,enumr,spikesl,spikesr);
+T = table(outcome,enum_ai,bi_coh_ai,spike_ai);
 T = splitvars(T);
+
 
 %% Model to predict bilaterality
 if  0
@@ -265,7 +297,7 @@ response = 'outcome';
 model = @(x,y,z) fitglm(x,'ResponseVar',y,'PredictorVars',z,'Distribution','binomial');
 
 % Define predictors
-null_predictors = {'spike_ai'};
+null_predictors = {'enum_ai'};
 full_predictors = {'spike_ai'};
 
 % Remove rows with missing predictors or response
