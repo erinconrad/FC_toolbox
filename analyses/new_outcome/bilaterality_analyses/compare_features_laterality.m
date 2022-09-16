@@ -42,6 +42,10 @@ anatomy = data.all_anatomy;
 soz_lats = data.all_soz_lats;
 bp = data.all_bp;
 coh = data.all_coh;
+bi_fc = data.all_bipolar_fc;
+bi_coh = data.all_bipolar_coh;
+bi_locs = data.all_bipolar_locs;
+
 
 %% Get outcome
 switch which_outcome

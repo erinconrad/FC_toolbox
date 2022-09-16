@@ -51,6 +51,8 @@ all_bipolar_fc = cell(npts,1);
 all_bipolar_locs = cell(npts,1);
 all_bipolar_coh = cell(npts,1);
 all_bipolar_bp = cell(npts,1);
+all_bipolar_aal = cell(npts,1);
+all_bipolar_brainnetome = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -130,6 +132,13 @@ for p = 1:npts
     % Brainnetome
     brainnetome = find_atlas_parcellations(locs,'brainnetome');
     all_brainnetome{p} = brainnetome.enames;
+
+    %% Bipolar atlas parcelations
+    bi_aal = find_atlas_parcellations(bipolar_locs,'aal');
+    all_bipolar_aal{p} = bi_aal.enames;
+
+    bi_brainnetome = find_atlas_parcellations(bipolar_locs,'brainnetome');
+    all_bipolar_brainnetome{p} = bi_brainnetome.enames;
     
     %% Compare atlas parcellations to clinical anatomical localizations
     if 0
@@ -216,6 +225,8 @@ out.all_bipolar_fc = all_bipolar_fc;
 out.all_bipolar_locs = all_bipolar_locs;
 out.all_bipolar_bp = all_bipolar_bp;
 out.all_bipolar_coh = all_bipolar_coh;
+out.all_bipolar_aal = all_bipolar_aal;
+out.all_bipolar_brainnetome = all_bipolar_brainnetome;
 
 
 %% Save
