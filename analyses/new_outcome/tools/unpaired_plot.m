@@ -20,5 +20,6 @@ ylnew = [yl(1) yl(1)+(yl(2)-yl(1))*1.2];
 ylim(ylnew)
 plot([1 2],[ybar,ybar],'k','linewidth',2)
 text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
+set(gca,'fontsize',15)
 
 end

@@ -9,10 +9,12 @@ left-right.
 
 %rng(0)
 
-which_atlas = 'aal';
+which_atlas = 'brainnetome';
 which_outcome = 'ilae';
 restrict_mt = 0; % make anything outside of MT nans
 spike_min = 0.1; % minimum spikes/min to calculate recruitment latency
+
+coherence_freqs = {'delta','theta','alpha','beta','gamma','broadband'};
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -124,6 +126,13 @@ if restrict_mt
     bi_coh = cellfun(@(x,y) assign_x_nan_where_y_0(x,y), bi_coh,mt,'uniformoutput',false);
 end
 
+%% Enum
+mean_lr_num = cellfun(@(x,y) [nansum(x(strcmp(y,'L'))) nansum(x(strcmp(y,'R')))],...
+    enums,elec_lats,'uniformoutput',false);
+mean_lr_num = cell2mat(mean_lr_num);
+enum_ai = asymmetry_index(mean_lr_num(:,1),mean_lr_num(:,2));
+enuml = mean_lr_num(:,1);
+enumr = mean_lr_num(:,2);
 
 %% Get spike asymmetry index
 % Get average left and right spike rates
@@ -137,6 +146,8 @@ R = mean_lr_spike_rate(:,2);
 spike_ai = asymmetry_index(L,R);
 spikesl = L;
 spikesr = R;
+
+
 
 %% RL asymmetry index
 mean_lr_rl = cellfun(@(x,y) [nanmean(x(strcmp(y,'L'))) nanmean(x(strcmp(y,'R')))],...
@@ -176,13 +187,7 @@ mean_lr_bi_coh = cellfun(@(x,y) [squeeze(nanmean(x(strcmp(y,'L'),strcmp(y,'L'),:
 mean_lr_bi_coh2 = cat(3,mean_lr_bi_coh{:});
 bi_coh_ai = asymmetry_index(squeeze(mean_lr_bi_coh2(:,1,:))',squeeze(mean_lr_bi_coh2(:,2,:))');
 
-%% Enum
-mean_lr_num = cellfun(@(x,y) [nansum(x(strcmp(y,'L'))) nansum(x(strcmp(y,'R')))],...
-    enums,elec_lats,'uniformoutput',false);
-mean_lr_num = cell2mat(mean_lr_num);
-enum_ai = asymmetry_index(mean_lr_num(:,1),mean_lr_num(:,2));
-enuml = mean_lr_num(:,1);
-enumr = mean_lr_num(:,2);
+
 
 %% Enum total
 enum_tot = enuml+enumr;
@@ -199,59 +204,88 @@ SDnorm = SD./SDE;
 
 %T = table(bilat,enum_ai,spike_ai);
 if 0
-    which_feature = 'fc_bi'; % only for plotting
-    f = 5; % only for plotting
-    switch which_feature
-        case 'spikes'
-            unpaired_plot(spike_ai(bilat==0),spike_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
-        case 'bp'
-            unpaired_plot(bp_ai(bilat==0,f),bp_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
-        case 'rl'
-            unpaired_plot(rl_ai(bilat==0),rl_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
-        case 'fc'
-            unpaired_plot(fc_ai(bilat==0),fc_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
-        case 'coh'
-            unpaired_plot(coh_ai(bilat==0,f),coh_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
-        case 'bi_fc'
-            unpaired_plot(bi_fc_ai(bilat==0),bi_fc_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
-        case 'bi_coh'
-            unpaired_plot(bi_coh_ai(bilat==0,f),bi_coh_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index')
-        case 'enum'
-            unpaired_plot(enum_ai(bilat==0),enum_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index')
-    end
-    
-    hold off
+    figure; set(gcf,'Position',[100 100 1100 300])
+    tiledlayout(1,4)
+    nexttile
+    unpaired_plot(fc_ai(bilat==0),fc_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index'); title('Pearson correlation-CAR')
+    nexttile
+    unpaired_plot(bi_fc_ai(bilat==0),bi_fc_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index'); title('Pearson correlation-bipolar')
+    nexttile
+    unpaired_plot(spike_ai(bilat==0),spike_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index'); title('Spikes')
+    nexttile
+    unpaired_plot(enum_ai(bilat==0),enum_ai(bilat==1),{'Unilateral','Bilateral'},'Asymmetry index'); title('Electrode number')
 end
 
 if 0
-    f = 6;
-    figure; set(gcf,'position',[1 496 1440 301]);
-    tiledlayout(1,5)
-    nexttile
-    unpaired_plot(bp_ai(outcome==0,f),bp_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
-    title('Bandpower')
-
-    nexttile
-    unpaired_plot(coh_ai(outcome==0,f),coh_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
-    title('Coherence')
-    
-    nexttile
-    unpaired_plot(enum_ai(outcome==0),enum_ai(outcome==1),{'Bad','Good'},'Asymmetry index')
-    title('Electrode coverage')
-
-    nexttile
-    unpaired_plot(spike_ai(outcome==0),spike_ai(outcome==1),{'Bad','Good'},'Asymmetry index')
-    title('Spike rate')
-
-    nexttile
-    unpaired_plot(bi_coh_ai(outcome==0,f),bi_coh_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index')
-    title('Bipolar Coherence')
-    
-    %{
-    unpaired_plot(enum_tot(outcome==0),enum_tot(outcome==1),{'Bad','Good'},'Total number')
-    title('Electrodes')
-    %}
+    figure; set(gcf,'Position',[100 100 1400 600])
+    tiledlayout(2,6)
+    for f = 1:6
+        nexttile
+        unpaired_plot(coh_ai(bilat==0,f),coh_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index');
+        title(['CAR ',coherence_freqs{f}]);
+    end
+    for f = 1:6
+        nexttile
+        unpaired_plot(bi_coh_ai(bilat==0,f),bi_coh_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index');
+        title(['Bipolar ',coherence_freqs{f}]);
+    end
 end
+
+if 0
+    figure; set(gcf,'Position',[100 100 1300 300])
+    tiledlayout(1,5)
+    for f = 1:5
+        nexttile
+        unpaired_plot(bp_ai(bilat==0,f),bp_ai(bilat==1,f),{'Unilateral','Bilateral'},'Asymmetry index');
+        title(['CAR ',coherence_freqs{f}]);
+    end
+
+end
+
+
+
+
+%% Outcome tables
+if 0
+    figure; set(gcf,'Position',[100 100 1100 300])
+    tiledlayout(1,4)
+    nexttile
+    unpaired_plot(fc_ai(outcome==0),fc_ai(outcome==1),{'Bad','Good'},'Asymmetry index'); title('Pearson correlation-CAR')
+    nexttile
+    unpaired_plot(bi_fc_ai(outcome==0),bi_fc_ai(outcome==1),{'Bad','Good'},'Asymmetry index'); title('Pearson correlation-bipolar')
+    nexttile
+    unpaired_plot(spike_ai(outcome==0),spike_ai(outcome==1),{'Bad','Good'},'Asymmetry index'); title('Spikes')
+    nexttile
+    unpaired_plot(enum_ai(outcome==0),enum_ai(outcome==1),{'Bad','Good'},'Asymmetry index'); title('Electrode number')
+end
+
+if 0
+    figure; set(gcf,'Position',[100 100 1400 600])
+    tiledlayout(2,6)
+    for f = 1:6
+        nexttile
+        unpaired_plot(coh_ai(outcome==0,f),coh_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index');
+        title(['CAR ',coherence_freqs{f}]);
+    end
+    for f = 1:6
+        nexttile
+        unpaired_plot(bi_coh_ai(outcome==0,f),bi_coh_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index');
+        title(['Bipolar ',coherence_freqs{f}]);
+    end
+end
+
+if 1
+    figure; set(gcf,'Position',[100 100 1300 300])
+    tiledlayout(1,5)
+    for f = 1:5
+        nexttile
+        unpaired_plot(bp_ai(outcome==0,f),bp_ai(outcome==1,f),{'Bad','Good'},'Asymmetry index');
+        title(['CAR ',coherence_freqs{f}]);
+    end
+
+end
+
+
 
 %% Table
 %T = table(outcome,bilat,enum_ai,spike_ai,fc_ai,bp_ai,coh_ai,SD,SDE,SDnorm,enuml,enumr,spikesl,spikesr);
@@ -298,7 +332,7 @@ model = @(x,y,z) fitglm(x,'ResponseVar',y,'PredictorVars',z,'Distribution','bino
 
 % Define predictors
 null_predictors = {'enum_ai'};
-full_predictors = {'spike_ai'};
+full_predictors = {'enum_ai','bi_coh_ai_6'};
 
 % Remove rows with missing predictors or response
 missing_response = ismissing(T.(response));
@@ -307,8 +341,8 @@ missing_predictors = horzcat(missing_predictors{:});
 missing_anything = any([missing_predictors,missing_response],2);
 
 % also remove those without resection/ablation
-%T(missing_anything | ~resection_or_ablation,:) = [];
-T(~resection_or_ablation,:) = [];
+T(missing_anything | ~resection_or_ablation,:) = [];
+%T(~resection_or_ablation,:) = [];
 
 % Null model
 [trueClass_null,predClass_null,AUC_null] = more_general_train_test(T,N,perc_train,model,null_predictors,response);

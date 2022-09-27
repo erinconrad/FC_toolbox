@@ -321,8 +321,6 @@ for j = 1:npts
     summ.avg_coh = avg_coh;
     summ.avg_coh_bi = avg_coh_bi;
     summ.good_spikes = good_spikes;
-    summ.stitched_coh = stitched_coh;
-    summ.stitched_coh_bi = stitched_coh_bi;
     %summ.ge = ge;
 
     %% Save it all
