@@ -53,8 +53,8 @@ all_bipolar_coh = cell(npts,1);
 all_bipolar_bp = cell(npts,1);
 all_bipolar_aal = cell(npts,1);
 all_bipolar_brainnetome = cell(npts,1);
-all_stitched_coh = cell(npts,1);
-all_stitched_coh_bi = cell(npts,1);
+%all_stitched_coh = cell(npts,1);
+%all_stitched_coh_bi = cell(npts,1);
 
 %% Loop over patients
 for p = 1:npts
@@ -83,8 +83,8 @@ for p = 1:npts
     bipolar_fc = summ.avg_fc_bi;
     bipolar_coh = summ.avg_coh_bi;
     bipolar_bp = summ.bp_bi;
-    stitched_coh = summ.stitched_coh;
-    stitched_coh_bi = summ.stitched_coh_bi;
+    %stitched_coh = summ.stitched_coh;
+    %stitched_coh_bi = summ.stitched_coh_bi;
     
     all_names{p} = name;
     
@@ -122,8 +122,8 @@ for p = 1:npts
     bipolar_fc(ekg,:)=[]; bipolar_fc(:,ekg) = [];
     bipolar_coh(ekg,:,:) = []; bipolar_coh(:,ekg,:) = [];
     bipolar_bp(ekg,:,:) = [];
-    stitched_coh(ekg,:,:) = [];
-    stitched_coh_bi(ekg,:,:) = [];
+    %stitched_coh(ekg,:,:) = [];
+    %stitched_coh_bi(ekg,:,:) = [];
 
     
     %% SOZ bin
@@ -167,8 +167,8 @@ for p = 1:npts
     all_bipolar_locs{p} = bipolar_locs;
     all_bipolar_bp{p} = nanmean(bipolar_bp,3);
     all_bipolar_coh{p} = bipolar_coh;
-    all_stitched_coh{p} = stitched_coh;
-    all_stitched_coh_bi{p} = stitched_coh_bi;
+    %all_stitched_coh{p} = stitched_coh;
+    %all_stitched_coh_bi{p} = stitched_coh_bi;
     
     %% Correlate average ns and spikes
     avg_corr_sp = corr(avg_spikes,avg_ns,'rows','pairwise','type','spearman');
@@ -235,8 +235,8 @@ out.all_bipolar_bp = all_bipolar_bp;
 out.all_bipolar_coh = all_bipolar_coh;
 out.all_bipolar_aal = all_bipolar_aal;
 out.all_bipolar_brainnetome = all_bipolar_brainnetome;
-out.all_stitched_coh = all_stitched_coh;
-out.all_stitched_coh_bi = all_stitched_coh_bi;
+%out.all_stitched_coh = all_stitched_coh;
+%out.all_stitched_coh_bi = all_stitched_coh_bi;
 
 
 %% Save
