@@ -37,6 +37,7 @@ for p = 1:length(pt)
     end
     
     pt(p).elecs = out_mni;
+    pt(p).elecs_native = out_native;
     save([data_folder,'pt.mat'],'pt');
 end
 

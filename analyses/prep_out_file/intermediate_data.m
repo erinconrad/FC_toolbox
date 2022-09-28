@@ -49,6 +49,9 @@ count = 0;
 for j = 1:npts
     %j = good_pts(l);
     name = pt(j).name;
+    if ~strcmp(name,'HUP136')
+        continue;
+    end
     rid = pt(j).rid;
     
     if exist([out_folder,name,'.mat'],'file') ~= 0 && overwrite == 0
