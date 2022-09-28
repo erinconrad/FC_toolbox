@@ -316,7 +316,6 @@ for j = 1:npts
     summ.avg_fc_car = avg_fc_car;
     summ.ns_bi = ns_bi;
     summ.avg_fc_bi = avg_fc_bi;
-    %summ.fc_car = fc_car;
     summ.avg_fc_car_wake = avg_fc_car_wake;
     summ.avg_fc_car_sleep = avg_fc_car_sleep;
     summ.bp = bp;
@@ -324,8 +323,8 @@ for j = 1:npts
     summ.avg_coh = avg_coh;
     summ.avg_coh_bi = avg_coh_bi;
     summ.good_spikes = good_spikes;
-    summ.stitched_coh = stitched_coh;
-    summ.stitched_coh_bi = stitched_coh_bi;
+    %summ.stitched_coh = stitched_coh;
+    %summ.stitched_coh_bi = stitched_coh_bi;
     %summ.ge = ge;
 
     %% Save it all
