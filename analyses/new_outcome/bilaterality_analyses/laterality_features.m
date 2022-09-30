@@ -3,7 +3,6 @@ function laterality_features
 %{
 To do:
 - more error checking
-- plots of univariate features
 - spatial dispersion to predict focality and outcome
 %}
 
@@ -18,6 +17,7 @@ randomize_lats = 0; % set to 1 to randomize soz laterality (null data)
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 inter_folder = [results_folder,'analysis/new_outcome/data/'];
+plot_folder = [results_folder,'analysis/new_outcome/plots/'];
 
 % add script folder to path
 scripts_folder = locations.script_folder;
@@ -212,6 +212,19 @@ if 0
     colorbar
     title('Correlation between L-R asymmetry indices')
     set(gca,'fontsize',15)
+    print(gcf,[plot_folder,'ai_feature_correlation'],'-dpng')
+end
+
+%% Univariate analysis of each feature with outcome
+if 0
+    figure
+    set(gcf,'position',[15 78 1377 719])
+    tiledlayout(3,5,'tilespacing','tight','Padding','tight')
+    for f = 1:nfeatures
+        nexttile
+        unpaired_plot(all_feat(T.outcome==1,f),all_feat(T.outcome==0,f),{'good','bad'},feat_names{f});
+    end
+    print(gcf,[plot_folder,'ai_univariate_outcome'],'-dpng')
 end
 
 %% Try dimensionality reduction
@@ -224,7 +237,7 @@ ncoeffs = 3;
 if 0
 for f = 1:ncoeffs
     nexttile
-    unpaired_plot(score(outcome==1,f),score(outcome==0,f),{'good outcome','bad outcome'},'thing');
+    unpaired_plot(score(outcome==1,f),score(outcome==0,f),{'good','bad'},'thing');
 end
 end
 coeff_names = cell(ncoeffs,1);
