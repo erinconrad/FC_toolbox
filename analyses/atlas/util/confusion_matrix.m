@@ -47,7 +47,7 @@ out.xlabel = 'Predicted';
 out.ylabel = 'True';
 out.nclasses = nclasses;
 out.accuracy = accuracy;
-out.true_class = classes{2};
+%out.true_class = classes{2};
 
 
 if do_plot

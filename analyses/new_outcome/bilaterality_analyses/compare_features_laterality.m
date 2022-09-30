@@ -9,7 +9,7 @@ left-right.
 
 %rng(0)
 
-which_atlas = 'brainnetome';
+which_atlas = 'aal';
 which_outcome = 'ilae';
 restrict_mt = 0; % make anything outside of MT nans
 spike_min = 0.1; % minimum spikes/min to calculate recruitment latency
@@ -246,7 +246,7 @@ end
 
 
 %% Outcome tables
-if 0
+if 1
     figure; set(gcf,'Position',[100 100 1100 300])
     tiledlayout(1,4)
     nexttile

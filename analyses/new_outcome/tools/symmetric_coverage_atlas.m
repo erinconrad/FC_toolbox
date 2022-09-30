@@ -9,6 +9,7 @@ npts = size(atlas,1);
 symm_cov_atlas = nan(size(atlas));
 dims = ndims(atlas);
 
+
 % Find the regions with symmetric coverage for each patient
 all_bilateral = find_bilateral(atlas,lats,locs);
 
@@ -26,9 +27,14 @@ for ip = 1:npts
             symm_cov_atlas(ip,:) = curr_atlas;
         case 3
             curr_atlas = squeeze(atlas(ip,:,:));
-            curr_atlas(~curr_bilateral,:) = nan; 
-            curr_atlas(:,~curr_bilateral) = nan;
-            symm_cov_atlas(ip,:,:) = curr_atlas;
+            if size(curr_atlas,1) == size(curr_atlas,2)
+                curr_atlas(~curr_bilateral,:) = nan; 
+                curr_atlas(:,~curr_bilateral) = nan;
+                symm_cov_atlas(ip,:,:) = curr_atlas;
+            else
+                curr_atlas(~curr_bilateral,:) = nan; 
+                symm_cov_atlas(ip,:,:) = curr_atlas;
+            end
         case 4
             curr_atlas = squeeze(atlas(ip,:,:,:));
             curr_atlas(~curr_bilateral,:,:) = nan; 

@@ -1,4 +1,4 @@
-function out = convert_to_atlas(thing,atlas,atlas_names)
+function out = convert_to_atlas_old(thing,atlas,atlas_names)
 
 npts = length(thing);
 
@@ -19,9 +19,9 @@ end
 %% initialize out
 switch which_dim
     case 1
-        out = nan(nregions,npts);
+        out = nan(npts,nregions);
     case 2
-        out = nan(nregions,nregions,npts);
+        out = nan(npts,nregions,nregions);
     case 3
         last_dim = size(thing1,3);
         out = nan(npts,nregions,nregions,last_dim);

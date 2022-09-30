@@ -50,7 +50,7 @@ for p = whichPts
     pt_name = pt(p).name;
     
     
-    for im = 1:2
+    for im = 2%1:2
         outname = [out_folder,sprintf('%s_montage%d.jpg',pt_name,im)];
         if exist(outname,'file') ~= 0
   
@@ -169,8 +169,8 @@ for p = whichPts
             end
             
             % filters
-            values = notch_filter(values,fs);
-            values = bandpass_filter(values,fs);
+            %values = notch_filter(values,fs);
+            %values = bandpass_filter(values,fs);
 
             %% Plot data
             nexttile
