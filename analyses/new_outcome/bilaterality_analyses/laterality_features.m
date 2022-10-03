@@ -8,7 +8,7 @@ To do:
 
 which_atlas = 'aal';
 which_outcome = 'ilae';
-which_montage = 'car';
+which_montage = 'bipolar';
 %which_thing = 'nelecs';
 rm_no_surg = 1; % remove those who don't get surgery
 randomize_lats = 0; % set to 1 to randomize soz laterality (null data)
@@ -134,7 +134,7 @@ elec_lats = cellfun(@(x) elec_broad(x,atlas_names,atlas_lat), atlas,'uniformoutp
 
 %% Get features
 % Initialize table
-T = table(outcome);
+T = table(outcome,bilat);
 feat_names = {};
 
 for which_thing = {'coh','bp','spikes','nelecs'}
@@ -199,8 +199,8 @@ end
 
 
 %% Pairwise correlations of all features
-nfeatures = size(T,2)-1; % -1 to remove outcome
-all_feat = table2array(T(:,2:end));
+nfeatures = size(T,2)-2; % -2 to remove outcome and bilaterality
+all_feat = table2array(T(:,3:end));
 feat_corr = corr(all_feat,'rows','pairwise');
 if 0
     figure
@@ -213,6 +213,18 @@ if 0
     title('Correlation between L-R asymmetry indices')
     set(gca,'fontsize',15)
     print(gcf,[plot_folder,'ai_feature_correlation'],'-dpng')
+end
+
+%% Univariate analysis of each feature with bilaterality
+if 0
+    figure
+    set(gcf,'position',[15 78 1377 719])
+    tiledlayout(3,5,'tilespacing','tight','Padding','tight')
+    for f = 1:nfeatures
+        nexttile
+        unpaired_plot(all_feat(T.bilat==0,f),all_feat(T.bilat==1,f),{'unilateral','bilateral'},feat_names{f});
+    end
+    print(gcf,[plot_folder,'ai_univariate_bilateralty'],'-dpng')
 end
 
 %% Univariate analysis of each feature with outcome
@@ -245,24 +257,31 @@ for i = 1:ncoeffs
     coeff_names{i} = ['coeff',num2str(i)];
 end
 
-rT = array2table([T.outcome,score(:,1:3)],'VariableNames',[{'outcome'},coeff_names']);
+rT = array2table([T.outcome,T.bilat,score(:,1:3)],'VariableNames',[{'bilat','outcome'},coeff_names']);
 
 %% Do logistic regression
 rng(0)
 model = @(x,y,z) fitglm(x,'ResponseVar',y,'PredictorVars',z,'Distribution','binomial');
+nb = 1e2;
 
 % results in mean AUC of about 74% for full model
-[~,~,AUC] = more_general_train_test(rT,1e2,0.67,model,coeff_names,'outcome');
+[~,~,AUC] = more_general_train_test(rT,nb,0.67,model,coeff_names,'outcome');
 
 % Just elec num gets 65%  (null model)
-[~,~,AUC_null] = more_general_train_test(T,1e2,0.67,model,'nelecs_1','outcome');
+[~,~,AUC_null] = more_general_train_test(T,nb,0.67,model,'nelecs_1','outcome');
 
 % Just spikes gets 79%. So you really can't beat spikes. This is kind of
 % cool. The presence of bilateral spikes really portends poor outcome
-[trueClass,predClass,AUC_spikes] = more_general_train_test(T,1e2,0.67,model,'spikes_1','outcome');
+[trueClass,predClass,AUC_spikes] = more_general_train_test(T,nb,0.67,model,'spikes_1','outcome');
+
+% What about predicting bilaterality
+[~,~,AUC_bi] = more_general_train_test(rT,nb,0.67,model,coeff_names,'bilat');
+[~,~,AUC_bi_null] = more_general_train_test(T,nb,0.67,model,'nelecs_1','bilat');
+[~,~,AUC_bi_spikes] = more_general_train_test(T,nb,0.67,model,{'nelecs_1','spikes_1'},'bilat');
 
 %% Confusion matrix
 % Combine across nb
+%{
 tc = cell2mat(trueClass);
 pc = cell2mat(predClass);
 ac = nan(size(pc,1),1);
@@ -280,9 +299,13 @@ tc_cell(tc==1) = {'1'};
 tc_cell(tc==0) = {'0'};
 
 out = confusion_matrix(pc_cell,tc_cell,0);
+%}
 
-nanmean(AUC)
-nanmean(AUC_null)
-nanmean(AUC_spikes)
+mean(AUC)
+mean(AUC_null)
+mean(AUC_spikes)
+mean(AUC_bi)
+mean(AUC_bi_null)
+mean(AUC_bi_spikes)
 
 end

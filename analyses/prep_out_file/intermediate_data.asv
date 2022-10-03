@@ -210,10 +210,6 @@ for j = 1:npts
     spike_locs = nan(length(labels),3);
     bipolar_locs = nan(length(labels),3);
     already_filled = zeros(length(labels),1);
-
-    spike_native_locs = nan(length(labels),3);
-    bipolar_native_locs = nan(length(labels),3);
-    already_filled_native = zeros(length(labels),1);
     
     %bipolar_pair = nan(length(labels),2);
     
@@ -239,21 +235,21 @@ for j = 1:npts
         [lia,locb] = ismember(clean_labels,ana_name);
         % sanity check
         if ~isequal(clean_labels(lia~=0 & already_filled == 0),ana_name(locb(lia~=0 & already_filled == 0))), error('oh no'); end
+
         
         % Fill up spike anatomy and locs with the anatomy
         if ~strcmp(class(anatomy),'double')
+            %spike_anatomy(lia~=0 & already_filled == 0) = anatomy(locb(lia~=0 & already_filled == 0));
             spike_anatomy(lia~=0) = anatomy(locb(lia~=0));
         end
+        %spike_locs(lia~=0 & already_filled == 0,:) = locs(locb(lia~=0 & already_filled == 0),:);
         spike_locs(lia~=0,:) = locs(locb(lia~=0),:);
         bipolar_locs(lia~=0,:) = mid_locs(locb(lia~=0),:);
+        %bipolar_pair(lia~=0,:) = chs_in_bipolar(locb(lia~=0),:);
         
         % set already filled
+        %already_filled(lia~=0 & already_filled == 0) = 1;
         already_filled(lia~=0) = 1;
-
-        [lian,locbn] = ismember(clean_labels,native_ana_name);
-        spike_native_locs(lian~=0,:) = native_locs(locbn(lian~=0),:);
-        bipolar_native_locs(lian~=0,:) = mid_locs_native(locbn(lian~=0),:);
-        already_filled_native(lia~=0) = 1;
     end
     
     % Skip this patient if most anatomy descriptions empty
@@ -332,8 +328,6 @@ for j = 1:npts
     summ.avg_coh = avg_coh;
     summ.avg_coh_bi = avg_coh_bi;
     summ.good_spikes = good_spikes;
-    summ.native_locs = spike_native_locs;
-    summ.native_bipolar_locs = bipolar_native_locs;
     %summ.stitched_coh = stitched_coh;
     %summ.stitched_coh_bi = stitched_coh_bi;
     %summ.ge = ge;
