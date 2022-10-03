@@ -243,8 +243,7 @@ out.all_bipolar_bp = all_bipolar_bp;
 out.all_bipolar_coh = all_bipolar_coh;
 out.all_bipolar_aal = all_bipolar_aal;
 out.all_bipolar_brainnetome = all_bipolar_brainnetome;
-out.all_native_bipolar_locs = all_native_bipolar_locs;
-out.all_native_locs = all_native_locs;
+out
 %out.all_stitched_coh = all_stitched_coh;
 %out.all_stitched_coh_bi = all_stitched_coh_bi;
 
