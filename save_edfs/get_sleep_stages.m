@@ -37,7 +37,7 @@ for l = 1:length(listing)
     all_edf_files = all_edf_files(I);
 
     % Run the sleep SEEG
-    [Summary,SleepStage,ChL]=SleepSEEG_erin(all_edf_files(1:10),0);
+    [Summary,SleepStage,ChL]=SleepSEEG_erin(all_edf_files,0);
 
     sout.Summary = Summary;
     sout.SleepStage = SleepStage;
