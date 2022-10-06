@@ -1,0 +1,50 @@
+function show_elecs_brain
+
+%% Get file locs
+locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+data_folder = [results_folder,'analysis/new_outcome/data/'];
+surf_folder = [locations.main_folder,'data/brain_surf/'];
+nishant_code = '~/Desktop/research/general tools/nishant_code/
+
+% add script folder to path
+scripts_folder = locations.script_folder;
+addpath(genpath(scripts_folder));
+
+
+%% Load data file
+data = load([data_folder,'main_out.mat']);
+data = data.out;
+
+freesurfer_folder = '~/Desktop/research/general tools/nishant_code/Data/freesurfer';
+ieeg_cord_folder = '~/Desktop/research/general tools/nishant_code/Data/ieeg_coord/';
+addpath(genpath([freesurfer_folder,'/../../external_lib/']));
+record_id = [31];
+
+for sub = 1%:size(record_id,1)
+
+   
+    subject = ['sub-RID' num2str(record_id(sub),'%04.f')];
+    load([ieeg_cord_folder subject '_cord.mat']);
+
+    [lpv, lpf] = read_surf([freesurfer_folder '/' subject '/surf/lh.pial']);
+    [rpv, rpf] = read_surf([freesurfer_folder '/' subject '/surf/rh.pial']);
+
+    %% Figure 1:  Plot pial surface of subject and all electrodes grouped by region
+    figure;
+
+    hold on
+    hl = trisurf(lpf+1,lpv(:,1),lpv(:,2),lpv(:,3));
+    hl.LineStyle = 'none';
+    hl.FaceAlpha = 0.1;
+    hl.FaceColor = [0.7 0.7 0.7];
+    hr = trisurf(rpf+1,rpv(:,1),rpv(:,2),rpv(:,3));
+    hr.LineStyle = 'none';
+    hr.FaceAlpha = 0.1;
+    hr.FaceColor = [0.9 0.7 0.8];
+    scatter3(cord.cord_surf(:,1),cord.cord_surf(:,2),...
+            cord.cord_surf(:,3),100,'filled')
+
+end
+
+end

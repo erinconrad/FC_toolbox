@@ -1,4 +1,4 @@
-function T = compare_features_laterality
+function SD = compare_features_laterality
 
 %{
 
@@ -31,7 +31,8 @@ data = data.out;
 
  %% get variables of interest
 good_spikes = data.good_spikes;
-locs = data.all_locs;
+%locs = data.all_locs;
+locs = data.all_native_locs;
 spike_rates = data.all_spikes;
 labels = data.all_labels;
 rl = data.all_rl;
@@ -196,6 +197,7 @@ enum_tot = enuml+enumr;
 SD = cellfun(@(x,y) weighted_standard_distance(x,y),locs,spike_rates);
 SD(SD>1e10) = nan;
 
+
 % Also weighted dispersion of electrodes
 SDE = cellfun(@(x) weighted_standard_distance(x,[]),locs);
 SDE(SDE>1e10) = nan;
@@ -246,7 +248,7 @@ end
 
 
 %% Outcome tables
-if 1
+if 0
     figure; set(gcf,'Position',[100 100 1100 300])
     tiledlayout(1,4)
     nexttile
@@ -258,6 +260,12 @@ if 1
     nexttile
     unpaired_plot(enum_ai(outcome==0),enum_ai(outcome==1),{'Bad','Good'},'Asymmetry index'); title('Electrode number')
 end
+
+if 0
+figure
+unpaired_plot(SD(outcome==0&resection_or_ablation),SD(outcome==1&resection_or_ablation),{'Bad','Good'},'Spatial dispersion'); title('Spikes')
+end
+%return
 
 if 0
     figure; set(gcf,'Position',[100 100 1400 600])

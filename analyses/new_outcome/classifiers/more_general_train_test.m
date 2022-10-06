@@ -37,7 +37,9 @@ for ib = 1:N
 
         trueClass{ib} = Ttest.(response);
 
-        if ~any(trueClass{ib}(~isnan(predClass{ib}))==1), continue; end % try again if no true labels
+        if ~any(trueClass{ib}(~isnan(predClass{ib}))==1) || ~any(trueClass{ib}(~isnan(predClass{ib}))==0)
+            continue; 
+        end % try again if no true labels or no false labels
         [~,~,~,AUC(ib)] = perfcurve(trueClass{ib},predClass{ib},1);
         break
     end

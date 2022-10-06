@@ -1,27 +1,30 @@
-function outcome_num = parse_outcome(outcome,type)
+function [outcome_num,rule] = parse_outcome(outcome,type)
 
 % 1 = good, 0 = bad
-if isempty(outcome)
-    outcome_num = nan;
-    return
-end
+
 
 switch type
     case 'ilae'
-        if contains(outcome,'1')
+        if isempty(outcome)
+            outcome_num = nan;
+        elseif contains(outcome,'1')
             outcome_num = 1;
         else
             outcome_num = 0;
         end
+        rule = 'ILAE score of 1';
         
     case 'engel'
-        if strcmp(outcome,'IA') || strcmp(outcome,'IB') || ...
+        if isempty(outcome)
+            outcome_num = nan;
+        elseif strcmp(outcome,'IA') || strcmp(outcome,'IB') || ...
                 strcmp(outcome,'IC') || strcmp(outcome, 'ID')
+        
             outcome_num = 1;
         else
             outcome_num = 0;
         end
-            
+        rule = 'Engel score IA-ID';  
         
 end
         

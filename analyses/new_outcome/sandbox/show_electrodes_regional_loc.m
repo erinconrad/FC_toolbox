@@ -15,7 +15,7 @@ data = load([inter_folder,'main_out.mat']);
 data = data.out;
 
 %% get variables of interest
-locs = data.all_locs;
+locs = data.all_native_locs;
 names = data.all_names;
 labels = data.all_labels;
 aal_atlas_names = data.aal_names;
