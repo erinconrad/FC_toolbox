@@ -66,7 +66,7 @@ for ip = whichPts
     end
 
     if overwrite == 1
-        last_file = 1;
+        last_file = 0;
     else
         listing = dir([pt_dir,'*.edf']);
         all_nums = [];
@@ -79,6 +79,10 @@ for ip = whichPts
 
     if last_file == ntimes
         fprintf('\nSkipping %s\n',pt_name);
+    end
+
+    if isempty(last_file)
+        last_file = 0;
     end
 
     %% Loop over times and get data
