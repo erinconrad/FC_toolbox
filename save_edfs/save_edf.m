@@ -69,7 +69,7 @@ for ip = whichPts
         last_file = 0;
     else
         listing = dir([pt_dir,'*.edf']);
-        all_nums = [];
+        all_nums = nan(length(listing),1);
         for l = 1:length(listing)
             B = regexp(listing(l).name,'\d*','Match');
             all_nums(l) = str2num(B{1});
