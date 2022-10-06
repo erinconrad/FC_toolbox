@@ -63,6 +63,9 @@ for ip = whichPts
     %% Loop over times and get data
     file_name = pt(ip).ieeg.file(1).name;
     for t = 1:ntimes
+
+        fprintf('\nDoing time %d of %d for %s\n',t,ntimes,pt_name);
+
         % Get ieeg data
         data = download_ieeg_data(file_name,login_name,pwfile,times(t,:),1);
         values = data.values;
