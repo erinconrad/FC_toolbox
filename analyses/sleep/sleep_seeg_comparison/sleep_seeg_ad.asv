@@ -1,5 +1,9 @@
 function sleep_seeg_ad
 
+% Cool! It looks like the normalized AD ratio agrees pretty well with the
+% Sleep SEEG designations if I simplify them to wake/sleep. Interestingly,
+% REM sleep also has a very low AD ratio (though not as low as N3).
+
 ref_start_time = datetime('01/01/2000 00:00:00','InputFormat','MM/dd/yyyy hh:mm:ss');
 
 %% Get file locs
@@ -103,5 +107,30 @@ for p = 1:npts
         all_out = [all_out;pt_name,stage(prior_transition),ad_norm(t)];
     end
 
+
+    %% Simple labels
+    ntimes = size(all_out,1);
+    labels = cell(ntimes,1);
+    labels(cellfun(@(x) strcmp(x,'W'),all_out(:,2))) = {'Wake'};
+    labels(cellfun(@(x) ismember(x,{'R','N1','N2','N3'}),all_out(:,2))) = {'Sleep'};
+
+    %% Scores
+    scores = cell2mat(all_out(:,3));
+
+    [X,Y,T,AUC,OPTROCPT] = perfcurve(labels,scores,'Wake');
+
+    %% Show scores for different states
+    if 1
+        figure
+        nexttile
+        boxplot(scores,all_out(:,2))
+        set(gca,'fontsize',15)
+        ylabel('Normalized alpha-delta ratio')
+        xlabel('SleepSEEG classification')
+
+        nexttile
+        plot(X,Y,'linewidth',2)
+        xlabel
+    end
 
 end

@@ -1,5 +1,9 @@
 function sleep_seeg_ad
 
+% Cool! It looks like the normalized AD ratio agrees pretty well with the
+% Sleep SEEG designations if I simplify them to wake/sleep. Interestingly,
+% REM sleep also has a very low AD ratio (though not as low as N3).
+
 ref_start_time = datetime('01/01/2000 00:00:00','InputFormat','MM/dd/yyyy hh:mm:ss');
 
 %% Get file locs
@@ -16,6 +20,8 @@ addpath(genpath(scripts_folder));
 %% Listing of available files
 listing = dir([int_folder,'*.mat']);
 npts = length(listing);
+
+all_out = {};
 
 %% Loop over patients
 for p = 1:npts
@@ -74,8 +80,61 @@ for p = 1:npts
         end
 
         curr_time = times(t);
-        if curr_time 
+        run_times = [curr_time-30,curr_time+30]; % time is middle of 60 second window
+
+         % Figure out if first run time falls between two transitions
+        run_start_minus_seeg = run_times(1)-seeg_secs;
+
+        if all(run_start_minus_seeg>0) % this block is too late, stop loop
+            break
+        end
+
+        if all(run_start_minus_seeg<0) % this block too early, go to next loop
+            continue
+        end
+
+        % find the first seeg transition that comes BEFORE
+        prior_transition = find(run_start_minus_seeg<0);
+        prior_transition = prior_transition(1)-1;
+
+        % confirm that run time end comes before the next one
+        if run_times(2) > seeg_secs(prior_transition+1)
+            continue
+        end
+
+        % If made it here, then the run time falls between two state
+        % transitions, and so I should be able to compare
+        all_out = [all_out;pt_name,stage(prior_transition),ad_norm(t)];
     end
 
+
+    %% Simple labels
+    ntimes = size(all_out,1);
+    labels = cell(ntimes,1);
+    labels(cellfun(@(x) strcmp(x,'W'),all_out(:,2))) = {'Wake'};
+    labels(cellfun(@(x) ismember(x,{'R','N1','N2','N3'}),all_out(:,2))) = {'Sleep'};
+
+    %% Scores
+    scores = cell2mat(all_out(:,3));
+
+    [X,Y,T,AUC,OPTROCPT] = perfcurve(labels,scores,'Wake');
+
+    %% Show scores for different states
+    if 1
+        figure
+        nexttile
+        boxplot(scores,all_out(:,2))
+        set(gca,'fontsize',15)
+        ylabel('Normalized alpha-delta ratio')
+        xlabel('SleepSEEG classification')
+        title('Normalized ADR by SleepSEEG classification')
+
+        nexttile
+        plot(X,Y,'linewidth',2)
+        xlabel('False positive rate')
+        ylabel('True positive rate')
+        set(gca,'fontsize',15)
+        title('ROC for classifying SleepSEEG wake vs sleep by normalized ADR')
+    end
 
 end
