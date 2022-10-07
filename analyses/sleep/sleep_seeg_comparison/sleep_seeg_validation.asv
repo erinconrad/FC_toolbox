@@ -20,9 +20,6 @@ sleep_manual_dir = [results_folder,'analysis/sleep/erin_designations/'];
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% initialize comparison array
-comparison_array = {};
-
 % Loop over folders in edf out
 listing = dir([sleep_manual_dir,'*mat']);
 for l = 1:length(listing)
@@ -87,17 +84,14 @@ for l = 1:length(listing)
 
         % find the first seeg transition that comes BEFORE
         prior_transition = find(run_start_minus_seeg<0);
-        prior_transition = prior_transition(1)-1;
+        prior_transition = prior_transition(1);
 
         % confirm that run time end comes before the next one
         if run_times(2) > seeg_secs(prior_transition+1)
             continue
         end
 
-        % if made it to here, then the run time falls between two state
-        % transitions, and so I should be able to compare
-        comparison_array = [comparison_array;...
-            pt_name,erin,stage(prior_transition)];
+        
 
     end
     

@@ -1,0 +1,81 @@
+function sleep_seeg_ad
+
+ref_start_time = datetime('01/01/2000 00:00:00','InputFormat','MM/dd/yyyy hh:mm:ss');
+
+%% Get file locs
+locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+edf_out_dir = [results_folder,'edf_out/'];
+sleep_manual_dir = [results_folder,'analysis/sleep/erin_designations/'];
+int_folder = [results_folder,'analysis/backup_intermediate_Feb26_good_spikes/'];
+
+% add script folder to path
+scripts_folder = locations.script_folder;
+addpath(genpath(scripts_folder));
+
+%% Listing of available files
+listing = dir([int_folder,'*.mat']);
+npts = length(listing);
+
+%% Loop over patients
+for p = 1:npts
+    
+    pt_name = strrep(listing(p).name,'.mat','');
+    if ~exist([edf_out_dir,pt_name,'/sleep_stage.mat'])
+        continue
+    end
+
+    fprintf('\nDoing patient %s\n',pt_name);
+    
+     %% Load
+    summ = load([int_folder,listing(p).name]);
+    summ = summ.summ;
+
+    %% Load sleepseeg designation file
+    sout = load([edf_out_dir,pt_name,'/sleep_stage.mat']);
+    sout = sout.sout;
+
+    % Get times of sleep transitions
+    st_dates= sout.Summary(2:end,2);
+    st_times = sout.Summary(2:end,3);
+    stage = sout.Summary(2:end,4);
+    
+    new_st_dates = st_dates;
+    for i = 1:length(new_st_dates) 
+        if strcmp(new_st_dates{i},' ') % replace empty with last date
+            new_st_dates{i} = new_st_dates{i-1};
+        end
+    end
+    st_dates = new_st_dates;
+    
+    % Combine dates and times
+    dts = cellfun(@(x,y) [x, ' ',y],st_dates,st_times,'uniformoutput',false);
+
+    % convert to seconds into ieeg file
+    dt = cellfun(@(x) datetime(x,'InputFormat','dd-MMM-yyyy HH:mm:ss'),dts);
+    seeg_secs = seconds(dt-ref_start_time);    
+    
+    %% Get main things
+    labels = summ.labels;
+    ad = summ.ad;
+    file_index = summ.file_index;
+    times = summ.times;
+
+    ekg = find_non_intracranial(labels);
+    
+    ad = ad(~ekg,:);
+    ad = nanmean(ad,1);
+    ad_norm = (ad-nanmedian(ad))./iqr(ad);
+
+    %% Loop it
+    for t = 1:length(times)
+        if file_index(t) > 1
+            break
+        end
+
+        curr_time = times(t);
+        if curr_time 
+    end
+
+
+end

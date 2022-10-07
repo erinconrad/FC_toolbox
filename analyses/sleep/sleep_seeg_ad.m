@@ -1,12 +1,4 @@
-function sleep_seeg_validation
-
-% I did this for HUP217 and the general W-S order agrees with time of day
-% and I looked at the scalp for a couple of random points and it generally
-% aligned....so this looks promising.
-
-% I need to figure out how to compare my manual markings with these.
-
-% I also need to run this for more patients...
+function sleep_seeg_ad
 
 ref_start_time = datetime('01/01/2000 00:00:00','InputFormat','MM/dd/yyyy hh:mm:ss');
 
@@ -15,29 +7,33 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 edf_out_dir = [results_folder,'edf_out/'];
 sleep_manual_dir = [results_folder,'analysis/sleep/erin_designations/'];
+int_folder = [results_folder,'analysis/backup_intermediate_Feb26_good_spikes/'];
 
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% initialize comparison array
-comparison_array = {};
+%% Listing of available files
+listing = dir([int_folder,'*.mat']);
+npts = length(listing);
 
-% Loop over folders in edf out
-listing = dir([sleep_manual_dir,'*mat']);
-for l = 1:length(listing)
+all_out = {};
+
+%% Loop over patients
+for p = 1:npts
     
-    fname = listing(l).name;
-    pt_name = strrep(fname,'.mat','');
-
-   
+    pt_name = strrep(listing(p).name,'.mat','');
     if ~exist([edf_out_dir,pt_name,'/sleep_stage.mat'])
         continue
     end
 
-    fprintf('\nDoing %s\n',pt_name);
+    fprintf('\nDoing patient %s\n',pt_name);
+    
+     %% Load
+    summ = load([int_folder,listing(p).name]);
+    summ = summ.summ;
 
-    % Load sleepseeg designation file
+    %% Load sleepseeg designation file
     sout = load([edf_out_dir,pt_name,'/sleep_stage.mat']);
     sout = sout.sout;
 
@@ -59,22 +55,30 @@ for l = 1:length(listing)
 
     % convert to seconds into ieeg file
     dt = cellfun(@(x) datetime(x,'InputFormat','dd-MMM-yyyy HH:mm:ss'),dts);
-    seeg_secs = seconds(dt-ref_start_time);
+    seeg_secs = seconds(dt-ref_start_time);    
+    
+    %% Get main things
+    labels = summ.labels;
+    ad = summ.ad;
+    file_index = summ.file_index;
+    times = summ.times;
 
-    if 0
-        table(arrayfun(@(x) sprintf('%1.1f',x),seeg_secs,'uniformoutput',false),stage)
-    end
+    ekg = find_non_intracranial(labels);
+    
+    ad = ad(~ekg,:);
+    ad = nanmean(ad,1);
+    ad_norm = (ad-nanmedian(ad))./iqr(ad);
 
-    % Load the erin designation file
-    nout = load([sleep_manual_dir,listing(l).name]); nout = nout.nout;
-    f = 1;
-    blocks = nout.file(f).blocks;
-    nblocks = length(blocks);
-    for b = 1:nblocks
-        run_times = nout.file(f).block(blocks(b)).run_times;
-        erin = nout.file(f).block(blocks(b)).erin;
+    %% Loop it
+    for t = 1:length(times)
+        if file_index(t) > 1
+            break
+        end
 
-        % Figure out if first run time falls between two transitions
+        curr_time = times(t);
+        run_times = [curr_time-30,curr_time+30]; % time is middle of 60 second window
+
+         % Figure out if first run time falls between two transitions
         run_start_minus_seeg = run_times(1)-seeg_secs;
 
         if all(run_start_minus_seeg>0) % this block is too late, stop loop
@@ -94,15 +98,10 @@ for l = 1:length(listing)
             continue
         end
 
-        % if made it to here, then the run time falls between two state
+        % If made it here, then the run time falls between two state
         % transitions, and so I should be able to compare
-        comparison_array = [comparison_array;...
-            pt_name,erin,stage(prior_transition)];
-
+        all_out = [all_out;pt_name,stage(prior_transition),ad_norm(t)];
     end
-    
-
-end
 
 
 end

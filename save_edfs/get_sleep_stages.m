@@ -1,5 +1,7 @@
 function get_sleep_stages
 
+overwrite = 0;
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -24,6 +26,12 @@ for l = 1:length(listing)
         all_edf_files = [all_edf_files;[out_dir,listing(l).name,'/',sub_listing(f).name]];
     end
 
+    if exist([out_dir,listing(l).name,'/sleep_stage.mat']) ~= 0
+        continue
+    end
+
+    fprintf('\nDoing %s\n',listing(l).name);
+
     if isempty(all_edf_files)
         continue
     end
@@ -42,6 +50,7 @@ for l = 1:length(listing)
     sout.Summary = Summary;
     sout.SleepStage = SleepStage;
     sout.ChL = ChL;
+    sout.name = listing(l).name;
 
     % save the output
     save([out_dir,listing(l).name,'/sleep_stage.mat'],'sout')
