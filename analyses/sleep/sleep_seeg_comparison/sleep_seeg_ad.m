@@ -141,7 +141,7 @@ if 1
     xlabel('False positive rate')
     ylabel('True positive rate')
     set(gca,'fontsize',15)
-    title('ROC classifying SleepSEEG wake vs sleep by normalized ADR')
+    title('ROC classifying SleepSEEG sleep by normalized ADR')
     legend(sprintf('AUC %1.2f',AUC),'location','southeast')
     print(gcf,[out_file,'seeg_vs_ad'],'-dpng')
     close gcf
