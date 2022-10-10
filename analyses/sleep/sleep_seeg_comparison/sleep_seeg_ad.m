@@ -110,39 +110,39 @@ for p = 1:npts
         % transitions, and so I should be able to compare
         all_out = [all_out;pt_name,stage(prior_transition),ad_norm(t)];
     end
-
-
-    %% Simple labels
-    ntimes = size(all_out,1);
-    labels = cell(ntimes,1);
-    labels(cellfun(@(x) strcmp(x,'W'),all_out(:,2))) = {'Wake'};
-    labels(cellfun(@(x) ismember(x,{'R','N1','N2','N3'}),all_out(:,2))) = {'Sleep'};
-
-    %% Scores
-    scores = cell2mat(all_out(:,3));
-
-    [X,Y,T,AUC,OPTROCPT] = perfcurve(labels,scores,'Wake');
-
-    %% Show scores for different states
-    if 1
-        figure
-        set(gcf,'position',[289 517 1001 280])
-        tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
-        nexttile
-        boxplot(scores,all_out(:,2))
-        set(gca,'fontsize',15)
-        ylabel('Normalized alpha-delta ratio')
-        xlabel('SleepSEEG classification')
-        title('Normalized ADR by SleepSEEG classification')
-
-        nexttile
-        plot(X,Y,'linewidth',2)
-        xlabel('False positive rate')
-        ylabel('True positive rate')
-        set(gca,'fontsize',15)
-        title('ROC for classifying SleepSEEG wake vs sleep by normalized ADR')
-        print(gcf,[out_file,'seeg_vs_ad'],'-dpng')
-        close gcf
-    end
-
 end
+
+
+%% Simple labels
+ntimes = size(all_out,1);
+labels = cell(ntimes,1);
+labels(cellfun(@(x) strcmp(x,'W'),all_out(:,2))) = {'Wake'};
+labels(cellfun(@(x) ismember(x,{'R','N1','N2','N3'}),all_out(:,2))) = {'Sleep'};
+
+%% Scores
+scores = cell2mat(all_out(:,3));
+
+[X,Y,T,AUC,OPTROCPT] = perfcurve(labels,scores,'Wake');
+
+%% Show scores for different states
+if 1
+    figure
+    set(gcf,'position',[289 517 1001 280])
+    tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
+    nexttile
+    boxplot(scores,all_out(:,2))
+    set(gca,'fontsize',15)
+    ylabel('Normalized alpha-delta ratio')
+    xlabel('SleepSEEG classification')
+    title('Normalized ADR by SleepSEEG classification')
+
+    nexttile
+    plot(X,Y,'linewidth',2)
+    xlabel('False positive rate')
+    ylabel('True positive rate')
+    set(gca,'fontsize',15)
+    title('ROC for classifying SleepSEEG wake vs sleep by normalized ADR')
+    print(gcf,[out_file,'seeg_vs_ad'],'-dpng')
+    close gcf
+end
+
