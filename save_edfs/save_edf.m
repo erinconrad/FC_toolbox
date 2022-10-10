@@ -99,9 +99,13 @@ for ip = whichPts
         
 
         % Downsample the data
-        desired_fs = 256;
-        n = fs/desired_fs;
-        values = downsample(values,n);
+        if fs == 500
+            desired_fs = 500;
+        else
+            desired_fs = 256;
+            n = fs/desired_fs;
+            values = downsample(values,n);
+        end
         
         labels = decompose_labels(data.chLabels(:,1),pt_name);
         ekg = find_non_intracranial(labels);
