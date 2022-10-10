@@ -66,7 +66,12 @@ for l = 1:length(listing)
     end
 
     % Load the erin designation file
-    nout = load([sleep_manual_dir,listing(l).name]); nout = nout.nout;
+    nout = load([sleep_manual_dir,listing(l).name]); 
+    if isfield (nout,'nout')
+        nout = nout.nout;
+    else
+        nout = nout.out;
+    end
     f = 1;
     blocks = nout.file(f).blocks;
     nblocks = length(blocks);
