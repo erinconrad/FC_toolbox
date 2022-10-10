@@ -142,6 +142,7 @@ if 1
     ylabel('True positive rate')
     set(gca,'fontsize',15)
     title('ROC for classifying SleepSEEG wake vs sleep by normalized ADR')
+    legend(sprintf('AUC %1.2f',AUC))
     print(gcf,[out_file,'seeg_vs_ad'],'-dpng')
     close gcf
 end
