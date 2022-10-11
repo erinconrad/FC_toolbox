@@ -1,4 +1,4 @@
-function sleep_seeg_ad
+function out = sleep_seeg_ad
 
 % Cool! It looks like the normalized AD ratio agrees pretty well with the
 % Sleep SEEG designations if I simplify them to wake/sleep. Interestingly,
@@ -90,8 +90,15 @@ scores = cell2mat(all_out(:,3));
 [X,Y,T,AUC,OPTROCPT] = perfcurve(labels,scores,'Wake');
 [altX,altY,~,altAUC] = perfcurve(alt_labels(~empty_labels),scores(~empty_labels),'Wake');
 
+out.X = X;
+out.Y = Y;
+out.AUC = AUC;
+out.altX = altX;
+out.altY = altY;
+out.altAUC = altAUC;
+
 %% Show scores for different states
-if 1
+if 0
     figure
     set(gcf,'position',[289 517 1001 280])
     tiledlayout(1,2,'TileSpacing','tight','Padding','tight')

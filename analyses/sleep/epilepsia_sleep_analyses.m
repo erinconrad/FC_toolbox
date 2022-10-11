@@ -25,6 +25,11 @@ fprintf('\nDoing alpha delta ratio validation\n');
 roc_out = ad_validation;
 disc = roc_out.disc;
 
+%% Do SleepSEEG analyses
+fprintf('\nDoing SleepSEEG analyses\n')
+seeg_out = basic_seeg_analyses;
+seeg_ad_out = sleep_seeg_ad;
+
 %% Time-varying analysis
 fprintf('\nDoing time-varying analysis\n');
 time_out = time_varying_spikes(disc);
@@ -69,6 +74,8 @@ out.time_out = time_out;
 out.out_folder = out_folder;
 out.model_out = model_out;
 out.model_out_gray = model_out_gray;
+out.seeg_out = seeg_out;
+out.seeg_ad_out = seeg_ad_out;
 
 %% Save out file
 save([out_folder,'out.mat'],'out')
