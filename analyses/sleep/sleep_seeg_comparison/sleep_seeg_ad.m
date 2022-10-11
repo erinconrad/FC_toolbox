@@ -81,7 +81,7 @@ labels(cellfun(@(x) ismember(x,{'R','N1','N2','N3'}),all_out(:,2))) = {'Sleep'};
 
 alt_labels = cell(ntimes,1);
 alt_labels(cellfun(@(x) strcmp(x,'W'),all_out(:,2))) = {'Wake'};
-alt_labels(cellfun(@(x) ismember(x,{'N2','N3'}),all_out(:,2))) = {'Sleep'};
+alt_labels(cellfun(@(x) ismember(x,{'N3'}),all_out(:,2))) = {'Sleep'};
 empty_labels = cellfun(@isempty,alt_labels);
 
 %% Scores
