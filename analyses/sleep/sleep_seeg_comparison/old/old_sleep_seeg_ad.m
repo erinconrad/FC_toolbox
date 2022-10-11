@@ -4,6 +4,7 @@ function sleep_seeg_ad
 % Sleep SEEG designations if I simplify them to wake/sleep. Interestingly,
 % REM sleep also has a very low AD ratio (though not as low as N3).
 
+ref_start_time = datetime('01/01/2000 00:00:00','InputFormat','MM/dd/yyyy hh:mm:ss');
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -49,9 +50,21 @@ for p = 1:npts
     st_times = sout.Summary(2:end,3);
     stage = sout.Summary(2:end,4);
     
-    % convert to seconds in ieeg
-    seeg_secs = convert_transitions_to_ieeg_secs(st_dates,st_times);
+    new_st_dates = st_dates;
+    for i = 1:length(new_st_dates) 
+        if strcmp(new_st_dates{i},' ') % replace empty with last date
+            new_st_dates{i} = new_st_dates{i-1};
+        end
+    end
+    st_dates = new_st_dates;
+    
+    % Combine dates and times
+    dts = cellfun(@(x,y) [x, ' ',y],st_dates,st_times,'uniformoutput',false);
 
+    % convert to seconds into ieeg file
+    dt = cellfun(@(x) datetime(x,'InputFormat','dd-MMM-yyyy HH:mm:ss'),dts);
+    seeg_secs = seconds(dt-ref_start_time);    
+    
     %% Get main things
     labels = summ.labels;
     ad = summ.ad;
@@ -64,12 +77,39 @@ for p = 1:npts
     ad = nanmean(ad,1);
     ad_norm = (ad-nanmedian(ad))./iqr(ad);
 
-    % get the sleep stages for appropriate times
-    [is_seeg_time,seeg_stage] = match_seeg_times(times,file_index,seeg_secs,stage);
+    %% Loop it
+    for t = 1:length(times)
+        if file_index(t) > 1
+            break
+        end
 
-    % fill out all out
-    all_out = [all_out;...
-        repmat({pt_name},sum(is_seeg_time),1),seeg_stage(is_seeg_time),num2cell(ad_norm(is_seeg_time)')];
+        curr_time = times(t);
+        run_times = [curr_time-30,curr_time+30]; % time is middle of 60 second window
+
+         % Figure out if first run time falls between two transitions
+        run_start_minus_seeg = run_times(1)-seeg_secs;
+
+        if all(run_start_minus_seeg>0) % this block is too late, stop loop
+            break
+        end
+
+        if all(run_start_minus_seeg<0) % this block too early, go to next loop
+            continue
+        end
+
+        % find the first seeg transition that comes BEFORE
+        prior_transition = find(run_start_minus_seeg<0);
+        prior_transition = prior_transition(1)-1;
+
+        % confirm that run time end comes before the next one
+        if run_times(2) > seeg_secs(prior_transition+1)
+            continue
+        end
+
+        % If made it here, then the run time falls between two state
+        % transitions, and so I should be able to compare
+        all_out = [all_out;pt_name,stage(prior_transition),ad_norm(t)];
+    end
 end
 
 
@@ -90,22 +130,19 @@ if 1
     set(gcf,'position',[289 517 1001 280])
     tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
     nexttile
-    plot(X,Y,'linewidth',2)
-    xlabel('False positive rate')
-    ylabel('True positive rate')
-    set(gca,'fontsize',15)
-    title('ROC classifying SleepSEEG sleep by normalized ADR')
-    legend(sprintf('AUC %1.2f',AUC),'location','southeast')
-    
-
-    nexttile
     boxplot(scores,all_out(:,2))
     set(gca,'fontsize',15)
     ylabel('Normalized alpha-delta ratio')
     xlabel('SleepSEEG classification')
     title('Normalized ADR by SleepSEEG classification')
 
-    
+    nexttile
+    plot(X,Y,'linewidth',2)
+    xlabel('False positive rate')
+    ylabel('True positive rate')
+    set(gca,'fontsize',15)
+    title('ROC classifying SleepSEEG sleep by normalized ADR')
+    legend(sprintf('AUC %1.2f',AUC),'location','southeast')
     print(gcf,[out_file,'seeg_vs_ad'],'-dpng')
     close gcf
 end
