@@ -103,7 +103,7 @@ if 1
     ylabel('True positive rate')
     set(gca,'fontsize',15)
     title('ROC classifying SleepSEEG sleep by normalized ADR')
-    legend({sprintf('AUC %1.2f',AUC),sprintf('AUC %1.2f',altAUC)},'location','southeast')
+    legend({sprintf('All sleep vs wake AUC %1.2f',AUC),sprintf('N3 vs wake AUC %1.2f',altAUC)},'location','southeast')
     
 
     nexttile
