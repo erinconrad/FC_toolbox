@@ -79,10 +79,16 @@ labels = cell(ntimes,1);
 labels(cellfun(@(x) strcmp(x,'W'),all_out(:,2))) = {'Wake'};
 labels(cellfun(@(x) ismember(x,{'R','N1','N2','N3'}),all_out(:,2))) = {'Sleep'};
 
+alt_labels = cell(ntimes,1);
+alt_labels(cellfun(@(x) strcmp(x,'W'),all_out(:,2))) = {'Wake'};
+alt_labels(cellfun(@(x) ismember(x,{'N2','N3'}),all_out(:,2))) = {'Sleep'};
+empty_labels = cellfun(@isempty,alt_labels);
+
 %% Scores
 scores = cell2mat(all_out(:,3));
 
 [X,Y,T,AUC,OPTROCPT] = perfcurve(labels,scores,'Wake');
+[altX,altY,~,altAUC] = perfcurve(alt_labels(~empty_labels),scores(~empty_labels),'Wake');
 
 %% Show scores for different states
 if 1
@@ -91,11 +97,13 @@ if 1
     tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
     nexttile
     plot(X,Y,'linewidth',2)
+    hold on
+    plot(altX,altY,'linewidth',2)
     xlabel('False positive rate')
     ylabel('True positive rate')
     set(gca,'fontsize',15)
     title('ROC classifying SleepSEEG sleep by normalized ADR')
-    legend(sprintf('AUC %1.2f',AUC),'location','southeast')
+    legend({sprintf('AUC %1.2f',AUC),sprintf('AUC %1.2f',altAUC)},'location','southeast')
     
 
     nexttile
