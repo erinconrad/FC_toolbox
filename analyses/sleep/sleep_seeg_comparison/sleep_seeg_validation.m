@@ -1,4 +1,4 @@
-function sleep_seeg_validation
+function comparison_array = sleep_seeg_validation
 
 % I did this for HUP217 and the general W-S order agrees with time of day
 % and I looked at the scalp for a couple of random points and it generally
@@ -102,7 +102,7 @@ for l = 1:length(listing)
         % if made it to here, then the run time falls between two state
         % transitions, and so I should be able to compare
         comparison_array = [comparison_array;...
-            pt_name,erin,stage(prior_transition)];
+            pt_name,blocks(b),run_times(1),erin,stage(prior_transition)];
 
     end
     
