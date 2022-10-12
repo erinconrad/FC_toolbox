@@ -36,8 +36,10 @@ for f = 1:nfiles
     % Get seizure times
     if ~isfield(pt(j).ieeg.file(f),'sz_times')
         sz_times = [];
+        sz_semiology = {};
     else
         sz_times = pt(j).ieeg.file(f).sz_times;
+        sz_semiology = pt(j).ieeg.file(f).sz_semiology;
     end
     
     % Get file start time
@@ -229,6 +231,7 @@ for f = 1:nfiles
     out.file(f).run_center = run_center;
     out.file(f).clean_labels = clean_labels;
     out.file(f).sz_times = sz_times;
+    out.file(f).sz_semiology = sz_semiology;
     out.file(f).file_start_time = file_start_time;
     
     

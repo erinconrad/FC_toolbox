@@ -59,10 +59,12 @@ for r = 1:nrows
         
         pt(curr_pt).ieeg.file(curr_f).sz_times = curr_szs;
         pt(curr_pt).ieeg.file(curr_f).sz_time_source = curr_source;
+        pt(curr_pt).ieeg.file(curr_f).sz_semiology = curr_semiology;
         
         curr_pt = ip; curr_f = f;
         curr_szs = [];
         curr_source = {};
+        curr_semiology = {};
     end
        
     % get sz data

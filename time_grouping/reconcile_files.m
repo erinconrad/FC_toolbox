@@ -64,11 +64,13 @@ end
 curr_run_idx = 1;
 last_run_center = 0;
 out.sz_times = [];
+out.sz_semiology = {};
 for f = 1:nfiles
     
     run_center = out.file(f).run_center;
     nruns = length(run_center);
     sz_times = out.file(f).sz_times;
+    sz_semiology = out.file(f).sz_semiology;
     
     % file start time
     file_start_time = out.file(f).file_start_time;
@@ -87,6 +89,7 @@ for f = 1:nfiles
     out.times(curr_run_idx:curr_run_idx+nruns-1) = run_center + last_run_center;
     out.sz_times = [out.sz_times;...
         sz_times + repmat(last_run_center,size(sz_times,1),1)];
+    out.sz_semiology = [out.sz_semiology;sz_semiology];
     last_run_center = run_center(end)+last_run_center;
     
    
