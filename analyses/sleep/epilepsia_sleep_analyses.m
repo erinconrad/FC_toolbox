@@ -27,8 +27,8 @@ disc = roc_out.disc;
 
 %% Do SleepSEEG analyses
 fprintf('\nDoing SleepSEEG analyses\n')
-seeg_out = basic_seeg_analyses;
-seeg_ad_out = sleep_seeg_ad;
+%seeg_out = basic_seeg_analyses;
+%seeg_ad_out = sleep_seeg_ad;
 
 %% Time-varying analysis
 fprintf('\nDoing time-varying analysis\n');

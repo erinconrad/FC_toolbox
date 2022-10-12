@@ -72,6 +72,9 @@ for r = 1:nrows
     sz_end = T.xEnd(r);
     sz_source = T.source{r};
     sz_semiology = T.Semiology{r};
+    if isempty(sz_semiology)
+        sz_semiology = {''};
+    end
     
     % add to curr table
     curr_szs = [curr_szs;sz_start sz_end];

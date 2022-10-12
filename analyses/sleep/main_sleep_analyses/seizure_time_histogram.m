@@ -66,6 +66,8 @@ all_pts_sleep_vec = [];
 missing_loc = zeros(npts,1);
 pre_post_ictal_rates = cell(npts,1);
 pre_to_post_change = nan(npts,1);
+pre_post_change_all_szs = cell(npts,1);
+semiology = cell(npts,1);
 
 spikes_strat = cell(3,1);
 for i = 1:length(spikes_strat)
@@ -89,6 +91,7 @@ for p = 1:npts
     labels = summ.labels;
     spikes = summ.spikes;
     sz_times = summ.sz_times;
+    sem = summ.sz_semiology;
     times = summ.times;
     ad = summ.ad;
     loc = summ.ana_loc;
@@ -159,6 +162,7 @@ for p = 1:npts
     pre_bins = 1:nbins/2;
     post_bins = nbins/2+1:nbins;
     
+    % Loop over seizures
     for s = 1:size(bins,1)
         
         curr_bins = bins(s,:);
@@ -193,6 +197,10 @@ for p = 1:npts
     %% Calculate the pre-to-post change
    
     pre_to_post_change(p) = nanmean(sp_count_bins(:,post_bins) - sp_count_bins(:,pre_bins),'all');
+
+    %% Get individual seizure pre-to-post change
+    pre_post_change_all_szs{p} = [nanmean(sp_count_bins(:,pre_bins),2) nanmean(sp_count_bins(:,post_bins),2)];
+    semiology{p} = sem;
     
     %% Get spike rate in each bin for each group for locs and lats
     % Loop over loc vs lat vs soz
@@ -364,6 +372,8 @@ out.main = main;
 out.names = names;
 out.pre_post_ictal_rates = pre_post_ictal_rates;
 out.pre_to_post_change = pre_to_post_change;
+out.pre_post_change_all_szs = pre_post_change_all_szs;
+out.semiology = semiology;
 
 %{
 figure
