@@ -98,7 +98,7 @@ out.altY = altY;
 out.altAUC = altAUC;
 
 %% Show scores for different states
-if 0
+if 1
     figure
     set(gcf,'position',[289 517 1001 280])
     tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
