@@ -18,6 +18,7 @@ nrows = size(T,1);
 
 curr_szs = [];
 curr_source = {};
+curr_semiology = {};
 curr_pt = 1;
 curr_f = 1;
 
@@ -68,10 +69,12 @@ for r = 1:nrows
     sz_start = T.start(r);
     sz_end = T.xEnd(r);
     sz_source = T.source{r};
+    sz_semiology = T.Semiology{r};
     
     % add to curr table
     curr_szs = [curr_szs;sz_start sz_end];
     curr_source = [curr_source;sz_source];
+    curr_semiology = [curr_semiology;sz_semiology];
     
 end
 
@@ -84,6 +87,7 @@ if ~isempty(curr_szs)
     end
     pt(curr_pt).ieeg.file(curr_f).sz_times = curr_szs;
     pt(curr_pt).ieeg.file(curr_f).sz_time_source = curr_source;
+    pt(curr_pt).ieeg.file(curr_f).sz_semiology = curr_semiology;
 end
 
 save([data_folder,'pt.mat'],'pt');
