@@ -41,7 +41,7 @@ end
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/seizure_times/'];
-int_folder = [results_folder,'analysis/backup_intermediate_Feb26_good_spikes/'];
+int_folder = [results_folder,'analysis/intermediate_epilepsia_revision/'];%[results_folder,'analysis/backup_intermediate_Feb26_good_spikes/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
