@@ -36,9 +36,14 @@ for f = 1:nfiles
     % Get seizure times
     if ~isfield(pt(j).ieeg.file(f),'sz_times')
         sz_times = [];
-        sz_semiology = {};
     else
         sz_times = pt(j).ieeg.file(f).sz_times;
+        
+    end
+
+    if ~isfield(pt(j).ieeg.file(f),'sz_semiology')
+        sz_semiology = {};
+    else
         sz_semiology = pt(j).ieeg.file(f).sz_semiology;
     end
     
