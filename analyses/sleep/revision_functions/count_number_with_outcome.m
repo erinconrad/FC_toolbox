@@ -57,6 +57,10 @@ switch which_outcome
         
 end
 
+%% Find good and bad outcome
+outcome_num = cellfun(@(x) parse_outcome(x,which_outcome),outcome);
+outcome = outcome_num;
+
 fprintf('\n%d patients had surgery and have good outcome.\n',sum(resection_or_ablation==1 & outcome==1))
 
 end
