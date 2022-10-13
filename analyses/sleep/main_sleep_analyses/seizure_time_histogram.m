@@ -199,7 +199,7 @@ for p = 1:npts
     pre_to_post_change(p) = nanmean(sp_count_bins(:,post_bins) - sp_count_bins(:,pre_bins),'all');
 
     %% Get individual seizure pre-to-post change
-    pre_post_change_all_szs{p} = [nanmean(sp_count_bins(:,pre_bins),2) nanmean(sp_count_bins(:,post_bins),2)];
+    pre_post_change_all_szs{p} = [nanmean(sp_bins(:,pre_bins),2) nanmean(sp_bins(:,post_bins),2)];
     semiology{p} = sem;
     
     %% Get spike rate in each bin for each group for locs and lats

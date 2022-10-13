@@ -44,8 +44,8 @@ sfid = fopen([out_folder,'supplemental_results.html'],'a');
 fprintf(fid,'<p><b>Changes in spikes with seizures</b>');
 
 figure
-set(gcf,'position',[100 100 1000 700])
-tiledlayout(4,2,'tilespacing','tight','padding','tight')
+set(gcf,'position',[100 100 1200 350])
+tiledlayout(2,3,'tilespacing','tight','padding','tight')
 
 
 %% Seizure time of day
@@ -118,16 +118,7 @@ fprintf(fid,[' Across all patients, the median spike rate postictally (median %1
     'alternative peri-ictal time windows) (Supplemental Table 1).'],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
-%% Percent detected asleep
-nexttile([1 1])
-plot(times,mean_sleep,'color',[0.9290, 0.6940, 0.1250],'linewidth',2)
-hold on
 
-set(gca,'fontsize',15)
-ylabel('% Classified asleep')
-%title('Peri-ictal sleep classification')
-xlabel('Hours surrounding seizure')
-plot([0 0],ylim,'k--','linewidth',3)
 
 
 %% Temporal vs extratemporal
@@ -178,39 +169,7 @@ fprintf(fid,[' Patients with temporal lobe epilepsy had a greater '...
 fprintf(fid,[' Patients with mesial temporal epilepsy also had a greater '...
     'pre-to-postictal increase in spike rates '...
     'than did those with neocortical'...
-    ' epilepsy (eFigure 1B, Supplemental Table 2). There was no clear preictal change in spikes (Supplemental Results, Fig. 4A).']);
-
-
-%% Post-ictal by sz semiology
-% Get variables
-semiology = cat(1,sz_out.semiology{:});
-pre_post_change = cellfun(@(x) x(:,2)-x(:,1),sz_out.pre_post_change_all_szs,'uniformoutput',false);
-pre_post_change = cat(1,pre_post_change{:});
-pts = (num2cell(1:length(sz_out.semiology)))';
-pt_id = cellfun(@(x,y) repmat(x,length(y),1),pts,sz_out.semiology,'UniformOutput',false);
-pt_id = cat(1,pt_id{:});
-
-% Make a table
-szT = table(pre_post_change,semiology,pt_id);
-missing_semiology = cellfun(@isempty,semiology);
-szT(missing_semiology,:) = [];
-mdl = fitlme(szT,'pre_post_change ~ semiology + (1|pt_id)');
-
-fprintf(fid,[' We performed a linear mixed effects model examining 169 seizures with '...
-    'semiology designations (subclinical vs FAS vs FIAS vs FBTCS). Each seizure was an observation, '...
-    'the pre-to-postictal spike rate difference (spikes/elecs/min) was the response variable, the '...
-    'semiology was the categorical predictor, and the patient identifier was a random effect. '...
-    ''])
-
-nexttile([2 1])
-h =boxplot(szT.pre_post_change,szT.semiology);
-hold on
-plot(xlim,[0 0],'k--','linewidth',2)
-set(h,{'linew'},{2})
-set(gca,'fontsize',15)
-xlabel('Seizure semiology')
-ylabel('Post-pre spikes/elecs/min')
-title('Postictal spike rate change by semiology')
+    ' epilepsy (eFigure 1B, Supplemental Table 2). There was no clear preictal change in spikes (Supplemental Results, Fig. 4A).</p>']);
 
 %% Pre-ictal
 all_pts_spikes_bins = sz_out.all_pts_spikes_bins;
@@ -260,7 +219,16 @@ fprintf(sfid,[' For the primary analysis of a 6-hour preictal period, the early-
 
 
 
+%% Percent detected asleep
+nexttile([1 1])
+plot(times,mean_sleep,'color',[0.9290, 0.6940, 0.1250],'linewidth',2)
+hold on
 
+set(gca,'fontsize',15)
+ylabel('% Classified asleep')
+%title('Peri-ictal sleep classification')
+xlabel('Hours surrounding seizure')
+plot([0 0],ylim,'k--','linewidth',3)
 
 %% Add annotations
 annotation('textbox',[0 0.915 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
