@@ -53,15 +53,6 @@ sz_circ_out = sz_circadian(disc);
 fprintf('\nDoing seizure histogram analyses\n');
 sz_out = seizure_time_histogram(disc);
 
-%% Do sleep models
-fprintf('\nDoing sleep models\n');
-fprintf('\nDoing all electrodes model\n');
-model_out = sleep_models(0);
-
-fprintf('\nDoing gray matter electrodes model\n');
-model_out_gray = sleep_models(1);
-
-
 %% Put together
 out.circ_out = circ_out;
 out.roc_out = roc_out;
@@ -72,10 +63,24 @@ out.bin_out = bin_out;
 out.sz_out = sz_out;
 out.time_out = time_out;
 out.out_folder = out_folder;
+
+save([out_folder,'out.mat'],'out')
+return
+
+%% Do sleep models
+fprintf('\nDoing sleep models\n');
+fprintf('\nDoing all electrodes model\n');
+model_out = sleep_models(0);
+
+fprintf('\nDoing gray matter electrodes model\n');
+model_out_gray = sleep_models(1);
+
+
+
 out.model_out = model_out;
 out.model_out_gray = model_out_gray;
-out.seeg_out = seeg_out;
-out.seeg_ad_out = seeg_ad_out;
+%out.seeg_out = seeg_out;
+%out.seeg_ad_out = seeg_ad_out;
 
 %% Save out file
 save([out_folder,'out.mat'],'out')

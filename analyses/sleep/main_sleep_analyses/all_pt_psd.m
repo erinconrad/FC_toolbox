@@ -70,6 +70,11 @@ age_onset = nan(npts,1);
 stereo = nan(npts,1);
 age_implant = nan(npts,1);
 duration = nan(npts,1);
+all_two_year_ilae = cell(npts,1);
+all_one_year_ilae = cell(npts,1);
+all_two_year_engel = cell(npts,1);
+all_one_year_engel = cell(npts,1);
+all_surgery = cell(npts,1);
 
 %% for mod midnight, get file size
 [~,n_tod_bins,tod_edges] = bin_mod_midnight_times(zeros(5000,1),[]);
@@ -100,6 +105,14 @@ for p = 1:npts
     age_onset(p) = summ.clinical.age_onset;
     duration(p) = age_implant(p)-age_onset(p);
     mod_midnight = summ.mod_midnight;
+    clinical = summ.clinical;
+
+    %% Outcome and surgery
+    all_two_year_ilae{p} = clinical.ilae{2};
+    all_two_year_engel{p} = clinical.engel{2};
+    all_one_year_ilae{p} = clinical.ilae{1};
+    all_one_year_engel{p} = clinical.engel{1};
+    all_surgery{p} = clinical.surgery;
     
     %% Find and remove non-intracranial electrodes (ekg and scalp)
     ekg = find_non_intracranial(labels);
@@ -221,6 +234,11 @@ out.tod_edges = tod_edges;
 out.stereo = stereo;
 out.all_elec_locs = all_elec_locs;
 out.all_elec_lats = all_elec_lats;
+out.all_two_year_ilae = all_two_year_ilae;
+out.all_one_year_ilae = all_one_year_ilae;
+out.all_two_year_engel = all_two_year_engel;
+out.all_one_year_engel = all_one_year_engel;
+out.all_surgery = all_surgery;
 %out.eleven_to_five = eleven_to_five;
 
 %{
