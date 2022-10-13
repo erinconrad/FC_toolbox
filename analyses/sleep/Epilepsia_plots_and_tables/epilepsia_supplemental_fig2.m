@@ -175,6 +175,13 @@ temporal = contains(loc,'temporal');
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
 rate_diff = early_late(:,2)-early_late(:,1);
 [p,~,stats] = ranksum(rate_diff(temporal),rate_diff(extra));
+% Calculate effect size
+nt = sum(~(isnan(rate_diff(temporal))));
+ne = sum(~(isnan(rate_diff(extra))));
+z = stats.zval;
+n = nt+ne;
+r = abs(z)/sqrt(n);
+
 plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
 plot([0.7 1.3],[nanmedian(rate_diff(temporal)) nanmedian(rate_diff(temporal))],...
@@ -193,7 +200,7 @@ ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
 
 

@@ -170,13 +170,19 @@ ne = sum(~isnan(rate_diff(extra)));
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
 U = min([U1,U2]);
+
+% Calculate effect size
+z = stats.zval;
+n = nt+ne;
+r = abs(z)/sqrt(n);
+
 fprintf(fid,[' We also tested whether the sleep-wake spike rate difference varied by epilepsy localization. '...
     'Patients with temporal lobe epilepsy had a higher sleep-wake spike rate increase '...
     '(median = %1.1f spikes/elecs/min) compared to patients with extra-temporal'...
     ' lobe epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig. 2D).'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
-    nt,ne,U,get_p_html(p));
+    ' %1.1f, %s, effect size r = %1.2f) (Fig. 2D).'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    nt,ne,U,get_p_html(p),r);
 %{
 mesial_temporal = strcmp(loc,'mesial temporal');
 neocortical = strcmp(loc,'temporal neocortical') | strcmp(loc,'other cortex');
@@ -190,6 +196,8 @@ hold on
 plot(2+randn(nn,1)*0.05,rate_diff(neocortical),'o')
 plot(3+randn(nd,1)*0.05,rate_diff(diffuse),'o')
 %}
+
+
 
 nexttile
 plot(1+randn(sum(temporal),1)*0.05,rate_diff(temporal),'o','linewidth',2,'color',myColours(2,:))
@@ -210,7 +218,7 @@ ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
 
 

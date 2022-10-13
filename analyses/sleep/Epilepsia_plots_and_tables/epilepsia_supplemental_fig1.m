@@ -54,6 +54,16 @@ if 0
 end
 
 [p,~,stats] = ranksum(rate_diff(mt),rate_diff(nc));
+W = stats.ranksum;
+nt = sum(~isnan(rate_diff(mt)));
+ne = sum(~isnan(rate_diff(nc)));
+
+
+% Calculate effect size
+z = stats.zval;
+n = nt+ne;
+r = abs(z)/sqrt(n);
+
 
 nexttile
 plot(1+randn(sum(mt),1)*0.05,rate_diff(mt),'o','linewidth',2,'color',myColours(1,:))
@@ -74,12 +84,10 @@ ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
 
-W = stats.ranksum;
-nt = sum(~isnan(rate_diff(mt)));
-ne = sum(~isnan(rate_diff(nc)));
+
 ns = min([sum(mt),sum(nc)]);
 U1 = W - nt*(nt+1)/2;
 U2 = nt*ne-U1;
@@ -89,8 +97,8 @@ fprintf(fid,[' There was no significant difference in sleep-wake spike rate diff
     ' with mesial temporal lobe epilepsy (median = %1.1f spikes/elecs/min) and patients with neocortical'...
     ' epilepsy (median = %1.1f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig. 2H).'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
-    nt,ne,U,get_p_html(p));
+    ' %1.1f, %s, effect size r = %1.2f) (Fig. 2H).'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
+    nt,ne,U,get_p_html(p),r);
 
 
 
@@ -103,6 +111,17 @@ post = nbins/2+1:nbins;
 pre_post = [nanmean(all_pts_spikes_bins(:,pre),2),nanmean(all_pts_spikes_bins(:,post),2)];
 rate_diff = (pre_post(:,2)-pre_post(:,1));
 [p,~,stats] = ranksum(rate_diff(mt),rate_diff(nc));
+W = stats.ranksum;
+nt = sum(~(isnan(rate_diff(mt))));
+ne = sum(~(isnan(rate_diff(nc))));
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+
+% Calculate effect size
+z = stats.zval;
+n = nt+ne;
+r = abs(z)/sqrt(n);
+
 plot(1+randn(sum(mt),1)*0.05,rate_diff(mt),'o','linewidth',2,'color',myColours(1,:))
 hold on
 plot([0.7 1.3],[nanmedian(rate_diff(mt)) nanmedian(rate_diff(mt))],...
@@ -121,23 +140,20 @@ ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,get_p_text(p),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
 ylim(ylnew)
 
 % text
-W = stats.ranksum;
-nt = sum(~(isnan(rate_diff(mt))));
-ne = sum(~(isnan(rate_diff(nc))));
-U1 = W - nt*(nt+1)/2;
-U2 = nt*ne-U1;
+
+
 U = min([U1,U2]);
 fprintf(fid,[' Patients with mesial temporal epilepsy also had a greater '...
     'pre-to-postictal increase in spike rates '...
     '(median = %1.2f spikes/elecs/min) than those with neocortical'...
     ' epilepsy (median = %1.2f spikes/elecs/min) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>mesial temporal</sub></i> = %d, <i>N<sub>neocortical</sub></i> = %d) ='...
-    ' %1.1f, %s).</p>'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
-    nt,ne,U,get_p_html(p));
+    ' %1.1f, %s, effect size r = %1.2f).</p>'],nanmedian(rate_diff(mt)),nanmedian(rate_diff(nc)),...
+    nt,ne,U,get_p_html(p),r);
 
 
 

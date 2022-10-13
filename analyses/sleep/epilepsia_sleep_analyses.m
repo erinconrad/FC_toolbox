@@ -65,7 +65,6 @@ out.time_out = time_out;
 out.out_folder = out_folder;
 
 save([out_folder,'out.mat'],'out')
-return
 
 %% Do sleep models
 fprintf('\nDoing sleep models\n');
@@ -86,7 +85,7 @@ out.model_out_gray = model_out_gray;
 save([out_folder,'out.mat'],'out')
 
 %% Do plots
-if 1
+if 0
 fprintf('\nDoing plots\n');
 if ~doing_from_github
     epilepsia_figure1 % this needs a raw data file to run (which is large)
