@@ -5,6 +5,7 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 new_all_folder = [results_folder,'analysis/intermediate/'];
 new_epilepsia_folder = [results_folder,'analysis/intermediate_epilepsia_revision/'];
+addpath(genpath(locations.script_folder))
 
 
 %% Loop over intermediate files
