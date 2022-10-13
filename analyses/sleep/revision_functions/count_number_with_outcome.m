@@ -19,8 +19,8 @@ all_two_year_engel = cell(npts,1);
 all_one_year_engel = cell(npts,1);
 all_surgery = cell(npts,1);
 
-for l = 1:length(listing)
-    summ = load([new_epilepsia_folder,listing(l).name]);
+for p = 1:length(listing)
+    summ = load([new_epilepsia_folder,listing(p).name]);
     summ = summ.summ;
 
     clinical = summ.clinical;
