@@ -114,6 +114,8 @@ for ip = whichPts
         nsamples = size(values,1);
         values = values(:,~ekg);
         labels = labels(~ekg);
+
+        
        
         %values = values/1000; % go from uV to mV
          

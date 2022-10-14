@@ -15,8 +15,16 @@ for i = 1:length(labels)
     if contains(labels(i),'rate','ignorecase',true)
         ekg(i) = 1;
     end
+
+    if contains(labels(i),'DC0','ignorecase',true)
+        ekg(i) = 1;
+    end
     
     if contains(labels(i),'rr','ignorecase',true)
+        ekg(i) = 1;
+    end
+
+    if ismember(labels(i),{'X1','X2','X3','X4'})
         ekg(i) = 1;
     end
     
