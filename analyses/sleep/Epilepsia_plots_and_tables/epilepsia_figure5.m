@@ -39,6 +39,24 @@ loc = out.circ_out.all_locs;
 temporal = contains(loc,'temporal');
 extra = strcmp(loc,'other cortex') | strcmp(loc,'diffuse') | strcmp(loc,'multifocal');
 
+%% Get some outcome stuff
+two_year_engel = out.circ_out.all_two_year_engel;
+two_year_ilae = out.circ_out.all_two_year_ilae;
+surgery = out.circ_out.all_surgery;
+
+% Parse surgery
+resection_or_ablation = cellfun(@(x) ...
+    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
+    surgery);
+
+% Parse outcome
+%outcome = cellfun(@(x) parse_outcome(x,'engel'),two_year_engel);
+outcome = cellfun(@(x) parse_outcome(x,'ilae'),two_year_ilae);
+
+% surgery with good outcome or bad outcome
+surg_good = resection_or_ablation & (outcome == 1);
+surg_bad = resection_or_ablation & (outcome == 0);
+
 %% Get the data
 nmout = out.model_out;
 nmout_gray = out.model_out_gray;
@@ -234,42 +252,72 @@ ylabel('AUC')
 fprintf(fid,'Model performance was highly variable across patients (Fig 5C).');
 
 %% Do between-patient analyses
-
-% Implant type
-nexttile
-plot(1+randn(sum(stereo),1)*0.05,aucs(stereo),'o','linewidth',2,'color',myColours(1,:))
-hold on
-plot(2+randn(sum(~stereo),1)*0.05,aucs(~stereo),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
-xticks([1 2])
-xticklabels({'Stereo-EEG','Grid/strip/depths'});
-ylabel('Classification AUC')
-yl = ylim;
-ybar = yl(1) + 1.05*(yl(2)-yl(1));
-ytext = yl(1) + 1.13*(yl(2)-yl(1));
-nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
-plot([1 2],[ybar ybar],'k','linewidth',2)
-text(1.5,ytext,get_p_text(ranksum(aucs(stereo),aucs(~stereo))),...
-    'fontsize',15,'horizontalalignment','center')
-ylim(nylim)
-xlim([0.5 2.5])
-title('AUC by implant strategy')
-set(gca,'fontsize',15)
-
-[p,~,stats] = ranksum(aucs(stereo),aucs(~stereo));
-% text
-W = stats.ranksum;
-nt = sum(~(isnan(aucs(stereo))));
-ne = sum(~(isnan(aucs(~stereo))));
-U1 = W - nt*(nt+1)/2;
-U2 = nt*ne-U1;
-U = min([U1,U2]);
-fprintf(fid,[' Patients with stereo-EEG implantations had similar '...
-    'classification AUC '...
-    '(median %1.2f) to those with grid/strip/depth implantations'...
-    ' (median %1.2f) (Mann-Whitney test: <i>U</i>'...
-    '(<i>N<sub>stereo</sub></i> = %d, <i>N<sub>not-stereo</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig 5D).'],nanmedian(aucs(stereo)),nanmedian(aucs(~stereo)),...
-    nt,ne,U,get_p_html(p));
+if 1
+    % Outcome
+    nexttile
+    plot(1+randn(sum(surg_good),1)*0.05,aucs(surg_good),'o','linewidth',2,'color',myColours(1,:))
+    hold on
+    plot(2+randn(sum(surg_bad),1)*0.05,aucs(surg_bad),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
+    xticks([1 2])
+    xticklabels({'Good outcome','Poor outcome'});
+    ylabel('Classification AUC')
+    yl = ylim;
+    ybar = yl(1) + 1.05*(yl(2)-yl(1));
+    ytext = yl(1) + 1.13*(yl(2)-yl(1));
+    nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+    plot([1 2],[ybar ybar],'k','linewidth',2)
+    text(1.5,ytext,get_p_text(ranksum(aucs(surg_good),aucs(surg_bad))),...
+        'fontsize',15,'horizontalalignment','center')
+    ylim(nylim)
+    xlim([0.5 2.5])
+    title('AUC by implant strategy')
+    set(gca,'fontsize',15)
+    
+    [p,~,stats] = ranksum(aucs(surg_good),aucs(surg_bad));
+    % text
+    W = stats.ranksum;
+    nt = sum(~(isnan(aucs(surg_good))));
+    ne = sum(~(isnan(aucs(surg_bad))));
+    U1 = W - nt*(nt+1)/2;
+    U2 = nt*ne-U1;
+    U = min([U1,U2]);
+else
+    % Implant type
+    nexttile
+    plot(1+randn(sum(stereo),1)*0.05,aucs(stereo),'o','linewidth',2,'color',myColours(1,:))
+    hold on
+    plot(2+randn(sum(~stereo),1)*0.05,aucs(~stereo),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
+    xticks([1 2])
+    xticklabels({'Stereo-EEG','Grid/strip/depths'});
+    ylabel('Classification AUC')
+    yl = ylim;
+    ybar = yl(1) + 1.05*(yl(2)-yl(1));
+    ytext = yl(1) + 1.13*(yl(2)-yl(1));
+    nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+    plot([1 2],[ybar ybar],'k','linewidth',2)
+    text(1.5,ytext,get_p_text(ranksum(aucs(stereo),aucs(~stereo))),...
+        'fontsize',15,'horizontalalignment','center')
+    ylim(nylim)
+    xlim([0.5 2.5])
+    title('AUC by implant strategy')
+    set(gca,'fontsize',15)
+    
+    [p,~,stats] = ranksum(aucs(stereo),aucs(~stereo));
+    % text
+    W = stats.ranksum;
+    nt = sum(~(isnan(aucs(stereo))));
+    ne = sum(~(isnan(aucs(~stereo))));
+    U1 = W - nt*(nt+1)/2;
+    U2 = nt*ne-U1;
+    U = min([U1,U2]);
+    fprintf(fid,[' Patients with stereo-EEG implantations had similar '...
+        'classification AUC '...
+        '(median %1.2f) to those with grid/strip/depth implantations'...
+        ' (median %1.2f) (Mann-Whitney test: <i>U</i>'...
+        '(<i>N<sub>stereo</sub></i> = %d, <i>N<sub>not-stereo</sub></i> = %d) ='...
+        ' %1.1f, %s) (Fig 5D).'],nanmedian(aucs(stereo)),nanmedian(aucs(~stereo)),...
+        nt,ne,U,get_p_html(p));
+end
 
 % Localization
 nexttile
