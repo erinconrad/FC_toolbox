@@ -50,8 +50,8 @@ resection_or_ablation = cellfun(@(x) ...
     surgery);
 
 % Parse outcome
-%outcome = cellfun(@(x) parse_outcome(x,'engel'),two_year_engel);
-outcome = cellfun(@(x) parse_outcome(x,'ilae'),two_year_ilae);
+outcome = cellfun(@(x) parse_outcome(x,'engel'),two_year_engel);
+%outcome = cellfun(@(x) parse_outcome(x,'ilae'),two_year_ilae);
 
 % surgery with good outcome or bad outcome
 surg_good = resection_or_ablation & (outcome == 1);

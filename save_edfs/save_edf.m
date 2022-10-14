@@ -110,6 +110,9 @@ for ip = whichPts
         labels = decompose_labels(data.chLabels(:,1),pt_name);
         ekg = find_non_intracranial(labels);
 
+        all_nan = all(isnan(values),1)';
+        ekg = ekg | all_nan;
+
         nchs = sum(~ekg);
         nsamples = size(values,1);
         values = values(:,~ekg);
@@ -135,6 +138,8 @@ for ip = whichPts
         end
         hdr.DigitalMin = repmat(-32768,1,nchs);
         hdr.DigitalMax = repmat(32767,1,nchs);
+
+        
 
         % Get new dates and times to update hdr
         hdr_start = seconds(times(t,1))+base_date;
