@@ -15,7 +15,7 @@ for ib = 1:nb
     % wrap in a while loop to retry if funny errors
     while 1
         %% Do the classifier
-        mout = classifier_with_preimplant([],[],[],just_gray);
+        mout = classifier_with_preimplant([],[],[],just_gray,0);
         %{ 
         first argument [] means don't leave any patients out (do bootstrap
         sampling instead. 2nd

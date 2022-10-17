@@ -1,4 +1,4 @@
-function mout = classifier_with_preimplant(leave_out,wake_or_sleep,duration,just_gray)
+function mout = classifier_with_preimplant(leave_out,wake_or_sleep,duration,just_gray,only_good_outcome)
 
 %{
 This is the main function to do models for the spikes and sleep paper.
@@ -28,6 +28,25 @@ out = out.out;
 %% pt file as well
 pt = load([out_folder1,'pt.mat']);
 pt = pt.pt;
+
+%% Get some outcome stuff
+two_year_engel = out.circ_out.all_two_year_engel;
+two_year_ilae = out.circ_out.all_two_year_ilae;
+surgery = out.circ_out.all_surgery;
+
+% Parse surgery
+resection_or_ablation = cellfun(@(x) ...
+    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
+    surgery);
+
+% Parse outcome
+outcome = cellfun(@(x) parse_outcome(x,'engel'),two_year_engel);
+%outcome = cellfun(@(x) parse_outcome(x,'ilae'),two_year_ilae);
+
+% surgery with good outcome or bad outcome
+surg_good = resection_or_ablation & (outcome == 1);
+surg_bad = resection_or_ablation & (outcome == 0);
+
 
 %% Get stuff
 rate_sw = out.bin_out.all_elecs_rates_sw; %rates wake and sleep
@@ -77,8 +96,18 @@ vec_mri_lesional = [];
 vec_concordant_loc = [];
 vec_concordant_lat = [];
 
+%% Which patients to do
+if only_good_outcome
+    pt_idx = find(surg_good);
+else
+    pt_idx = (1:length(rate_sw))';
+end
+
+
 % Loop over patients
-for ip = 1:length(pt_idx)
+for i = 1:length(pt_idx)
+    
+    ip = pt_idx(i);
     
     %% Get spike rates in different states
     curr_rate_sw = rate_sw{ip};
@@ -161,7 +190,7 @@ for ip = 1:length(pt_idx)
     vec_rate_pre = [vec_rate_pre;curr_rate_pre];
     vec_rate_post = [vec_rate_post;curr_rate_post];
     
-    vec_pt_idx = [vec_pt_idx;repmat(pt_idx(ip),length(curr_rate_post),1)];
+    vec_pt_idx = [vec_pt_idx;repmat(ip,length(curr_rate_post),1)];
 
     vec_soz = [vec_soz;curr_soz];
     vec_rate = [vec_rate;avg_segs_rates];
@@ -176,6 +205,10 @@ end
 T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,...
     vec_rate_pre,vec_rate_post,vec_rate,...
     vec_mri_lesional,vec_concordant_loc,vec_concordant_lat);
+
+if only_good_outcome
+    assert(isequal(find(surg_good),unique(T.vec_pt_idx)))
+end
 
 %% Remove nan and inf rows
 if isempty(wake_or_sleep)

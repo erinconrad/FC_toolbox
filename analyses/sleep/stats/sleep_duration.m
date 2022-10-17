@@ -42,7 +42,7 @@ for iws = 1:2
             else
                 
                 for ib = 1:nb
-                    mout = classifier_with_preimplant(ip,iws,duration,just_gray);
+                    mout = classifier_with_preimplant(ip,iws,duration,just_gray,0);
                     all_aucs(iws,id,ip,ib) = mout.AUC;
                     
                     % if doing the full duration then there's no need to do

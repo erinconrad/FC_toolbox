@@ -1,4 +1,4 @@
-function [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray)
+function [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray,only_good_outcome)
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -18,6 +18,25 @@ out = out.out;
 npts = length(out.circ_out.names);
 all_soz = out.bin_out.all_is_soz;
 
+%% Get some outcome stuff
+two_year_engel = out.circ_out.all_two_year_engel;
+two_year_ilae = out.circ_out.all_two_year_ilae;
+surgery = out.circ_out.all_surgery;
+
+% Parse surgery
+resection_or_ablation = cellfun(@(x) ...
+    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
+    surgery);
+
+% Parse outcome
+outcome = cellfun(@(x) parse_outcome(x,'engel'),two_year_engel);
+%outcome = cellfun(@(x) parse_outcome(x,'ilae'),two_year_ilae);
+
+% surgery with good outcome or bad outcome
+surg_good = resection_or_ablation & (outcome == 1);
+surg_bad = resection_or_ablation & (outcome == 0);
+
+
 
 %% LOO analysis - get distribution of individual patient AUCs
 pt_stats = nan(npts,8); % first 7 are the model coefficients, 8 is AUC
@@ -36,12 +55,17 @@ excluded = zeros(npts,4); % empty soz, empty testing, funny error, one label
 for ip = 1:npts
     %fprintf('\npatient = %d of %d\n',ip,npts);
     curr_soz = all_soz{ip};
+
+    % Don't do if bad outcome
+    if surg_good(ip) == 0 && only_good_outcome == 1
+        continue
+    end
     
     if sum(curr_soz) == 0
         excluded(ip,1) = 1;
         continue;
     else
-        mout = classifier_with_preimplant(ip,[],[],just_gray);
+        mout = classifier_with_preimplant(ip,[],[],just_gray,only_good_outcome);
         %mout = updated_classifier_may2022(ip,1,[],[],just_gray,pre_implant);
         % first argument indicates which patient to be held out as testing
         % data.

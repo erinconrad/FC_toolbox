@@ -1,4 +1,4 @@
-function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration,just_gray,pre_hypothesis)
+function mout = updated_classifier_may2022(leave_out,do_glme,wake_or_sleep,duration,just_gray,pre_hypothesis,only_good_outcome)
 
 %{
 This is the main function to do models for the spikes and sleep paper.
@@ -11,6 +11,8 @@ bootstrap
 - just_gray: only include gray matter electrodes?
 - pre_hypothesis: add in number of regions for supplemental pre-implant
 hypothesis analysis? 1 if yes, 0 if no
+- only_good_outcome: only include patients who had surgery and good
+outcome? 1 if yes, 0 if no
 %}
 
 assert(do_glme==1)
@@ -30,15 +32,40 @@ out_folder1 = [script_folder,'analyses/sleep/data/'];
 out = load([out_folder1,'out.mat']);
 out = out.out;
 
+%% Get some outcome stuff
+two_year_engel = out.circ_out.all_two_year_engel;
+two_year_ilae = out.circ_out.all_two_year_ilae;
+surgery = out.circ_out.all_surgery;
+
+% Parse surgery
+resection_or_ablation = cellfun(@(x) ...
+    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
+    surgery);
+
+% Parse outcome
+outcome = cellfun(@(x) parse_outcome(x,'engel'),two_year_engel);
+%outcome = cellfun(@(x) parse_outcome(x,'ilae'),two_year_ilae);
+
+% surgery with good outcome or bad outcome
+surg_good = resection_or_ablation & (outcome == 1);
+surg_bad = resection_or_ablation & (outcome == 0);
+
+
 %% Get stuff
 rate_sw = out.bin_out.all_elecs_rates_sw; %rates wake and sleep
 soz = out.bin_out.all_is_soz;
-pt_idx = (1:length(rate_sw))';
 rate_pre_post = out.sz_out.pre_post_ictal_rates;
 rate_time = out.time_out.all_spikes;
 ws_time = out.time_out.all_ws;
 elec_locs = out.circ_out.all_elec_locs;
 elec_lats = out.circ_out.all_elec_lats;
+
+%% Which patients to do
+if only_good_outcome
+    pt_idx = find(surg_good);
+else
+    pt_idx = (1:length(rate_sw))';
+end
 
 %% Get loc_lat_count
 %loc_lat_count_struct = count_locs_and_lats(elec_locs,elec_lats);
@@ -55,7 +82,9 @@ vec_soz = [];
 %vec_curr_lat_count = [];
 
 % Loop over patients
-for ip = 1:length(pt_idx)
+for i = 1:length(pt_idx)
+    
+    ip = pt_idx(ip);
     
     %% Get spike rates in different states
     curr_rate_sw = rate_sw{ip};

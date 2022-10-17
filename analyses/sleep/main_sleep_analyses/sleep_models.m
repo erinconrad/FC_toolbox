@@ -24,7 +24,11 @@ fprintf('\nDoing bootstrap to get model stats\n');
 
 % LOO
 fprintf('\nDoing LOO analysis to get individual patient performance\n');
-[pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray);
+[pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray,0);
+
+% Do special LOO only for good outcome patients
+fprintf('\nDoing LOO analysis only for good outcome patients\n');
+[pt_stats_good,X_good,Y_good,pt_specific_good,excluded_good] = sleep_loo(just_gray,1);
 
 % Get AUC for sleep and wake as a function of duration
 fprintf('\nDoing duration analysis\n');
@@ -40,6 +44,11 @@ nmout.time_aucs = time_aucs;
 nmout.excluded = excluded;
 nmout.durations = durations;
 
+nmout.good.pt_stats = pt_stats_good;
+nmout.good.X = X_good;
+nmout.good.Y = Y_good;
+nmout.good.pt_specific = pt_specific_good;
+nmout.good.excluded = excluded_good;
 
 
         
