@@ -56,8 +56,6 @@ sz_out = seizure_time_histogram(disc);
 %% Put together
 out.circ_out = circ_out;
 out.roc_out = roc_out;
-%out.subnet_out = subnet_out;
-%out.sleep_hist_out = sleep_hist_out;
 out.sz_circ_out = sz_circ_out;
 out.bin_out = bin_out;
 out.sz_out = sz_out;
@@ -67,7 +65,6 @@ out.seeg_out = seeg_out;
 out.seeg_ad_out = seeg_ad_out;
 
 save([out_folder,'out.mat'],'out')
-return
 
 %% Do sleep models
 fprintf('\nDoing sleep models\n');

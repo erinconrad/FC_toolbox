@@ -366,6 +366,7 @@ end
 %% Also get PPV and NPV for a specific spot on curve
 % Pick the threshold to be that such that the model estimates that p of the
 % electrodes are the SOZ, where p is the true proportion of SOZ electrodes
+%{
 nsoz = sum(all_soz);
 
 % Calculate the number of predicted SOZ for each possible threshold in T
@@ -373,6 +374,7 @@ n_pred_soz = nan(length(T),1);
 for it = 1:length(T)
     n_pred_soz(it) = sum(classification >= T(it));
 end
+%}
 
 
 if 0

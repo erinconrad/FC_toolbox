@@ -30,9 +30,10 @@ fprintf('\nDoing LOO analysis to get individual patient performance\n');
 fprintf('\nDoing LOO analysis only for good outcome patients\n');
 [pt_stats_good,X_good,Y_good,pt_specific_good,excluded_good] = sleep_loo(just_gray,1);
 
-% Get AUC for sleep and wake as a function of duration
+% Get AUC for sleep and wake as a function of duration; this also looks at
+% different sleep stages
 fprintf('\nDoing duration analysis\n');
-time_aucs = sleep_duration(durations,just_gray);
+[time_aucs,multi_auc,multi_X,multi_Y] = sleep_duration(durations,just_gray);
 
 nmout.coeff_stats = coeff_stats;
 nmout.coeff_names = coeff_names;
@@ -43,6 +44,9 @@ nmout.pt_specific = pt_specific;
 nmout.time_aucs = time_aucs;
 nmout.excluded = excluded;
 nmout.durations = durations;
+nmout.multi_auc = multi_auc;
+nmout.multi_X = multi_X;
+nmout.multi_Y = multi_Y;
 
 nmout.good.pt_stats = pt_stats_good;
 nmout.good.X = X_good;
