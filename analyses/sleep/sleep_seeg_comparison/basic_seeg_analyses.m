@@ -102,6 +102,7 @@ for p = 1:npts
 end
 
 out.all_elec_rates_ss = all_elec_rates_ss;
+out.all_ss = all_ss;
 out.fc_ss = fc_ss;
 out.spread_ss = spread_ss;
 out.nseq_ss = nseq_ss;
