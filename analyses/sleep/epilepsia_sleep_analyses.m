@@ -27,8 +27,8 @@ disc = roc_out.disc;
 
 %% Do SleepSEEG analyses
 fprintf('\nDoing SleepSEEG analyses\n')
-%seeg_out = basic_seeg_analyses;
-%seeg_ad_out = sleep_seeg_ad;
+seeg_out = basic_seeg_analyses;
+seeg_ad_out = sleep_seeg_ad(0);
 
 %% Time-varying analysis
 fprintf('\nDoing time-varying analysis\n');
@@ -63,6 +63,8 @@ out.bin_out = bin_out;
 out.sz_out = sz_out;
 out.time_out = time_out;
 out.out_folder = out_folder;
+out.seeg_out = seeg_out;
+out.seeg_ad_out = seeg_ad_out;
 
 save([out_folder,'out.mat'],'out')
 
@@ -78,8 +80,7 @@ model_out_gray = sleep_models(1);
 
 out.model_out = model_out;
 out.model_out_gray = model_out_gray;
-%out.seeg_out = seeg_out;
-%out.seeg_ad_out = seeg_ad_out;
+
 
 %% Save out file
 save([out_folder,'out.mat'],'out')

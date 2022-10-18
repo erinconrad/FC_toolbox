@@ -1,4 +1,4 @@
-function epilepsia_figure5
+function epilepsia_figure5_pre_revision
 
 
 %% Parameters
@@ -128,7 +128,19 @@ pt_specific = nmout.pt_specific;
 aucs = pt_stats(:,8);
 scores =  pt_specific(:,1);
 soz = pt_specific(:,3);
+threshold = pt_specific(:,2);
+desired_threshold = [];
+[npv,ppv,pred,totaln,mat,threshold,acc] = cellfun(@(x,y,z) individual_threshold_stats(x,y,z,desired_threshold),...
+    scores,soz,threshold,'uniformoutput',false);
+npv = cell2mat(npv);
+ppv = cell2mat(ppv);
+acc = cell2mat(acc);
+threshold_mat = cell2mat(threshold);
 
+if 0
+    % compare nsoz to n predicted
+    table(pred,cellfun(@sum,soz))
+end
 
 %% PLot ROC
 Y = nmout.Y;
@@ -139,12 +151,11 @@ ste_Y = std_Y./sqrt(size(Y,1));
 ly = ym-std_Y;
 uy = ym+std_Y;
 nexttile
-t1 = gca;
 %plot(X,ym,'linewidth',2)
 mp = shaded_error_bars_fc(X,ym,[ly;uy],'k');
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
-
+legend(mp,sprintf('Mean AUC %1.2f',nanmean(aucs)),'location','southeast','fontsize',15)
 xlabel('False positive rate')
 ylabel('True positive rate')
 title('SOZ classification accuracy')
@@ -158,22 +169,28 @@ fprintf(fid,['<p>We next assessed how well this model would '...
     '(mean (SD) AUC =  %1.2f (%1.2f)). '],...
     nanmean(aucs,1),nanstd(aucs,[],1),nanmean(nmout_gray.pt_stats(:,8),1),nanstd(nmout_gray.pt_stats(:,8),[],1));
 
+%% Get all data for single confusion matrix
+% Convert everything to long vectors
+all_scores = [];
+all_thresholds = [];
+all_soz = [];
+for i = 1:length(soz)
+    all_scores = [all_scores;scores{i}];
+    all_soz = [all_soz;soz{i}];
+    all_thresholds = [all_thresholds;repmat(threshold{i},length(soz{i}),1)];
+    
+end
 
-% Arbitrary threshold: on average, get number of SOZ equal to true %
-perc_soz = cellfun(@(x) sum(x==1)/length(x),soz);
-mean_perc_soz = nanmean(perc_soz);
+% Do confusion matrix for this
+[all_npv,all_ppv,all_pred,all_totaln,all_mat,all_threshold,all_acc] = individual_threshold_stats(all_scores,all_soz,[],all_thresholds);
 
-desired_threshold = 0.3;
-[npv,ppv,pred,totaln,mat,threshold,acc,sens,spec] = cellfun(@(x,y,z) individual_threshold_stats(x,y,desired_threshold),...
-    scores,soz,'uniformoutput',false);
-sens = cell2mat(sens);
-spec = cell2mat(spec);
-npv = cell2mat(npv);
-ppv = cell2mat(ppv);
-acc = cell2mat(acc);
-mat = cat(3,mat{:}); mat = mat./nansum(mat,[1 2]);
-all_mat = nanmean(mat,3);
+% Compare to alternate way, make sure same
+mat = cat(3,mat{:});
+mat = nansum(mat,3);
+alt_total_ppv = mat(2,2)/(mat(2,2) + mat(1,2));
+alt_total_npv = mat(1,1)/(mat(1,1) + mat(2,1));
 
+assert(alt_total_ppv == all_ppv || alt_total_npv == all_npv)
 
 %% Plot confusion matrix
 nexttile
@@ -189,30 +206,26 @@ hold on
 conf_text = {'True negatives','False positives';'False negatives','True positives'};
 for ic = 1:2
     for jc = 1:2
-        text(ic,jc,sprintf('%s:\n%1.1f%%',conf_text{jc,ic},all_mat(jc,ic)*100),'horizontalalignment','center','fontsize',20,'fontweight','bold')
+        text(ic,jc,sprintf('%s:\n%d',conf_text{jc,ic},all_mat(jc,ic)),'horizontalalignment','center','fontsize',20,'fontweight','bold')
     end
 end
-title(sprintf(['Accuracy: %1.1f%%,'...
+title(sprintf(['All patients in aggregate\nAccuracy: %1.1f%%,'...
      ' PPV: %1.1f%%, NPV: %1.1f%%'],...
-nanmean(acc)*100,...
-nanmean(ppv)*100,nanmean(npv)*100))
+all_acc*100,...
+all_ppv*100,all_npv*100))
 set(gca,'fontsize',15)
-tp=plot(t1,1-nanmean(spec),nanmean(sens),'*','markersize',15,'linewidth',2);
-legend(t1,[mp,tp],...
-    {sprintf('Mean AUC %1.2f',nanmean(aucs)),sprintf('Select threshold %1.2f',desired_threshold)}...
-    ,'location','southeast','fontsize',15)
 
 %% Make sure ppv what i expect
-%assert(abs(all_ppv-mat(2,2)/(mat(1,2)+mat(2,2)))<0.01)
+assert(abs(all_ppv-mat(2,2)/(mat(1,2)+mat(2,2)))<0.01)
 
 %% Text
-fprintf(fid,['To provide an example of real-world classifier performance, we examined a range of thresholds. '...
-    'Figure S3 shows the resulting confusion matrices for several choices of thresholds. '...
-    'For an arbitrarily chosen threshold of %1.2f, the '...
+fprintf(fid,['To provide an example of real-world classifier performance, we selected patient-specific thresholds, '...
+    'each chosen such that the number of SOZ electrodes predicted by the model equaled the number of '...
+    'clinician-defined SOZ electrodes (which varied across patients). Aggregating all patient data, the '...
     'resulting confusion matrix had an accuracy of %1.1f%%, a positive predictive value (PPV) of '...
     '%1.1f%%, and a negative predictive value (NPV) of %1.1f%% (Fig 5B). '],...
-    nanmean(acc)*100,...
-    nanmean(ppv)*100,nanmean(npv)*100);
+    all_acc*100,...
+    all_ppv*100,all_npv*100);
 
 
 
@@ -416,8 +429,5 @@ close all
 
 fclose(fid);
 fclose(sfid);
-
-%% Get all data for single confusion matrix
-epilepsia_supplemental_range_threshold(scores,soz,X,ym);
 
 end

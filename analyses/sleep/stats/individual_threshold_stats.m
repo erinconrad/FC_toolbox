@@ -1,4 +1,4 @@
-function [npv,ppv,npred,totaln,mat,desired_threshold,acc] = individual_threshold_stats(scores,true_labels,T,desired_threshold)
+function [npv,ppv,npred,totaln,mat,desired_threshold,acc,sens,spec] = individual_threshold_stats(scores,true_labels,desired_threshold)
 
 if isempty(scores)
     npv = nan;
@@ -8,11 +8,14 @@ if isempty(scores)
     mat = [nan,nan;nan,nan];
     desired_threshold = nan;
     acc = nan;
+    sens = nan;
+    spec = nan;
     return
 end
 
 if isempty(desired_threshold)
     
+    %{
     nsoz = sum(true_labels == 1);
     
     % Calculate the number of predicted SOZ for each possible threshold in T
@@ -27,6 +30,7 @@ if isempty(desired_threshold)
 
     % Get corresponding threshold
     desired_threshold = T(I);
+    %}
 end
 
 true_labels = arrayfun(@num2str,true_labels,'uniformoutput',false);
@@ -42,5 +46,7 @@ mat = out.mat;
 acc = out.accuracy;
 npred = sum(scores > desired_threshold);
 totaln = length(scores);
+sens = out.sensitivity;
+spec = out.specificity;
 
 end

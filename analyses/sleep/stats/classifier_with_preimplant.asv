@@ -95,10 +95,6 @@ vec_mri_lesional = [];
 vec_concordant_loc = [];
 vec_concordant_lat = [];
 
-vec_rate_1 = [];
-vec_rate_2 = [];
-vec_rate_3
-
 %% Which patients to do
 if only_good_outcome
     pt_idx = find(surg_good);

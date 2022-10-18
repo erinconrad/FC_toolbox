@@ -1,4 +1,4 @@
-function out = sleep_seeg_ad
+function out = sleep_seeg_ad(do_plot)
 
 % Cool! It looks like the normalized AD ratio agrees pretty well with the
 % Sleep SEEG designations if I simplify them to wake/sleep. Interestingly,
@@ -98,7 +98,7 @@ out.altY = altY;
 out.altAUC = altAUC;
 
 %% Show scores for different states
-if 1
+if do_plot
     figure
     set(gcf,'position',[289 517 1001 280])
     tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
