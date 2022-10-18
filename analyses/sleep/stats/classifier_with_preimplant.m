@@ -1,4 +1,4 @@
-function mout = classifier_with_preimplant(leave_out,wake_or_sleep,duration,just_gray,only_good_outcome)
+function mout = classifier_with_preimplant(leave_out,wake_or_sleep,duration,just_gray,only_good_outcome,multi_stage)
 
 %{
 This is the main function to do models for the spikes and sleep paper.
@@ -56,7 +56,7 @@ ws_time = out.time_out.all_ws;
 elec_locs = out.circ_out.all_elec_locs;
 names = out.circ_out.names;
 npts = length(names);
-rate_ss = out.seeg_out.all_elec_rates_ss; % rates rem, wake, n1, n2, n3
+ss_times = out.seeg_out.all_ss_times;
 
 %% Get preimplant data
 mri_lesional = cell(npts,1);
@@ -95,10 +95,6 @@ vec_mri_lesional = [];
 vec_concordant_loc = [];
 vec_concordant_lat = [];
 
-vec_rate_1 = [];
-vec_rate_2 = [];
-vec_rate_3
-
 %% Which patients to do
 if only_good_outcome
     pt_idx = find(surg_good);
@@ -136,7 +132,11 @@ for i = 1:length(pt_idx)
     
     %% Get the indices of the time segments of wake or sleep
     if ~isempty(wake_or_sleep)
-        curr_ws_time = ws_time{ip,wake_or_sleep};
+        if multi_stage
+            curr_ws_time = ss_times{ip,wake_or_sleep};
+        else
+            curr_ws_time = ws_time{ip,wake_or_sleep};
+        end
         curr_indices = find(curr_ws_time == 1); % find the indices matching the desired state
     else
         curr_indices = 1:size(curr_rate_time,2);

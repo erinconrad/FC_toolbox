@@ -67,6 +67,7 @@ out.seeg_out = seeg_out;
 out.seeg_ad_out = seeg_ad_out;
 
 save([out_folder,'out.mat'],'out')
+return
 
 %% Do sleep models
 fprintf('\nDoing sleep models\n');
