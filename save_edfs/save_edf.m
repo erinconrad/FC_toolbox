@@ -110,8 +110,8 @@ for ip = whichPts
         labels = decompose_labels(data.chLabels(:,1),pt_name);
         ekg = find_non_intracranial(labels);
 
-        all_nan = all(isnan(values),1)';
-        ekg = ekg | all_nan;
+        %all_nan = all(isnan(values),1)';
+        %ekg = ekg | all_nan;
 
         nchs = sum(~ekg);
         nsamples = size(values,1);
