@@ -30,7 +30,7 @@ nseq_ss = nan(npts,nstages);
 spread_ss = nan(npts,nstages);
 fc_ss = nan(npts,nstages);
 all_elec_rates_ss = cell(npts,1);
-all_ss = cell(npts,5); %{'R','W','N1','N2','N3'}
+all_ss_times = cell(npts,5); %{'R','W','N1','N2','N3'}
 
 %% Loop over patients
 for p = 1:npts
@@ -96,12 +96,13 @@ for p = 1:npts
     %% All electrode spike rates in different sleep stages (for model)
     for is = 1:nstages
         all_elec_rates_ss{p}(:,is) = nanmean(spikes(:,strcmp(seeg_stage,all_ss{is})),2);
-        all_ss{p,is} = strcmp(seeg_stage,all_ss{is});
+        all_ss_times{p,is} = strcmp(seeg_stage,all_ss{is});
     end
 
 end
 
 out.all_elec_rates_ss = all_elec_rates_ss;
+out.all_ss_times = all_ss_times;
 out.all_ss = all_ss;
 out.fc_ss = fc_ss;
 out.spread_ss = spread_ss;
