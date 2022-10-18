@@ -129,12 +129,12 @@ for ip = whichPts
         hdr.NumSignals = nchs;
         hdr.SignalLabels = labels;
         hdr.PhysicalDimensions = repelem("uV",nchs);
-        if all(isnan(values),'all')
-            hdr.PhysicalMin = repmat(-1e3,1,nchs);
-            hdr.PhysicalMax = repmat(1e3,1,nchs);
-        else
-            hdr.PhysicalMin = min(values);
-            hdr.PhysicalMax = max(values);
+        hdr.PhysicalMin = min(values);
+        hdr.PhysicalMax = max(values);
+
+        hdr.PhysicalMin(isnan(hdr.PhysicalMin)) = -1e3;
+        hdr.PhysicalMax(isnan(hdr.PhysicalMax)) = 1e3;
+            
         end
         hdr.DigitalMin = repmat(-32768,1,nchs);
         hdr.DigitalMax = repmat(32767,1,nchs);
