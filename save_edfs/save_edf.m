@@ -135,7 +135,7 @@ for ip = whichPts
         hdr.PhysicalMin(isnan(hdr.PhysicalMin)) = -1e3;
         hdr.PhysicalMax(isnan(hdr.PhysicalMax)) = 1e3;
             
-        end
+        
         hdr.DigitalMin = repmat(-32768,1,nchs);
         hdr.DigitalMax = repmat(32767,1,nchs);
 
