@@ -26,6 +26,18 @@ fprintf('\nDoing bootstrap to get model stats\n');
 fprintf('\nDoing LOO analysis to get individual patient performance\n');
 [pt_stats,X,Y,pt_specific,excluded] = sleep_loo(just_gray,0);
 
+nmout.coeff_stats = coeff_stats;
+nmout.coeff_names = coeff_names;
+nmout.pt_stats = pt_stats;
+nmout.X = X;
+nmout.Y = Y;
+nmout.pt_specific = pt_specific;
+nmout.excluded = excluded;
+
+if just_gray
+    return
+end
+
 % Do special LOO only for good outcome patients
 fprintf('\nDoing LOO analysis only for good outcome patients\n');
 [pt_stats_good,X_good,Y_good,pt_specific_good,excluded_good] = sleep_loo(just_gray,1);
@@ -35,14 +47,9 @@ fprintf('\nDoing LOO analysis only for good outcome patients\n');
 fprintf('\nDoing duration analysis\n');
 [time_aucs,multi_auc,multi_X,multi_Y] = sleep_duration(durations,just_gray);
 
-nmout.coeff_stats = coeff_stats;
-nmout.coeff_names = coeff_names;
-nmout.pt_stats = pt_stats;
-nmout.X = X;
-nmout.Y = Y;
-nmout.pt_specific = pt_specific;
+
 nmout.time_aucs = time_aucs;
-nmout.excluded = excluded;
+
 nmout.durations = durations;
 nmout.multi_auc = multi_auc;
 nmout.multi_X = multi_X;
