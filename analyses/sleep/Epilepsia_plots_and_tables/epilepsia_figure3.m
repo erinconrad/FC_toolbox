@@ -29,8 +29,8 @@ out_folder = [results_folder,'analysis/sleep/epilepsia/'];
 fid = fopen([out_folder,'results.html'],'a');
 
 figure
-set(gcf,'position',[100 100 1100 350])
-tiledlayout(1,3,'tilespacing','tight','padding','tight')
+set(gcf,'position',[100 100 1100 650])
+tiledlayout(2,3,'tilespacing','tight','padding','tight')
 
 %% 2B independent spikes
 seq_sw = bin_out.seq_sw; %1,2,3,4 are #seq wake, #seq sleep, seq length wake, seq length sleep, respectively
@@ -139,6 +139,43 @@ fprintf(fid,[' To test a potential mechanism for the increased spike rates in sl
     ' as measured by the average node strength was higher in sleep (median %1.1f)'...
     ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3C).</p>'],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+
+%% Prep sleep state stuff
+all_ss = out.seeg_out.all_ss;
+fc_ss = out.seeg_out.fc_ss;
+spread_ss = out.seeg_out.spread_ss;
+nseq_ss = out.seeg_out.nseq_ss;
+
+% rm n1
+n1 = strcmp(all_ss,'N1');
+fc_ss(:,n1) = [];
+spread_ss(:,n1) = [];
+nseq_ss(:,n1) = [];
+all_ss(n1) = [];
+
+%% Spikes sequences by sleep state
+nexttile
+b=boxplot(nseq_ss,'labels',all_ss);
+set(b,'linewidth',2)
+set(gca,'fontsize',15)
+ylabel('# Spike sequences')
+title('Spike sequences across sleep stages')
+
+%% Spikes spread by sleep state
+nexttile
+b=boxplot(spread_ss,'labels',all_ss);
+set(b,'linewidth',2)
+set(gca,'fontsize',15)
+ylabel('# Spikes/sequence')
+title('Spike spread across sleep stages')
+
+%% FC by sleep state
+nexttile
+b=boxplot(fc_ss,'labels',all_ss);
+set(b,'linewidth',2)
+set(gca,'fontsize',15)
+ylabel('Average node strength')
+title('Connectivity across sleep stages')
 
 
 %% Add annotations

@@ -5,7 +5,7 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/sleep/'];
 edf_out_dir = [results_folder,'edf_out/'];
-int_folder = [results_folder,'analysis/backup_intermediate_Feb26_good_spikes/'];
+int_folder = [results_folder,'analysis/intermediate_epilepsia_revision/'];
 seeg_folder = [results_folder,'analysis/sleep/sleep_seeg/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)

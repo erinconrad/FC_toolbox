@@ -31,8 +31,8 @@ fid = fopen([out_folder,'results.html'],'a');
 fprintf(fid,'<p><b>Changes in spikes with sleep</b><br>');
 
 figure
-set(gcf,'position',[10 10 900 600])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+set(gcf,'position',[10 10 900 1000])
+tiledlayout(3,2,'tilespacing','tight','padding','tight')
 
 %% A - PSD
 median_psd = circ_out.median_psd;
@@ -224,13 +224,46 @@ ylim(ylnew)
 
 fprintf(fid,[' There was no significant difference in sleep-wake spike rate difference between patients'...
     ' with mesial temporal lobe epilepsy and patients with neocortical epilepsy '...
-    '(Supplemental Figure 1A, Supplemental Table 2).</p>']);
+    '(Supplemental Figure 1A, Supplemental Table 2). ']);
+
+%% Spike rate change by sleep state
+nexttile([1 2])
+rate_ss = out.seeg_out.rate_ss;
+all_ss = out.seeg_out.all_ss;
+
+% rm n1
+n1 = strcmp(all_ss,'N1');
+rate_ss(:,n1) = [];
+all_ss(n1) = [];
+b=boxplot(rate_ss,'labels',all_ss);
+set(b,'linewidth',2)
+set(gca,'fontsize',15)
+ylabel('Spikes/elec/min')
+title('Spike rate across detected sleep stages')
+
+
+% Friedman test
+rows_with_any_nans = any(isnan(rate_ss),2);
+[p,tbl,stats] = friedman(rate_ss(~rows_with_any_nans,:),1,'off');
+
+fprintf(fid,['Spike rates differed across specific detected sleep states with '...
+    'higher rates in NREM sleep and lower rates in REM and wakefulness'...
+    '(Friedman test for a difference across states: &Chi;<sub>2</sub>(%d) = %1.1f, %s;'...
+    ' Figure 2E; Supplemental Table 3 shows individual state descriptive statistics and '...
+    'comparisons).'],tbl{2,3},tbl{2,5},get_p_html(tbl{2,6}));
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.41 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.41 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.57 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.5 0.57 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.23 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+
+%% Make supplemental table
+sleep_comparison_table(rate_ss,all_ss)
+
+%fprintf(fid,[''])
+
 
 fclose(fid);
 print([out_folder,'Fig2'],'-depsc')

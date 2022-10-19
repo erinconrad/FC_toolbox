@@ -128,9 +128,11 @@ pt_specific = nmout.pt_specific;
 aucs = pt_stats(:,8);
 scores =  pt_specific(:,1);
 soz = pt_specific(:,3);
+good_aucs = nmout.good.pt_stats(:,8);
 
 
 %% PLot ROC
+
 Y = nmout.Y;
 X = nmout.X;
 ym = nanmean(Y,1);
@@ -138,11 +140,22 @@ std_Y = nanstd(Y,[],1);
 ste_Y = std_Y./sqrt(size(Y,1));
 ly = ym-std_Y;
 uy = ym+std_Y;
+
+good_X = nmout.good.X;
+good_Y = nmout.good.Y;
+ym_good = nanmean(good_Y,1);
+std_Y_good = nanstd(good_Y,[],1);
+ste_Y_good = std_Y_good./sqrt(size(good_Y,1));
+ly_good = ym_good-std_Y_good;
+uy_good = ym_good+std_Y_good;
+
+
 nexttile
 t1 = gca;
 %plot(X,ym,'linewidth',2)
 mp = shaded_error_bars_fc(X,ym,[ly;uy],'k');
 hold on
+%mpg = shaded_error_bars_fc(good_X,ym_good,[ly_good;uy_good],[0.8500 0.3250 0.0980]);
 plot([0 1],[0 1],'k--','linewidth',2)
 
 xlabel('False positive rate')
@@ -155,8 +168,11 @@ fprintf(fid,['<p>We next assessed how well this model would '...
     'localize the SOZ in new patients. The mean (standard deviation) AUC of '...
     'an ROC curve representing classifier performance on the leave-one-out test patient was %1.2f (%1.2f) (Fig 5A). '...
     'Results were similar for a model analyzing electrodes in gray matter only '...
+    '(mean (SD) AUC =  %1.2f (%1.2f)). Results were also similar for a model '...
+    'analyzing only patients who underwent surgery and had good (two year Engel 1A-D) outcome '...
     '(mean (SD) AUC =  %1.2f (%1.2f)). '],...
-    nanmean(aucs,1),nanstd(aucs,[],1),nanmean(nmout_gray.pt_stats(:,8),1),nanstd(nmout_gray.pt_stats(:,8),[],1));
+    nanmean(aucs,1),nanstd(aucs,[],1),nanmean(nmout_gray.pt_stats(:,8),1),nanstd(nmout_gray.pt_stats(:,8),[],1),...
+    nanmean(good_aucs),nanstd(good_aucs));
 
 
 % Arbitrary threshold: on average, get number of SOZ equal to true %
@@ -199,7 +215,7 @@ nanmean(ppv)*100,nanmean(npv)*100))
 set(gca,'fontsize',15)
 tp=plot(t1,1-nanmean(spec),nanmean(sens),'*','markersize',15,'linewidth',2);
 legend(t1,[mp,tp],...
-    {sprintf('Mean AUC %1.2f',nanmean(aucs)),sprintf('Select threshold %1.2f',desired_threshold)}...
+    {sprintf('Mean AUC %1.2f',nanmean(aucs)),sprintf('Chosen threshold %1.2f',desired_threshold)}...
     ,'location','southeast','fontsize',15)
 
 %% Make sure ppv what i expect
@@ -216,6 +232,7 @@ fprintf(fid,['To provide an example of real-world classifier performance, we exa
 
 
 
+%{
 %% PPVs and NPVs for each patient
 % Sort lowest to highest AUC
 nexttile
@@ -235,11 +252,12 @@ set(gca,'fontsize',15)
 xlabel('Patient')
 %ylabel('AUC')
 ylabel('AUC')
+%}
 
-fprintf(fid,'Model performance was highly variable across patients (Fig 5C).');
+fprintf(fid,'Model performance was highly variable across patients.');
 
 %% Do between-patient analyses
-if 1
+if 0
     % Outcome
     nexttile
     plot(1+randn(sum(surg_good),1)*0.05,aucs(surg_good),'o','linewidth',2,'color',myColours(1,:))
@@ -403,6 +421,27 @@ fprintf(fid,['<p>We next studied what duration of interictal data was needed '..
     mean_estimate_10,ste_estimate_10);
 %}
 
+%% Multiple sleep stages
+multi_X = out.model_out.multi_X;
+multi_Y = out.model_out.multi_Y;
+all_ss = out.seeg_out.all_ss;
+multi_AUC = out.model_out.multi_auc;
+nexttile
+mss = nan(5,1);
+auc_text = cell(5,1);
+for i = 1:5
+    mss(i) = plot(multi_X{i},nanmean(multi_Y{i},1),'linewidth',2);
+    hold on
+    auc_text{i} = sprintf('%s AUC: %1.2f',all_ss{i},nanmean(multi_AUC(:,i)));
+end
+plot([0 1],[0 1],'k--','linewidth',2)
+title('Accuracy by sleep state')
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend(mss,auc_text,'location','southeast')
+set(gca,'fontsize',15)
+
+
 %% Annotations
 annotation('textbox',[0 0.9 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
@@ -412,12 +451,14 @@ annotation('textbox',[0 0.23 0.1 0.1],'String','E','fontsize',25,'linestyle','no
 annotation('textbox',[0.5 0.23 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
 
 print(gcf,[out_folder,'Fig5'],'-depsc')
+
+
+%% Get all data for single confusion matrix
+epilepsia_supplemental_range_threshold(scores,soz,X,ym);
+
 close all
 
 fclose(fid);
 fclose(sfid);
-
-%% Get all data for single confusion matrix
-epilepsia_supplemental_range_threshold(scores,soz,X,ym);
 
 end
