@@ -118,7 +118,7 @@ for f = 1:nfiles
             data_uw(logical(eye(size(data_uw)))) = nan;
             
             % Take R^2
-            %data_uw = (data_uw).^2;
+            data_uw = (data_uw).^2;
             
             %% Default thigns to nan
             spikes = nan(nchs,1); % default to nan
