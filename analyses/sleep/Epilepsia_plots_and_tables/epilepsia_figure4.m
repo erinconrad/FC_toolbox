@@ -45,7 +45,7 @@ fprintf(fid,'<p><b>Changes in spikes with seizures</b>');
 
 figure
 set(gcf,'position',[100 100 1000 700])
-tiledlayout(4,2,'tilespacing','tight','padding','tight')
+tiledlayout(4,2,'tilespacing','tight','padding','loose')
 
 
 %% Seizure time of day
@@ -206,16 +206,17 @@ missing_semiology = cellfun(@isempty,semiology);
 szT(missing_semiology,:) = [];
 mdl = fitlme(szT,'pre_post_change ~ semiology + (1|pt_id)');
 
-fprintf(fid,[' We performed a linear mixed effects model examining 169 seizures with '...
+fprintf(fid,[' We performed a linear mixed effects model examining %d seizures from %d patients with '...
     'semiology designations (subclinical vs FAS vs FIAS vs FBTCS). Each seizure was an observation, '...
     'the post-preictal spike rate difference (spikes/elecs/min) was the response variable, the '...
-    'semiology was the categorical predictor, and the patient identifier was a random effect. '...
+    'semiology was the categorical fixed effects predictor, and the patient identifier was a random effect. '...
     'The estimate for the post-preictal spike rate difference was %1.2f (95%% CI %1.2f-%1.2f, %s). '...
-    'There was no significant effect of semiology on post-ictal spike rate change (Supplemental Table 4).<p>'],...
-    mdl.Coefficients.Estimate(1),mdl.Coefficients.Lower(1),mdl.Coefficients.Upper(1),...
+    'There was no significant effect of semiology on post-ictal spike rate change (Supplemental Table 7).<p>'],...
+    size(szT,1),length(unique(szT.pt_id)),mdl.Coefficients.Estimate(1),mdl.Coefficients.Lower(1),mdl.Coefficients.Upper(1),...
     get_p_html(mdl.Coefficients.pValue(1)));
 
-%% Make the supplemental table
+% Make the supplemental table (I inputted the values manually because I am
+% lazy)
 
 nexttile([2 1])
 h =boxplot(szT.pre_post_change,szT.semiology);
@@ -250,7 +251,7 @@ fprintf(sfid,['<p>Visually, there was no obvious preictal increase in spikes (Fi
 % Secondary analyses
 fprintf(sfid,[' However, spike rates were significantly higher in the late preictal period than'...
     ' in the early preictal period when performing our secondary analysis of 3-hour preictal windows (<i>p</i> = 0.018) '...
-    'and 12-hour preictal windows (<i>p</i> = 0.017) (Supplemental Table 1).']); 
+    'and 12-hour preictal windows (<i>p</i> = 0.017) (Supplemental Table 6).']); 
 
 %% Rate diff in preictal period by epilepsy localization
 rate_diff = early_late(:,2)-early_late(:,1);
@@ -270,7 +271,7 @@ fprintf(sfid,[' For the primary analysis of a 6-hour preictal period, the early-
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
     ' %1.1f, %s) (Supplemental Figure 2D). There was also no significant difference in the preictal spike '...
     'rate change between epilepsy localizations when studying the 3-hour '...
-    '(<i>p</i> = 0.64) or 12-hour preictal windows (<i>p</i> = 0.41) (Supplemental Table 1).'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
+    '(<i>p</i> = 0.64) or 12-hour preictal windows (<i>p</i> = 0.41) (Supplemental Table 6).'],nanmedian(rate_diff(temporal)),nanmedian(rate_diff(extra)),...
     nt,ne,U,get_p_html(p));
 
 
@@ -278,9 +279,10 @@ fprintf(sfid,[' For the primary analysis of a 6-hour preictal period, the early-
 
 
 %% Add annotations
-annotation('textbox',[0 0.915 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.34 0.915 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0.685 0.915 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.9 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.42 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.5 0.42 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
 
 %% Add box around D

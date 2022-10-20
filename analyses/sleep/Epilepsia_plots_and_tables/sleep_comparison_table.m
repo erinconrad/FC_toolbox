@@ -1,4 +1,4 @@
-function sleep_comparison_table(rate_ss,all_ss)
+function sleep_comparison_table(rate_ss,all_ss,fname)
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -6,7 +6,7 @@ results_folder = [locations.main_folder,'results/'];
 plot_folder = [results_folder,'analysis/sleep/epilepsia/'];
 
 
-fname = 'Table5.html';
+
     
 %% Initialize table file
 if exist([plot_folder,fname])~=0
@@ -46,7 +46,7 @@ fprintf(fid,'<tr>');
 fprintf(fid,'<th></th>');
 
 % Make a blank column
-fprintf(fid,'<th></th>');
+%fprintf(fid,'<th></th>');
 
 for im = 1:nss
     fprintf(fid,'<th>%s</th>',all_ss{im});
@@ -56,7 +56,7 @@ fprintf(fid,'</tr>');
 %% FIll in first row with basic significance test of AUC
 % Make a column that is the model name
 fprintf(fid,'<th>%s</th>','Descriptive statistics');
-fprintf(fid,'<th></th>'); % blank one
+%fprintf(fid,'<th></th>'); % blank one
 for im = 1:nss
     fprintf(fid,'<td>');
     fprintf(fid,'Median: %1.2f, IQR %1.2f-%1.2f',...
@@ -71,7 +71,7 @@ for im = 1:nss
     % Make a column that is the model name
     fprintf(fid,'<th>%s</th>',all_ss{im});
 
-    fprintf(fid,'<th></th>'); % blank one
+    %fprintf(fid,'<th></th>'); % blank one
     
     for jm = 1:nss
         

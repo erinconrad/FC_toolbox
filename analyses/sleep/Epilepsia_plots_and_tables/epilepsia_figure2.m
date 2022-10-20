@@ -96,7 +96,7 @@ thetaticklabels(hours_mins(1:skip:nbins+1))
 set(gca,'fontsize',15)
 title('Normalized spike rate and % asleep')
 lp = legend([pspikes,pm,psleep],{'Spike rates','Median spike rate','% asleep'},'fontsize',15,...
-    'Position',[0.52 0.8100 0.1333 0.0550],'box','off');
+    'Position',[0.50 0.8300 0.1333 0.0550],'box','off');
 
 
 observations = convert_counts_to_observations(counts,tod_edges);
@@ -224,7 +224,7 @@ ylim(ylnew)
 
 fprintf(fid,[' There was no significant difference in sleep-wake spike rate difference between patients'...
     ' with mesial temporal lobe epilepsy and patients with neocortical epilepsy '...
-    '(Supplemental Figure 1A, Supplemental Table 2). ']);
+    '(Supplemental Figure 1A, Supplemental Table 1). ']);
 
 %% Spike rate change by sleep state
 nexttile([1 2])
@@ -249,7 +249,7 @@ rows_with_any_nans = any(isnan(rate_ss),2);
 fprintf(fid,['Spike rates differed across specific detected sleep states with '...
     'higher rates in NREM sleep and lower rates in REM and wakefulness'...
     '(Friedman test for a difference across states: &Chi;<sub>2</sub>(%d) = %1.1f, %s;'...
-    ' Figure 2E; Supplemental Table 3 shows individual state descriptive statistics and '...
+    ' Figure 2E; Supplemental Table 2 shows individual state descriptive statistics and '...
     'comparisons).'],tbl{2,3},tbl{2,5},get_p_html(tbl{2,6}));
 
 %% Add annotations
@@ -257,10 +257,11 @@ annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','no
 annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.57 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.57 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.23 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.22 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
 
 %% Make supplemental table
-sleep_comparison_table(rate_ss,all_ss)
+fname = 'TableS2.html';
+sleep_comparison_table(rate_ss,all_ss,fname)
 
 %fprintf(fid,[''])
 

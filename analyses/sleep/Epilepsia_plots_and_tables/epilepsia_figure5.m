@@ -57,6 +57,10 @@ outcome = cellfun(@(x) parse_outcome(x,'engel'),two_year_engel);
 surg_good = resection_or_ablation & (outcome == 1);
 surg_bad = resection_or_ablation & (outcome == 0);
 
+% for supplemental table, get numbers
+resection_or_ablation_with_outcome = resection_or_ablation & ~isnan(outcome);
+
+
 %% Get the data
 nmout = out.model_out;
 nmout_gray = out.model_out_gray;
@@ -169,8 +173,8 @@ fprintf(fid,['<p>We next assessed how well this model would '...
     'an ROC curve representing classifier performance on the leave-one-out test patient was %1.2f (%1.2f) (Fig 5A). '...
     'Results were similar for a model analyzing electrodes in gray matter only '...
     '(mean (SD) AUC =  %1.2f (%1.2f)). Results were also similar for a model '...
-    'analyzing only patients who underwent surgery and had good (two year Engel 1A-D) outcome '...
-    '(mean (SD) AUC =  %1.2f (%1.2f)). '],...
+    'trained and tested on only patients who underwent surgery and had good (two year Engel 1A-D) outcome '...
+    '(mean (SD) AUC =  %1.2f (%1.2f); Supplemental Table 8 shows the number of patients in each Engel category). '],...
     nanmean(aucs,1),nanstd(aucs,[],1),nanmean(nmout_gray.pt_stats(:,8),1),nanstd(nmout_gray.pt_stats(:,8),[],1),...
     nanmean(good_aucs),nanstd(good_aucs));
 
@@ -443,12 +447,12 @@ set(gca,'fontsize',15)
 
 
 %% Annotations
-annotation('textbox',[0 0.9 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.55 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.905 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.5 0.905 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.565 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.55 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.23 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.23 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.26 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0.5 0.26 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
 
 print(gcf,[out_folder,'Fig5'],'-depsc')
 

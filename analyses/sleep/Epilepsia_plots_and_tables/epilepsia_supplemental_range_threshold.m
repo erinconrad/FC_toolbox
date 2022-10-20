@@ -1,5 +1,11 @@
 function epilepsia_supplemental_range_threshold(scores,soz,X,ym)
 
+%% Locations
+locations = fc_toolbox_locs;
+script_folder = locations.script_folder;
+addpath(genpath(locations.script_folder))
+results_folder = [locations.main_folder,'results/'];
+out_folder = [results_folder,'analysis/sleep/epilepsia/'];
 
 range_thresh = [.03 0.1 0.2 0.4];
 nthresh = length(range_thresh);
@@ -84,6 +90,7 @@ for t = 1:nthresh
 end
 
 
+print(gcf,[out_folder,'FigS4'],'-depsc')
 
 
 

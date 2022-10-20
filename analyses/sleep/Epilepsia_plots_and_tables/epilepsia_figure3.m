@@ -137,7 +137,7 @@ title('Functional connectivity')
 fprintf(fid,[' To test a potential mechanism for the increased spike rates in sleep,'...
     ' we compared functional connectivity between wake and sleep. The functional connectivity'...
     ' as measured by the average node strength was higher in sleep (median %1.1f)'...
-    ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3C).</p>'],...
+    ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3C). '],...
     stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
 
 %% Prep sleep state stuff
@@ -177,11 +177,32 @@ set(gca,'fontsize',15)
 ylabel('Average node strength')
 title('Connectivity across sleep stages')
 
+% Freidman tests
+rows_with_any_nans_seq = any(isnan(nseq_ss),2);
+[~,tbl_nseq] = friedman(nseq_ss(~rows_with_any_nans_seq,:),1,'off');
+
+rows_with_any_nans_spread = any(isnan(spread_ss),2);
+[~,tbl_spread] = friedman(spread_ss(~rows_with_any_nans_seq,:),1,'off');
+
+rows_with_any_nans_fc = any(isnan(fc_ss),2);
+[~,tbl_fc] = friedman(fc_ss(~rows_with_any_nans_seq,:),1,'off');
+
+fprintf(fid,['The number of spike sequences, spike spread, and functional connectivity '...
+    'all varied across specific sleep stages (Friedman test: p < 0.001 for each analysis; '...
+    'Figure 3D-F; Supplemental Tables 3-5 show descriptive statistics and pairwise comparisons. <p>'])
+
+sleep_comparison_table(nseq_ss,all_ss,'TableS3.html')
+sleep_comparison_table(spread_ss,all_ss,'TableS4.html')
+sleep_comparison_table(fc_ss,all_ss,'TableS5.html')
+
 
 %% Add annotations
-annotation('textbox',[0 0.9 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.33 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0.665 0.9 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.905 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.905 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.665 0.905 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0 0.405 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0.33 0.405 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0.665 0.405 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
 
 fclose(fid);
 print([out_folder,'Fig3'],'-depsc')
