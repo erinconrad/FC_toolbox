@@ -10,7 +10,7 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 edf_out_dir = [results_folder,'edf_out/'];
 sleep_manual_dir = [results_folder,'analysis/sleep/erin_designations/'];
-int_folder = [results_folder,'analysis/analysis/intermediate_epilepsia_revision/'];
+int_folder = [results_folder,'analysis/intermediate_epilepsia_revision/'];
 out_file = [results_folder,'analysis/sleep/sleep_seeg/'];
 if ~exist(out_file,'dir')
     mkdir(out_file)
