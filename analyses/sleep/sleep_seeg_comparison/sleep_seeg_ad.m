@@ -97,7 +97,7 @@ out.altX = altX;
 out.altY = altY;
 out.altAUC = altAUC;
 out.scores = scores;
-out.all_out.all_out;
+out.all_out = all_out;
 
 %% Show scores for different states
 if do_plot
