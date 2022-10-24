@@ -164,7 +164,7 @@ annotation('textbox',[0.52 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','
 
 
 
-print([out_folder,'FigS1'],'-depsc')
+print([out_folder,'FigS2'],'-depsc')
 close(gcf)
 
 

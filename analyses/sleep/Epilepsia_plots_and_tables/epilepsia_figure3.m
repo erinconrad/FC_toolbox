@@ -43,8 +43,8 @@ fprintf(fid,['<p>We next asked whether the higher spike rate in sleep was '...
     'driven by an increase in the number of spike sequences or a'...
     ' greater spread of each spike sequence (each spike sequence involving more electrodes).']);
 fprintf(fid,[' The number of spike sequences was higher in sleep (median %1.1f spike sequences/min)'...
-    ' than wake (median %1.1f spike sequences/min) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3A).'],...
-    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+    ' than wake (median %1.1f spike sequences/min) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s, effect size r = %1.2f) (Fig. 3A).'],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval),stats.r);
 
 %% 2C spike spread
 nexttile
@@ -53,8 +53,8 @@ title('Spike spread')
 
 % Results text
 fprintf(fid,[' The spike spread was also higher in sleep (median %1.1f spikes/sequence)'...
-    ' than wake (median %1.1f spikes/sequence) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3B).'],...
-    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+    ' than wake (median %1.1f spikes/sequence) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s, effect size r = %1.2f) (Fig. 3B).'],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval),stats.r);
 
 %{
 %% 2D RL sleep-wake correlation across patients
@@ -137,8 +137,8 @@ title('Functional connectivity')
 fprintf(fid,[' To test a potential mechanism for the increased spike rates in sleep,'...
     ' we compared functional connectivity between wake and sleep. The functional connectivity'...
     ' as measured by the average node strength was higher in sleep (median %1.1f)'...
-    ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s) (Fig. 3C). '],...
-    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+    ' than wake (median %1.1f) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s, effect size r = %1.2f) (Fig. 3C). '],...
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval),stats.r);
 
 %% Prep sleep state stuff
 all_ss = out.seeg_out.all_ss;
@@ -155,7 +155,19 @@ all_ss(n1) = [];
 
 %% Spikes sequences by sleep state
 nexttile
+rows_with_any_nans_seq = any(isnan(nseq_ss),2);
+[p,tbl_nseq] = friedman(nseq_ss(~rows_with_any_nans_seq,:),1,'off');
 b=boxplot(nseq_ss,'labels',all_ss);
+
+hold on
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.1*(yl(2)-yl(1));
+new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+plot([1 4],[ybar ybar],'k-','linewidth',2)
+text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',20)
+ylim(new_y)
+
 set(b,'linewidth',2)
 set(gca,'fontsize',15)
 ylabel('# Spike sequences')
@@ -163,7 +175,19 @@ title('Spike sequences across sleep stages')
 
 %% Spikes spread by sleep state
 nexttile
+rows_with_any_nans_spread = any(isnan(spread_ss),2);
+[p,tbl_spread] = friedman(spread_ss(~rows_with_any_nans_seq,:),1,'off');
 b=boxplot(spread_ss,'labels',all_ss);
+
+hold on
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.1*(yl(2)-yl(1));
+new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+plot([1 4],[ybar ybar],'k-','linewidth',2)
+text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',20)
+ylim(new_y)
+
 set(b,'linewidth',2)
 set(gca,'fontsize',15)
 ylabel('# Spikes/sequence')
@@ -171,25 +195,30 @@ title('Spike spread across sleep stages')
 
 %% FC by sleep state
 nexttile
+rows_with_any_nans_fc = any(isnan(fc_ss),2);
+[p,tbl_fc] = friedman(fc_ss(~rows_with_any_nans_seq,:),1,'off');
 b=boxplot(fc_ss,'labels',all_ss);
 set(b,'linewidth',2)
 set(gca,'fontsize',15)
 ylabel('Average node strength')
 title('Connectivity across sleep stages')
 
-% Freidman tests
-rows_with_any_nans_seq = any(isnan(nseq_ss),2);
-[~,tbl_nseq] = friedman(nseq_ss(~rows_with_any_nans_seq,:),1,'off');
 
-rows_with_any_nans_spread = any(isnan(spread_ss),2);
-[~,tbl_spread] = friedman(spread_ss(~rows_with_any_nans_seq,:),1,'off');
+hold on
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.1*(yl(2)-yl(1));
+new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+plot([1 4],[ybar ybar],'k-','linewidth',2)
+text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',20)
+ylim(new_y)
 
-rows_with_any_nans_fc = any(isnan(fc_ss),2);
-[~,tbl_fc] = friedman(fc_ss(~rows_with_any_nans_seq,:),1,'off');
+
 
 fprintf(fid,['The number of spike sequences, spike spread, and functional connectivity '...
-    'all varied across specific sleep stages (Friedman test: p < 0.001 for each analysis; '...
-    'Figure 3D-F; Supplemental Tables 3-5 show descriptive statistics and pairwise comparisons. <p>'])
+    'all varied across specific sleep stages, again demonstrating generally higher '...
+    'values in NREM sleep (Friedman test: p < 0.001 for each analysis; '...
+    'Figure 3D-F; Tables S3-5 show descriptive statistics and pairwise comparisons). <p>'])
 
 sleep_comparison_table(nseq_ss,all_ss,'TableS3.html')
 sleep_comparison_table(spread_ss,all_ss,'TableS4.html')

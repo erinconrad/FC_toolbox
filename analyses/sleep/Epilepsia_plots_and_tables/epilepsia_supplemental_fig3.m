@@ -103,7 +103,7 @@ xl = xlim;
 yl = ylim;
 px = xl(1) + 0.01*(xl(2)-xl(1));
 py = yl(1) + 0.99*(yl(2)-yl(1));
-text(px,py,get_p_text(stats.pval),'verticalalignment','top','fontsize',15)
+text(px,py,sprintf('%s\neffect size r = %1.2f',get_p_text(pval),stats.r),'verticalalignment','top','fontsize',15)
 
 % Results text
 %{
@@ -234,7 +234,7 @@ annotation('textbox',[0.5 0.41 0.1 0.1],'String','D','fontsize',25,'linestyle','
 
 %% Add box around D
 
-print([out_folder,'FigS2'],'-depsc')
+print([out_folder,'FigS3'],'-depsc')
 close(gcf)
 
 %% Bonus analysis (probably supplemental figure) looking for pre-ictal spike change

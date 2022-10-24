@@ -174,7 +174,7 @@ fprintf(fid,['<p>We next assessed how well this model would '...
     'Results were similar for a model analyzing electrodes in gray matter only '...
     '(mean (SD) AUC =  %1.2f (%1.2f)). Results were also similar for a model '...
     'trained and tested on only patients who underwent surgery and had good (two year Engel 1A-D) outcome '...
-    '(mean (SD) AUC =  %1.2f (%1.2f); Supplemental Table 8 shows the number of patients in each Engel category). '],...
+    '(mean (SD) AUC =  %1.2f (%1.2f); Table S8 shows the number of patients in each Engel category). '],...
     nanmean(aucs,1),nanstd(aucs,[],1),nanmean(nmout_gray.pt_stats(:,8),1),nanstd(nmout_gray.pt_stats(:,8),[],1),...
     nanmean(good_aucs),nanstd(good_aucs));
 
@@ -227,11 +227,11 @@ legend(t1,[mp,tp],...
 
 %% Text
 fprintf(fid,['To provide an example of real-world classifier performance, we examined a range of thresholds. '...
-    'Figure S3 shows the resulting confusion matrices for several choices of thresholds. '...
+    'Figure S4 shows the resulting confusion matrices for several choices of thresholds. '...
     'For an arbitrarily chosen threshold of %1.2f, the '...
     'resulting confusion matrix had an accuracy of %1.1f%%, a positive predictive value (PPV) of '...
     '%1.1f%%, and a negative predictive value (NPV) of %1.1f%% (Fig 5B). '],...
-    nanmean(acc)*100,...
+    desired_threshold, nanmean(acc)*100,...
     nanmean(ppv)*100,nanmean(npv)*100);
 
 
@@ -261,74 +261,61 @@ ylabel('AUC')
 fprintf(fid,'Model performance was highly variable across patients.');
 
 %% Do between-patient analyses
-if 0
-    % Outcome
-    nexttile
-    plot(1+randn(sum(surg_good),1)*0.05,aucs(surg_good),'o','linewidth',2,'color',myColours(1,:))
-    hold on
-    plot(2+randn(sum(surg_bad),1)*0.05,aucs(surg_bad),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
-    xticks([1 2])
-    xticklabels({'Good outcome','Poor outcome'});
-    ylabel('Classification AUC')
-    yl = ylim;
-    ybar = yl(1) + 1.05*(yl(2)-yl(1));
-    ytext = yl(1) + 1.13*(yl(2)-yl(1));
-    nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
-    plot([1 2],[ybar ybar],'k','linewidth',2)
-    text(1.5,ytext,get_p_text(ranksum(aucs(surg_good),aucs(surg_bad))),...
-        'fontsize',15,'horizontalalignment','center')
-    ylim(nylim)
-    xlim([0.5 2.5])
-    title('AUC by implant strategy')
-    set(gca,'fontsize',15)
-    
-    [p,~,stats] = ranksum(aucs(surg_good),aucs(surg_bad));
-    % text
-    W = stats.ranksum;
-    nt = sum(~(isnan(aucs(surg_good))));
-    ne = sum(~(isnan(aucs(surg_bad))));
-    U1 = W - nt*(nt+1)/2;
-    U2 = nt*ne-U1;
-    U = min([U1,U2]);
-else
-    % Implant type
-    nexttile
-    plot(1+randn(sum(stereo),1)*0.05,aucs(stereo),'o','linewidth',2,'color',myColours(1,:))
-    hold on
-    plot(2+randn(sum(~stereo),1)*0.05,aucs(~stereo),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
-    xticks([1 2])
-    xticklabels({'Stereo-EEG','Grid/strip/depths'});
-    ylabel('Classification AUC')
-    yl = ylim;
-    ybar = yl(1) + 1.05*(yl(2)-yl(1));
-    ytext = yl(1) + 1.13*(yl(2)-yl(1));
-    nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
-    plot([1 2],[ybar ybar],'k','linewidth',2)
-    text(1.5,ytext,get_p_text(ranksum(aucs(stereo),aucs(~stereo))),...
-        'fontsize',15,'horizontalalignment','center')
-    ylim(nylim)
-    xlim([0.5 2.5])
-    title('AUC by implant strategy')
-    set(gca,'fontsize',15)
-    
-    [p,~,stats] = ranksum(aucs(stereo),aucs(~stereo));
-    % text
-    W = stats.ranksum;
-    nt = sum(~(isnan(aucs(stereo))));
-    ne = sum(~(isnan(aucs(~stereo))));
-    U1 = W - nt*(nt+1)/2;
-    U2 = nt*ne-U1;
-    U = min([U1,U2]);
-    fprintf(fid,[' Patients with stereo-EEG implantations had similar '...
-        'classification AUC '...
-        '(median %1.2f) to those with grid/strip/depth implantations'...
-        ' (median %1.2f) (Mann-Whitney test: <i>U</i>'...
-        '(<i>N<sub>stereo</sub></i> = %d, <i>N<sub>not-stereo</sub></i> = %d) ='...
-        ' %1.1f, %s) (Fig 5D).'],nanmedian(aucs(stereo)),nanmedian(aucs(~stereo)),...
-        nt,ne,U,get_p_html(p));
-end
+
+% Implant type
+[p,~,stats] = ranksum(aucs(stereo),aucs(~stereo));
+% text
+W = stats.ranksum;
+nt = sum(~(isnan(aucs(stereo))));
+ne = sum(~(isnan(aucs(~stereo))));
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+
+% effect size
+r = abs(stats.zval)/sqrt(nt+ne);
+
+nexttile
+plot(1+randn(sum(stereo),1)*0.05,aucs(stereo),'o','linewidth',2,'color',myColours(1,:))
+hold on
+plot(2+randn(sum(~stereo),1)*0.05,aucs(~stereo),'o','linewidth',2,'color',[0.9290, 0.6940, 0.1250])
+xticks([1 2])
+xticklabels({'Stereo-EEG','Grid/strip/depths'});
+ylabel('Classification AUC')
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.13*(yl(2)-yl(1));
+nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+plot([1 2],[ybar ybar],'k','linewidth',2)
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),...
+    'fontsize',15,'horizontalalignment','center')
+ylim(nylim)
+xlim([0.5 2.5])
+title('AUC by implant strategy')
+set(gca,'fontsize',15)
+
+
+
+fprintf(fid,[' Patients with stereo-EEG implantations had similar '...
+    'classification AUC '...
+    '(median %1.2f) to those with grid/strip/depth implantations'...
+    ' (median %1.2f) (Mann-Whitney test: <i>U</i>'...
+    '(<i>N<sub>stereo</sub></i> = %d, <i>N<sub>not-stereo</sub></i> = %d) ='...
+    ' %1.1f, %s, effect size r = %1.2f) (Fig 5C).'],nanmedian(aucs(stereo)),nanmedian(aucs(~stereo)),...
+    nt,ne,U,get_p_html(p),r);
+
 
 % Localization
+[p,~,stats] = ranksum(aucs(temporal),aucs(extra));
+W = stats.ranksum;
+nt = sum(~(isnan(aucs(temporal))));
+ne = sum(~(isnan(aucs(extra))));
+U1 = W - nt*(nt+1)/2;
+U2 = nt*ne-U1;
+U = min([U1,U2]);
+% effect size
+r = abs(stats.zval)/sqrt(nt+ne);
+
 nexttile
 plot(1+randn(sum(temporal),1)*0.05,aucs(temporal),'o','linewidth',2,'color',myColours(2,:))
 hold on
@@ -341,27 +328,20 @@ ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k','linewidth',2)
-text(1.5,ytext,get_p_text(ranksum(aucs(temporal),aucs(extra))),...
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),...
     'fontsize',15,'horizontalalignment','center')
 ylim(nylim)
 xlim([0.5 2.5])
 title('AUC by seizure localization')
 set(gca,'fontsize',15)
-[p,~,stats] = ranksum(aucs(temporal),aucs(extra));
-% text
-W = stats.ranksum;
-nt = sum(~(isnan(aucs(temporal))));
-ne = sum(~(isnan(aucs(extra))));
-U1 = W - nt*(nt+1)/2;
-U2 = nt*ne-U1;
-U = min([U1,U2]);
+
 fprintf(fid,[' Patients with temporal lobe epilepsy had higher '...
     'classification AUC '...
     '(median %1.2f) relative to those with extra-temporal'...
     ' lobe epilepsy (median %1.2f) (Mann-Whitney test: <i>U</i>'...
     '(<i>N<sub>temporal</sub></i> = %d, <i>N<sub>extra-temporal</sub></i> = %d) ='...
-    ' %1.1f, %s) (Fig 5E).</p>'],nanmedian(aucs(temporal)),nanmedian(aucs(extra)),...
-    nt,ne,U,get_p_html(p));
+    ' %1.1f, %s, effect size r = %1.2f) (Fig 5D).</p>'],nanmedian(aucs(temporal)),nanmedian(aucs(extra)),...
+    nt,ne,U,get_p_html(p),r);
 
 
 %% Duration
@@ -420,7 +400,7 @@ fprintf(fid,['<p>We next studied what duration of interictal data was needed '..
     ' than those trained on wake spike data. Also, near-optimal model performance was '...
     'achieved with only 10 minutes of interictal data (mean (standard error) AUC for model trained on '...
     'full duration of sleep data = %1.2f (%1.3f) versus ten minutes of sleep '...
-    'data = %1.2f (%1.3f)) (Fig 5F).</p>'],...
+    'data = %1.2f (%1.3f)) (Fig 5E).'],...
     mean_estimate_full,ste_estimate_full,...
     mean_estimate_10,ste_estimate_10);
 %}
@@ -430,22 +410,42 @@ multi_X = out.model_out.multi_X;
 multi_Y = out.model_out.multi_Y;
 all_ss = out.seeg_out.all_ss;
 multi_AUC = out.model_out.multi_auc;
+
+n1 = strcmp(all_ss,'N1');
+
+% remove N1
+multi_X = multi_X(~n1);
+multi_Y = multi_Y(~n1);
+multi_AUC = multi_AUC(:,~n1);
+all_ss = all_ss(~n1);
+nss = length(all_ss);
+marker_types = {'-','--',':','-.'};
+
 nexttile
-mss = nan(5,1);
-auc_text = cell(5,1);
-for i = 1:5
-    mss(i) = plot(multi_X{i},nanmean(multi_Y{i},1),'linewidth',2);
+mss = nan(nss,1);
+auc_text = cell(nss,1);
+for i = 1:nss
+    mss(i) = plot(multi_X{i},nanmean(multi_Y{i},1),marker_types{i},'linewidth',2);
     hold on
-    auc_text{i} = sprintf('%s AUC: %1.2f',all_ss{i},nanmean(multi_AUC(:,i)));
+    auc_text{i} = sprintf('%s Mean AUC: %1.2f',all_ss{i},nanmean(multi_AUC(:,i)));
 end
 plot([0 1],[0 1],'k--','linewidth',2)
-title('Accuracy by sleep state')
+title('Accuracy by SleepSEEG-classified sleep state')
 xlabel('False positive rate')
 ylabel('True positive rate')
 legend(mss,auc_text,'location','southeast')
 set(gca,'fontsize',15)
 
 
+fprintf(fid,[' Finally, we compared model performance across SleepSEEG-classified '...
+    'sleep stages. Model performance was highest for models trained on spike data' ...
+    ' from time periods classified as N3 (AUC 0.81) and lowest for models trained '...
+    'on spike data from time periods classified as REM (AUC 0.72; Fig 5F,'...
+    ' Table S9 shows descriptive statistics and pairwise comparisons).</p>'])
+
+sleep_comparison_table(multi_AUC,all_ss,'TableS9.html')
+
+%}
 %% Annotations
 annotation('textbox',[0 0.905 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.905 0.1 0.1],'String','B','fontsize',25,'linestyle','none')

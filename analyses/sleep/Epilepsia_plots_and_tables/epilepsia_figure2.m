@@ -28,6 +28,14 @@ out_folder = [results_folder,'analysis/sleep/epilepsia/'];
 %% Prep output text file
 fid = fopen([out_folder,'results.html'],'a');
 
+%% Print information about sleepSEEG
+fprintf(fid,['<p>SleepSEEG automated sleep staging resulted in classifications '...
+    'that agreed with those of the approach using the normalized ADR (AUC for '...
+    'the normalized ADR classifying SleepSEEG sleep vs wake labels: 0.76, AUC for'...
+    ' the normalized ADR classifying SleepSEEG N2 from wake labels: 0.91). Not suprisingly,'...
+    ' the normalized ADR was highest in the SleepSEEG-classifed wake periods, '...
+    'and lowest in the SleepSEEG-classified N3 periods (Fig S1).</p>']);
+
 fprintf(fid,'<p><b>Changes in spikes with sleep</b><br>');
 
 figure
@@ -124,11 +132,12 @@ nexttile
 stats = plot_paired_data(all_rate(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type);
 title('Spike rate in wake and sleep')
 
+
 % Results text
 fprintf(fid,[' Spike rates were higher in sleep (median %1.1f spikes/elecs/min)'...
-    ' than wake (median %1.1f spikes/elecs/min) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s).'...
+    ' than wake (median %1.1f spikes/elecs/min) (Wilcoxon signed-rank test: <i>T<sup>+</sup></i> = %1.1f, %s, effect size r = %1.2f).'...
     ' (Fig. 2C).</p>'],...
-    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval));
+    stats.medians(2),stats.medians(1),stats.Tpos,get_p_html(stats.pval),stats.r);
 
 %% Overall rate localization
 rate = bin_out.overall_rates;
@@ -224,7 +233,7 @@ ylim(ylnew)
 
 fprintf(fid,[' There was no significant difference in sleep-wake spike rate difference between patients'...
     ' with mesial temporal lobe epilepsy and patients with neocortical epilepsy '...
-    '(Supplemental Figure 1A, Supplemental Table 1). ']);
+    '(Fig S2A, Table S1). ']);
 
 %% Spike rate change by sleep state
 nexttile([1 2])
@@ -235,21 +244,32 @@ all_ss = out.seeg_out.all_ss;
 n1 = strcmp(all_ss,'N1');
 rate_ss(:,n1) = [];
 all_ss(n1) = [];
+
+% Friedman test
+rows_with_any_nans = any(isnan(rate_ss),2);
+[p,tbl,stats] = friedman(rate_ss(~rows_with_any_nans,:),1,'off');
+
 b=boxplot(rate_ss,'labels',all_ss);
+hold on
+yl = ylim;
+ybar = yl(1) + 1.05*(yl(2)-yl(1));
+ytext = yl(1) + 1.1*(yl(2)-yl(1));
+new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+plot([1 4],[ybar ybar],'k-','linewidth',2)
+text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',20)
+ylim(new_y)
 set(b,'linewidth',2)
 set(gca,'fontsize',15)
 ylabel('Spikes/elec/min')
 title('Spike rate across detected sleep stages')
 
 
-% Friedman test
-rows_with_any_nans = any(isnan(rate_ss),2);
-[p,tbl,stats] = friedman(rate_ss(~rows_with_any_nans,:),1,'off');
+
 
 fprintf(fid,['Spike rates differed across specific detected sleep states with '...
     'higher rates in NREM sleep and lower rates in REM and wakefulness'...
-    '(Friedman test for a difference across states: &Chi;<sub>2</sub>(%d) = %1.1f, %s;'...
-    ' Figure 2E; Supplemental Table 2 shows individual state descriptive statistics and '...
+    ' (Friedman test for a difference across states: &Chi;<sub>2</sub>(%d) = %1.1f, %s;'...
+    ' Figure 2E; Table S2 shows individual state descriptive statistics and '...
     'comparisons).'],tbl{2,3},tbl{2,5},get_p_html(tbl{2,6}));
 
 %% Add annotations

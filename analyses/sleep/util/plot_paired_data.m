@@ -71,6 +71,9 @@ switch plot_type
             neg_diff = data(1,:) > data(2,:);
         end
         [pval,~,stats] = signrank(data(1,:)',data(2,:)');
+
+        % effect size
+        r = abs(stats.zval)/sqrt(sum(~any(isnan(data),1)));
         Tpos =stats.signedrank; % Tpos = positive-rank sum = sum of positive ranks
         if do_plot
             equal_diff = data(1,:) == data(2,:);
@@ -103,7 +106,8 @@ switch plot_type
             px = xl(1) + 0.01*(xl(2)-xl(1));
             py = yl(1) + 0.99*(yl(2)-yl(1));
             %ylim
-            text(px,py,get_p_text(pval),'verticalalignment','top','fontsize',15)
+            text(px,py,sprintf('%s\neffect size r = %1.2f',get_p_text(pval),r),...
+                'verticalalignment','top','fontsize',15)
             %ylim
             legtext1 = sprintf('Higher %s',legtext);
             legtext2 = sprintf('Lower %s',legtext);
@@ -117,7 +121,9 @@ switch plot_type
         stats_out.iqrs = [iqr(data(1,:))  iqr(data(2,:))];
         stats_out.Tpos = Tpos;
         stats_out.pval = pval;
+        stats_out.zval = stats.zval;
         stats_out.nhigher_n = [sum(data(1,:) < data(2,:)) size(data,2)];
+        stats_out.r = r;
         
         
 end
