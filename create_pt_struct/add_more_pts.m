@@ -38,6 +38,9 @@ switch which_step
         % add demographics
         add_demographics
 
+        % add stereo
+        get_stereo_gs
+
         % mine annotations for seizures
         mine_annotations_for_szs
         

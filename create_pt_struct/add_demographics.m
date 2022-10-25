@@ -70,7 +70,7 @@ for ir = 1:size(T,1)
             pt(ip).clinical.age_onset = T.sz_hist_duration(ir);
             
             % was it stereo?
-            pt(ip).clinical.stereo = logical(T.ieeg_implanttype___4(ir));
+            %pt(ip).clinical.stereo = logical(T.ieeg_implanttype___4(ir));
             
             % surgery type
             if T.outcome_proctype___1(ir) == 1
