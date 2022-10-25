@@ -4,7 +4,7 @@ function T1 = epilepsia_table1
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 out_folder = [results_folder,'analysis/sleep/epilepsia/'];
-int_folder = [results_folder,'analysis/intermediate_epilepsia_revision/'];
+int_folder = [results_folder,'analysis/backup_intermediate_Feb26_good_spikes/'];%[results_folder,'analysis/intermediate_epilepsia_revision/'];
 %int_folder = [results_folder,'analysis/intermediate/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
