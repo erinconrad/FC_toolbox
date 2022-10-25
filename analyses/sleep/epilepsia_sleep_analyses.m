@@ -67,6 +67,10 @@ out.seeg_ad_out = seeg_ad_out;
 save([out_folder,'out.mat'],'out')
 
 %% Do sleep models
+% Skip this if I am only doing the periictal analysis
+if exist('just_for_periictal','var') ~= 0 && just_for_periictal == 1
+    return
+end
 fprintf('\nDoing sleep models\n');
 fprintf('\nDoing all electrodes model\n');
 model_out = sleep_models(0);
