@@ -1,4 +1,4 @@
-function epilepsia_table1
+function T1 = epilepsia_table1
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -138,8 +138,11 @@ mri_lesional = cellfun(@(x) clean_preimplant_designations(x),mri_lesional);
 concordant_loc = cellfun(@(x) clean_preimplant_designations(x),concordant_loc);
 concordant_lat = cellfun(@(x) clean_preimplant_designations(x),concordant_lat);
 
+%{
 T1 = table(names,sex,age_onset,age_implant,nelecs,...
     duration,rate,loc,lat);
+%}
+T1 = table(names,lat);
 
 %% Turn into summary stats
 

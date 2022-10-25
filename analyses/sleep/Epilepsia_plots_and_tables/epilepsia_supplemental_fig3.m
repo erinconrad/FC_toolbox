@@ -103,7 +103,7 @@ xl = xlim;
 yl = ylim;
 px = xl(1) + 0.01*(xl(2)-xl(1));
 py = yl(1) + 0.99*(yl(2)-yl(1));
-text(px,py,sprintf('%s\neffect size r = %1.2f',get_p_text(pval),stats.r),'verticalalignment','top','fontsize',15)
+text(px,py,sprintf('%s\neffect size r = %1.2f',get_p_text(stats.pval),stats.r),'verticalalignment','top','fontsize',15)
 
 % Results text
 %{
