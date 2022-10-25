@@ -142,7 +142,7 @@ concordant_lat = cellfun(@(x) clean_preimplant_designations(x),concordant_lat);
 T1 = table(names,sex,age_onset,age_implant,nelecs,...
     duration,rate,loc,lat);
 %}
-T1 = table(names,lat);
+T1 = table(names,lat,stereo);
 
 %% Turn into summary stats
 
