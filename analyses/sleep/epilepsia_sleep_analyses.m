@@ -69,6 +69,15 @@ save([out_folder,'out.mat'],'out')
 %% Do sleep models
 % Skip this if I am only doing the periictal analysis
 if exist('just_for_periictal','var') ~= 0 && just_for_periictal == 1
+    epilepsia_figure2
+
+    epilepsia_figure3
+    
+    epilepsia_figure4
+
+    epilepsia_supplemental_fig2
+
+    epilepsia_supplemental_fig3
     return
 end
 fprintf('\nDoing sleep models\n');
