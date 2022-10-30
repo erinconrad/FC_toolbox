@@ -48,6 +48,8 @@ names = data.all_names;
 npts = length(names);
 locs = data.all_native_locs;
 bipolar_locs = data.all_native_bipolar_locs;
+labels = data.all_labels;
+bipolar_labels = data.
 
 switch which_montage
     case 'bipolar'
