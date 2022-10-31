@@ -104,7 +104,7 @@ for l = 1:length(listing)
     summ(l).sw.uncertain = ad(uncertain_idx);
     summ(l).name = name;
     summ(l).ad = all_ad;
-    summ(l).designation = designation;
+    summ(l).designations = sleep_state;
     
     if 0
         figure
