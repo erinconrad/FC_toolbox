@@ -56,11 +56,13 @@ switch which_montage
         bp = data.all_bp;
         spikes = data.all_spikes;
         locs = bipolar_locs;
+        labels = data.all_bipolar_labels;
     case 'car'  
         coh = data.all_coh;
         fc = data.all_fc;
         bp = data.all_bipolar_bp;
         spikes = data.all_spikes;
+        labels = data.all_labels;
 end
 
 %% get atlas
