@@ -35,17 +35,7 @@ ablation_lat = data.all_ablate_lat;
 surg_lat = cell(npts,1);
 for i = 1:npts
     if strcmp(resection_lat{i},'na') && strcmp(ablation_lat{i},'na')
-    elseif strcmp(resection_lat{i},'na')
-        surg_lat{i} = ablation_lat{i};
-    elseif strcmp(ablation_lat{i},'na')
-        surg_lat{i} = resection_lat{i};
-    else
-        if ~strcmp(resection_lat{i},ablation_lat{i})
-            error('what');
-        end
-        surg_lat{i} = resection_lat{i};
-    end
-
+        
 end
 
 %% Get outcome
