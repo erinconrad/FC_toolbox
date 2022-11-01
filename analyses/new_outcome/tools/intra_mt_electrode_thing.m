@@ -3,11 +3,17 @@ function [ai,signed] = intra_mt_electrode_thing(labels,thing,uni,last_dim)
 nelecs = length(labels);
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
+maxn = 9;
 nmt = length(which_elecs);
 intra = nan(nmt,2,last_dim);
 
 % get first two letter in each label
 first_two = cellfun(@(x) x(1:2),labels,'uniformoutput',false);
+
+% Get numeric portion
+number = cellfun(@(x) (regexp(x,'\d*','Match')),labels,'uniformoutput',false);
+number(cellfun(@isempty,number)) = {{'9999'}};
+number = cellfun(@(x) str2num(x{1}),number);
 
 for i = 1:nmt
     
@@ -16,7 +22,7 @@ for i = 1:nmt
         curr_elec = [which_lats{j},which_elecs{i}];
 
         %% Find the contacts matching this electrode
-        matching_contacts = strcmp(first_two,curr_elec);
+        matching_contacts = strcmp(first_two,curr_elec) & number <= maxn;
 
         %% Calculate "intra" for these contacts, which depends on what the thing is
         if uni == 1
