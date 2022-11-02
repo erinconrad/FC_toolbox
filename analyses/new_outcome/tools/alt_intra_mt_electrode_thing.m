@@ -46,70 +46,97 @@ end
 match = ismember(possible_matches,labels);
 match = possible_matches(match);
 
-% which electrodes
-for i = 1:nmt
-    
-    % which laterality
-    for j = 1:2
-        curr_elec = [which_lats{j},which_elecs{i}];
+switch which_thing{1}
+
+    case {'inter_coh','inter_fc'} % do inter
+
+        % initialize
+        inter = nan(nmt,maxn,last_dim);
         
-        if uni == 1
-            % Can do this on individual contact level
+        % loop over electrodes
+        for i = 1:nmt
             for k = 1:maxn
-       
-                % Find the contacts matching this electrode
-                matching_contacts = strcmp(letters,curr_elec) & number == k;
-                       
-                % Calculate "intra" for these contacts, which depends on what the thing is
-                curr_intra = nanmean(thing(matching_contacts,:,:),1);
-                
-                % Fill
-                intra(i,k,j,:) = curr_intra;
+                left_elec = strcmp(letters,['L',which_elecs{i}]) & number == k;
+                right_elec = strcmp(letters,['R',which_elecs{i}]) & number == k;
     
+                % get average inter-electrode connectivity
+                inter(i,k,:) = nanmean(thing(left_elec,right_elec,:),[1 2]);
             end
 
-        else
-
-            switch which_thing{1}
-
-                case 'near_coh'
-                    % measure average coherence between one and the one
-                    % next to it
-                    for k = 1:maxn-1
-                        first = strcmp(letters,curr_elec) & number == k;
-                        second = strcmp(letters,curr_elec) & number == k+1;
-                        curr_intra = nanmean(thing(first,second,:),[1 2]);
-                        intra(i,k,j,:) = curr_intra;
-
-                    end
-
-                otherwise
-                    %% Measure mesial to lateral connectivity
-                    
-                    mesial_contacts = strcmp(letters,curr_elec) & ismember(number,[1:6]);
-                    lateral_contacts = strcmp(letters,curr_elec) & ismember(number,[7:12]);
-        
-                    % measure connectivity mesial to lateral
-                    curr_intra = nanmean(thing(mesial_contacts,lateral_contacts,:),[1 2]);
-        
-                    
-                    % Fill, repeating across all electrodes
-                    intra(i,:,j,:) = repmat(curr_intra,1,maxn,1,1);
-            end
         end
 
-    end
+        % Average across electrodes
+        signed = squeeze(nanmean(inter,[1 2]))';
 
-end
+    otherwise % doing intra 
 
-%% Take AI
-signed = (intra(:,:,1,:)-intra(:,:,2,:))./(intra(:,:,1,:)+intra(:,:,2,:));
+        % initialize
+        intra = nan(nmt,maxn,2,last_dim);
 
-%% Average across ms
-signed = (squeeze(nanmean(signed,[1 2 3])))';
-
-if last_dim == 1
-    signed = nanmean(signed);
+        % which electrodes
+        for i = 1:nmt
+            % which laterality
+            for j = 1:2
+                curr_elec = [which_lats{j},which_elecs{i}];
+                
+                if uni == 1
+                    % Can do this on individual contact level
+                    for k = 1:maxn
+               
+                        % Find the contacts matching this electrode
+                        matching_contacts = strcmp(letters,curr_elec) & number == k;
+                               
+                        % Calculate "intra" for these contacts, which depends on what the thing is
+                        curr_intra = nanmean(thing(matching_contacts,:,:),1);
+                        
+                        % Fill
+                        intra(i,k,j,:) = curr_intra;
+            
+                    end
+        
+                else
+        
+                    switch which_thing{1}
+        
+                        case 'near_coh'
+                            % measure average coherence between one and the one
+                            % next to it
+                            for k = 1:maxn-1
+                                first = strcmp(letters,curr_elec) & number == k;
+                                second = strcmp(letters,curr_elec) & number == k+1;
+                                curr_intra = nanmean(thing(first,second,:),[1 2]);
+                                intra(i,k,j,:) = curr_intra;
+        
+                            end
+        
+                        case {'coh','fc'}
+                            %% Measure mesial to lateral connectivity
+                            
+                            mesial_contacts = strcmp(letters,curr_elec) & ismember(number,[1:6]);
+                            lateral_contacts = strcmp(letters,curr_elec) & ismember(number,[7:12]);
+                
+                            % measure connectivity mesial to lateral
+                            curr_intra = nanmean(thing(mesial_contacts,lateral_contacts,:),[1 2]);
+                
+                            
+                            % Fill, repeating across all electrodes
+                            intra(i,:,j,:) = repmat(curr_intra,1,maxn,1,1);
+                    end
+                end
+        
+            end
+        
+        end
+        
+        %% Take AI
+        signed = (intra(:,:,1,:)-intra(:,:,2,:))./(intra(:,:,1,:)+intra(:,:,2,:));
+        
+        %% Average across ms
+        signed = (squeeze(nanmean(signed,[1 2 3])))';
+        
+        if last_dim == 1
+            signed = nanmean(signed);
+        end
 end
 
 end

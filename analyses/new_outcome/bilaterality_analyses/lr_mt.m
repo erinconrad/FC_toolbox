@@ -75,9 +75,13 @@ bilat(old_bilat) = 1;
 bilat(unilat) = 0;
 right_lat = strcmp(soz_lats,'right');
 left_lat = strcmp(soz_lats,'left');
+uni_or_bi = cell(length(soz_lats),1);
+uni_or_bi(strcmp(soz_lats,'left')|strcmp(soz_lats,'right')) = {'uni'};
+uni_or_bi(strcmp(soz_lats,'bilateral')) = {'bi'};
+uni_or_bi(cellfun(@isempty,uni_or_bi))= {''};
 
 %% Get features
-Ts = table(names,outcome,soz_lats);
+Ts = table(names,outcome,soz_lats,uni_or_bi);
 feat_names_s = {};
 
 for which_montage = {'car'}%;{'bipolar','car'}
@@ -96,20 +100,15 @@ for which_montage = {'car'}%;{'bipolar','car'}
             labels = data.all_labels;
     end
 
-    for which_thing = {'bp','spikes','coh','fc'}
+    for which_thing = {'inter_coh','bp','spikes','fc'}
         % Decide thing
         switch which_thing{1}
-            case 'fc'
+            case {'fc','inter_fc'}
                 thing = fc;
                 uni = 0;
                 last_dim = 1;
                 sp_norm = 1;
-            case 'coh'
-                thing = coh;
-                uni = 0;
-                last_dim = size(coh{1},3);
-                sp_norm = 1;
-            case 'near_coh'
+            case {'coh','near_coh','inter_coh'}
                 thing = coh;
                 uni = 0;
                 last_dim = size(coh{1},3);
@@ -165,8 +164,8 @@ end
 
 
 %% Pairwise correlations of all features
-nfeatures = size(Ts,2)-3; % -2 to remove outcome and bilaterality
-all_feat = table2array(Ts(:,4:end));
+nfeatures = size(Ts,2)-4; % -2 to remove outcome and bilaterality
+all_feat = table2array(Ts(:,5:end));
 feat_corr = corr(all_feat,'rows','pairwise');
 if 0
     figure
@@ -187,7 +186,7 @@ if 0
     figure
     set(gcf,'position',[15 78 1400 350])
     tiledlayout(2,7,'tilespacing','tight','Padding','tight')
-    for f = 1:size(Ts,2)-3
+    for f = 1:size(Ts,2)-4
         nexttile
         %unpaired_plot(all_feat_s(strcmp(Ts.soz_lats,'left'),f),all_feat_s(strcmp(Ts.soz_lats,'right'),f),{'left','right'},feat_names_s{f});
         boxplot(Ts.(feat_names_s{f}),Ts.soz_lats)
@@ -201,6 +200,32 @@ if 0
         plot([1 3],[ybar ybar],'k-','linewidth',2)
         text(2,ytext,sprintf('p = %1.3f',p),'horizontalalignment','center','fontsize',15)
         ylim(new_y)
+        set(gca,'fontsize',15)
+    end
+
+end
+
+if 1
+    figure
+    set(gcf,'position',[15 78 1400 350])
+    tiledlayout(2,7,'tilespacing','tight','Padding','tight')
+    for f = 1:size(Ts,2)-4
+        nexttile
+        unpaired_plot(all_feat(strcmp(Ts.uni_or_bi,'uni')),...
+            all_feat(strcmp(Ts.uni_or_bi,'bi'),f),{'unilateral','bilateral'},feat_names_s{f});
+        hold on
+        %{
+        ylabel(feat_names_s{f})
+        yl = ylim;
+        
+        p = ranksum(all_feat(strcmp(Ts.uni_or_bi,'uni')),all_feat(strcmp(Ts.uni_or_bi,'bi'),f));
+        ybar = yl(1) + 1.05*(yl(2)-yl(1));
+        ytext = yl(1) + 1.1*(yl(2)-yl(1));
+        new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+        plot([1 2],[ybar ybar],'k-','linewidth',2)
+        text(1.5,ytext,sprintf('p = %1.3f',p),'horizontalalignment','center','fontsize',15)
+        ylim(new_y)
+        %}
         set(gca,'fontsize',15)
     end
 
