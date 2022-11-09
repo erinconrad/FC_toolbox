@@ -1,4 +1,4 @@
-function epilepsia_figure4
+function epilepsia_figure4(null_flag)
 
 %{
 Note that the results text for the 3 and 12 hours peri-ictal windows are
@@ -33,6 +33,11 @@ out_folder1 = [script_folder,'analyses/sleep/data/'];
 %% Load out file and get roc stuff
 out = load([out_folder1,'out.mat']);
 out = out.out;
+
+%% make fake data
+if null_flag
+    out = generate_fake_null_data(out);
+end
 
 %% Unpack substructures
 unpack_any_struct(out);

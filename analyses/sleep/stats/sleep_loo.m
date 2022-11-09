@@ -60,6 +60,10 @@ for ip = 1:npts
     if surg_good(ip) == 0 && only_good_outcome == 1
         continue
     end
+
+    if surg_bad(ip) == 0 && only_good_outcome == 2
+        continue
+    end
     
     if sum(curr_soz) == 0
         excluded(ip,1) = 1;
@@ -102,6 +106,10 @@ for ip = 1:npts
         pt_specific{ip,3} = mout.all_soz;
         
     end
+end
+
+if 0
+    out.circ_out.names(~any(isnan(pt_stats),2)) % erin confirmed that when done for only good patients this matches with redcap
 end
 
 %% Unify roc (single set of Xs and then the corresponding Ys for each model)

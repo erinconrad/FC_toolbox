@@ -1,12 +1,5 @@
 function comparison_array = sleep_seeg_validation
 
-% I did this for HUP217 and the general W-S order agrees with time of day
-% and I looked at the scalp for a couple of random points and it generally
-% aligned....so this looks promising.
-
-% I need to figure out how to compare my manual markings with these.
-
-% I also need to run this for more patients...
 
 ref_start_time = datetime('01/01/2000 00:00:00','InputFormat','MM/dd/yyyy hh:mm:ss');
 

@@ -9,6 +9,8 @@ bootstrap
 - wake_or_sleep: wake or sleep state. Empty if all states.
 - duration of interictal data to take. Empty if full duration
 - just_gray: only include gray matter electrodes?
+- only_good_outcome: only train and test on good outcome patients
+- multi-stage: all sleep stages
 %}
 
 %% Parameters
@@ -44,6 +46,12 @@ outcome = cellfun(@(x) parse_outcome(x,'engel'),two_year_engel);
 
 % surgery with good outcome or bad outcome
 surg_good = resection_or_ablation & (outcome == 1);
+surg_bad = resection_or_ablation & (outcome == 0);
+
+if 0
+    out.circ_out.names(surg_good) % Erin confirmed these match with redcap
+
+end
 
 
 %% Get stuff
@@ -96,8 +104,10 @@ vec_concordant_loc = [];
 vec_concordant_lat = [];
 
 %% Which patients to do
-if only_good_outcome
+if only_good_outcome == 1
     pt_idx = find(surg_good);
+elseif only_good_outcome == 2
+    pt_idx = find(surg_bad);
 else
     pt_idx = (1:length(rate_sw))';
 end
@@ -209,8 +219,10 @@ T = table(vec_soz,vec_pt_idx,vec_rate_sleep,vec_rate_wake,...
     vec_rate_pre,vec_rate_post,vec_rate,...
     vec_mri_lesional,vec_concordant_loc,vec_concordant_lat);
 
-if only_good_outcome
+if only_good_outcome==1
     assert(isequal(find(surg_good),unique(T.vec_pt_idx)))
+elseif only_good_outcome==2
+    assert(isequal(find(surg_bad),unique(T.vec_pt_idx)))
 end
 
 %% Remove nan and inf rows

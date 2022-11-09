@@ -1,10 +1,10 @@
 %epilepsia_figure1 % this needs a raw data file to run (which is large)
 
-epilepsia_figure2
+epilepsia_figure2(0)
 
-epilepsia_figure3
+epilepsia_figure3(0)
 
-epilepsia_figure4
+epilepsia_figure4(0)
 
 epilepsia_figure5
 

@@ -81,7 +81,7 @@ which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 
 %% Bipolar montage
 [bipolar_values,~,bipolar_labels,chs_in_bipolar,which_chs_bipolar] = ...
-    bipolar_montage(values,chLabels,which_chs,[],[],name);
+    bipolar_montage(values,chLabels,[],[],name);
 
 is_run_car = ismember((1:length(clean_labels))',which_chs);
 is_run_bipolar = ismember((1:length(clean_labels))',which_chs_bipolar);

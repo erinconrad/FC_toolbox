@@ -68,13 +68,6 @@ resection_or_ablation = cellfun(@(x) ...
 outcome(~resection_or_ablation) = nan; % make non resection or ablation nan
 
 %% Define laterality
-old_bilat = strcmp(soz_lats,'bilateral') | strcmp(soz_lats,'diffuse');
-unilat = strcmp(soz_lats,'left') | strcmp(soz_lats,'right');
-bilat = nan(length(old_bilat),1);
-bilat(old_bilat) = 1;
-bilat(unilat) = 0;
-right_lat = strcmp(soz_lats,'right');
-left_lat = strcmp(soz_lats,'left');
 uni_or_bi = cell(length(soz_lats),1);
 uni_or_bi(strcmp(soz_lats,'left')|strcmp(soz_lats,'right')) = {'uni'};
 uni_or_bi(strcmp(soz_lats,'bilateral')) = {'bi'};
@@ -100,7 +93,7 @@ for which_montage = {'car'}%;{'bipolar','car'}
             labels = data.all_labels;
     end
 
-    for which_thing = {'inter_coh','bp','spikes','fc'}
+    for which_thing = {'spikes','fc','coh'}
         % Decide thing
         switch which_thing{1}
             case {'fc','inter_fc'}
@@ -182,7 +175,7 @@ end
 
 
 
-if 0
+if 1
     figure
     set(gcf,'position',[15 78 1400 350])
     tiledlayout(2,7,'tilespacing','tight','Padding','tight')
@@ -205,7 +198,7 @@ if 0
 
 end
 
-if 1
+if 0
     figure
     set(gcf,'position',[15 78 1400 350])
     tiledlayout(2,7,'tilespacing','tight','Padding','tight')
@@ -239,7 +232,8 @@ end
 
 %no_nan  = ~isnan(Ts.fc_1 )& ~isnan(Ts.spikes_1) & ~isnan(Ts.bp_1);
 %T = Ts(no_nan,:);
-T = Ts(~any(ismissing(Ts),2),:);
+T = Ts(:,[1,3:end]);
+T = Ts(~any(ismissing(T),2),:);
 
 
 end

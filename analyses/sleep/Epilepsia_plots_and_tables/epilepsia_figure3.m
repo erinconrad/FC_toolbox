@@ -1,4 +1,4 @@
-function epilepsia_figure3
+function epilepsia_figure3(null_flag)
 
 %% Parameters
 min_rate = 0.1;
@@ -20,6 +20,11 @@ out_folder1 = [script_folder,'analyses/sleep/data/'];
 %% Load out file and get roc stuff
 out = load([out_folder1,'out.mat']);
 out = out.out;
+
+%% Make fake data
+if null_flag
+    out = generate_fake_null_data(out);
+end
 
 %% Unpack substructures
 unpack_any_struct(out);
