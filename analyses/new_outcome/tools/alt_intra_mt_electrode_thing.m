@@ -48,7 +48,7 @@ match = possible_matches(match);
 
 switch which_thing{1}
 
-    case {'inter_coh','inter_fc'} % do inter
+    case {'inter_coh','inter_fc','inter_rl'} % do inter
 
         % initialize
         inter = nan(nmt,maxn,last_dim);
@@ -59,8 +59,14 @@ switch which_thing{1}
                 left_elec = strcmp(letters,['L',which_elecs{i}]) & number == k;
                 right_elec = strcmp(letters,['R',which_elecs{i}]) & number == k;
     
-                % get average inter-electrode connectivity
-                inter(i,k,:) = nanmean(thing(left_elec,right_elec,:),[1 2]);
+                if uni == 1
+                    % get average rl
+                    inter(i,k,:) = nanmean(thing(left_elec|right_elec));
+
+                else
+                    % get average inter-electrode connectivity
+                    inter(i,k,:) = nanmean(thing(left_elec,right_elec,:),[1 2]);
+                end
             end
 
         end
@@ -71,7 +77,7 @@ switch which_thing{1}
     otherwise % doing intra 
 
         % initialize
-        intra = nan(nmt,maxn,2,last_dim);
+        intra = nan(nmt,maxn,2,last_dim); % n elecs, ncontacts, L and R, bonus
 
         % which electrodes
         for i = 1:nmt
@@ -98,8 +104,8 @@ switch which_thing{1}
         
                     switch which_thing{1}
         
-                        case 'near_coh'
-                            % measure average coherence between one and the one
+                        case {'near_coh','near_fc'}
+                            % measure average FC between one and the one
                             % next to it
                             for k = 1:maxn-1
                                 first = strcmp(letters,curr_elec) & number == k;
@@ -129,7 +135,9 @@ switch which_thing{1}
         end
         
         %% Take AI
-        signed = (intra(:,:,1,:)-intra(:,:,2,:))./(intra(:,:,1,:)+intra(:,:,2,:));
+        %signed = (intra(:,:,1,:)-intra(:,:,2,:))./(intra(:,:,1,:)+intra(:,:,2,:));
+        signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
+        %signed = 0.5-intra(:,:,1,:).*(intra(:,:,2,:))./((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
         
         %% Average across ms
         signed = (squeeze(nanmean(signed,[1 2 3])))';
