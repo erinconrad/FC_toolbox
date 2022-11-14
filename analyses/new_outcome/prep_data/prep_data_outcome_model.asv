@@ -185,9 +185,9 @@ for p = 1:npts
         nexttile; turn_nans_gray(all_pearson{p,1,3})
     end
 
-    if 0
+    if 1
         figure
-        plot(all_spikes{p,1,2},all_spikes{p,1,3},'o')
+        plot(all_spikes{p,1,1},all_spikes{p,1,2},)
     end
     
 
