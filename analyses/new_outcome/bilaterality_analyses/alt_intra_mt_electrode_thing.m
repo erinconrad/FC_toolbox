@@ -48,7 +48,7 @@ match = possible_matches(match);
 
 switch which_thing{1}
 
-    case {'inter_coh','inter_fc','inter_rl'} % do inter
+    case {'inter_coh','inter_pearson','inter_rl'} % do inter
 
         % initialize
         inter = nan(nmt,maxn,last_dim);
@@ -104,7 +104,7 @@ switch which_thing{1}
         
                     switch which_thing{1}
         
-                        case {'near_coh','near_fc'}
+                        case {'near_coh','near_pearson'}
                             % measure average FC between one and the one
                             % next to it
                             for k = 1:maxn-1
@@ -115,7 +115,7 @@ switch which_thing{1}
         
                             end
         
-                        case {'coh','fc'}
+                        case {'coh','pearson'}
                             %% Measure mesial to lateral connectivity
                             
                             mesial_contacts = strcmp(letters,curr_elec) & ismember(number,[1:6]);

@@ -1,9 +1,7 @@
 function [T,feat_names_s] =  lr_mt
 
-which_outcome = 1; % engel = 1, ilae = 2
-which_outcome_year = 2;
-which_sleep_stage = 3; % all = 1, wake =2, sleep = 3;
-
+which_outcome = 'engel';
+%which_montage = 'bipolar';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -19,21 +17,21 @@ addpath(genpath(scripts_folder));
 data = load([inter_folder,'main_out.mat']);
 data = data.out;
 
+
 %% get variables of interest
-all_outcome = data.outcome; outcome = all_outcome(:,which_outcome,which_outcome_year);
+ilae = data.all_one_year_ilae;
+engel = data.all_one_year_engel;
 surgery = data.all_surgery;
-soz_lats = data.all_soz_lats; 
-soz_locs = data.all_soz_locs; 
+soz_lats = data.all_soz_lats; soz_lats(strcmp(soz_lats,'diffuse')) = {'bilateral'}; % make diffuse be the same as bilateral
+soz_locs = data.all_soz_locs; soz_locs(contains(soz_locs,'temporal')) = {'temporal'};
 names = data.all_names;
 npts = length(names);
 resection_lat = data.all_resec_lat;
 ablation_lat = data.all_ablate_lat;
 resection_loc = data.all_resec_loc;
 ablation_loc = data.all_ablate_loc;
-
-%% Clean SOZ localizations and lateralities
-soz_lats(strcmp(soz_lats,'diffuse')) = {'bilateral'}; % make diffuse be the same as bilateral
-soz_locs(contains(soz_locs,'temporal')) = {'temporal'};
+bipolar_labels = data.all_bipolar_labels;
+car_labels = data.all_labels;
 
 %% Consensus ablation or resection lat
 surg_lat = cell(npts,1);
@@ -65,14 +63,16 @@ for i = 1:npts
     end
 end
 
+%% Get outcome
+switch which_outcome
+    case 'ilae'
+        outcome = ilae;
+    case 'engel'
+        outcome = engel;
+end
 
 %% Find good and bad outcome
-if which_outcome == 1
-    outcome_text = 'engel';
-else
-    outcome_text = 'ilae';
-end
-outcome_num = cellfun(@(x) parse_outcome(x,outcome_text),outcome);
+outcome_num = cellfun(@(x) parse_outcome(x,which_outcome),outcome);
 outcome = outcome_num;
 
 %% Parse surgery
@@ -81,31 +81,39 @@ resection_or_ablation = cellfun(@(x) ...
     surgery);
 outcome(~resection_or_ablation) = nan; % make non resection or ablation nan
 
+%% Define laterality
+uni_or_bi = cell(length(soz_lats),1);
+uni_or_bi(strcmp(soz_lats,'left')|strcmp(soz_lats,'right')) = {'uni'};
+uni_or_bi(strcmp(soz_lats,'bilateral')) = {'bi'};
+uni_or_bi(cellfun(@isempty,uni_or_bi))= {''};
 
 %% Get features
 Ts = table(names,outcome,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 feat_names_s = {};
 
-for which_montage = 1 % car, bipolar
-    
-    if which_montage == 1
-        montage_text = 'car';
-    else
-        montage_text = 'bipolar';
+for which_montage = {'bipolar','car'}%;{'bipolar','car'}
+    switch which_montage{1}
+        case 'bipolar'
+            coh = data.all_bipolar_coh;
+            fc = data.all_bipolar_fc;
+            bp = data.all_bp;
+            spikes = data.all_spikes;
+            labels = data.all_bipolar_labels;
+            rl = data.all_rl;
+        case 'car'  
+            coh = data.all_coh;
+            fc = data.all_fc;
+            bp = data.all_bipolar_bp;
+            spikes = data.all_spikes;
+            labels = data.all_labels;
+            rl = data.all_rl;
     end
 
-    coh = data.all_coh(:,which_montage,which_sleep_stage);
-    pearson = data.all_pearson(:,which_montage,which_sleep_stage);
-    bp = data.all_bp(:,which_montage,which_sleep_stage);
-    labels = data.all_labels(:,which_montage);
-    rl = data.all_rl(:,1,which_sleep_stage);
-    spikes = data.all_spikes(:,1,which_sleep_stage);
-
-    for which_thing = {'spikes','pearson','bp','rl','coh'}
+    for which_thing = {'spikes','rl','bp','fc','coh'}
         % Decide thing
         switch which_thing{1}
-            case {'pearson','inter_pearson','near_pearson'}
-                thing = pearson;
+            case {'fc','inter_fc','near_fc'}
+                thing = fc;
                 uni = 0;
                 last_dim = 1;
             case {'coh','near_coh','inter_coh'}
@@ -120,10 +128,7 @@ for which_montage = 1 % car, bipolar
                 thing = spikes;
                 uni = 1;
                 last_dim = 1;
-                labels = data.all_labels(:,1); % spikes only car
-                if which_montage == 2
-                    continue
-                end
+                labels = car_labels; % spikes only car
             case 'nelecs'
                 thing = cellfun(@(x) ones(length(x),1),spikes,'uniformoutput',false);
                 last_dim = 1;
@@ -132,10 +137,7 @@ for which_montage = 1 % car, bipolar
                 thing = rl;
                 uni = 1;
                 last_dim = 1;
-                labels = data.all_labels(:,1); % spikes only car
-                if which_montage == 2
-                    continue
-                end
+                labels = car_labels; % spikes only car
         end
     
         %% Get intra
@@ -150,7 +152,7 @@ for which_montage = 1 % car, bipolar
         %% Signed table
         tnames_s = cell(last_dim,1);
         for i = 1:last_dim
-            tnames_s{i} = [which_thing{1},'_',num2str(i),'_',montage_text];
+            tnames_s{i} = [which_thing{1},'_',num2str(i),'_',which_montage{1}];
         end
         feat_names_s = [feat_names_s;tnames_s];
     
@@ -175,7 +177,7 @@ end
 nfeatures = length(feat_names_s); % -2 to remove outcome and bilaterality
 all_feat = table2array(Ts(:,size(Ts,2)-nfeatures+1:end));
 feat_corr = corr(all_feat,'rows','pairwise','type','spearman');
-if 1
+if 0
     figure
     turn_nans_gray(feat_corr)
     xticks(1:nfeatures)
@@ -191,7 +193,7 @@ end
 %% restrict to temporal locs???
 %Ts(~strcmp(Ts.soz_locs,'temporal'),:) = [];
 
-if 1
+if 0
     figure
     %set(gcf,'position',[15 78 1400 350])
     %tiledlayout(2,7,'tilespacing','tight','Padding','tight')
