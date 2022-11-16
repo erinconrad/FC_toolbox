@@ -1,4 +1,4 @@
-function find_intracranial_pts(ieeg_nums,site)
+function find_intracranial_pts(ieeg_nums)
 
 %% Parameters
 overwrite = 0;
@@ -51,19 +51,10 @@ while 1
     found_pt = 0;
     
     % Base name
-    switch site
-        case 'hup'
-            if ismember(i,[69,71,76,77,93,94,96,97,98])
-                base_ieeg_name = sprintf('HUP0%d_phaseII',i);
-            else
-                base_ieeg_name = sprintf('HUP%d_phaseII',i);
-            end
-        case 'musc'
-            if i < 10
-                base_ieeg_name = sprintf('MP000%d',i);
-            else
-                base_ieeg_name = sprintf('MP00%d',i);
-            end
+    if ismember(i,[69,71,76,77,93,94,96,97,98])
+        base_ieeg_name = sprintf('HUP0%d_phaseII',i);
+    else
+        base_ieeg_name = sprintf('HUP%d_phaseII',i);
     end
     
     % Initialize stuff for ieeg files
@@ -155,15 +146,10 @@ while 1
     end
 
     % done with that patient 
-    switch site
-        case 'hup'
-            if i <100
-                pt(p).name = sprintf('HUP0%d',i);
-            else
-                pt(p).name = sprintf('HUP%d',i);
-            end
-        case 'musc'
-            pt(p).name = base_ieeg_name;
+    if i <100
+        pt(p).name = sprintf('HUP0%d',i);
+    else
+        pt(p).name = sprintf('HUP%d',i);
     end
     
     % Save the file

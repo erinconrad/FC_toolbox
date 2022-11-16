@@ -1,7 +1,7 @@
-function [T,feat_names_s] =  lr_mt
+function [T,features] =  lr_mt
 
 which_outcome = 1; % engel = 1, ilae = 2
-which_outcome_year = 2;
+which_outcome_year = 1;
 which_sleep_stage = 3; % all = 1, wake =2, sleep = 3;
 
 
@@ -72,21 +72,23 @@ if which_outcome == 1
 else
     outcome_text = 'ilae';
 end
-outcome_num = cellfun(@(x) parse_outcome(x,outcome_text),outcome);
+outcome_num = cellfun(@(x) parse_outcome_new(x,outcome_text),outcome,'UniformOutput',false);
 outcome = outcome_num;
 
 %% Parse surgery
 resection_or_ablation = cellfun(@(x) ...
     contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
     surgery);
-outcome(~resection_or_ablation) = nan; % make non resection or ablation nan
+outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 
 
 %% Get features
 Ts = table(names,outcome,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 feat_names_s = {};
 
-for which_montage = 1 % car, bipolar
+
+
+for which_montage = [1 2] % car, bipolar
     
     if which_montage == 1
         montage_text = 'car';
@@ -175,7 +177,7 @@ end
 nfeatures = length(feat_names_s); % -2 to remove outcome and bilaterality
 all_feat = table2array(Ts(:,size(Ts,2)-nfeatures+1:end));
 feat_corr = corr(all_feat,'rows','pairwise','type','spearman');
-if 1
+if 0
     figure
     turn_nans_gray(feat_corr)
     xticks(1:nfeatures)
@@ -191,7 +193,7 @@ end
 %% restrict to temporal locs???
 %Ts(~strcmp(Ts.soz_locs,'temporal'),:) = [];
 
-if 1
+if 0
     figure
     %set(gcf,'position',[15 78 1400 350])
     %tiledlayout(2,7,'tilespacing','tight','Padding','tight')
@@ -230,7 +232,17 @@ end
 %no_nan  = ~isnan(Ts.fc_1 )& ~isnan(Ts.spikes_1) & ~isnan(Ts.bp_1);
 %T = Ts(no_nan,:);
 T = Ts(:,[1,7:end]);
-T = Ts(~any(ismissing(T),2),:);
+not_missing = ~any(ismissing(T),2);
+T = Ts(not_missing,:);
+features = feat_names_s;
 
+%% Double check labels
+if 0
+good_labels = data.all_labels(not_missing,1);
+for i = 1:length(good_labels)
+    table(good_labels{i}(contains(good_labels{i},'A')|contains(good_labels{i},'B')|contains(good_labels{i},'C')))
+    pause
+end
+end
 
 end

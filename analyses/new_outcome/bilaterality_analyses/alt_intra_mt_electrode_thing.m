@@ -46,6 +46,7 @@ end
 match = ismember(possible_matches,labels);
 match = possible_matches(match);
 
+
 switch which_thing{1}
 
     case {'inter_coh','inter_pearson','inter_rl'} % do inter
@@ -58,6 +59,7 @@ switch which_thing{1}
             for k = 1:maxn
                 left_elec = strcmp(letters,['L',which_elecs{i}]) & number == k;
                 right_elec = strcmp(letters,['R',which_elecs{i}]) & number == k;
+                
     
                 if uni == 1
                     % get average rl
@@ -78,12 +80,20 @@ switch which_thing{1}
 
         % initialize
         intra = nan(nmt,maxn,2,last_dim); % n elecs, ncontacts, L and R, bonus
+        intra_labels = cell(nmt,maxn,2);
 
         % which electrodes
         for i = 1:nmt
+
+            
             % which laterality
             for j = 1:2
                 curr_elec = [which_lats{j},which_elecs{i}];
+                for k = 1:maxn
+                    if sum(ismember(labels,sprintf('%s%d',curr_elec,k)))>0
+                        intra_labels(i,k,j) = {sprintf('%s%d',curr_elec,k)};
+                    end
+                end
                 
                 if uni == 1
                     % Can do this on individual contact level
@@ -136,15 +146,36 @@ switch which_thing{1}
         
         %% Take AI
         %signed = (intra(:,:,1,:)-intra(:,:,2,:))./(intra(:,:,1,:)+intra(:,:,2,:));
-        signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
+        if 0
+            mean_intra = squeeze(nanmean(intra,2));
+            signed = (mean_intra(:,1,:) - mean_intra(:,2,:))./sqrt((mean_intra(:,1,:)).^2+(mean_intra(:,2,:)).^2);
+            signed = (squeeze(nanmean(signed,[1 2])))';
+        else
+            signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
+            signed = (squeeze(nanmean(signed,[1 2 3])))';
+        end
         %signed = 0.5-intra(:,:,1,:).*(intra(:,:,2,:))./((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
         
         %% Average across ms
-        signed = (squeeze(nanmean(signed,[1 2 3])))';
+        
         
         if last_dim == 1
             signed = nanmean(signed);
         end
 end
+
+%% Error checking
+% I would expect that the labels with symmetric coverage should have values
+% for intra (unless nan for other reasons)
+if 0
+    a = permute(intra_labels,[2,3,1]);
+    b = permute(intra,[2,3,1]);
+    table(a(:,:,1),b(:,:,1))
+    table(a(:,:,2),b(:,:,2))
+    table(a(:,:,3),b(:,:,3))
+    signed
+    pause
+end
+
 
 end

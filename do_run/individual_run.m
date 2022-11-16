@@ -36,8 +36,24 @@ which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 [car_values,car_labels] = car_montage(values,which_chs,clean_labels);
 
 %% Bipolar montage
+%{
 [bipolar_values,~,bipolar_labels,chs_in_bipolar,which_chs_bipolar] = ...
     bipolar_montage(values,chLabels,which_chs,[],[],name);
+%}
+%% FIX THIS!!!
+[bipolar_values,~,bipolar_labels,chs_in_bipolar] = ...
+    bipolar_montage(values,chLabels,[],[],name);
+non_intracranial_bipolar = any(ismember(chs_in_bipolar,find(non_intracranial)),2);
+bad_bipolar = any(ismember(chs_in_bipolar,bad),2);
+empty = cellfun(@(x) strcmp(x,'-'),bipolar_labels);
+which_chs_bipolar = 1:size(chs_in_bipolar,1);
+which_chs_bipolar(bad_bipolar|non_intracranial_bipolar|empty) = [];
+
+if 0
+    table(bipolar_labels,non_intracranial_bipolar,bad_bipolar,empty)
+    table(bipolar_labels(which_chs_bipolar))
+end
+
 
 is_run_car = ismember((1:length(clean_labels))',which_chs);
 is_run_bipolar = ismember((1:length(clean_labels))',which_chs_bipolar);

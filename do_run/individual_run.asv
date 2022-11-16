@@ -1,6 +1,4 @@
-function out = individual_run_coherence(file_name,times,show_data,show_montage,name)
-
-
+function out = individual_run(file_name,times,tw,which_net,show_data,show_montage,name)
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -16,7 +14,9 @@ pwfile = locations.ieeg_pw_file;
 login_name = locations.ieeg_login;
 
 %% Get ieeg data
+
 data = download_ieeg_data(file_name,login_name,pwfile,times,1); % 1 means get lots of data
+
 chLabels = data.chLabels;
 values = data.values;
 fs = data.fs;
@@ -36,13 +36,22 @@ which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 [car_values,car_labels] = car_montage(values,which_chs,clean_labels);
 
 %% Bipolar montage
+%{
+[bipolar_values,~,bipolar_labels,chs_in_bipolar,which_chs_bipolar] = ...
+    bipolar_montage(values,chLabels,which_chs,[],[],name);
+%}
+%% FIX THIS!!!
 [bipolar_values,~,bipolar_labels,chs_in_bipolar] = ...
     bipolar_montage(values,chLabels,[],[],name);
 non_intracranial_bipolar = any(ismember(chs_in_bipolar,find(non_intracranial)),2);
 bad_bipolar = any(ismember(chs_in_bipolar,bad),2);
 empty = cellfun(@(x) strcmp(x,'-'),bipolar_labels);
 which_chs_bipolar = 1:size(chs_in_bipolar,1);
-which_chs_bipolar(bad_bipolar|non_intracranial_bipolar|empty) = [];
+which_chs_bipolar(ismember(which_chs_bipolar,find(bad_bipolar))|ismember(which_chs_bipolar,find(non_intracranial_bipolar))) = [];
+
+if 0
+    table(bipolar_labels(which_chs_bipolar))
+end
 
 
 is_run_car = ismember((1:length(clean_labels))',which_chs);
@@ -80,29 +89,35 @@ for im = 1:2
     run_values(:,~is_run) = nan;
     skip = find(~is_run);
     
-    %% Get coherence
-    
-    coh = faster_coherence_calc(run_values,fs);
-    %old_coh = coherence_calc(run_values,fs);
-  
-    
-    if 0
-        figure
-        nexttile
-        turn_nans_gray(new_coh(:,:,2))
-        nexttile
-        turn_nans_gray(old_coh(:,:,2))
+    % Choose network
+    switch which_net
+        case 'pc'
+            curr_net = pc_vector_calc(run_values,fs,tw);
+        
     end
     
-    %% Get bandpower
-    bp = bp_calc(run_values,fs,skip);
+    % Get spikes
+    gdf = detector_alt(run_values,fs);
+    fprintf('\nDetected %d spikes\n',size(gdf,1));
+    
+    if ~isempty(gdf)
+        % Detect bad spikes
+       % bad_gdf = detector_alt(run_values,fs);
+        
+        
+    end
+    
+    % Get alpha delta ratio
+    ad_rat = calc_ad(run_values,fs);
     
     % save
     out.montage(im).name = montage;
+    out.montage(im).net.name = which_net;
+    out.montage(im).net.data = curr_net;
     out.montage(im).labels = curr_labels;
     out.montage(im).is_run = is_run;
-    out.montage(im).bp = bp;
-    out.montage(im).coh = coh;
+    out.montage(im).spikes = gdf;
+    out.montage(im).ad = ad_rat;
     out.fs = fs;
     out.montage(im).skip = skip;
     out.clean_labels = clean_labels;
@@ -126,14 +141,6 @@ if show_data
     %pause
     %close(gcf)
     clear tout
-end
-
-if 0
-    figure
-    nexttile
-    turn_nans_gray(out.montage(1).coh(:,:,2))
-    nexttile
-    turn_nans_gray(out.montage(2).coh(:,:,2))
 end
 
 

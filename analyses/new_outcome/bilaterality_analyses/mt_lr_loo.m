@@ -1,6 +1,7 @@
 function all_pred = mt_lr_loo(T,features)
 
 do_plot = 1;
+response = 'soz_lats';%'soz_lats';%'outcome';
 
 %% Remove non temporal?
 non_temporal = ~strcmp(T.soz_locs,'temporal');
@@ -10,10 +11,14 @@ non_temporal = ~strcmp(T.soz_locs,'temporal');
 bilateral = strcmp(T.soz_lats,'bilateral');
 %T(bilateral,:) = [];
 
+%% Remove empty classes
+empty_class = cellfun(@isempty,T.(response));
+T(empty_class,:) = [];
+
 npts = size(T,1);
 
 % initialize confusion matrix
-classes = unique(T.soz_lats);
+classes = unique(T.(response));
 nclasses = length(classes);
 C = zeros(nclasses,nclasses); % left, right, bilateral
 
@@ -32,14 +37,17 @@ for i = 1:npts
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
 
     % train classifier    
-    tc = lt_mr_tree(Ttrain,'bag',features);
+    tc = lt_mr_tree(Ttrain,'tree',features,response);
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);
+
+   
     all_pred{i} = pred{1};
+    
 
     % compare to true
-    true = Ttest.soz_lats;
+    true = Ttest.(response);
 
     % which row to add to confusion matrix (the true value)
     which_row = find(strcmp(true,classes));
@@ -59,7 +67,7 @@ accuracy = sum(diag(C))/sum(C(:));
 T = addvars(T,all_pred,'NewVariableNames','pred_lat','After','soz_lats');
 
 % Remove patients with missing data
-no_outcome = isnan(T.outcome);
+no_outcome = cellfun(@isempty,T.(response));
 no_surg = ~strcmp(T.surgery,'Laser ablation') & ~strcmp(T.surgery,'Resection');
 not_temporal = ~strcmp(T.surg_loc,'temporal');
 
@@ -92,10 +100,10 @@ pred_bad = strcmp(all_pred,'bilateral');
 
 %% Confusion matrix for predicted and true outcome
 % Make a confusion matrix for outcome
-Cout(1,1) = sum(oT.outcome == 1 & pred_good  == 1);
-Cout(1,2) = sum(oT.outcome == 1 & pred_good == 0);
-Cout(2,1) = sum(oT.outcome==0 & pred_good  == 1);
-Cout(2,2) = sum(oT.outcome==0 & pred_good == 0);
+Cout(1,1) = sum(strcmp(oT.outcome,'good') & pred_good  == 1);
+Cout(1,2) = sum(strcmp(oT.outcome,'good') & pred_good == 0);
+Cout(2,1) = sum(strcmp(oT.outcome,'bad') & pred_good  == 1);
+Cout(2,2) = sum(strcmp(oT.outcome,'bad') & pred_good == 0);
 accuracy_out = sum(diag(Cout))/sum(Cout(:));
 
 

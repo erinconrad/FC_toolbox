@@ -19,7 +19,8 @@ switch which_step
         find_intracranial_pts(first_and_last_ieeg_nums);
         
         % Fix annotations
-        fix_annotations
+        %fix_annotations
+        get_all_annotations % this looks beyond 250
 
         % electrode locs
         fprintf('\nGetting electrode locs\n');

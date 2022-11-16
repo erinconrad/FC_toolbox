@@ -103,7 +103,7 @@ for which_montage = {'bipolar','car'}%;{'bipolar','car'}
         case 'car'  
             coh = data.all_coh;
             fc = data.all_fc;
-            bp = data.all_bipolar_bp;
+            bp = data.all_bipolar_bp; % oops i flipped it
             spikes = data.all_spikes;
             labels = data.all_labels;
             rl = data.all_rl;
