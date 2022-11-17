@@ -180,7 +180,7 @@ for p = whichPts
                 title(sprintf('Spike %d %1.1f s %s file %d',...
                     sp,sp_time,labels{sp_ch},f),'fontsize',10)
 
-            yticklabels([])
+            %yticklabels([])
             set(gca,'fontsize',10)
 
 
