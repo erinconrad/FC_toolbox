@@ -153,6 +153,7 @@ switch which_thing{1}
         else
             signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
             signed = (squeeze(nanmean(signed,[1 2 3])))';
+            %signed = (squeeze(nanmedian(signed,[1 2 3])))';
         end
         %signed = 0.5-intra(:,:,1,:).*(intra(:,:,2,:))./((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
         

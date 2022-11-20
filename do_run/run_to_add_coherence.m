@@ -1,7 +1,7 @@
 function run_to_add_coherence(whichPts)
 
 %% Parameters
-overwrite = 1; % be very careful about changing this
+overwrite = 0; % be very careful about changing this
 
 %% Get file locs
 locations = fc_toolbox_locs;

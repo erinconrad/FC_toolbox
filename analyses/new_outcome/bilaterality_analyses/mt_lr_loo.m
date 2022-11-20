@@ -37,7 +37,7 @@ for i = 1:npts
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
 
     % train classifier    
-    tc = lt_mr_tree(Ttrain,'tree',features,response);
+    tc = lt_mr_tree(Ttrain,'knn',features,response);
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);

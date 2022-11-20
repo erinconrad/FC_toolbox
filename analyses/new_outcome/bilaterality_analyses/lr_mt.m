@@ -177,7 +177,7 @@ end
 nfeatures = length(feat_names_s); % -2 to remove outcome and bilaterality
 all_feat = table2array(Ts(:,size(Ts,2)-nfeatures+1:end));
 feat_corr = corr(all_feat,'rows','pairwise','type','spearman');
-if 0
+if 1
     figure
     turn_nans_gray(feat_corr)
     xticks(1:nfeatures)
@@ -193,7 +193,7 @@ end
 %% restrict to temporal locs???
 %Ts(~strcmp(Ts.soz_locs,'temporal'),:) = [];
 
-if 0
+if 1
     figure
     %set(gcf,'position',[15 78 1400 350])
     %tiledlayout(2,7,'tilespacing','tight','Padding','tight')
