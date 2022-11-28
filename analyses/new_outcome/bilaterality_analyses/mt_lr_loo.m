@@ -37,7 +37,7 @@ for i = 1:npts
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
 
     % train classifier    
-    tc = lt_mr_tree(Ttrain,'knn',features,response);
+    tc = lt_mr_tree(Ttrain,'bag',features,response,70);
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);
@@ -60,8 +60,17 @@ for i = 1:npts
     
 end
 
+%% Calculate accuracy and balanced accuracy
 accuracy = sum(diag(C))/sum(C(:));
 
+% Balanced accuracy is the average recall across the 3 classes
+recall = nan(nclasses,1);
+for i = 1:nclasses
+    tp = C(i,i);
+    fn = sum(C(i,~ismember(1:nclasses,i)));
+    recall(i) = tp/(tp+fn);
+end
+balanced_accuracy = mean(recall);
 
 %% Now predict outcome
 T = addvars(T,all_pred,'NewVariableNames','pred_lat','After','soz_lats');
@@ -137,7 +146,8 @@ if do_plot
         end
     end
     
-    title(sprintf('Accuracy: %1.1f%%',accuracy*100))
+    title(sprintf('Accuracy: %1.1f%%\nBalanced accuracy: %1.1f%%',...
+        accuracy*100,balanced_accuracy*100))
     set(gca,'fontsize',20)
 
     %% outcome for those with agreement vs those without

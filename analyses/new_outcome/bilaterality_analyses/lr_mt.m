@@ -1,5 +1,6 @@
 function [T,features] =  lr_mt
 
+do_plots = 0;
 which_outcome = 1; % engel = 1, ilae = 2
 which_outcome_year = 1;
 which_sleep_stage = 3; % all = 1, wake =2, sleep = 3;
@@ -10,6 +11,10 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 inter_folder = [results_folder,'analysis/new_outcome/data/'];
 plot_folder = [results_folder,'analysis/new_outcome/plots/'];
+subplot_path = [plot_folder,'ai_subplots/'];
+if ~exist(subplot_path,'dir')
+    mkdir(subplot_path)
+end
 
 % add script folder to path
 scripts_folder = locations.script_folder;
@@ -88,7 +93,7 @@ feat_names_s = {};
 
 
 
-for which_montage = [1 2] % car, bipolar
+for which_montage = [1] % car, bipolar
     
     if which_montage == 1
         montage_text = 'car';
@@ -103,7 +108,7 @@ for which_montage = [1 2] % car, bipolar
     rl = data.all_rl(:,1,which_sleep_stage);
     spikes = data.all_spikes(:,1,which_sleep_stage);
 
-    for which_thing = {'spikes','pearson','bp','rl','coh'}
+    for which_thing = {'spikes','bp','rl','pearson','coh'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
@@ -143,7 +148,9 @@ for which_montage = [1 2] % car, bipolar
         %% Get intra
         %[ai,signed] = cellfun(@(x,y) intra_mt_electrode_thing(x,y,uni,last_dim),labels,thing,'uniformoutput',false);
         %ai = cell2mat(ai);
-        [ai,match] = cellfun(@(x,y) alt_intra_mt_electrode_thing(x,y,uni,last_dim,which_thing),labels,thing,'uniformoutput',false);
+        [ai,match] = cellfun(@(x,y,z) ...
+            calc_ai(x,y,z,uni,last_dim,which_thing,subplot_path,do_plots),...
+            labels,thing,names,'uniformoutput',false);
     
         ai = cell2mat(ai);
     
@@ -223,14 +230,7 @@ end
 
 
 
-%% Outcome prediction rule
-% I would expect patients who had higher abs AI to have better outcomes,
-% assuming surgery done on "correct" side. Perhaps I should take signed AI
-% and change the sign to be the opposite if it's the wrong side?
-
-
-%no_nan  = ~isnan(Ts.fc_1 )& ~isnan(Ts.spikes_1) & ~isnan(Ts.bp_1);
-%T = Ts(no_nan,:);
+%% Prep to output table, remove those with missing features
 T = Ts(:,[1,7:end]);
 not_missing = ~any(ismissing(T),2);
 T = Ts(not_missing,:);

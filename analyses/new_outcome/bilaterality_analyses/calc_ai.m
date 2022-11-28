@@ -1,4 +1,5 @@
-function [signed,match] = alt_intra_mt_electrode_thing(labels,thing,uni,last_dim,which_thing)
+function [signed,match] = calc_ai(labels,thing,name,uni,last_dim,...
+    which_thing,subplot_path,do_plots)
 
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
@@ -154,15 +155,33 @@ switch which_thing{1}
             signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
             signed = (squeeze(nanmean(signed,[1 2 3])))';
             %signed = (squeeze(nanmedian(signed,[1 2 3])))';
+            %signed = (squeeze(nanmean(signed,[2 3])))';
         end
         %signed = 0.5-intra(:,:,1,:).*(intra(:,:,2,:))./((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
         
-        %% Average across ms
-        
-        
+        %% Max abs across electrodes
+        %{
+        [~,I] = max(abs(signed),[],2);
+        rows = 1:length(I);
+        ind = sub2ind(size(signed),rows',I);
+        signed = signed(ind);
+        signed = signed';
+        %}
+
+        %% Average across ms  
         if last_dim == 1
             signed = nanmean(signed);
         end
+end
+
+%% Plot
+if do_plots
+    for d = 1:last_dim
+        curr_intra = intra(:,:,:,d);
+        curr_signed = signed(d);
+        curr_thing = sprintf('%s_%d',which_thing{1},d);
+        show_ai_electrodes(curr_intra,curr_signed,which_elecs,which_lats,name,subplot_path,curr_thing,labels)
+    end
 end
 
 %% Error checking

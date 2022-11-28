@@ -1,4 +1,4 @@
-function trainedClassifier = lt_mr_tree(trainingData,method,features,respVar)
+function trainedClassifier = lt_mr_tree(trainingData,method,features,respVar,pc_perc)
 % [trainedClassifier, validationAccuracy] = trainClassifier(trainingData)
 % Returns a trained classifier and its accuracy. This code recreates the
 % classification model trained in Classification Learner app. Use the
@@ -67,7 +67,7 @@ numericPredictors(isinf(numericPredictors)) = NaN;
 [pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
     numericPredictors);
 % Keep enough components to explain the desired amount of variance.
-explainedVarianceToKeepAsFraction = 70/100;
+explainedVarianceToKeepAsFraction = pc_perc/100;
 numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
 pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
 predictors = [array2table(pcaScores(:,1:numComponentsToKeep)), predictors(:, isCategoricalPredictor)];
@@ -104,7 +104,7 @@ switch method
             'Method', 'Bag', ...
             'Learners', template, ...
             'ClassNames', classNames,...
-            'NumLearningCycles',1000);
+            'NumLearningCycles',100);
 
     case 'svm'
 
