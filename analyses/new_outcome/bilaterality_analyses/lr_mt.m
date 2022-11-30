@@ -1,8 +1,9 @@
 function [T,features] =  lr_mt
 
-do_plots = 0;
-which_outcome = 1; % engel = 1, ilae = 2
-which_outcome_year = 1;
+do_little_plots = 0;
+do_big_plots = 1;
+%which_outcome = 1; % engel = 1, ilae = 2
+%which_outcome_year = 1;
 which_sleep_stage = 3; % all = 1, wake =2, sleep = 3;
 
 
@@ -25,7 +26,7 @@ data = load([inter_folder,'main_out.mat']);
 data = data.out;
 
 %% get variables of interest
-all_outcome = data.outcome; outcome = all_outcome(:,which_outcome,which_outcome_year);
+all_outcome = data.outcome; %outcome = all_outcome(:,which_outcome,which_outcome_year);
 surgery = data.all_surgery;
 soz_lats = data.all_soz_lats; 
 soz_locs = data.all_soz_locs; 
@@ -35,6 +36,12 @@ resection_lat = data.all_resec_lat;
 ablation_lat = data.all_ablate_lat;
 resection_loc = data.all_resec_loc;
 ablation_loc = data.all_ablate_loc;
+
+%% All outcomes
+engel_yr1 = all_outcome(:,1,1);
+engel_yr2 = all_outcome(:,1,2);
+ilae_yr1 = all_outcome(:,2,1);
+ilae_yr2 = all_outcome(:,2,2);
 
 %% Clean SOZ localizations and lateralities
 soz_lats(strcmp(soz_lats,'diffuse')) = {'bilateral'}; % make diffuse be the same as bilateral
@@ -71,15 +78,6 @@ for i = 1:npts
 end
 
 
-%% Find good and bad outcome
-if which_outcome == 1
-    outcome_text = 'engel';
-else
-    outcome_text = 'ilae';
-end
-outcome_num = cellfun(@(x) parse_outcome_new(x,outcome_text),outcome,'UniformOutput',false);
-outcome = outcome_num;
-
 %% Parse surgery
 resection_or_ablation = cellfun(@(x) ...
     contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
@@ -88,12 +86,11 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 
 
 %% Get features
-Ts = table(names,outcome,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
+% Initialize table
+Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 feat_names_s = {};
 
-
-
-for which_montage = [1] % car, bipolar
+for which_montage = 1 % car, bipolar
     
     if which_montage == 1
         montage_text = 'car';
@@ -108,27 +105,28 @@ for which_montage = [1] % car, bipolar
     rl = data.all_rl(:,1,which_sleep_stage);
     spikes = data.all_spikes(:,1,which_sleep_stage);
 
-    for which_thing = {'spikes','bp','rl','pearson','coh'}
+    % Loop over features
+    for which_thing ={'nelecs','spikes','rl','bp','pearson','coh'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
                 thing = pearson;
-                uni = 0;
-                last_dim = 1;
+                uni = 0; % not univariate
+                last_dim = 1; % one frequency
             case {'coh','near_coh','inter_coh'}
                 thing = coh;
-                uni = 0;
-                last_dim = size(coh{1},3);
+                uni = 0; % not univariate
+                last_dim = size(coh{1},3); % multiple frequencies
             case 'bp'
                 thing = bp;
-                uni = 1;
-                last_dim = size(bp{1},2);
+                uni = 1; % univariate
+                last_dim = size(bp{1},2); % multiple frequencies
             case 'spikes'
                 thing = spikes;
-                uni = 1;
-                last_dim = 1;
+                uni = 1; % univariate
+                last_dim = 1; % one frequency
                 labels = data.all_labels(:,1); % spikes only car
-                if which_montage == 2
+                if which_montage == 2 % I don't have validated bipolar spike detections
                     continue
                 end
             case 'nelecs'
@@ -145,18 +143,16 @@ for which_montage = [1] % car, bipolar
                 end
         end
     
-        %% Get intra
-        %[ai,signed] = cellfun(@(x,y) intra_mt_electrode_thing(x,y,uni,last_dim),labels,thing,'uniformoutput',false);
-        %ai = cell2mat(ai);
-        [ai,match] = cellfun(@(x,y,z) ...
-            calc_ai(x,y,z,uni,last_dim,which_thing,subplot_path,do_plots),...
+        %% Get asymmetry index
+        ai = cellfun(@(x,y,z) ...
+            calc_ai(x,y,z,uni,last_dim,which_thing,subplot_path,do_little_plots),...
             labels,thing,names,'uniformoutput',false);
     
         ai = cell2mat(ai);
     
     
         
-        %% Signed table
+        %% AI table
         tnames_s = cell(last_dim,1);
         for i = 1:last_dim
             tnames_s{i} = [which_thing{1},'_',num2str(i),'_',montage_text];
@@ -184,46 +180,77 @@ end
 nfeatures = length(feat_names_s); % -2 to remove outcome and bilaterality
 all_feat = table2array(Ts(:,size(Ts,2)-nfeatures+1:end));
 feat_corr = corr(all_feat,'rows','pairwise','type','spearman');
-if 1
+if do_big_plots
     figure
+    set(gcf,'position',[-300 78 1700 900])
+    tiledlayout(4,4,'tilespacing','tight','Padding','tight')
+    nexttile
     turn_nans_gray(feat_corr)
     xticks(1:nfeatures)
-    xticklabels(feat_names_s)
+    xticklabels(cellfun(@(x) strrep(x,'_car',''),feat_names_s,'uniformoutput',false))
     yticks(1:nfeatures)
-    yticklabels(feat_names_s)
-    colorbar
-    title('Correlation between L-R asymmetry indices')
+    yticklabels(cellfun(@(x) strrep(x,'_car',''),feat_names_s,'uniformoutput',false))
+    caxis([-1 1])
+    c = colorbar;
+    c.Label.String = 'Correlation';
+    %title('Correlation between L-R asymmetry indices')
     set(gca,'fontsize',15)
     %print(gcf,[plot_folder,'feature_correlation'],'-dpng')
-end
 
-%% restrict to temporal locs???
-%Ts(~strcmp(Ts.soz_locs,'temporal'),:) = [];
 
-if 1
-    figure
-    %set(gcf,'position',[15 78 1400 350])
-    %tiledlayout(2,7,'tilespacing','tight','Padding','tight')
+    cols = [0 0.4470 0.7410;0.8500 0.3250 0.0980;0.9290 0.6940 0.1250];
+
+     
     for f = 1:length(feat_names_s)
         nexttile
-        %{
-        unpaired_plot(Ts.(feat_names_s{f})(strcmp(Ts.soz_lats,'bilateral')),...
-            Ts.(feat_names_s{f})(strcmp(Ts.soz_lats,'right')),{'left','right'},feat_names_s{f});
-        %}
-        %
-        boxplot(Ts.(feat_names_s{f}),Ts.soz_lats)
+        curr_feat = Ts.(feat_names_s{f});
+        boxplot(Ts.(feat_names_s{f}),Ts.soz_lats,'colors',cols,'symbol','');
         hold on
-        ylabel(feat_names_s{f})
-        p = kruskalwallis(Ts.(feat_names_s{f}),Ts.soz_lats,'off');
+        unique_lats = xticklabels;
+        nlats = length(unique_lats);
+        for il = 1:nlats
+            curr_lats = strcmp(Ts.soz_lats,unique_lats{il});
+            
+            plot(il + randn(sum(curr_lats),1)*0.05,curr_feat(curr_lats),'o','color',cols(il,:))
+        end
+        %set(h,{'linew'},{2})
+        %title(feat_names_s{f})
+        ylabel(strrep(feat_names_s{f},'_car',''))
         yl = ylim;
-        ybar = yl(1) + 1.05*(yl(2)-yl(1));
-        ytext = yl(1) + 1.1*(yl(2)-yl(1));
-        new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
-        plot([1 3],[ybar ybar],'k-','linewidth',2)
-        text(2,ytext,sprintf('p = %1.3f',p),'horizontalalignment','center','fontsize',15)
+        new_y = [yl(1) yl(1) + 1.3*(yl(2)-yl(1))];
         ylim(new_y)
-        %}
+        p = kruskalwallis(Ts.(feat_names_s{f}),Ts.soz_lats,'off');
+        bon_p = 0.05/3;
+
+        %% Only do post hoc tests if group comparison significant
+        if p < 0.05
+            % do post hoc
+            lrp = ranksum(curr_feat(strcmp(Ts.soz_lats,'left')),curr_feat(strcmp(Ts.soz_lats,'right')));
+            rbp = ranksum(curr_feat(strcmp(Ts.soz_lats,'right')),curr_feat(strcmp(Ts.soz_lats,'bilateral')));
+            lbp = ranksum(curr_feat(strcmp(Ts.soz_lats,'left')),curr_feat(strcmp(Ts.soz_lats,'bilateral')));
+
+            ybar1 = yl(1) + 1.06*(yl(2)-yl(1));
+            ytext1 = yl(1) + 1.09*(yl(2)-yl(1));
+            ybar2 = yl(1) + 1.18*(yl(2)-yl(1));
+            ytext2 = yl(1) + 1.21*(yl(2)-yl(1));
+            if lrp < bon_p
+                plot([1 2],[ybar1 ybar1],'k-','linewidth',1)
+                text(1.5,ytext1,get_asterisks_bonferroni(lrp,3),'horizontalalignment','center','fontsize',15)
+            end
+            if rbp < bon_p
+                plot([2 3],[ybar1 ybar1],'k-','linewidth',1)
+                text(2.5,ytext1,get_asterisks_bonferroni(rbp,3),'horizontalalignment','center','fontsize',15)
+            end
+            if lbp < bon_p
+                plot([1 3],[ybar2 ybar2],'k-','linewidth',1)
+                text(2,ytext2,get_asterisks_bonferroni(lbp,3),'horizontalalignment','center','fontsize',15)
+            end
+        end
+        
+        
+       
         set(gca,'fontsize',15)
+        print(gcf,[plot_folder,'Fig2'],'-dpng')
     end
 
 end
@@ -231,7 +258,7 @@ end
 
 
 %% Prep to output table, remove those with missing features
-T = Ts(:,[1,7:end]);
+T = Ts(:,[1,size(Ts,2)-nfeatures+1:end]);
 not_missing = ~any(ismissing(T),2);
 T = Ts(not_missing,:);
 features = feat_names_s;
@@ -244,5 +271,6 @@ for i = 1:length(good_labels)
     pause
 end
 end
+
 
 end

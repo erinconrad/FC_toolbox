@@ -1,4 +1,4 @@
-function gdf = detector_alt(values,fs)
+function gdf = detector_new_timing(values,fs)
 
 %{
 %}
@@ -222,7 +222,7 @@ end
 
 % Multichannel requirements
 if ~isempty(gdf)
-    gdf =  multi_channel_requirements(gdf,nchs,fs);
+    gdf =  multi_channel_requirements2(gdf,nchs,fs);
 end
 
 

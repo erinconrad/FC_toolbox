@@ -94,8 +94,13 @@ which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 [car_values,car_labels] = car_montage(values,which_chs,clean_labels);
 
 %% Bipolar montage
-[bipolar_values,~,bipolar_labels,chs_in_bipolar,which_chs_bipolar,mid_locs,mid_anatomy] = ...
-    bipolar_montage(values,chLabels,which_chs,locs,anatomy,pt_name);
+[bipolar_values,~,bipolar_labels,chs_in_bipolar,mid_locs,mid_anatomy] = ...
+    bipolar_montage(values,chLabels,locs,anatomy,pt_name);
+non_intracranial_bipolar = any(ismember(chs_in_bipolar,find(non_intracranial)),2);
+bad_bipolar = any(ismember(chs_in_bipolar,bad),2);
+empty = cellfun(@(x) strcmp(x,'-'),bipolar_labels);
+which_chs_bipolar = 1:size(chs_in_bipolar,1);
+which_chs_bipolar(bad_bipolar|non_intracranial_bipolar|empty) = [];
 
 %% Table of channels
 is_run_car = ismember((1:length(clean_labels))',which_chs);
@@ -164,7 +169,8 @@ for im = 1:2
         end
         
         % Get spikes
-        gdf = detector_alt(values,fs);
+        %gdf = detector_alt(values,fs);
+        gdf = detector_new_timing(values,fs);
         fprintf('\nDetected %d spikes\n',size(gdf,1));
         
         % coherence

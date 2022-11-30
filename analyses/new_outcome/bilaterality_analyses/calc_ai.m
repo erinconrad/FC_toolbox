@@ -1,5 +1,11 @@
-function [signed,match] = calc_ai(labels,thing,name,uni,last_dim,...
+function signed = calc_ai(labels,thing,name,uni,last_dim,...
     which_thing,subplot_path,do_plots)
+
+%{
+This function takes a list of features for different electrode contacts,
+finds the mesial temporal ones, and calculates a single asymmetry index
+(for each frequency band) representing the L-R difference.
+%}
 
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
@@ -23,15 +29,13 @@ number = cellfun(@(x) str2num(x{1}),number);
 letters = cellfun(@(x) regexp(x,'[a-zA-Z]+','Match'),labels,'uniformoutput',false);
 letters(cellfun(@isempty,letters)) = {{'zzzzz'}};
 letters = cellfun(@(x) x{1},letters,'uniformoutput',false);
-% get first two letter in each label
-%first_two = cellfun(@(x) x(1:2),labels,'uniformoutput',false);
 
-
-maxn = 12; % up to 12 electrodes
+maxn = 12; % up to 12 contacts per electrode
 nmt = length(which_elecs);
 
 
 %% Find the matching electrodes
+%{
 possible_matches = cell(2*nmt*12,1);
 count = 0;
 for i = 1:nmt
@@ -46,11 +50,13 @@ end
 
 match = ismember(possible_matches,labels);
 match = possible_matches(match);
+%}
 
-
+%% calculate the AI measurement
 switch which_thing{1}
 
-    case {'inter_coh','inter_pearson','inter_rl'} % do inter
+        
+    case {'inter_coh','inter_pearson','inter_rl'} % do inter-electrode connectivity (NOT AI)
 
         % initialize
         inter = nan(nmt,maxn,last_dim);
@@ -77,33 +83,53 @@ switch which_thing{1}
         % Average across electrodes
         signed = squeeze(nanmean(inter,[1 2]))';
 
-    otherwise % doing intra 
+    otherwise % doing AI
 
         % initialize
-        intra = nan(nmt,maxn,2,last_dim); % n elecs, ncontacts, L and R, bonus
+        intra = nan(nmt,maxn,2,last_dim); % n elecs, ncontacts, L and R, nfreq
         intra_labels = cell(nmt,maxn,2);
 
         % which electrodes
         for i = 1:nmt
-
             
             % which laterality
             for j = 1:2
                 curr_elec = [which_lats{j},which_elecs{i}];
+
+                % which of the 12 contacts
                 for k = 1:maxn
+
+                    % if this label exists
                     if sum(ismember(labels,sprintf('%s%d',curr_elec,k)))>0
                         intra_labels(i,k,j) = {sprintf('%s%d',curr_elec,k)};
                     end
                 end
                 
-                if uni == 1
+                if isnan(uni) % nelecs
+
+                    % Can do this on individual contact level
+                    for k = 1:maxn
+                        % Find the contacts matching this electrode
+                        matching_contacts = strcmp(letters,curr_elec) & number == k;
+                        
+                        % intra is the thing
+                        intra(i,k,j,:) = nansum(thing(matching_contacts));
+
+                    end
+
+            
+                elseif uni == 1
                     % Can do this on individual contact level
                     for k = 1:maxn
                
                         % Find the contacts matching this electrode
                         matching_contacts = strcmp(letters,curr_elec) & number == k;
+
+                        % should just have one match?
+                        assert(sum(matching_contacts) <= 1)
                                
-                        % Calculate "intra" for these contacts, which depends on what the thing is
+                        % Calculate "intra" for these contacts, just the
+                        % thing for those contacts
                         curr_intra = nanmean(thing(matching_contacts,:,:),1);
                         
                         % Fill
@@ -111,11 +137,11 @@ switch which_thing{1}
             
                     end
         
-                else
+                elseif uni == 0 % bivariate measures, will do proximal-to-distal connectivity
         
                     switch which_thing{1}
         
-                        case {'near_coh','near_pearson'}
+                        case {'near_coh','near_pearson'} % (I don't do this)
                             % measure average FC between one and the one
                             % next to it
                             for k = 1:maxn-1
@@ -129,8 +155,8 @@ switch which_thing{1}
                         case {'coh','pearson'}
                             %% Measure mesial to lateral connectivity
                             
-                            mesial_contacts = strcmp(letters,curr_elec) & ismember(number,[1:6]);
-                            lateral_contacts = strcmp(letters,curr_elec) & ismember(number,[7:12]);
+                            mesial_contacts = strcmp(letters,curr_elec) & ismember(number,[1:6]); % first 6 contacts are the proximal contacts
+                            lateral_contacts = strcmp(letters,curr_elec) & ismember(number,[7:12]); % last 6 are the distal contacts
                 
                             % measure connectivity mesial to lateral
                             curr_intra = nanmean(thing(mesial_contacts,lateral_contacts,:),[1 2]);
@@ -146,28 +172,15 @@ switch which_thing{1}
         end
         
         %% Take AI
-        %signed = (intra(:,:,1,:)-intra(:,:,2,:))./(intra(:,:,1,:)+intra(:,:,2,:));
-        if 0
-            mean_intra = squeeze(nanmean(intra,2));
-            signed = (mean_intra(:,1,:) - mean_intra(:,2,:))./sqrt((mean_intra(:,1,:)).^2+(mean_intra(:,2,:)).^2);
-            signed = (squeeze(nanmean(signed,[1 2])))';
+        if isnan(uni)
+            nleft = sum(intra(:,:,1,:),'all');
+            nright = sum(intra(:,:,2,:),'all');
+            signed = (nleft-nright)./sqrt(nleft^2+nright^2);
         else
             signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
             signed = (squeeze(nanmean(signed,[1 2 3])))';
-            %signed = (squeeze(nanmedian(signed,[1 2 3])))';
-            %signed = (squeeze(nanmean(signed,[2 3])))';
         end
-        %signed = 0.5-intra(:,:,1,:).*(intra(:,:,2,:))./((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
-        
-        %% Max abs across electrodes
-        %{
-        [~,I] = max(abs(signed),[],2);
-        rows = 1:length(I);
-        ind = sub2ind(size(signed),rows',I);
-        signed = signed(ind);
-        signed = signed';
-        %}
-
+    
         %% Average across ms  
         if last_dim == 1
             signed = nanmean(signed);
@@ -197,5 +210,14 @@ if 0
     pause
 end
 
+%% Checking nelecs
+if 0
+    a = permute(intra_labels,[2,3,1]);
+    table(a(:,:,1))
+    table(a(:,:,2))
+    table(a(:,:,3))
+    signed
+    pause
+end
 
 end

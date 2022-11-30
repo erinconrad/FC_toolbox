@@ -44,7 +44,7 @@ for ip = 1:npts
         
 
     end
-    print(mf,[out_path,name],'-depsc')
+    print(mf,[out_path,name],'-dpng')
     close all
 end
 

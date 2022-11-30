@@ -57,6 +57,7 @@ for ir = 1:size(T,1)
             pt(ip).clinical.age_implant = T.ageatieegimplant(ir);
             
             % Sex
+            %{
             sex = T.sex(ir);
             if sex == 1
                 pt(ip).clinical.sex = 'Male';
@@ -65,6 +66,7 @@ for ir = 1:size(T,1)
             else
                 error('what?');
             end
+            %}
             
             % Age onset
             pt(ip).clinical.age_onset = T.sz_hist_duration(ir);
