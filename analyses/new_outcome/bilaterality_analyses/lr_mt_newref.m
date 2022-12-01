@@ -26,6 +26,9 @@ addpath(genpath(scripts_folder));
 data = load([inter_folder,'main_out.mat']);
 data = data.out;
 
+mt_data = load([inter_folder,'mt_out.mat']);
+mt_data = mt_data.out;
+
 %% get variables of interest
 all_outcome = data.outcome; %outcome = all_outcome(:,which_outcome,which_outcome_year);
 surgery = data.all_surgery;
@@ -99,12 +102,21 @@ for which_montage = 1 % car, bipolar
         montage_text = 'bipolar';
     end
 
-    coh = data.all_coh(:,which_montage,which_sleep_stage);
-    pearson = data.all_pearson(:,which_montage,which_sleep_stage);
-    bp = data.all_bp(:,which_montage,which_sleep_stage);
-    labels = data.all_labels(:,which_montage);
-    rl = data.all_rl(:,1,which_sleep_stage);
-    spikes = data.all_spikes(:,1,which_sleep_stage);
+    if do_mt_car
+        coh = mt_data.all_coh(:,which_sleep_stage);
+        pearson = mt_data.all_pearson(:,which_sleep_stage);
+        bp = mt_data.all_bp(:,which_sleep_stage);
+        labels = mt_data.all_labels;
+        rl = mt_data.all_rl(:,which_sleep_stage);
+        spikes = mt_data.all_spikes(:,which_sleep_stage);
+    else
+        coh = data.all_coh(:,which_montage,which_sleep_stage);
+        pearson = data.all_pearson(:,which_montage,which_sleep_stage);
+        bp = data.all_bp(:,which_montage,which_sleep_stage);
+        labels = data.all_labels(:,which_montage);
+        rl = data.all_rl(:,1,which_sleep_stage);
+        spikes = data.all_spikes(:,1,which_sleep_stage);
+    end
 
     % Loop over features
     for which_thing ={'nelecs','spikes','rl','bp','pearson','coh'}

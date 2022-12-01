@@ -4,6 +4,9 @@ is_seeg_time = zeros(size(times));
 seeg_stage = cell(size(times));
 
 for t = 1:length(times)
+
+    if isnan(times(t,1)), continue; end
+
     if file_index(t) > 1
         break
     end
