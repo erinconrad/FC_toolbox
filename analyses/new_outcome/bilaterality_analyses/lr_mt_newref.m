@@ -40,6 +40,7 @@ resection_lat = data.all_resec_lat;
 ablation_lat = data.all_ablate_lat;
 resection_loc = data.all_resec_loc;
 ablation_loc = data.all_ablate_loc;
+good_spikes = data.good_spikes;
 
 %% All outcomes
 engel_yr1 = all_outcome(:,1,1);
@@ -109,6 +110,15 @@ for which_montage = 1 % car, bipolar
         labels = mt_data.all_labels;
         rl = mt_data.all_rl(:,which_sleep_stage);
         spikes = mt_data.all_spikes(:,which_sleep_stage);
+
+        % for now, make spike data nan if it was bad in the original
+        % pipeline (I need to do my own validation eventually)
+        for i = 1:npts
+            if good_spikes(i) == 0
+                spikes{i} = nan(size(spikes{i}));
+                rl{i} = nan(size(rl{i}));
+            end
+        end
     else
         coh = data.all_coh(:,which_montage,which_sleep_stage);
         pearson = data.all_pearson(:,which_montage,which_sleep_stage);
