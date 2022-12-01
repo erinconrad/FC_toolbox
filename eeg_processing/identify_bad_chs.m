@@ -153,7 +153,7 @@ median_std = nanmedian(all_std);
 higher_std = which_chs(all_std > mult_std * median_std);
 bad_std = higher_std;
 bad_std(ismember(bad_std,bad)) = [];
-bad = ([bad;bad_std]);
+bad = ([bad;bad_std']);
 
 details.noisy = noisy_ch;
 details.nans = nan_ch;
