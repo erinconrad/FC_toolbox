@@ -17,6 +17,11 @@ allowed = ismember(labels,allowable_labels);
 allowed_labels = labels(allowed);
 nallowed = sum(allowed);
 
+if nallowed == 0
+    fprintf('\n No allowed electrodes for %s, skipping.\n',name);
+    return
+end
+
 % Loop over files
 nfiles = 72;
 all_times = nan(nfiles,2);
