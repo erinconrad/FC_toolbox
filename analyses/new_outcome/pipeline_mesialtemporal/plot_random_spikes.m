@@ -3,6 +3,12 @@ function plot_random_spikes(all_spikes,name,labels,edf_path)
 nspikes = 50;
 surround = 2; % 2 seconds befor or after
 ntotal = size(all_spikes,1);
+if ntotal == 0
+    fprintf('\nNo spikes detected for %s\n',name)
+    return
+else
+    fprintf('\n%d spikes detected for %s\n',ntotal,name)
+end
 figure
 set(gcf,'position',[10 10 1400 1000])
 tiledlayout(5,10,'tilespacing','tight','padding','tight')
