@@ -1,5 +1,14 @@
-function mt_patient_stitch(edf_path,name)
+function mt_patient_stitch(edf_path,name,overwrite)
 
+%% See if I've done it
+if exist([edf_path,name,'/summ.mat'],'file')~=0
+    if overwrite == 0
+        fprintf('\nAlready did %s, skipping.\n',name);
+        return
+    else
+        fprintf('\nOverwriting %s.\n',name);
+    end
+end
 
 %% Load meta
 meta = load([edf_path,name,'/meta.mat']);

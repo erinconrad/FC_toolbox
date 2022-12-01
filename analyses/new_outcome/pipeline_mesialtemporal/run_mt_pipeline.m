@@ -1,5 +1,5 @@
 %% RUN MT pipeline
-function run_mt_pipeline(whichPts)
+function run_mt_pipeline(whichPts,overwrite)
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -18,7 +18,7 @@ pt = pt.pt;
 for i = 1:length(whichPts)
     ip = whichPts(i);
     name = pt(ip).name;
-    mt_patient_stitch(edf_path,name)
+    mt_patient_stitch(edf_path,name,overwrite)
 
 end
 
