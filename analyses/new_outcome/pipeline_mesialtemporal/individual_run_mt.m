@@ -72,10 +72,16 @@ rand_end = rand_start + round(fs*60);
 curr_times = times(rand_start:rand_end);
 curr_values = values(rand_start:rand_end,:);
 
+%% Reject bad channels
+which_chs = 1:nallowed;
+bad = identify_bad_chs(curr_values,which_chs,allowed_labels,fs);
+which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
+
 %% CAR montage
-[car_values,car_labels] = car_montage(curr_values,1:length(allowed_labels),allowed_labels);
+[car_values,car_labels] = car_montage(curr_values,which_chs,allowed_labels);
 values = car_values;
 curr_labels = car_labels;
+is_run = ismember((1:length(curr_labels))',which_chs);
 
 % filters
 values = notch_filter(values,fs);
@@ -83,6 +89,8 @@ values = bandpass_filter(values,fs);
 
 % make non run channels nans
 run_values = values;
+run_values(:,~is_run) = nan;
+skip = find(~is_run);
 
 %% PC
 pc =  wrap_or_unwrap_adjacency_fc_toolbox(pc_vector_calc(run_values,fs,tw));
@@ -102,13 +110,15 @@ coh = faster_coherence_calc(run_values,fs);
 out.bp = bp;
 out.pc = pc;
 out.coh = coh;
-out.spikes = gdf;
+out.gdf = gdf;
 out.pc = pc;
 out.ad = ad_rat;
 out.fs = fs;
+out.skip = skip;
 out.clean_labels = allowed_labels;
-out.montage.labels = curr_labels;
+out.montage_labels = curr_labels;
 out.times = [curr_times(1) curr_times(end)];
 out.idx = [rand_start rand_end];
+out.file_path = file_path;
 
 end

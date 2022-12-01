@@ -65,19 +65,12 @@ for f = 1:nfiles
         % make skipped channels nans rather than zeros
         spike_counts(out.skip) = nan;
         all_spike_counts(f,:) = spike_counts;
-    else
-        all_spike_counts(f,:) = 0;
-    end
 
     % get RL
-    if ~isempty(gdf)
-        timing = gdf(:,3);
-        % take the mean timing for each channel
-        rl = accumarray(X, timing, [nallowed 1], @mean,nan); % if no spikes, make this nan
-        all_rl(f,:) = rl;
-    else
-        all_rl(f,:) = nan;
-    end
+    timing = gdf(:,3);
+    % take the mean timing for each channel
+    rl = accumarray(X, timing, [nallowed 1], @mean,nan); % if no spikes, make this nan
+    all_rl(f,:) = rl;
 
     % get the other stuff
     all_bp(f,:,:) = out.bp;
