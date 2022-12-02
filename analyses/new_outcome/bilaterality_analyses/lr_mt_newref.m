@@ -107,9 +107,12 @@ for which_montage = 1 % car, bipolar
         coh = mt_data.all_coh(:,which_sleep_stage);
         pearson = mt_data.all_pearson(:,which_sleep_stage);
         bp = mt_data.all_bp(:,which_sleep_stage);
-        labels = mt_data.all_labels;
+        
         rl = mt_data.all_rl(:,which_sleep_stage);
         spikes = mt_data.all_spikes(:,which_sleep_stage);
+
+        rl = cellfun(@(x) x',rl,'UniformOutput',false);
+        spikes = cellfun(@(x) x',spikes,'UniformOutput',false);
 
         % for now, make spike data nan if it was bad in the original
         % pipeline (I need to do my own validation eventually)
@@ -139,11 +142,11 @@ for which_montage = 1 % car, bipolar
             case {'coh','near_coh','inter_coh'}
                 thing = coh;
                 uni = 0; % not univariate
-                last_dim = size(coh{1},3); % multiple frequencies
+                last_dim = 6;%size(coh{1},3); % multiple frequencies
             case 'bp'
                 thing = bp;
                 uni = 1; % univariate
-                last_dim = size(bp{1},2); % multiple frequencies
+                last_dim = 5;%size(bp{1},2); % multiple frequencies
             case 'spikes'
                 thing = spikes;
                 uni = 1; % univariate
@@ -165,7 +168,10 @@ for which_montage = 1 % car, bipolar
                     continue
                 end
         end
-    
+        if do_mt_car
+            labels = mt_data.all_labels;
+        end
+
         %% Get asymmetry index
         ai = cellfun(@(x,y,z) ...
             calc_ai(x,y,z,uni,last_dim,which_thing,subplot_path,do_little_plots),...

@@ -1,7 +1,7 @@
 function out = individual_run_mt(file_path)
 
 %% Parameters
-show_data = 0;
+show_data = 1;
 tw = 2;
 
 %% Load the edf file
@@ -144,12 +144,10 @@ for im = 1:3
     coh = faster_coherence_calc(run_values,fs);
 
     % PLV
-    plv = plv_calc(run_values,fs);
     
     out.montage(im).name = montage;
     out.montage(im).bp = bp;
     out.montage(im).pc = pc;
-    out.montage(im).plv = plv;
     out.montage(im).coh = coh;
     out.montage(im).gdf = gdf;
     out.montage(im).ad = ad_rat;
@@ -184,18 +182,6 @@ end
     for i = 1:3
         nexttile
         turn_nans_gray(out.montage(i).pc)
-        title(out.montage(i).name)
-        xticks(1:length(out.montage(i).labels))
-        xticklabels(out.montage(i).labels)
-        yticks(1:length(out.montage(i).labels))
-        yticklabels(out.montage(i).labels)
-    end
-
-    figure
-    tiledlayout(1,3)
-    for i = 1:3
-        nexttile
-        turn_nans_gray(out.montage(i).plv(:,:,5))
         title(out.montage(i).name)
         xticks(1:length(out.montage(i).labels))
         xticklabels(out.montage(i).labels)

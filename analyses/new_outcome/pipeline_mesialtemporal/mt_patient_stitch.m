@@ -1,5 +1,8 @@
 function mt_patient_stitch(edf_path,name,overwrite)
 
+%% Seed random number generator so that I get the same result each time I do this.
+rng(0)
+
 %% See if I've done it
 if exist([edf_path,name,'/summ.mat'],'file')~=0
     if overwrite == 0

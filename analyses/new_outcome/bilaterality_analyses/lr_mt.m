@@ -90,7 +90,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 feat_names_s = {};
 
-for which_montage = 1 % car, bipolar
+for which_montage = 2 % car, bipolar
     
     if which_montage == 1
         montage_text = 'car';

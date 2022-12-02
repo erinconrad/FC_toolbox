@@ -14,6 +14,10 @@ which_lats = {'L','R'};
 
 %% Misc
 % replace '-' with '--'
+if isempty(labels)
+    signed = nan(1,last_dim);
+    return
+end
 labels = cellfun(@(x) strrep(x,'-','--'),labels,'uniformoutput',false);
 
 %% Get numeric info
