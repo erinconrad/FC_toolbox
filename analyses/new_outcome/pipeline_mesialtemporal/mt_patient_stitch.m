@@ -50,7 +50,7 @@ montages = cell(nmontages,3);
 montage_labels = cell(nmontages,3);
 all_is_run = nan(nfiles,nmontages,nallowed);
 
-for f = 18%1:nfiles
+for f = 1:nfiles
     file_path = [edf_path,name,sprintf('/file%d.edf',f)];
     tic
     fprintf('\nDoing %s file %d of %d...',name,f,nfiles);
