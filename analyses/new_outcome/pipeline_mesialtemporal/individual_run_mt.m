@@ -174,6 +174,7 @@ end
  if show_data
     ex_chs = [];
     only_run = 0;
+    show_montage = 3;
     simple_plot(tout,out,ex_chs,show_montage,out.montage(show_montage).gdf,...
         only_run,skip)
     %pause
