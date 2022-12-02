@@ -43,6 +43,7 @@ for ip = 1:npts
         fprintf('\nUnequal elecs for %s\n',name);
         main_labels
         edf_labels
+        continue
     end
 
     % reduce main to allowed
