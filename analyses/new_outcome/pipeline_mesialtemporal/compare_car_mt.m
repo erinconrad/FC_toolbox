@@ -1,4 +1,4 @@
-function compare_car_mt
+function [all_pc_corr,all_coh_corr] = compare_car_mt
 
 %% Get file locs
 locations = fc_toolbox_locs;
