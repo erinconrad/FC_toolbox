@@ -39,7 +39,11 @@ for ip = 1:npts
 
     % make sure theyre the same (they might not be if they added MT elecs
     % later)
-    assert(isequal(main_labels,edf_labels))
+    if ~(isequal(main_labels,edf_labels))
+        fprintf('\nUnequal elecs for %s\n',name);
+        main_labels
+        edf_labels
+    end
 
     % reduce main to allowed
     coh = main.all_coh{ip,1,1};
