@@ -1,4 +1,4 @@
-function plot_random_spikes(all_spikes,name,labels,edf_path)
+function plot_random_spikes(all_spikes,name,labels,montage,edf_path)
 
 nspikes = 50;
 surround = 2; % 2 seconds befor or after
@@ -46,7 +46,7 @@ for i = 1:nspikes
 
 end
 
-print(gcf,[edf_path,name,'/random_spikes'],'-dpng')
+print(gcf,[edf_path,name,'/',montage],'-dpng')
 close gcf
 
 

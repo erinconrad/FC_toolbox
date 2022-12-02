@@ -36,16 +36,21 @@ end
 
 % Loop over files
 nfiles = 72;
+nmontages = 3;
 all_times = nan(nfiles,2);
-all_bp = nan(nfiles,nallowed,5);
-all_spike_counts = nan(nfiles,nallowed);
-all_pc = nan(nfiles,nallowed,nallowed);
-all_coh = nan(nfiles,nallowed,nallowed,6);
-all_ad = nan(nfiles,nallowed);
-all_rl = nan(nfiles,nallowed);
-all_spike_times = [];
+all_bp = nan(nfiles,nmontages,nallowed,5);
+all_spike_counts = nan(nfiles,nmontages,nallowed);
+all_pc = nan(nfiles,nmontages,nallowed,nallowed);
+all_coh = nan(nfiles,nmontages,nallowed,nallowed,6);
+all_plv = nan(nfiles,nmontages,nallowed,nallowed,6);
+all_ad = nan(nfiles,nmontages,nallowed);
+all_rl = nan(nfiles,nmontages,nallowed);
+all_spike_times = cell(nmontages,1);
+montages = cell(nmontages,3);
+montage_labels = cell(nmontages,3);
+all_is_run = nan(nfiles,nmontages,nallowed);
 
-for f = 1:nfiles
+for f = 18%1:nfiles
     file_path = [edf_path,name,sprintf('/file%d.edf',f)];
     tic
     fprintf('\nDoing %s file %d of %d...',name,f,nfiles);
@@ -62,51 +67,60 @@ for f = 1:nfiles
     %% Figure out labels
     assert(isequal(allowed_labels,out.clean_labels))
     
-    %% Stitch together
-    % Get spikes
-    gdf = out.gdf;
-    
-    if ~isempty(gdf)
-    % re-align index to file index
-        gdf(:,2) = gdf(:,2) + out.idx(1) -1; % if gdf index is 1, that means it occurs at rand_start;
-    end
-
-    % save spike times (for future error checking and plotting)
-    all_spike_times = [all_spike_times;gdf repmat(f,size(gdf,1),1)];
-
-    % get spike counts
-    if ~isempty(gdf)
-        X = gdf(:,1); % get channels
-        spike_counts = accumarray(X, ones(size(X)), [nallowed 1], @sum); % this gets the count of spikes for each channe;
+    for im = 1:nmontages
+        %% Stitch together
+        % Get spikes
+        gdf = out.montage(im).gdf;
         
-        % make skipped channels nans rather than zeros
-        spike_counts(out.skip) = nan;
-        all_spike_counts(f,:) = spike_counts;
-    else
-        all_spike_counts(f,:) = 0;
-    end
+        if ~isempty(gdf)
+        % re-align index to file index
+            gdf(:,2) = gdf(:,2) + out.idx(1) -1; % if gdf index is 1, that means it occurs at rand_start;
+        end
+    
+        % save spike times (for future error checking and plotting)
+        all_spike_times{im} = [all_spike_times{im};gdf repmat(f,size(gdf,1),1)];
+    
+        % get spike counts
+        if ~isempty(gdf)
+            X = gdf(:,1); % get channels
+            spike_counts = accumarray(X, ones(size(X)), [nallowed 1], @sum); % this gets the count of spikes for each channe;
+            
+            % make skipped channels nans rather than zeros
+            spike_counts(out.montage(im).skip) = nan;
+            all_spike_counts(f,im,:) = spike_counts;
+        else
+            all_spike_counts(f,im,:) = 0;
+        end
+    
+        % get RL
+        if ~isempty(gdf)
+            timing = gdf(:,3);
+            % take the mean timing for each channel
+            rl = accumarray(X, timing, [nallowed 1], @mean,nan); % if no spikes, make this nan
+            all_rl(f,im,:) = rl;
+        else
+            all_rl(f,im,:) = nan;
+        end
+    
+        % get the other stuff
+        all_bp(f,im,:,:) = out.montage(im).bp;
+        all_pc(f,im,:,:) = out.montage(im).pc;
+        all_coh(f,im,:,:,:) = out.montage(im).coh;
+        all_plv(f,im,:,:,:) = out.montage(im).plv;
+        all_ad(f,im,:) = out.montage(im).ad;
+        all_is_run(f,im,:) = out.montage(im).is_run;
 
-    % get RL
-    if ~isempty(gdf)
-        timing = gdf(:,3);
-        % take the mean timing for each channel
-        rl = accumarray(X, timing, [nallowed 1], @mean,nan); % if no spikes, make this nan
-        all_rl(f,:) = rl;
-    else
-        all_rl(f,:) = nan;
+        montages{im} = out.montage(im).name;
+        montage_labels{im} = out.montage(im).labels;
     end
-
-    % get the other stuff
-    all_bp(f,:,:) = out.bp;
-    all_pc(f,:,:) = out.pc;
-    all_coh(f,:,:,:) = out.coh;
-    all_ad(f,:) = out.ad;
 
 
 end
 
 %% Plot random spike detections
-plot_random_spikes(all_spike_times,name,labels,edf_path)
+for im = 1:nmontages
+    plot_random_spikes(all_spike_times{im},name,out.clean_labels,montages{im},edf_path)
+end
 
 %% Output the stuff
 nout.all_times = all_times;
@@ -115,14 +129,17 @@ nout.all_spike_counts = all_spike_counts;
 nout.all_pc = all_pc;
 nout.all_coh = all_coh;
 nout.all_ad = all_ad;
+nout.all_plv = all_plv;
 nout.all_rl = all_rl;
 nout.all_spike_times = all_spike_times;
 nout.fs = out.fs;
 nout.edf_path = edf_path;
 nout.name = name;
-nout.skip = out.skip;
 nout.labels = out.clean_labels;
-nout.montage_labels = out.montage_labels;
+nout.montage_labels = montage_labels;
+nout.all_is_run = all_is_run;
+nout.montages = montages;
+
 out = nout;
 
 %% Save the file
