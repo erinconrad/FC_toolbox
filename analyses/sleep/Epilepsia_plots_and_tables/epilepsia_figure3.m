@@ -3,12 +3,18 @@ function epilepsia_figure3(null_flag)
 %% Parameters
 min_rate = 0.1;
 plot_type = 'scatter';
+fsize = 20;
 
-
+%{
 myColours = [0.1660, 0.540, 0.1880;...
 0.4940, 0.1840, 0.5560;...    
 0.8500, 0.4250, 0.0980;...
     0.9290 0.6940 0.1250];
+%}
+myColours = [0 33 87;...
+122 80 113;...    
+227 124 29;...
+    86 152 163]/255;
 
 
 locations = fc_toolbox_locs;
@@ -162,7 +168,7 @@ all_ss(n1) = [];
 nexttile
 rows_with_any_nans_seq = any(isnan(nseq_ss),2);
 [p,tbl_nseq] = friedman(nseq_ss(~rows_with_any_nans_seq,:),1,'off');
-b=boxplot(nseq_ss,'labels',all_ss);
+b=boxplot(nseq_ss,'labels',all_ss,'colors',myColours);
 
 hold on
 yl = ylim;
@@ -174,15 +180,21 @@ text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',20)
 ylim(new_y)
 
 set(b,'linewidth',2)
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 ylabel('# Spike sequences')
-title('Spike sequences across sleep stages')
+title('Spike sequences across stages')
+
+h = findobj(gcf,'tag','Outliers');
+for i = 1:numel(h)
+    xpos = h(i).XData(1);
+    h(i).MarkerEdgeColor = myColours(xpos,:);
+end
 
 %% Spikes spread by sleep state
 nexttile
 rows_with_any_nans_spread = any(isnan(spread_ss),2);
 [p,tbl_spread] = friedman(spread_ss(~rows_with_any_nans_seq,:),1,'off');
-b=boxplot(spread_ss,'labels',all_ss);
+b=boxplot(spread_ss,'labels',all_ss,'colors',myColours);
 
 hold on
 yl = ylim;
@@ -194,19 +206,25 @@ text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',20)
 ylim(new_y)
 
 set(b,'linewidth',2)
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 ylabel('# Spikes/sequence')
-title('Spike spread across sleep stages')
+title('Spike spread across stages')
+
+h = findobj(gcf,'tag','Outliers');
+for i = 1:numel(h)
+    xpos = h(i).XData(1);
+    h(i).MarkerEdgeColor = myColours(xpos,:);
+end
 
 %% FC by sleep state
 nexttile
 rows_with_any_nans_fc = any(isnan(fc_ss),2);
 [p,tbl_fc] = friedman(fc_ss(~rows_with_any_nans_seq,:),1,'off');
-b=boxplot(fc_ss,'labels',all_ss);
+b=boxplot(fc_ss,'labels',all_ss,'colors',myColours);
 set(b,'linewidth',2)
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 ylabel('Average node strength')
-title('Connectivity across sleep stages')
+title('Connectivity across stages')
 
 
 hold on
@@ -217,6 +235,13 @@ new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 4],[ybar ybar],'k-','linewidth',2)
 text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',20)
 ylim(new_y)
+
+h = findobj(gcf,'tag','Outliers');
+for i = 1:numel(h)
+    xpos = h(i).XData(1);
+    if isnan(xpos), continue; end
+    h(i).MarkerEdgeColor = myColours(xpos,:);
+end
 
 
 
@@ -233,13 +258,14 @@ sleep_comparison_table(fc_ss,all_ss,'TableS5.html')
 %% Add annotations
 annotation('textbox',[0 0.905 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.33 0.905 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0.665 0.905 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.655 0.905 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.405 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 annotation('textbox',[0.33 0.405 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
-annotation('textbox',[0.665 0.405 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
-
+annotation('textbox',[0.655 0.405 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
+fontname(gcf,"calibri");
 fclose(fid);
 print([out_folder,'Fig3'],'-depsc')
+print([out_folder,'Fig3'],'-dpng')
 close(gcf)
 
 

@@ -58,8 +58,10 @@ switch plot_type
         hold on
     case 'scatter'
         %pcolor = [0.4660, 0.6740, 0.1880];
-        pcolor = [0, 0.4470, 0.7410];
-        ncolor = [0.6350, 0.0780, 0.1840];
+        %pcolor = [0, 0.4470, 0.7410];
+        %ncolor = [0.6350, 0.0780, 0.1840];
+        pcolor = [0 118 192]/255;
+        ncolor = [163 2 52]/255;
         %ecolor = [0, 0.4470, 0.7410];
         %ecolor = [0.4660, 0.6740, 0.1880]; 
         ecolor = [0.9290, 0.6940, 0.1250];
@@ -106,15 +108,15 @@ switch plot_type
             px = xl(1) + 0.01*(xl(2)-xl(1));
             py = yl(1) + 0.99*(yl(2)-yl(1));
             %ylim
-            text(px,py,sprintf('%s\neffect size r = %1.2f',get_p_text(pval),r),...
-                'verticalalignment','top','fontsize',15)
+            text(px,py,sprintf('%s\nr = %1.2f',get_p_text(pval),r),...
+                'verticalalignment','top','fontsize',20)
             %ylim
             legtext1 = sprintf('Higher %s',legtext);
             legtext2 = sprintf('Lower %s',legtext);
             legtext3 = 'Equal';
 
             legend([pp;np;ep],{legtext1,legtext2,legtext3},...
-                'location','southeast','fontsize',15,'box','off')
+                'location','southeast','fontsize',20,'box','off')
         end
         
         stats_out.medians = [nanmedian(data(1,:)) nanmedian(data(2,:))];
@@ -139,7 +141,7 @@ if ~strcmp(plot_type,'scatter')
 end
 
 if do_plot
-set(gca,'fontsize',15)
+set(gca,'fontsize',20)
 end
 
 

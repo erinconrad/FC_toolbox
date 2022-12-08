@@ -3,13 +3,18 @@ function epilepsia_figure2(null_flag)
 %% Parameters
 min_rate = 0.1;
 plot_type = 'scatter';
+fsize = 20;
 
-
+%{
 myColours = [0.1660, 0.540, 0.1880;...
 0.4940, 0.1840, 0.5560;...    
 0.8500, 0.4250, 0.0980;...
     0.9290 0.6940 0.1250];
-
+%}
+myColours = [0 33 87;...
+122 80 113;...    
+227 124 29;...
+    86 152 163]/255;
 
 locations = fc_toolbox_locs;
 script_folder = locations.script_folder;
@@ -57,7 +62,7 @@ shaded_error_bars_fc(periods,median_psd,iqr_psd,myColours(1,:));
 xlim([0 100])
 xlabel('Period (hours)')
 ylabel({'Spike rate power index'});
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 title('Spike rate periodogram')
 
 fprintf(fid,['Our analysis of the circadian power of spike rates demonstrated a '...
@@ -80,7 +85,7 @@ all_tod_sw = out.bin_out.all_tod_sw;
 ind_pt_prop = all_tod_sw(:,:,2)./(all_tod_sw(:,:,2)+all_tod_sw(:,:,1));
 prop_asleep = squeeze(nanmean(ind_pt_prop,1))*3.5;
 psleep = polarhistogram('BinEdges',polar,'BinCounts',prop_asleep,...
-    'displayStyle','stairs','linewidth',1,'edgecolor',[0.9290, 0.6940, 0.1250],'linestyle','-');
+    'displayStyle','stairs','linewidth',1,'edgecolor',myColours(4,:),'linestyle','-');
 hold on
 % Plot median of spike rate over time
 mspikes = repmat(nanmedian(median_tod_rate+min(median_tod_rate)+1),1,length(median_tod_rate));
@@ -106,9 +111,9 @@ set(gca,'ThetaZeroLocation','top');
 set(gca,'rticklabels',[])
 thetaticks(polar(1:skip:nbins)*360/(2*pi))
 thetaticklabels(hours_mins(1:skip:nbins+1))
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 title('Normalized spike rate and % asleep')
-lp = legend([pspikes,pm,psleep],{'Spike rates','Median spike rate','% asleep'},'fontsize',15,...
+lp = legend([pspikes,pm,psleep],{'Spike rates','Median spike rate','% asleep'},'fontsize',fsize,...
     'Position',[0.50 0.8300 0.1333 0.0550],'box','off');
 
 
@@ -124,7 +129,7 @@ polar2 = convert_times_to_polar(observations,'radians');
 
 tl = thetalim;
 rl = rlim;
-text(pi,1,get_p_text(pval),'fontsize',15,'horizontalalignment','center');
+text(pi,1,get_p_text(pval),'fontsize',fsize,'horizontalalignment','center');
 
 fprintf(fid,[' Examination of spike rates by time of day revealed a non-uniform distribution'...
     ' (Rayleigh test of patients'' circular means: z = %1.1f, %s). Visually, '...
@@ -136,7 +141,7 @@ all_rate = bin_out.all_rates;
 nexttile
 stats = plot_paired_data(all_rate(:,1:2)',{'wake','sleep'},'Spikes/elec/min','paired',plot_type);
 title('Spike rate in wake and sleep')
-
+set(gca,'fontsize',fsize)
 
 % Results text
 fprintf(fid,[' Spike rates were higher in sleep (median %1.1f spikes/elecs/min)'...
@@ -225,14 +230,14 @@ xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Sleep-wake spikes/elec/min')
 title('Sleep-wake spike rate difference')
-set(gca,'fontsize',15);
+set(gca,'fontsize',fsize);
 xlim([0 3])
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',fsize,'horizontalalignment','center')
 ylim(ylnew)
 
 
@@ -254,21 +259,27 @@ all_ss(n1) = [];
 rows_with_any_nans = any(isnan(rate_ss),2);
 [p,tbl,stats] = friedman(rate_ss(~rows_with_any_nans,:),1,'off');
 
-b=boxplot(rate_ss,'labels',all_ss);
+b=boxplot(rate_ss,'labels',all_ss,'colors',myColours);
 hold on
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.1*(yl(2)-yl(1));
 new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 4],[ybar ybar],'k-','linewidth',2)
-text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',20)
+text(2.5,ytext,get_asterisks(p,1),'horizontalalignment','center','fontsize',fsize)
 ylim(new_y)
 set(b,'linewidth',2)
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 ylabel('Spikes/elec/min')
 title('Spike rate across detected sleep stages')
 
-
+%
+h = findobj(gcf,'tag','Outliers');
+for i = 1:numel(h)
+    xpos = h(i).XData(1);
+    h(i).MarkerEdgeColor = myColours(xpos,:);
+end
+%}
 
 
 fprintf(fid,['Spike rates differed across specific detected sleep states, with '...
@@ -279,9 +290,9 @@ fprintf(fid,['Spike rates differed across specific detected sleep states, with '
 
 %% Add annotations
 annotation('textbox',[0 0.91 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.52 0.91 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.57 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.57 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0.52 0.57 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.22 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
 
 %% Make supplemental table
@@ -290,9 +301,11 @@ sleep_comparison_table(rate_ss,all_ss,fname)
 
 %fprintf(fid,[''])
 
+fontname(gcf,"calibri");
 
 fclose(fid);
 print([out_folder,'Fig2'],'-depsc')
+print([out_folder,'Fig2'],'-dpng')
 close(gcf)
 
 

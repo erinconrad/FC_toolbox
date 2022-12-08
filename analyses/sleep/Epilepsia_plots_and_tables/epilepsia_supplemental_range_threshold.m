@@ -10,9 +10,14 @@ out_folder = [results_folder,'analysis/sleep/epilepsia/'];
 range_thresh = [.03 0.1 0.2 0.4];
 nthresh = length(range_thresh);
 
+myColours = [0 33 87;...
+122 80 113;...    
+227 124 29;...
+    86 152 163]/255;
+
 figure
-set(gcf,'position',[10 10 900 1000])
-tiledlayout(4,2,'tilespacing','tight','padding','tight')
+set(gcf,'position',[10 10 1000 1000])
+tiledlayout(4,2,'tilespacing','tight','padding','compact')
 for t = 1:nthresh
     desired_threshold = range_thresh(t);
 
@@ -56,18 +61,19 @@ for t = 1:nthresh
 
     % plot roc
     nexttile
-    plot(X,ym,'linewidth',2)
+    plot(X,ym,'linewidth',2,'color',myColours(1,:))
     hold on 
     plot([0 1],[0 1],'k--','linewidth',2)
-    plot(1-nanmean(spec),nanmean(sens),'*','markersize',15,'linewidth',2);
-    set(gca,'fontsize',15)
-    xlabel('False positive rate')
-    ylabel('True positive rate')
+    plot(1-nanmean(spec),nanmean(sens),'*','markersize',15,'linewidth',2,'color',[163 2 52]/255);
+    set(gca,'fontsize',20)
+    xlabel('FPR')
+    ylabel('TPR')
     title('SOZ classification accuracy')
 
     nexttile
     turn_nans_gray([1 0;0 1])
-    colormap(gca,[0.8000, 0.420, 0.42;0.5, 0.75, 0.5])
+    %colormap(gca,[0.8000, 0.420, 0.42;0.5, 0.75, 0.5])
+    colormap(gca,[206 128 128;161 197 203]/255)
     xticks(1:2)
     xticklabels({'Not SOZ','SOZ'})
     yticks(1:2)
@@ -85,12 +91,13 @@ for t = 1:nthresh
          ' PPV: %1.1f%%, NPV: %1.1f%%'],...
     desired_threshold,...
     nanmean(ppv)*100,nanmean(npv)*100))
-    set(gca,'fontsize',15)
+    set(gca,'fontsize',20)
 
 end
-
+fontname(gcf,"calibri");
 
 print(gcf,[out_folder,'FigS4'],'-depsc')
+print(gcf,[out_folder,'FigS4'],'-dpng')
 
 
 

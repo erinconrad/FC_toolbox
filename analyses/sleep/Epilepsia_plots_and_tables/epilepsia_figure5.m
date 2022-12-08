@@ -2,11 +2,17 @@ function epilepsia_figure5
 
 
 %% Parameters
+fsize = 20;
+%{
 myColours = [0.1660, 0.540, 0.1880;...
 0.4940, 0.1840, 0.5560;...    
 0.8500, 0.4250, 0.0980;...
     0.9290 0.6940 0.1250];
-
+%}
+myColours = [0 33 87;...
+122 80 113;...    
+227 124 29;...
+    86 152 163]/255;
 
 %% Locations
 locations = fc_toolbox_locs;
@@ -122,7 +128,7 @@ fprintf(sfid,['We repeated the SOZ localization analysis, only including electro
 
 %% initialize figure
 figure
-set(gcf,'position',[10 10 1000 1200])
+set(gcf,'position',[10 10 1200 1300])
 tiledlayout(3,2,'tilespacing','tight','padding','tight')
 
 
@@ -165,7 +171,7 @@ plot([0 1],[0 1],'k--','linewidth',2)
 xlabel('False positive rate')
 ylabel('True positive rate')
 title('SOZ classification accuracy')
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 
 %% Text
 fprintf(fid,['<p>We next assessed how well this model, including spike rates in wake and sleep and pre- and postictally, would '...
@@ -198,7 +204,8 @@ all_mat = nanmean(mat,3);
 %% Plot confusion matrix
 nexttile
 turn_nans_gray([1 0;0 1])
-colormap(gca,[0.8000, 0.420, 0.42;0.5, 0.75, 0.5])
+%colormap(gca,[0.8000, 0.420, 0.42;0.5, 0.75, 0.5])
+colormap(gca,[206 128 128;161 197 203]/255)
 xticks(1:2)
 xticklabels({'Not SOZ','SOZ'})
 yticks(1:2)
@@ -216,11 +223,11 @@ title(sprintf(['Accuracy: %1.1f%%,'...
      ' PPV: %1.1f%%, NPV: %1.1f%%'],...
 nanmean(acc)*100,...
 nanmean(ppv)*100,nanmean(npv)*100))
-set(gca,'fontsize',15)
-tp=plot(t1,1-nanmean(spec),nanmean(sens),'*','markersize',15,'linewidth',2);
+set(gca,'fontsize',fsize)
+tp=plot(t1,1-nanmean(spec),nanmean(sens),'*','markersize',15,'linewidth',2,'color',[163 2 52]/255);
 legend(t1,[mp,tp],...
     {sprintf('Mean AUC %1.2f',nanmean(aucs)),sprintf('Chosen threshold %1.2f',desired_threshold)}...
-    ,'location','southeast','fontsize',15)
+    ,'location','southeast','fontsize',fsize)
 
 %% Make sure ppv what i expect
 %assert(abs(all_ppv-mat(2,2)/(mat(1,2)+mat(2,2)))<0.01)
@@ -288,14 +295,14 @@ ylabel('Classification AUC')
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
-nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+nylim = [yl(1) yl(1) + 1.23*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k','linewidth',2)
 text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),...
-    'fontsize',15,'horizontalalignment','center')
+    'fontsize',fsize,'horizontalalignment','center')
 ylim(nylim)
 xlim([0.5 2.5])
 title('AUC by implant strategy')
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 
 
 
@@ -324,19 +331,19 @@ plot(1+randn(sum(temporal),1)*0.05,aucs(temporal),'o','linewidth',2,'color',myCo
 hold on
 plot(2+randn(sum(extra),1)*0.05,aucs(extra),'o','linewidth',2,'color',myColours(3,:))
 xticks([1 2])
-xticklabels({'Temporal lobe epilepsy','Extra-temporal lobe epilepsy'});
+xticklabels({'Temporal','Extra-temporal'});
 ylabel('Classification AUC')
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
-nylim = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
+nylim = [yl(1) yl(1) + 1.23*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k','linewidth',2)
 text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),...
-    'fontsize',15,'horizontalalignment','center')
+    'fontsize',fsize,'horizontalalignment','center')
 ylim(nylim)
 xlim([0.5 2.5])
 title('AUC by seizure localization')
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 
 fprintf(fid,[' Patients with temporal lobe epilepsy had higher '...
     'classification AUC '...
@@ -374,7 +381,11 @@ for iws = 1:2
         mean_ste(id,:) = [mean_estimate,ste_estimate];
         
     end
-    sp(iws) = errorbar(duration_ticks,mean_ste(:,1),mean_ste(:,2),'-o','linewidth',2);
+    if iws == 1
+        sp(iws) = errorbar(duration_ticks,mean_ste(:,1),mean_ste(:,2),'-o','linewidth',2,'color',[0 118 192]/255);
+    else
+        sp(iws) = errorbar(duration_ticks,mean_ste(:,1),mean_ste(:,2),'-o','linewidth',2,'color',[163 2 52]/255);
+    end
     %flattened_data = reshape(data,size(data,1),size(data,2)*size(data,3));
     %mean_aucs = nanmean(flattened_data,2);
     %std_aucs = nanstd(flattened_data,[],2);
@@ -383,13 +394,13 @@ for iws = 1:2
     %sp(iws) = errorbar(duration_ticks,mean_aucs,ste_aucs,'-o','linewidth',2);
     hold on
 end
-legend({'Wake','Sleep'},'fontsize',15,'location','southeast')
+legend({'Wake','Sleep'},'fontsize',fsize,'location','southeast')
 xticks(duration_ticks)
 xticklabels(duration_ticklabels)
 ylabel('Mean (standard error) AUC')
 xlabel('Duration examined (minutes)')
 title('Accuracy by duration')
-set(gca,'fontsize',15);
+set(gca,'fontsize',fsize);
 
 % Text
 %
@@ -430,16 +441,16 @@ nexttile
 mss = nan(nss,1);
 auc_text = cell(nss,1);
 for i = 1:nss
-    mss(i) = plot(multi_X{i},nanmean(multi_Y{i},1),marker_types{i},'linewidth',2);
+    mss(i) = plot(multi_X{i},nanmean(multi_Y{i},1),marker_types{i},'linewidth',2,'color',myColours(i,:));
     hold on
     auc_text{i} = sprintf('%s Mean AUC: %1.2f',all_ss{i},nanmean(multi_AUC(:,i)));
 end
 plot([0 1],[0 1],'k--','linewidth',2)
-title('Accuracy by SleepSEEG-classified sleep state')
+title('Accuracy by sleep stage')
 xlabel('False positive rate')
 ylabel('True positive rate')
 legend(mss,auc_text,'location','southeast')
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 
 
 fprintf(fid,[' Finally, we compared model performance across SleepSEEG-classified '...
@@ -452,15 +463,15 @@ sleep_comparison_table(multi_AUC,all_ss,'TableS9.html')
 
 %}
 %% Annotations
-annotation('textbox',[0 0.905 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
+annotation('textbox',[0.03 0.905 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.905 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.565 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
+annotation('textbox',[0.03 0.565 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.55 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
-annotation('textbox',[0 0.26 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
+annotation('textbox',[0.03 0.26 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
 annotation('textbox',[0.5 0.26 0.1 0.1],'String','F','fontsize',25,'linestyle','none')
-
+fontname(gcf,"calibri");
 print(gcf,[out_folder,'Fig5'],'-depsc')
-
+print(gcf,[out_folder,'Fig5'],'-dpng')
 
 %% Get all data for single confusion matrix
 epilepsia_supplemental_range_threshold(scores,soz,X,ym);

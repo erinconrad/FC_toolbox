@@ -3,6 +3,7 @@ function epilepsia_figure1
 p = 94;% HUP197
 f = 1;
 time = 194084.34;
+fsize = 20;
 surround = 1.5;
 labels = {'LA1','LA2','LA3','LD1','LD2'};
 montage = 'car';
@@ -121,7 +122,7 @@ gdf = gdf(keep_spikes_idx,:);
 %% Prep figure
 figure
 set(gcf,'position',[10 10 900 600])
-tiledlayout(2,2,'tilespacing','tight','padding','tight')
+tiledlayout(2,2,'tilespacing','tight','padding','compact')
 
 %% Plot EEG data
 nexttile
@@ -130,7 +131,7 @@ show_eeg_and_spikes_select(values,gdf,fs,ch_idx,show_spikes)
 xticklabels([])
 yticklabels([])
 title('Automated spike detection')
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 
 %% Plot FFT
 %{
@@ -167,23 +168,39 @@ title('Alpha-delta power ratio calculation')
 % Add sleep/wake
 all_times = all_times/3600/24;
 nexttile
-plot(all_times,ad_norm,'k-','linewidth',1)
-%plot(all_times(wake),ad_norm(wake),'o','linewidth',1,'color',colors(4,:),'markersize',3)
+
+%% patch
+%{
+xl = get(ax2,'xlim');
+yl = get(ax2,'ylim');
+plot(ax2,[xl(1) xl(2)],[disc disc],'k--','linewidth',3)
+text(ax2,xl(2),(yl(2)+disc)/2,'Wake','rotation',270,'verticalalignment','bottom','fontsize',fsize,...
+    'Horizontalalignment','center')
+text(ax2,xl(2),(-2+disc)/2,'Sleep','rotation',270,'verticalalignment','bottom','fontsize',fsize,...
+    'Horizontalalignment','center')
+%patch(ax2,[xl(1) xl(2) xl(2) xl(1)],[-2 -2 disc disc],colors(4,:),'FaceAlpha',0.2)
+patch(ax2,[xl(1) xl(2) xl(2) xl(1)],[-2 -2 disc disc],[228 184 180]/255)
+%patch(ax2,[xl(1) xl(2) xl(2) xl(1)],[disc disc yl(2) yl(2)],colors(3,:),'FaceAlpha',0.2)
+patch(ax2,[xl(1) xl(2) xl(2) xl(1)],[disc disc yl(2) yl(2)],[186 207 236]/255)
+%}
+plot([min(all_times) max(all_times)],[disc disc],'k--','linewidth',3)
+text(max(all_times),(4+disc)/2,'Wake','rotation',270,'verticalalignment','bottom','fontsize',fsize,...
+    'Horizontalalignment','center')
+text(max(all_times),(-2+disc)/2,'Sleep','rotation',270,'verticalalignment','bottom','fontsize',fsize,...
+    'Horizontalalignment','center')
+patch([min(all_times) max(all_times) max(all_times) min(all_times)],[-2 -2 disc disc],[228 184 180]/255)
+patch([min(all_times) max(all_times) max(all_times) min(all_times)],[disc disc 4 4],[186 207 236]/255)
 hold on
-%plot(all_times(sleep),ad_norm(sleep),'o','linewidth',1,'color',colors(3,:),'markersize',3)
-plot(xlim,[disc disc],'k--','linewidth',3)
-xl = get(gca,'xlim');
-yl = get(gca,'ylim');
-patch([xl(1) xl(2) xl(2) xl(1)],[yl(1) yl(1) disc disc],colors(4,:),'FaceAlpha',0.2)
-patch([xl(1) xl(2) xl(2) xl(1)],[disc disc yl(2) yl(2)],colors(3,:),'FaceAlpha',0.2)
-text(xl(2),(yl(2)+disc)/2,'Wake','rotation',270,'verticalalignment','bottom','fontsize',15,...
-    'Horizontalalignment','center')
-text(xl(2),(yl(1)+disc)/2,'Sleep','rotation',270,'verticalalignment','bottom','fontsize',15,...
-    'Horizontalalignment','center')
+plot(all_times,ad_norm,'k-','linewidth',1)
+hold on
+
+%% Put patch et al back on 2nd subplot
+ax2 = gca;
 xlabel('Days')
-ylabel('Normalized alpha-delta ratio')
-set(gca,'fontsize',15)
+ylabel({'Normalized','alpha-delta ratio'})
+set(gca,'fontsize',fsize)
 title('Sleep/wake classification')
+
 
 %% Percent detected asleep per time of day
 skip = 18;
@@ -206,7 +223,7 @@ rlabs = cellfun(@convert_prop_to_perc,rlabs,'uniformoutput',false);
 set(gca,'rticklabel',rlabs)
 thetaticks(polar(1:skip:nbins)*360/(2*pi))
 thetaticklabels(hours_mins(1:skip:nbins+1))
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 title('Percent detected asleep')
 
 %% ROC
@@ -214,13 +231,14 @@ nexttile
 plot(roc(:,1),roc(:,2),'k-','linewidth',2)
 hold on
 plot([0 1],[0 1],'k--','linewidth',2)
-plot(roc(disc_I,1),roc(disc_I,2),'*','markersize',15,'linewidth',2,'color',colors(5,:));
-text(roc(disc_I,1)+0.01,roc(disc_I,2)-0.05,'Sleep-wake cutoff','fontsize',15,'color',colors(5,:));
+plot(roc(disc_I,1),roc(disc_I,2),'*','markersize',15,'linewidth',2,'color',[163 2 52]/255);
+text(roc(disc_I,1)+0.01,roc(disc_I,2)-0.05,'Sleep-wake cutoff','fontsize',fsize,'color',[163 2 52]/255);
 xlabel('False positive rate')
 ylabel('True positive rate')
-legend(sprintf('AUC %1.2f',auc),'location','southeast','fontsize',15)
-set(gca,'fontsize',15)
+legend(sprintf('AUC %1.2f',auc),'location','southeast','fontsize',fsize)
+set(gca,'fontsize',fsize)
 title('Sleep-wake classification accuracy')
+
 
 %{
 % double checking ROC curve
@@ -242,7 +260,9 @@ annotation('textbox',[0 0.45 0.1 0.1],'String','C','fontsize',25,'linestyle','no
 annotation('textbox',[0.5 0.45 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 %annotation('textbox',[0.34 0.4 0.1 0.1],'String','E','fontsize',25,'linestyle','none')
 
+fontname(gcf,"calibri");
 
+print([results_folder,'analysis/sleep/epilepsia/fig1'],'-dpng')
 print([results_folder,'analysis/sleep/epilepsia/fig1'],'-depsc')
 close(gcf)
 

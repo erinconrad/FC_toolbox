@@ -50,7 +50,7 @@ for p = 1:npts
     labels = info.labels;
     all_labels{p} = labels;
     fs = info.fs;
-    plv = info.all_plv;
+    plv =
 
     rl  = rl/fs;
 
@@ -110,7 +110,6 @@ out.all_spikes = all_spikes;
 out.all_rl = all_rl;
 out.all_pearson = all_pearson;
 out.all_bp = all_bp;
-out.all_plv = all_plv;
 
 save([out_folder,'mt_out.mat'],'out')
 

@@ -7,7 +7,7 @@ hard coded in. IF I CHANGE THE ANALYSES I NEED TO CHANGE THE HARD CODING.
 
 %% Parameters
 plot_type = 'scatter';
-
+fsize = 20;
 %{
 myColours = [0, 0.4470, 0.7410;...
     0.8500, 0.3250, 0.0980;...
@@ -15,12 +15,17 @@ myColours = [0, 0.4470, 0.7410;...
     0.4940, 0.1840, 0.5560;...
     0.6350, 0.0780, 0.1840];
 %}
-
+%{
 myColours = [0.1660, 0.540, 0.1880;...
 0.4940, 0.1840, 0.5560;...    
 0.8500, 0.4250, 0.0980;...
     0.9290 0.6940 0.1250];
+%}
 
+myColours = [0 33 87;...
+122 80 113;...    
+227 124 29;...
+    86 152 163]/255;
 
 
 locations = fc_toolbox_locs;
@@ -98,7 +103,7 @@ hold on
 plot([0 0],ylim,'k--','linewidth',3)
 ylabel('Spikes/elecs/min')
 title('Peri-ictal spike rates and % asleep')
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 %xlabel('Hours surrounding seizure')
 
 fprintf(fid,['<p>We next examined spike rates surrounding seizures. '...
@@ -125,10 +130,10 @@ fprintf(fid,[' Across all patients, the median spike rate postictally (median %1
 
 %% Percent detected asleep
 nexttile([1 1])
-plot(times,mean_sleep,'color',[0.9290, 0.6940, 0.1250],'linewidth',2)
+plot(times,mean_sleep,'color',[86 152 163]/255,'linewidth',2)
 hold on
 
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 ylabel('% Classified asleep')
 %title('Peri-ictal sleep classification')
 xlabel('Hours surrounding seizure')
@@ -161,14 +166,14 @@ xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Post-pre spikes/elec/min')
 title('Post-preictal spike rate difference')
-set(gca,'fontsize',15);
+set(gca,'fontsize',fsize);
 xlim([0 3])
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',fsize,'horizontalalignment','center')
 ylim(ylnew)
 
 % text
@@ -226,7 +231,7 @@ fprintf(fid,[' Finally, we tested if seizure type influenced the pre-to-posticta
 % lazy)
 
 nexttile([2 1])
-h =boxplot(szT.pre_post_change,szT.semiology);
+h =boxplot(szT.pre_post_change,szT.semiology,'colors',myColours);
 hold on
 plot(xlim,[0 0],'k--','linewidth',2)
 
@@ -235,12 +240,17 @@ ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.1*(yl(2)-yl(1));
 new_y = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 4],[ybar ybar],'k-','linewidth',2)
-text(2.5,ytext,'linear mixed effects model: n.s.','horizontalalignment','center','fontsize',15)
+text(2.5,ytext,'linear mixed effects model: n.s.','horizontalalignment','center','fontsize',fsize)
 ylim(new_y)
 
-
+gh = findobj(gcf,'tag','Outliers');
+for i = 1:numel(gh)
+    xpos = gh(i).XData(1);
+    if isnan(xpos), continue; end
+    gh(i).MarkerEdgeColor = myColours(xpos,:);
+end
 set(h,{'linew'},{2})
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 xlabel('Seizure semiology')
 ylabel('Post-pre spikes/elecs/min')
 title('Postictal spike rate change by semiology')
@@ -297,15 +307,16 @@ fprintf(sfid,[' For the primary analysis of a 6-hour preictal period, the early-
 
 %% Add annotations
 annotation('textbox',[0 0.9 0.1 0.1],'String','A','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
+annotation('textbox',[0.48 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','none')
 annotation('textbox',[0 0.42 0.1 0.1],'String','C','fontsize',25,'linestyle','none')
-annotation('textbox',[0.5 0.42 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
+annotation('textbox',[0.48 0.42 0.1 0.1],'String','D','fontsize',25,'linestyle','none')
 
 
 %% Add box around D
 %annotation('rectangle',[0.001 0.001 0.32 0.65],'color','k','linewidth',2,'linestyle','--')
-
+fontname(gcf,"calibri");
 print([out_folder,'Fig4'],'-depsc')
+print([out_folder,'Fig4'],'-dpng')
 close(gcf)
 fclose(fid)
 fclose(sfid)

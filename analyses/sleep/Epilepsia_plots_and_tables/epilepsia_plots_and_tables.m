@@ -1,4 +1,4 @@
-%epilepsia_figure1 % this needs a raw data file to run (which is large)
+epilepsia_figure1 % this needs a raw data file to run (which is large)
 
 epilepsia_figure2(0)
 

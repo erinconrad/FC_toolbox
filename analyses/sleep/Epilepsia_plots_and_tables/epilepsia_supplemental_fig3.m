@@ -7,6 +7,7 @@ hard coded in. IF I CHANGE THE ANALYSES I NEED TO CHANGE THE HARD CODING.
 
 %% Parameters
 plot_type = 'scatter';
+fsize = 20;
 
 %{
 myColours = [0, 0.4470, 0.7410;...
@@ -15,11 +16,16 @@ myColours = [0, 0.4470, 0.7410;...
     0.4940, 0.1840, 0.5560;...
     0.6350, 0.0780, 0.1840];
 %}
-
+%{
 myColours = [0.1660, 0.540, 0.1880;...
 0.4940, 0.1840, 0.5560;...    
 0.8500, 0.4250, 0.0980;...
     0.9290 0.6940 0.1250];
+%}
+myColours = [0 33 87;...
+122 80 113;...    
+227 124 29;...
+    86 152 163]/255;
 
 
 
@@ -41,7 +47,7 @@ out_folder = [results_folder,'analysis/sleep/epilepsia/'];
 %% Prep output text file
 
 figure
-set(gcf,'position',[10 10 900 600])
+set(gcf,'position',[10 10 1000 700])
 tiledlayout(2,2,'tilespacing','tight','padding','tight')
 
 %% Seizure time of day
@@ -61,11 +67,11 @@ set(gca,'ThetaDir','clockwise');
 set(gca,'ThetaZeroLocation','top');
 thetaticks(polar(1:skip:nbins)*360/(2*pi))
 thetaticklabels(hours_mins(1:skip:nbins+1))
-set(gca,'fontsize',15)
+set(gca,'fontsize',fsize)
 title('Seizure count')
 [pval z all_mu] = test_pt_circular_means(all_tod_rate,polar,hours_mins);
 
-text(7*pi/8,15,get_p_text(pval),'fontsize',15,'horizontalalignment','center');
+text(7*pi/8,15,get_p_text(pval),'fontsize',fsize,'horizontalalignment','center');
 %{
 nexttile([2 1])
 periods = sz_circ_out.periods;
@@ -103,7 +109,8 @@ xl = xlim;
 yl = ylim;
 px = xl(1) + 0.01*(xl(2)-xl(1));
 py = yl(1) + 0.99*(yl(2)-yl(1));
-text(px,py,sprintf('%s\neffect size r = %1.2f',get_p_text(stats.pval),stats.r),'verticalalignment','top','fontsize',15)
+text(px,py,sprintf('%s\neffect size r = %1.2f',get_p_text(stats.pval),stats.r),...
+    'verticalalignment','top','fontsize',fsize)
 
 % Results text
 %{
@@ -193,14 +200,15 @@ xticks([1 2])
 xticklabels({'Temporal','Extra-temporal'})
 ylabel('Late-early spikes/elec/min')
 title('Late-early preictal spike rate difference')
-set(gca,'fontsize',15);
+set(gca,'fontsize',fsize);
 xlim([0 3])
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),...
+    'fontsize',fsize,'horizontalalignment','center')
 ylim(ylnew)
 
 
@@ -233,8 +241,9 @@ annotation('textbox',[0.5 0.41 0.1 0.1],'String','D','fontsize',25,'linestyle','
 
 
 %% Add box around D
-
+fontname(gcf,"calibri");
 print([out_folder,'FigS3'],'-depsc')
+print([out_folder,'FigS3'],'-dpng')
 close(gcf)
 
 %% Bonus analysis (probably supplemental figure) looking for pre-ictal spike change

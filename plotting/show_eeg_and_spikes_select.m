@@ -1,5 +1,5 @@
 function show_eeg_and_spikes_select(values,gdf,fs,to_plot,show_spikes)
-color = [0.8500, 0.3250, 0.0980];
+color = [163 2 52]/255;%[0.8500, 0.3250, 0.0980];
 %figure
 %set(gcf,'position',[62 104 1145 701])
 

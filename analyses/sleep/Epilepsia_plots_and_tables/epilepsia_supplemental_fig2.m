@@ -4,16 +4,21 @@ function epilepsia_supplemental_fig2
 min_rate = 0.1;
 plot_type = 'scatter';
 nblocks = 6;
+fsize = 20;
 %{
 myColours = [0 0.4470 0.7410;...
     0.8500 0.3250 0.0980;...
     0.9290 0.6940 0.1250];
 %}
-
+%{
 myColours = [0.4940, 0.1840, 0.5560;...    
 0.8500, 0.4250, 0.0980;...
     0.9290 0.6940 0.1250];
-
+%}
+myColours = [0 33 87;...
+122 80 113;...    
+227 124 29;...
+    86 152 163]/255;
 
 
 locations = fc_toolbox_locs;
@@ -77,14 +82,15 @@ xticks([1 2])
 xticklabels({'Mesial temporal','Neocortical'})
 ylabel('Sleep-wake spikes/elec/min')
 title('Sleep-wake spike rate difference')
-set(gca,'fontsize',15);
-xlim([0 3])
+set(gca,'fontsize',fsize);
+xlim([0.5 2.5])
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),...
+    'fontsize',fsize,'horizontalalignment','center')
 ylim(ylnew)
 
 
@@ -133,14 +139,15 @@ xticks([1 2])
 xticklabels({'Mesial temporal','Neocortical'})
 ylabel('Post-pre spikes/elec/min')
 title('Post-preictal spike rate difference')
-set(gca,'fontsize',15);
-xlim([0 3])
+set(gca,'fontsize',fsize);
+xlim([0.5 2.5])
 yl = ylim;
 ybar = yl(1) + 1.05*(yl(2)-yl(1));
 ytext = yl(1) + 1.13*(yl(2)-yl(1));
 ylnew = [yl(1) yl(1) + 1.2*(yl(2)-yl(1))];
 plot([1 2],[ybar ybar],'k-','linewidth',2)
-text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),'fontsize',15,'horizontalalignment','center')
+text(1.5,ytext,sprintf('%s, effect size r = %1.2f',get_p_text(p),r),...
+    'fontsize',fsize,'horizontalalignment','center')
 ylim(ylnew)
 
 % text
@@ -163,8 +170,9 @@ annotation('textbox',[0.52 0.9 0.1 0.1],'String','B','fontsize',25,'linestyle','
 
 
 
-
+fontname(gcf,"calibri");
 print([out_folder,'FigS2'],'-depsc')
+print([out_folder,'FigS2'],'-dpng')
 close(gcf)
 
 
