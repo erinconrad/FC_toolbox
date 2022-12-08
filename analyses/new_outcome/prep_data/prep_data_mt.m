@@ -47,12 +47,17 @@ for p = 1:npts
     coh = info.all_coh;
     pc = info.all_pc;
     times = info.all_times;
-    labels = info.labels;
-    all_labels{p,:,:} = labels;
+    labels = info.montage_labels;
+    
     fs = info.fs;
     plv = info.all_plv;
 
     rl  = rl/fs;
+
+    % fill labels
+    all_labels{p,1} = labels{1,1};
+    all_labels{p,2} = labels{2,1};
+    all_labels{p,3} = labels{3,1};
 
     % also load the sleep stages
     stage = load([edf_path,name,'/sleep_stage.mat']);
