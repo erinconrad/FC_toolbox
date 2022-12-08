@@ -1,7 +1,7 @@
 function [T,features] =  lr_mt
 
 do_little_plots = 0;
-do_big_plots = 1;
+do_big_plots = 0;
 %which_outcome = 1; % engel = 1, ilae = 2
 %which_outcome_year = 1;
 which_sleep_stage = 3; % all = 1, wake =2, sleep = 3;
@@ -106,7 +106,7 @@ for which_montage = 2 % car, bipolar
     spikes = data.all_spikes(:,1,which_sleep_stage);
 
     % Loop over features
-    for which_thing ={'bp'}%{'nelecs','spikes','rl','bp','pearson','coh'}
+    for which_thing ={'nelecs','spikes','rl','bp','pearson','coh'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
@@ -144,7 +144,7 @@ for which_montage = 2 % car, bipolar
         end
     
         %% Get asymmetry index
-        ai = cellfun(@(x,y,z) ...
+        ai = cellfun(@(x,y,z,w) ...
             calc_ai(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
             labels,thing,names,data.all_labels(:,1),'uniformoutput',false);
     

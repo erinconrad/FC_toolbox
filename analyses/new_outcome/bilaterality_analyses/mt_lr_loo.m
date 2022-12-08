@@ -5,10 +5,10 @@ rng(0)
 
 do_plot = 1;
 method = 'bag';
-ncycles = 1e3;
+ncycles = 1e2;
 response = 'soz_lats';%'soz_lats';%'outcome';
 pca_perc = 100;
-which_outcome = 'ilae';
+which_outcome = 'engel';
 which_year = 1;
 
 %% Get file locs
@@ -43,7 +43,7 @@ for i = 1:npts
 
     % train classifier    
     tc = lr_classifier(Ttrain,method,features_minus_null,response,pca_perc,ncycles);
-    tcnull = lr_classifier(Ttrain,method,{'nelecs_1_car'},response,pca_perc,ncycles);
+    tcnull = lr_classifier(Ttrain,method,{'nelecs_1_bipolar'},response,pca_perc,ncycles);
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);

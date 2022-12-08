@@ -74,8 +74,8 @@ for p = 1:npts
     % get the sleep stages for appropriate times
     [~,seeg_stage] = match_seeg_times(times(:,1),ones(size(times,1),1),seeg_secs,stage);
 
-    sleep = strcmp(seeg_stage,'N3') | strcmp(seeg_stage,'N2') | ...
-        strcmp(seeg_stage,'N1') | strcmp(seeg_stage,'R');
+    sleep = strcmp(seeg_stage,'N3') | strcmp(seeg_stage,'N2');% | ...
+        %strcmp(seeg_stage,'N1') | strcmp(seeg_stage,'R');
     wake = strcmp(seeg_stage,'W');
 
     % Save all, wake, and sleep

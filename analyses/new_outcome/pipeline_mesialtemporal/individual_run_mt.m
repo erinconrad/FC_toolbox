@@ -1,7 +1,7 @@
 function out = individual_run_mt(file_path)
 
 %% Parameters
-show_data = 0;
+show_data = 1;
 tw = 2;
 
 %% Load the edf file
