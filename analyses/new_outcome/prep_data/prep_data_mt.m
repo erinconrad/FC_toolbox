@@ -48,7 +48,7 @@ for p = 1:npts
     pc = info.all_pc;
     times = info.all_times;
     labels = info.labels;
-    all_labels{p} = labels;
+    all_labels{p,:,:} = labels;
     fs = info.fs;
     plv = info.all_plv;
 

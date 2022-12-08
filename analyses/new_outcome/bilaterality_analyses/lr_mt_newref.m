@@ -1,6 +1,4 @@
 function [T,features] =  lr_mt_newref
-
-do_mt_car = 1;
 do_little_plots = 0;
 do_big_plots = 1;
 %which_outcome = 1; % engel = 1, ilae = 2
@@ -95,44 +93,38 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 feat_names_s = {};
 
-for which_montage = 1 % car, bipolar
+for which_montage = 3 % car, bipolar
     
     if which_montage == 1
+        montage_text = 'machine';
+    elseif which_montage == 2
         montage_text = 'car';
-    else
+    elseif which_montage == 3
         montage_text = 'bipolar';
     end
 
-    if do_mt_car
-        coh = mt_data.all_coh(:,which_sleep_stage);
-        pearson = mt_data.all_pearson(:,which_sleep_stage);
-        bp = mt_data.all_bp(:,which_sleep_stage);
-        
-        rl = mt_data.all_rl(:,which_sleep_stage);
-        spikes = mt_data.all_spikes(:,which_sleep_stage);
+    
+    coh = mt_data.all_coh(:,which_montage,which_sleep_stage);
+    pearson = mt_data.all_pearson(:,which_montage,which_sleep_stage);
+    bp = mt_data.all_bp(:,which_montage,which_sleep_stage);
+    plv = mt_data.all_plv(:,which_montage,which_sleep_stage);
+    rl = mt_data.all_rl(:,which_montage,which_sleep_stage);
+    spikes = mt_data.all_spikes(:,which_montage,which_sleep_stage);
 
-        rl = cellfun(@(x) x',rl,'UniformOutput',false);
-        spikes = cellfun(@(x) x',spikes,'UniformOutput',false);
+   % rl = cellfun(@(x) x',rl,'UniformOutput',false);
+   % spikes = cellfun(@(x) x',spikes,'UniformOutput',false);
 
-        % for now, make spike data nan if it was bad in the original
-        % pipeline (I need to do my own validation eventually)
-        for i = 1:npts
-            if good_spikes(i) == 0
-                spikes{i} = nan(size(spikes{i}));
-                rl{i} = nan(size(rl{i}));
-            end
+    % for now, make spike data nan if it was bad in the original
+    % pipeline (I need to do my own validation eventually)
+    for i = 1:npts
+        if good_spikes(i) == 0
+            spikes{i} = nan(size(spikes{i}));
+            rl{i} = nan(size(rl{i}));
         end
-    else
-        coh = data.all_coh(:,which_montage,which_sleep_stage);
-        pearson = data.all_pearson(:,which_montage,which_sleep_stage);
-        bp = data.all_bp(:,which_montage,which_sleep_stage);
-        labels = data.all_labels(:,which_montage);
-        rl = data.all_rl(:,1,which_sleep_stage);
-        spikes = data.all_spikes(:,1,which_sleep_stage);
     end
-
+    
     % Loop over features
-    for which_thing ={'nelecs','spikes','rl','bp','pearson','coh'}
+    for which_thing ={'bp'}%{'plv','nelecs','spikes','rl','bp','pearson','coh'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
@@ -143,6 +135,10 @@ for which_montage = 1 % car, bipolar
                 thing = coh;
                 uni = 0; % not univariate
                 last_dim = 6;%size(coh{1},3); % multiple frequencies
+            case {'plv'}
+                thing = plv;
+                uni = 0; % not univariate
+                last_dim = 6;%size(coh{1},3); % multiple frequencies
             case 'bp'
                 thing = bp;
                 uni = 1; % univariate
@@ -151,10 +147,6 @@ for which_montage = 1 % car, bipolar
                 thing = spikes;
                 uni = 1; % univariate
                 last_dim = 1; % one frequency
-                labels = data.all_labels(:,1); % spikes only car
-                if which_montage == 2 % I don't have validated bipolar spike detections
-                    continue
-                end
             case 'nelecs'
                 thing = cellfun(@(x) ones(length(x),1),spikes,'uniformoutput',false);
                 last_dim = 1;
@@ -163,19 +155,16 @@ for which_montage = 1 % car, bipolar
                 thing = rl;
                 uni = 1;
                 last_dim = 1;
-                labels = data.all_labels(:,1); % spikes only car
-                if which_montage == 2
-                    continue
-                end
         end
-        if do_mt_car
-            labels = mt_data.all_labels;
-        end
+        
+        labels = mt_data.all_labels(:,1);
+        
 
         %% Get asymmetry index
+        
         ai = cellfun(@(x,y,z) ...
             calc_ai(x,y,z,uni,last_dim,which_thing,subplot_path,do_little_plots),...
-            labels,thing,names,'uniformoutput',false);
+            labels,thing,names,mt_data.all_labels(:,1),'uniformoutput',false);
     
         ai = cell2mat(ai);
     
@@ -196,6 +185,7 @@ for which_montage = 1 % car, bipolar
 end
 
 %% Remove redudnant features
+%{
 if sum(ismember(Ts.Properties.VariableNames,'spikes_1_bipolar'))>0
     Ts = removevars(Ts,'spikes_1_bipolar');
     feat_names_s(strcmp(feat_names_s,'spikes_1_bipolar')) = [];
@@ -204,6 +194,7 @@ if sum(ismember(Ts.Properties.VariableNames,'rl_1_bipolar'))>0
     Ts = removevars(Ts,'rl_1_bipolar');
     feat_names_s(strcmp(feat_names_s,'rl_1_bipolar')) = [];
 end
+%}
 
 %% Pairwise correlations of all features
 nfeatures = length(feat_names_s); % -2 to remove outcome and bilaterality
@@ -211,8 +202,8 @@ all_feat = table2array(Ts(:,size(Ts,2)-nfeatures+1:end));
 feat_corr = corr(all_feat,'rows','pairwise','type','spearman');
 if do_big_plots
     figure
-    set(gcf,'position',[-300 78 1700 900])
-    tiledlayout(4,4,'tilespacing','tight','Padding','tight')
+    set(gcf,'position',[-300 78 1400 600])
+    tiledlayout(1,7,'tilespacing','tight','Padding','tight')
     nexttile
     turn_nans_gray(feat_corr)
     xticks(1:nfeatures)

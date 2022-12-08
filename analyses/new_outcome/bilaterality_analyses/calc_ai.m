@@ -1,4 +1,4 @@
-function signed = calc_ai(labels,thing,name,uni,last_dim,...
+function signed = calc_ai(labels,thing,name,labels_plot,uni,last_dim,...
     which_thing,subplot_path,do_plots)
 
 %{
@@ -156,7 +156,7 @@ switch which_thing{1}
         
                             end
         
-                        case {'coh','pearson'}
+                        case {'coh','pearson','plv'}
                             %% Measure mesial to lateral connectivity
                             
                             mesial_contacts = strcmp(letters,curr_elec) & ismember(number,[1:6]); % first 6 contacts are the proximal contacts
@@ -197,7 +197,7 @@ if do_plots
         curr_intra = intra(:,:,:,d);
         curr_signed = signed(d);
         curr_thing = sprintf('%s_%d',which_thing{1},d);
-        show_ai_electrodes(curr_intra,curr_signed,which_elecs,which_lats,name,subplot_path,curr_thing,labels)
+        show_ai_electrodes(curr_intra,curr_signed,which_elecs,which_lats,name,subplot_path,curr_thing,labels_plot)
     end
 end
 

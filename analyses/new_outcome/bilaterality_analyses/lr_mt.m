@@ -106,7 +106,7 @@ for which_montage = 2 % car, bipolar
     spikes = data.all_spikes(:,1,which_sleep_stage);
 
     % Loop over features
-    for which_thing ={'nelecs','spikes','rl','bp','pearson','coh'}
+    for which_thing ={'bp'}%{'nelecs','spikes','rl','bp','pearson','coh'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
@@ -145,8 +145,8 @@ for which_montage = 2 % car, bipolar
     
         %% Get asymmetry index
         ai = cellfun(@(x,y,z) ...
-            calc_ai(x,y,z,uni,last_dim,which_thing,subplot_path,do_little_plots),...
-            labels,thing,names,'uniformoutput',false);
+            calc_ai(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
+            labels,thing,names,data.all_labels(:,1),'uniformoutput',false);
     
         ai = cell2mat(ai);
     
