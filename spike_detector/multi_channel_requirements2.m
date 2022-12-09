@@ -3,7 +3,7 @@ function final_spikes = multi_channel_requirements2(gdf,nchs,fs)
 %% Parameters
 min_chs = 2; % spike should be on at least 2 channels
 max_chs = nchs * 0.5; % on no more than half the channels
-min_time = 100 * 1e-3 * fs; % 50 ms to look for other spikes
+min_time = 100 * 1e-3 * fs; % 100 ms to look for other spikes
 
 final_spikes = [];
 

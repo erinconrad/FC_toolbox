@@ -170,7 +170,8 @@ for im = 1:2
         
         % Get spikes
         %gdf = detector_alt(values,fs);
-        gdf = detector_new_timing(values,fs);
+        %gdf = detector_new_timing(values,fs);
+        gdf = clean_detector(values,fs);
         fprintf('\nDetected %d spikes\n',size(gdf,1));
         
         % coherence

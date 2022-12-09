@@ -43,7 +43,7 @@ for i = 1:npts
 
     % train classifier    
     tc = lr_classifier(Ttrain,method,features_minus_null,response,pca_perc,ncycles);
-    tcnull = lr_classifier(Ttrain,method,{'nelecs_1_bipolar'},response,pca_perc,ncycles);
+    tcnull = lr_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles);
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);
