@@ -7,7 +7,7 @@ num_above = 1;
 abs_thresh = 5e3;
 
 %% Parameter to reject high 60 Hz
-percent_60_hz = 0.7;
+percent_60_hz = 0.99;
 
 %% Parameter to reject electrodes with much higher std than most electrodes
 mult_std = 10;

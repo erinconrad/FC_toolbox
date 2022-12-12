@@ -53,8 +53,8 @@ reduced_spikes = cellfun(@(x,y) x(y),spikes,match,'UniformOutput',false);
 
 if 1
     figure
-    d = find(strcmp(names,'HUP133'));
-    for i = d%1:length(mt_labels)
+   % d = find(strcmp(names,'HUP225'));
+    for i = 1:length(mt_labels)
         %table(reduced_labels{i},reduced_spikes{i},mt_labels{i},mt_spikes{i})
         if isempty(mt_spikes{i}),continue;end
         r = corr(reduced_spikes{i},mt_spikes{i},'rows','pairwise');

@@ -33,15 +33,40 @@ pt = pt.pt;
 for ip = whichPts
     
     %% Decide start time
+    pt_name = pt(ip).name;
 
-    % Get start time of day of first file
-    ff_start = pt(ip).ieeg.file(1).start_time;
+    % Exception handling
+    if strcmp(pt_name,'HUP106')
+        f = 2; % 2nd dataset
+        % ff_start = pt(ip).ieeg.file(f).start_time;
+        dl_start = (start_time-ff_start)*3600*24;% 8 pm of the first day of the 2nd dataset
+    elseif strcmp(pt_name,'HUP132')
+        f = 2; % 2nd dataset
+        ff_start = pt(ip).ieeg.file(f).start_time;
+        dl_start = (start_time-ff_start)*3600*24; % 8 pm of the first day of the 2nd dataset
+    elseif strcmp(pt_name,'HUP140')
+        f = 2; % 2nd dataset
+        ff_start = pt(ip).ieeg.file(f).start_time;
+        dl_start = (start_time-ff_start)*3600*24; % 8 pm of the first day of the 2nd dataset
+    elseif strcmp(pt_name,'HUP148')
+        f = 2; % 2nd dataset
+        ff_start = pt(ip).ieeg.file(f).start_time;
+        dl_start = (start_time-ff_start)*3600*24; % 8 pm of the first day of the 2nd dataset
+    elseif strcmp(pt_name,'HUP215')
+        f = 2; % 2nd dataset
+        ff_start = pt(ip).ieeg.file(f).start_time;
+        dl_start = (start_time-ff_start)*3600*24 - 3600*3; % 5 pm of the first day of the 2nd dataset. Earlier so we can get it all from a single dataset
+    else
+        f = 1; % which ieeg.org dataset
+        % Get start time of day of first file
+        ff_start = pt(ip).ieeg.file(f).start_time;
+        % download start should be 8 pm the first full day
+        dl_start = (start_time-ff_start)*3600*24 + 3600*24;
 
-    % download start should be 8 pm the first full day
-    dl_start = (start_time-ff_start)*3600*24 + 3600*24;
+    end
 
     %% Prepare and save metadata
-    pt_name = pt(ip).name;
+    
     times = nan(duration/chunk_size,2);
     ntimes = size(times,1);
     for t = 1:ntimes
@@ -58,7 +83,7 @@ for ip = whichPts
         meta.times = times;
         meta.files = cell(ntimes,1);
         meta.name = pt_name;
-        meta.file_name = pt(ip).ieeg.file(1).name;
+        meta.file_name = pt(ip).ieeg.file(f).name;
         for t = 1:ntimes
             meta.files{t} = sprintf('file%d.edf',t);
         end
@@ -86,7 +111,7 @@ for ip = whichPts
     end
 
     %% Loop over times and get data
-    file_name = pt(ip).ieeg.file(1).name;
+    file_name = pt(ip).ieeg.file(f).name;
     for t = last_file+1:ntimes
 
         fprintf('\nDoing time %d of %d for %s\n',t,ntimes,pt_name);

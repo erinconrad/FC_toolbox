@@ -77,7 +77,7 @@ curr_values = values(rand_start:rand_end,:);
 
 %% Reject bad channels
 which_chs = 1:nallowed;
-bad = identify_bad_chs(curr_values,which_chs,allowed_labels,fs);
+[bad,details] = identify_bad_chs(curr_values,which_chs,allowed_labels,fs);
 which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 
 %% CAR reference
@@ -91,7 +91,7 @@ is_run_machine = ismember((1:length(car_labels))',which_chs);
 
 %% Bipolar reference
 [bipolar_values,~,bipolar_labels,chs_in_bipolar] = ...
-    bipolar_montage(curr_values,allowed_labels,[],[],name);
+    bipolar_montage_fc(curr_values,allowed_labels,[],[],name);
 bad_bipolar = any(ismember(chs_in_bipolar,bad),2);
 empty = cellfun(@(x) strcmp(x,'-'),bipolar_labels);
 which_chs_bipolar = 1:size(chs_in_bipolar,1);

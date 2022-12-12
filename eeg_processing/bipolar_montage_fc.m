@@ -1,5 +1,5 @@
 function [values,clean_labels,bipolar_labels,chs_in_bipolar,mid_locs,mid_anatomy] =...
-    bipolar_montage(values,chLabels,locs,anatomy,name)
+    bipolar_montage_fc(values,chLabels,locs,anatomy,name)
 
 %{
 This function takes a chunk of multi-channel EEG data, along with channel
