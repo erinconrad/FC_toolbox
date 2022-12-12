@@ -38,7 +38,7 @@ for ip = whichPts
     % Exception handling
     if strcmp(pt_name,'HUP106')
         f = 2; % 2nd dataset
-        % ff_start = pt(ip).ieeg.file(f).start_time;
+        ff_start = pt(ip).ieeg.file(f).start_time;
         dl_start = (start_time-ff_start)*3600*24;% 8 pm of the first day of the 2nd dataset
     elseif strcmp(pt_name,'HUP132')
         f = 2; % 2nd dataset
