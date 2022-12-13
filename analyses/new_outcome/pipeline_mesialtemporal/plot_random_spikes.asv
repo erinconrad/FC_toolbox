@@ -1,7 +1,7 @@
 function plot_random_spikes(all_spikes,name,labels,montage,edf_path)
 
 nspikes = 50;
-surround = 3; % 2 seconds befor or after
+surround = 2; % 2 seconds befor or after
 ntotal = size(all_spikes,1);
 if ntotal == 0
     fprintf('\nNo spikes detected for %s\n',name)
@@ -59,9 +59,9 @@ for i = 1:nspikes
     switch montage
         case 'machine'
             % no change
-            mlabels = cellfun(@(x) sprintf('%s-Ref',x),allowed_labels,'uniformoutput',false);
+            mlabels = 
         case 'car'
-            [values,mlabels] = car_montage(values,1:nallowed,allowed_labels);
+            values = car_montage(values,1:nallowed,allowed_labels);
         case 'bipolar'
             [values,~,mlabels] = bipolar_montage_fc(values,allowed_labels,[],[],name);
     end
@@ -75,7 +75,7 @@ for i = 1:nspikes
     plot(values(start_idx:end_idx,rch));
     hold on
     plot(fs*surround+1,values(fs*surround+1,rch),'o')
-    title(sprintf('Spike %d %s',s,mlabels{rch}))
+    title(sprintf('Spike %d %s',s,labels{ch}))
 
 end
 

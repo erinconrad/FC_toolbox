@@ -9,6 +9,8 @@ finds the mesial temporal ones, and calculates a single asymmetry index
 
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
+proximal = 1:6; % proximal contacts are those 1-6
+distal = 7:12; % distal contacts are 7-12
 
 %% Label stuff
 
@@ -60,7 +62,7 @@ match = possible_matches(match);
 switch which_thing{1}
 
         
-    case {'inter_coh','inter_pearson','inter_rl'} % do inter-electrode connectivity (NOT AI)
+    case {'inter_coh','inter_pearson','inter_rl'} % do inter-electrode (left to right) connectivity (NOT AI)
 
         % initialize
         inter = nan(nmt,maxn,last_dim);
@@ -159,13 +161,12 @@ switch which_thing{1}
                         case {'coh','pearson','plv'}
                             %% Measure mesial to lateral connectivity
                             
-                            mesial_contacts = strcmp(letters,curr_elec) & ismember(number,[1:6]); % first 6 contacts are the proximal contacts
-                            lateral_contacts = strcmp(letters,curr_elec) & ismember(number,[7:12]); % last 6 are the distal contacts
+                            mesial_contacts = strcmp(letters,curr_elec) & ismember(number,proximal); % first 6 contacts are the proximal contacts
+                            lateral_contacts = strcmp(letters,curr_elec) & ismember(number,distal); % last 6 are the distal contacts
                 
                             % measure connectivity mesial to lateral
                             curr_intra = nanmean(thing(mesial_contacts,lateral_contacts,:),[1 2]);
-                
-                            
+                      
                             % Fill, repeating across all electrodes
                             intra(i,:,j,:) = repmat(curr_intra,1,maxn,1,1);
                     end
