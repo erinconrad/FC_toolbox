@@ -1,5 +1,7 @@
 %% RUN MT pipeline
-function run_mt_pipeline(whichPts,overwrite)
+function run_mt_pipeline(whichPts)
+
+overwrite = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
