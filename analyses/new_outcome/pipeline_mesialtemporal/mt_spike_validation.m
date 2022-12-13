@@ -34,6 +34,10 @@ for i = 1:length(whichPts)
     end
 
     % Load the summary file
+    if exist([edf_path,name,'/summ.mat'],'file') == 0
+        fprintf('\nNo summary file for %s, skipping\n',name);
+        continue
+    end
     out = load([edf_path,name,'/summ.mat']);
     out = out.out;
 
