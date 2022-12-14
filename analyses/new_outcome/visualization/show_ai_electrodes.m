@@ -1,4 +1,5 @@
 function show_ai_electrodes(intra,signed,which_elecs,which_lats,name,subplot_path,which_thing,labels)
+labels = cellfun(@(x) strrep(x,'-Ref',''),labels,'uniformoutput',false);
 
 %% Establish locations for electrodes
 nelecs = length(which_elecs);
@@ -73,9 +74,10 @@ if ~all(isnan(intra),'all')
     xlim([min(locs(:,:,:,1),[],'all')-2 max(locs(:,:,:,1),[],'all')+2])
     title(sprintf('%s: %s AI %1.1f',name,which_thing,signed),'fontsize',20)
 %table(labels,thing)
-    %pause
+    
     xticklabels([])
     yticklabels([])
+    %pause
     saveas(gcf,[subplot_path,name,'_',which_thing]);
     close gcf
 end

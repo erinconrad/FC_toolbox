@@ -93,7 +93,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 feat_names_s = {};
 
-for which_montage =[1 2] % machine,car, bipolar
+for which_montage =[1 2 3] % machine,car, bipolar
     
     if which_montage == 1
         montage_text = 'machine';
@@ -130,7 +130,7 @@ for which_montage =[1 2] % machine,car, bipolar
     end
     
     % Loop over features
-    for which_thing = {'spikes','bp','pearson'}
+    for which_thing = {'spikes'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
@@ -167,6 +167,10 @@ for which_montage =[1 2] % machine,car, bipolar
         
 
         %% Get asymmetry index
+        %{
+        k = find(strcmp(names,'HUP143'));
+        calc_ai(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots)
+        %}
         
         ai = cellfun(@(x,y,z,w) ...
             calc_ai(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...

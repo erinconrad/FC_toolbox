@@ -182,6 +182,9 @@ switch which_thing{1}
             nright = sum(intra(:,:,2,:),'all');
             signed = (nleft-nright)./sqrt(nleft^2+nright^2);
         else
+            old_intra = intra;
+            intra = (intra-nanmean(intra,[1 2 3]))./nanstd(intra,[],[1 2 3]); % scale it according to stuff
+            %signed = (intra(:,:,1,:)-intra(:,:,2,:));
             signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
             signed = (squeeze(nanmean(signed,[1 2 3])))';
         end

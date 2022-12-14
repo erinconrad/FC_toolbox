@@ -1,13 +1,13 @@
-function T = mt_lr_loo(T,features)
+function mt_lr_loo(T,features)
 
 % seed rng
 rng(0)
 
 do_plot = 1;
 method = 'bag';
-ncycles = 1e3;
+ncycles = 1e2;
 response = 'soz_lats';%'soz_lats';%'outcome';
-pca_perc = 70;
+pca_perc = 100;
 which_outcome = 'engel';
 which_year = 1;
 

@@ -62,6 +62,11 @@ for f = 1:nfreqs
         hold on
         plot(filteredData(:,3))
         nexttile
+        plot((hilbert(filteredData(:,2))))
+        hold on
+        plot(hilbert(filteredData(:,3)))
+
+        nexttile
         plot(phase(:,2))
         hold on
         plot(phase(:,3))
