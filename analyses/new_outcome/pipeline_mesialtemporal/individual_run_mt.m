@@ -196,7 +196,7 @@ end
     tiledlayout(1,3)
     for i = 1:3
         nexttile
-        turn_nans_gray(out.montage(i).plv(:,:,5))
+        turn_nans_gray(out.montage(i).plv(:,:,4))
         title(out.montage(i).name)
         xticks(1:length(out.montage(i).labels))
         xticklabels(out.montage(i).labels)

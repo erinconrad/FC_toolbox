@@ -5,9 +5,9 @@ rng(0)
 
 do_plot = 1;
 method = 'bag';
-ncycles = 1e2;
+ncycles = 1e3;
 response = 'soz_lats';%'soz_lats';%'outcome';
-pca_perc = 100;
+pca_perc = 70;
 which_outcome = 'engel';
 which_year = 1;
 

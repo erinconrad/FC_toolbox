@@ -1,7 +1,7 @@
 function [T,features] =  lr_mt
 
 do_little_plots = 0;
-do_big_plots = 0;
+do_big_plots = 1;
 %which_outcome = 1; % engel = 1, ilae = 2
 %which_outcome_year = 1;
 which_sleep_stage = 3; % all = 1, wake =2, sleep = 3;
@@ -90,7 +90,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 feat_names_s = {};
 
-for which_montage = 2 % car, bipolar
+for which_montage = 1 % car, bipolar
     
     if which_montage == 1
         montage_text = 'car';
@@ -106,7 +106,7 @@ for which_montage = 2 % car, bipolar
     spikes = data.all_spikes(:,1,which_sleep_stage);
 
     % Loop over features
-    for which_thing ={'nelecs','spikes','rl','bp','pearson','coh'}
+    for which_thing ={'spikes'}%{'spikes','rl','bp','pearson','coh'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
@@ -250,8 +250,10 @@ if do_big_plots
         
        
         set(gca,'fontsize',15)
-        print(gcf,[plot_folder,'Fig2'],'-dpng')
+        
     end
+
+    print(gcf,[plot_folder,'Fig2'],'-dpng')
 
 end
 

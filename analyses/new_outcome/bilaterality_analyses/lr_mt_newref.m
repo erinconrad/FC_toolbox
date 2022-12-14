@@ -1,6 +1,6 @@
 function [T,features] =  lr_mt_newref
 do_little_plots = 0;
-do_big_plots = 0;
+do_big_plots = 1;
 %which_outcome = 1; % engel = 1, ilae = 2
 %which_outcome_year = 1;
 which_sleep_stage = 3; % all = 1, wake =2, sleep = 3;
@@ -93,7 +93,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 feat_names_s = {};
 
-for which_montage = [1 2 3] % car, bipolar
+for which_montage =[1 2] % machine,car, bipolar
     
     if which_montage == 1
         montage_text = 'machine';
@@ -117,14 +117,20 @@ for which_montage = [1 2 3] % car, bipolar
     % for now, make spike data nan if it was bad in the original
     % pipeline (I need to do my own validation eventually)
     for i = 1:npts
+        %{
         if good_spikes(i) == 0
-           % spikes{i} = nan(size(spikes{i}));
-           % rl{i} = nan(size(rl{i}));
+            spikes{i} = nan(size(spikes{i}));
+            rl{i} = nan(size(rl{i}));
+        end
+        %}
+        if nanmean(spikes{i}) < 0.01
+            spikes{i} = nan(size(spikes{i}));
+            rl{i} = nan(size(rl{i}));
         end
     end
     
     % Loop over features
-    for which_thing ={'spikes','rl','bp','pearson','coh'}
+    for which_thing = {'spikes','bp','pearson'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
@@ -203,7 +209,7 @@ feat_corr = corr(all_feat,'rows','pairwise','type','spearman');
 if do_big_plots
     figure
     set(gcf,'position',[-300 78 1400 1200])
-    tiledlayout(4,4,'tilespacing','tight','Padding','tight')
+   % tiledlayout(4,4,'tilespacing','tight','Padding','tight')
     nexttile
     turn_nans_gray(feat_corr)
     xticks(1:nfeatures)
@@ -270,8 +276,9 @@ if do_big_plots
         
        
         set(gca,'fontsize',15)
-        print(gcf,[plot_folder,'Fig2'],'-dpng')
+        
     end
+    print(gcf,[plot_folder,'Fig2'],'-dpng')
 
 end
 
