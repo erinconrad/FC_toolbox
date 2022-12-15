@@ -19,6 +19,9 @@ pt = pt.pt;
 
 for i = 1:length(pt)
     name = pt(i).name;
+    if exist([edf_path,name,'/summ.mat'],'file') == 0
+        continue
+    end
     summ = load([edf_path,name,'/summ.mat']);
     labels = summ.out.labels;
     if sum(contains(labels,'L'))>0 && sum(contains(labels,'R'))>0
