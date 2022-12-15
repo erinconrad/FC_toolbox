@@ -32,6 +32,6 @@ for i = 1:length(pt)
 end
 
 T = table(which_pts,which_names);
-writetable(T,[edf_out,'symmetric_mt_patients.csv']);
+writetable(T,[edf_path,'symmetric_mt_patients.csv']);
 
 end
