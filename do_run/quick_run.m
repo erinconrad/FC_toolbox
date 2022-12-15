@@ -95,7 +95,7 @@ which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 
 %% Bipolar montage
 [bipolar_values,~,bipolar_labels,chs_in_bipolar,mid_locs,mid_anatomy] = ...
-    bipolar_montage(values,chLabels,locs,anatomy,pt_name);
+    bipolar_montage_fc(values,chLabels,locs,anatomy,pt_name);
 non_intracranial_bipolar = any(ismember(chs_in_bipolar,find(non_intracranial)),2);
 bad_bipolar = any(ismember(chs_in_bipolar,bad),2);
 empty = cellfun(@(x) strcmp(x,'-'),bipolar_labels);
@@ -141,6 +141,8 @@ for im = 1:2
     % make non run channels nans
     values(:,~is_run) = nan;
     skip = find(~is_run);
+
+    out = filter_canonical_freqs(values,fs);
     
     % filters
     values = notch_filter(values,fs);

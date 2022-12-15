@@ -1,4 +1,4 @@
-function signed = calc_ai(labels,thing,name,labels_plot,uni,last_dim,...
+function signed = calc_ai_sandbox(labels,thing,name,labels_plot,uni,last_dim,...
     which_thing,subplot_path,do_plots)
 
 %{
@@ -11,6 +11,8 @@ which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
 proximal = 1:12; % proximal contacts are those 1-6
 distal = 1:12; % distal contacts are 7-12
+
+%% Normalize
 
 %% Label stuff
 
@@ -150,7 +152,9 @@ switch which_thing{1}
 
             
                 elseif uni == 1
-                    % Can do this on individual contact level
+                   
+               
+                        % Can do this on individual contact level
                     for k = 1:maxn
                
                         % Find the contacts matching this electrode
@@ -167,6 +171,7 @@ switch which_thing{1}
                         intra(i,k,j,:) = curr_intra;
             
                     end
+                  
         
                 elseif uni == 0 % bivariate measures, will do proximal-to-distal connectivity
         

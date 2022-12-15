@@ -127,6 +127,9 @@ for im = 1:3
     run_values = values;
     run_values(:,~is_run) = nan;
     skip = find(~is_run);
+
+    % Relative entropy
+    re = relative_entropy(run_values,fs);
     
     % PC
     pc =  wrap_or_unwrap_adjacency_fc_toolbox(pc_vector_calc(run_values,fs,tw));

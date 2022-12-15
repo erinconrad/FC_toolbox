@@ -117,20 +117,22 @@ for which_montage =[1 2 3] % machine,car, bipolar
     % for now, make spike data nan if it was bad in the original
     % pipeline (I need to do my own validation eventually)
     for i = 1:npts
-        %{
+        %
         if good_spikes(i) == 0
             spikes{i} = nan(size(spikes{i}));
             rl{i} = nan(size(rl{i}));
         end
         %}
+        %{
         if nanmean(spikes{i}) < 0.01
             spikes{i} = nan(size(spikes{i}));
             rl{i} = nan(size(rl{i}));
         end
+        %}
     end
     
     % Loop over features
-    for which_thing = {'spikes'}
+    for which_thing = {'bp'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
@@ -141,11 +143,11 @@ for which_montage =[1 2 3] % machine,car, bipolar
                 thing = coh;
                 uni = 0; % not univariate
                 last_dim = 6;%size(coh{1},3); % multiple frequencies
-            case {'plv'}
+            case {'plv','near_plv','inter_plv'}
                 thing = plv;
                 uni = 0; % not univariate
                 last_dim = 6;%size(coh{1},3); % multiple frequencies
-            case 'bp'
+            case {'bp','inter_bp'}
                 thing = bp;
                 uni = 1; % univariate
                 last_dim = 5;%size(bp{1},2); % multiple frequencies
@@ -173,7 +175,7 @@ for which_montage =[1 2 3] % machine,car, bipolar
         %}
         
         ai = cellfun(@(x,y,z,w) ...
-            calc_ai(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
+            calc_ai_sandbox(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
             labels,thing,names,mt_data.all_labels(:,1),'uniformoutput',false);
     
         ai = cell2mat(ai);
