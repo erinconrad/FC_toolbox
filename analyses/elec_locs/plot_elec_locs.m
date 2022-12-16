@@ -13,6 +13,20 @@ for i = start%:npts
     title(pt(i).name)
    % pause
 
+   if 0
+        la1 = find(strcmp(pt(i).elecs(1).elec_names,'LA1'));
+        ra1 = find(strcmp(pt(i).elecs(1).elec_names,'RA1'));
+        la1_ra1_dist = vecnorm(locs(la1)-locs(ra1));
+
+        lb1 = find(strcmp(pt(i).elecs(1).elec_names,'LB1'));
+        rb1 = find(strcmp(pt(i).elecs(1).elec_names,'RB1'));
+        lb1_rb1_dist = vecnorm(locs(lb1)-locs(rb1));
+
+        la1_lb1_dist = vecnorm(locs(lb1)-locs(la1));
+        lb2 = find(strcmp(pt(i).elecs(1).elec_names,'LB2'));
+        lb1_lb2_dist = vecnorm(locs(lb1)-locs(lb2));
+   end
+
 end
 
 
