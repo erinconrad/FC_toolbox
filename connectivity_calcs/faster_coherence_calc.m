@@ -3,12 +3,7 @@ function all_coherence = faster_coherence_calc(values,fs)
 %% Parameters
 window = fs * 2;
 NFFT = window;
-freqs = [1 4;...
-    4 8;...
-    8 12;...
-    12 30;...
-    30 70
-    1 70];
+freqs = get_frequencies; 
 nfreqs = size(freqs,1);
 
 nchs = size(values,2);

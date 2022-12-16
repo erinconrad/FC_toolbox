@@ -130,6 +130,7 @@ for im = 1:3
     values = notch_filter(values,fs);
 
     % bandpass filter 0.5-80
+    
     broadband = freqs(1,:);
     values = bandpass_any(values,fs,broadband,4);
     
@@ -145,36 +146,15 @@ for im = 1:3
 
     % cross correlation
     [xcor,lags] = cross_correlation(run_values,fs);
-    if test_flag
-        figure
-        nexttile; turn_nans_gray(xcor); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
-        nexttile; turn_nans_gray(lags); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
-    end
 
     % Spectral entropy
     se = spectral_entropy(values,fs);
-    if test_flag
-        figure
-        plot(se,'o')
-        xticks(1:length(se))
-        xticklabels(curr_labels)
-    end
 
     % Relative entropy
     re = relative_entropy(run_values,fs);
-    if test_flag
-        figure
-        for i = 1:size(re,3)
-        nexttile; turn_nans_gray(re(:,:,i)); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
-        end
-    end
     
     % PC
     pc =  wrap_or_unwrap_adjacency_fc_toolbox(pc_vector_calc(run_values,fs,tw));
-    if test_flag
-        figure
-        nexttile; turn_nans_gray(pc(:,:)); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
-    end
     
     % Spikes
     gdf = detector_new_timing(run_values,fs);
@@ -184,29 +164,12 @@ for im = 1:3
     
     % Get bandpower
     bp = bp_calc(run_values,fs,[]);
-    if test_flag
-        figure
-        turn_nans_gray(bp)
-        yticks(1:size(xcor,1)); yticklabels(curr_labels);
-    end
     
     % Get coherence    
     coh = faster_coherence_calc(run_values,fs);
-    if test_flag
-        figure
-        for i = 1:size(coh,3)
-        nexttile; turn_nans_gray(coh(:,:,i)); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
-        end
-    end
 
     % PLV
     plv = plv_calc(run_values,fs);
-    if test_flag
-        figure
-        for i = 1:size(plv,3)
-        nexttile; turn_nans_gray(plv(:,:,i)); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
-        end
-    end
 
     
     out.montage(im).name = montage;
@@ -230,7 +193,6 @@ for im = 1:3
     out.file_path = file_path;
     out.name = name;
     out.freqs = freqs;
-    out.dm = dm;
 
     if show_data
         tout.montage(im).values = values;
@@ -273,6 +235,28 @@ end
         yticklabels(out.montage(i).labels)
     end
  end
+
+if test_flag
+    nfreqs = size(freqs,1)-1;
+    ich = 13;
+
+    figure
+    turn_nans_gray((dm))
+    yticks(1:length(allowed_labels))
+    yticklabels(allowed_labels)
+    xticks(1:length(allowed_labels))
+    xticklabels(allowed_labels)
+
+   
+    figure
+    for i = 1:6
+        nexttile
+        turn_nans_gray(out.montage(1).coh(:,:,i))
+    end
+
+
+
+end
 
 
 end

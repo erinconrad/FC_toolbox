@@ -1,32 +1,45 @@
-function all_plv = plv_calc(values,fs)
+function all_plv = plv_old(values,fs)
 
-%% Get filtered signal
-out = filter_canonical_freqs(values,fs);
-nfreqs = size(out,3);
+%% Define frequency bands
+freqs = [1 4;...
+    4 8;...
+    8 12;...
+    12 30;...
+    30 70
+    1 70];
+
+
+nfreqs = size(freqs,1);
 nchs = size(values,2);
 
 
 %% initialize output vector
 all_plv = nan(nchs,nchs,nfreqs);
 
+for ich = 1:nchs
+    curr_values = values(:,ich);
+    curr_values(isnan(curr_values)) = nanmean(curr_values);
+    values(:,ich) = curr_values;
+end
 
 %% Remove nan rows, keeping track of which I am removing
-%{
 nan_rows = any(isnan(values),1); % find channels with nans for any time points
 values_no_nans = values(:,~nan_rows);
 nchs_no_nans = size(values_no_nans,2);
 temp_plv = nan(nchs_no_nans,nchs_no_nans,nfreqs);
 A = values_no_nans;
 nchs = size(A,2);
-%}
 
-% Do plv for each freq
 for f = 1:nfreqs
-    
-    filteredData = out(:,:,f);
+    filtSpec.range = freqs(f,:);
+    % Want 4-5 cycles. ncycles = T x freq_ramge = order/fs * freq-range
+    % So order should be about ncycles*fs/freq_range
+    filtSpec.order = round(fs*5/(min(filtSpec.range)));
+    filtPts = fir1(filtSpec.order, 2/fs*filtSpec.range);
+    filteredData = filter(filtPts, 1, A, [], 2);
 
     % Get phase of each signal
-    phase = nan(size(filteredData));
+    phase = nan(size(A));
     for ich = 1:nchs
         phase(:,ich)= angle(hilbert(filteredData(:,ich)));
     end
@@ -40,8 +53,7 @@ for f = 1:nfreqs
             plv(jch,ich) = abs(sum(e,1))/size(phase,1);
         end
     end
-    %temp_plv(:,:,f) = plv;
-    all_plv(:,:,f) = plv;
+    temp_plv(:,:,f) = plv;
 
     if 0
         figure
@@ -62,10 +74,8 @@ for f = 1:nfreqs
 end
 
 %% Put the non-nans back
-%{
 all_plv(~nan_rows,~nan_rows,:) = temp_plv;
 all_plv(logical(repmat(eye(nchs,nchs),1,1,nfreqs))) = nan;
-%}
 
 if 0
     figure; tiledlayout(1,6)
