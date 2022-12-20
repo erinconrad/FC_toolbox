@@ -143,6 +143,6 @@ nout.montages = montages;
 out = nout;
 
 %% Save the file
-save([edf_path,name,'/summ.mat'],'out');
+save([edf_path,'edf_summ_out/',name,'/summ.mat'],'out');
 
 end
