@@ -1,7 +1,5 @@
 %% RUN MT pipeline
-function run_mt_pipeline(whichPts)
-
-overwrite = 0;
+function run_mt_pipeline(whichPts,overwrite)
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -16,6 +14,10 @@ addpath(genpath(scripts_folder));
 %% Load pt folder
 pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
+
+if isempty(whichPts)
+    whichPts = 1:length(pt);
+end
 
 for i = 1:length(whichPts)
     ip = whichPts(i);

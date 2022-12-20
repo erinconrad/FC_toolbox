@@ -2,7 +2,7 @@ function out = individual_run_mt(file_path)
 
 %% Parameters
 show_data = 0;
-test_flag = 0;
+test_flag = 1;
 tw = 2;
 
 %% Load the edf file
@@ -17,15 +17,9 @@ fs = round(info.NumSamples(1,1)/seconds(info.DataRecordDuration));
 labels = cellstr(info.SignalLabels);
 
 %% get allowable electrodes
-potentially_allowable_labels = get_allowable_elecs;
+allowable_labels = get_allowable_elecs;
 
 %% Find labels that match allowable electrodes and have symmetric coverage
-allowed_labels = find_mt_symmetric_coverage(labels,potentially_allowable_labels);
-if isempty(allowed_labels)
-    out = [];
-    return
-end
-nallowed = length(allowed_labels);
 %{
 allowed = ismember(labels,allowable_labels);
 allowed_labels = labels(allowed);

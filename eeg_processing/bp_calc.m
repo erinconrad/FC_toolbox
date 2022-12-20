@@ -1,4 +1,4 @@
-function all_power = bp_calc(run_values,fs,skip)
+function [all_power,rel_power] = bp_calc(run_values,fs,skip)
 
 freqs = get_frequencies; 
 freqs = freqs(2:end,:);
@@ -20,6 +20,10 @@ end
 
 all_power(skip,:) = nan;
 all_power(all(isnan(run_values),1),:) = nan;
+
+
+% also get relative power (divide signal by power in whole thing (first freq band is broadband)
+rel_power = all_power./all_power(:,1); 
 
 
 end
