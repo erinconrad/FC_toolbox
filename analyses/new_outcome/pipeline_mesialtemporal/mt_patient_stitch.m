@@ -4,7 +4,7 @@ function mt_patient_stitch(edf_path,name,overwrite)
 rng(0)
 
 %% See if I've done it
-if exist([edf_path,'edf_summ_out/',name,'/summ.mat'],'file')~=0
+if exist([edf_path,'../edf_summ_out/',name,'/summ.mat'],'file')~=0
     if overwrite == 0
         fprintf('\nAlready did %s, skipping.\n',name);
         return
@@ -143,6 +143,9 @@ nout.montages = montages;
 out = nout;
 
 %% Save the file
-save([edf_path,'edf_summ_out/',name,'/summ.mat'],'out');
+if ~exist([edf_path,'../edf_summ_out/',name],'dir')
+    mkdir([edf_path,'../edf_summ_out/',name])
+end
+save([edf_path,'../edf_summ_out/',name,'/summ.mat'],'out');
 
 end
