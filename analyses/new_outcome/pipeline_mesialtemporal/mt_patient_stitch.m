@@ -18,21 +18,25 @@ meta = load([edf_path,name,'/meta.mat']);
 meta = meta.meta;
 times = meta.times;
 
-%% Get allowable labels
-allowable_labels = get_allowable_elecs;
-
 %% Find labels that match allowable electrodes
 % Load first file to get labels
 info = edfinfo([edf_path,name,sprintf('/file%d.edf',1)]);
 labels = cellstr(info.SignalLabels);
-allowed = ismember(labels,allowable_labels);
-allowed_labels = labels(allowed);
-nallowed = sum(allowed);
+%allowed = ismember(labels,allowable_labels);
+%allowed_labels = labels(allowed);
+%nallowed = sum(allowed);
 
-if nallowed == 0
+% Get allowable labels
+potentially_allowable_labels = get_allowable_elecs;
+
+% Find labels that match allowable electrodes and have symmetric coverage
+allowed_labels = find_mt_symmetric_coverage(labels,potentially_allowable_labels);
+if isempty(allowed_labels)
     fprintf('\n No allowed electrodes for %s, skipping.\n',name);
     return
 end
+nallowed = length(allowed_labels);
+
 
 % Loop over files
 nfiles = 72;
@@ -64,10 +68,7 @@ for f = 1:nfiles
     %% Do the individual run
     out = individual_run_mt(file_path);
     fprintf('took %1.1f s\n',toc);
-    if isempty(out)
-        skip_pt = 1;
-        break
-    end
+
 
     %% Figure out times
     file_times = out.times;
@@ -132,10 +133,6 @@ for f = 1:nfiles
 
 end
 
-if skip_pt == 1
-    fprintf('\nSkipping %s due to no allowable electrodes\n',name);
-    return
-end
 
 %% Plot random spike detections
 for im = 1:nmontages
