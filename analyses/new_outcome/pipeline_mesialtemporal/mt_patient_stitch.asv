@@ -109,14 +109,9 @@ for f = 1:nfiles
     
         % get the other stuff
         all_bp(f,im,:,:) = out.montage(im).bp;
-        all_rel_bp(f,im,:,:) = out.montage(im).rel_bp;
         all_pc(f,im,:,:) = out.montage(im).pc;
-        all_se(f,im,:) = out.montage(im).se;
-        all_xcor(f,im,:,:) = out.montage(im).xcor;
-        all_lags(f,im,:,:) = out.montage(im).lags;
         all_coh(f,im,:,:,:) = out.montage(im).coh;
         all_plv(f,im,:,:,:) = out.montage(im).plv;
-        all_re(f,im,:,:,:) = out.montage(im).re;
         all_ad(f,im,:) = out.montage(im).ad;
         all_is_run(f,im,:) = out.montage(im).is_run;
 
@@ -135,17 +130,12 @@ end
 %% Output the stuff
 nout.all_times = all_times;
 nout.all_bp = all_bp;
-nout.all_rel_bp = all_rel_bp;
 nout.all_spike_counts = all_spike_counts;
 nout.all_pc = all_pc;
 nout.all_coh = all_coh;
-nout.all_re = all_re;
 nout.all_ad = all_ad;
 nout.all_plv = all_plv;
 nout.all_rl = all_rl;
-nout.all_se = all_se;
-nout.all_xcor = all_xcor;
-nout.all_lags = all_lags;
 nout.all_spike_times = all_spike_times;
 nout.fs = out.fs;
 nout.edf_path = edf_path;
