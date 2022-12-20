@@ -282,6 +282,7 @@ fprintf(fid,['<p>18 out of 119 patients were excluded because the positive '...
     nansum(n_spikes),nansum(n_seizures));
 
 fclose(fid);
+error('look')
 
 end
 
