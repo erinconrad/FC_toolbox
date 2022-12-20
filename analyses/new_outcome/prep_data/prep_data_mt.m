@@ -28,6 +28,11 @@ all_rl = cell(npts,3,3);
 all_pearson = cell(npts,3,3);
 all_plv = cell(npts,3,3);
 all_labels = cell(npts,3);
+all_se = cell(npts,3,3);
+all_re = cell(npts,3,3);
+all_xcor = cell(npts,3,3);
+all_lags = cell(npts,3,3);
+all_rel_bp = cell(npts,3,3);
 
 
 %% Loop over patients
@@ -44,8 +49,13 @@ for p = 1:npts
     spike_counts = info.all_spike_counts;
     rl = info.all_rl;
     bp = info.all_bp;
+    rel_bp = info.all_rel_bp;
     coh = info.all_coh;
+    re = info.all_re;
     pc = info.all_pc;
+    xcor = info.all_xcor;
+    lags = info.all_lags;
+    se = info.all_se;
     times = info.all_times;
     labels = info.montage_labels;
     
@@ -87,6 +97,10 @@ for p = 1:npts
         all_plv{p,im,1} = squeeze(nanmean(plv(:,im,:,:,:),1));
         all_plv{p,im,2} = squeeze(nanmean(plv(wake,im,:,:,:),1));
         all_plv{p,im,3} = squeeze(nanmean(plv(sleep,im,:,:,:),1));
+
+        all_re{p,im,1} = squeeze(nanmean(re(:,im,:,:,:),1));
+        all_re{p,im,2} = squeeze(nanmean(re(wake,im,:,:,:),1));
+        all_re{p,im,3} = squeeze(nanmean(re(sleep,im,:,:,:),1));
     
         all_spikes{p,im,1} = squeeze(nanmean(spike_counts(:,im,:),1));
         all_spikes{p,im,2} = squeeze(nanmean(spike_counts(wake,im,:),1));
@@ -95,14 +109,30 @@ for p = 1:npts
         all_pearson{p,im,1} = squeeze(nanmean(pc(:,im,:,:),1));
         all_pearson{p,im,2} = squeeze(nanmean(pc(wake,im,:,:),1));
         all_pearson{p,im,3} = squeeze(nanmean(pc(sleep,im,:,:),1));
+
+        all_xcor{p,im,1} = squeeze(nanmean(xcor(:,im,:,:),1));
+        all_xcor{p,im,2} = squeeze(nanmean(xcor(wake,im,:,:),1));
+        all_xcor{p,im,3} = squeeze(nanmean(xcor(sleep,im,:,:),1));
     
+        all_lags{p,im,1} = squeeze(nanmean(lags(:,im,:,:),1));
+        all_lags{p,im,2} = squeeze(nanmean(lags(wake,im,:,:),1));
+        all_lags{p,im,3} = squeeze(nanmean(lags(sleep,im,:,:),1));
+
         all_rl{p,im,1} = squeeze(nanmean(rl(:,im,:),1));
         all_rl{p,im,2} = squeeze(nanmean(rl(wake,im,:),1));
         all_rl{p,im,3} = squeeze(nanmean(rl(sleep,im,:),1));
+
+        all_se{p,im,1} = squeeze(nanmean(se(:,im,:),1));
+        all_se{p,im,2} = squeeze(nanmean(se(wake,im,:),1));
+        all_se{p,im,3} = squeeze(nanmean(se(sleep,im,:),1));
     
         all_bp{p,im,1} = squeeze(nanmean(bp(:,im,:,:),1));
         all_bp{p,im,2} = squeeze(nanmean(bp(wake,im,:,:),1));
         all_bp{p,im,3} = squeeze(nanmean(bp(sleep,im,:,:),1));
+
+        all_rel_bp{p,im,1} = squeeze(nanmean(rel_bp(:,im,:,:),1));
+        all_rel_bp{p,im,2} = squeeze(nanmean(rel_bp(wake,im,:,:),1));
+        all_rel_bp{p,im,3} = squeeze(nanmean(rel_bp(sleep,im,:,:),1));
     end
 
 end
@@ -116,6 +146,11 @@ out.all_rl = all_rl;
 out.all_pearson = all_pearson;
 out.all_bp = all_bp;
 out.all_plv = all_plv;
+out.all_re = all_re;
+out.all_se = all_se;
+out.all_rel_bp = all_rel_bp;
+out.all_xcor = all_xcor;
+out.all_lags = all_lags;
 
 save([out_folder,'mt_out.mat'],'out')
 

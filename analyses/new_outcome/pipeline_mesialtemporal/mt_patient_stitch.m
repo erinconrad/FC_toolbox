@@ -55,6 +55,7 @@ montages = cell(nmontages,3);
 montage_labels = cell(nmontages,3);
 all_is_run = nan(nfiles,nmontages,nallowed);
 
+skip_pt = 0;
 for f = 1:nfiles
     file_path = [edf_path,name,sprintf('/file%d.edf',f)];
     tic
@@ -63,6 +64,10 @@ for f = 1:nfiles
     %% Do the individual run
     out = individual_run_mt(file_path);
     fprintf('took %1.1f s\n',toc);
+    if isempty(out)
+        skip_pt = 1;
+        break
+    end
 
     %% Figure out times
     file_times = out.times;
@@ -125,6 +130,11 @@ for f = 1:nfiles
     end
 
 
+end
+
+if skip_pt == 1
+    fprintf('\nSkipping %s due to no allowable electrodes\n',name);
+    return
 end
 
 %% Plot random spike detections
