@@ -4,6 +4,7 @@ function prep_data_mt
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 edf_path = [results_folder,'edf_summ_out/'];
+sleep_stage_path = [results_folder,'edf_out/'];
 out_folder = [results_folder,'analysis/new_outcome/data/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
@@ -70,7 +71,7 @@ for p = 1:npts
     all_labels{p,3} = labels{3,1};
 
     % also load the sleep stages
-    stage = load([edf_path,name,'/sleep_stage.mat']);
+    stage = load([sleep_stage_path,name,'/sleep_stage.mat']);
     sout = stage.sout;
 
     % Get times of sleep transitions
