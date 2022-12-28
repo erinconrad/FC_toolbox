@@ -4,6 +4,7 @@ function mt_spike_validation(whichPts,overwrite)
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
+edf_summ_path = [results_folder,'edf_summ_out/'];
 edf_path = [results_folder,'edf_summ_out/'];
 data_folder = [locations.main_folder,'data/'];
 
@@ -48,7 +49,7 @@ for i = 1:length(whichPts)
 
     % Plot random spike detections
     for im = 1:nmontages
-        plot_random_spikes(all_spike_times{im},name,labels,montages{im},edf_path)
+        plot_random_spikes(all_spike_times{im},name,labels,montages{im},edf_path,edf_summ_path)
     end
 end
 
