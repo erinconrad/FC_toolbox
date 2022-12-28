@@ -25,7 +25,7 @@ for i = 1:length(whichPts)
     name = pt(ip).name;
 
     % see if I've already done it
-    if exist([edf_path,name,'/bipolar.png'],'file') ~=0
+    if exist([edf_summ_path,name,'/bipolar.png'],'file') ~=0
         if overwrite == 1
             fprintf('\nOverwriting %s\n',name);
         else
@@ -35,11 +35,11 @@ for i = 1:length(whichPts)
     end
 
     % Load the summary file
-    if exist([edf_path,name,'/summ.mat'],'file') == 0
+    if exist([edf_summ_path,name,'/summ.mat'],'file') == 0
         fprintf('\nNo summary file for %s, skipping\n',name);
         continue
     end
-    out = load([edf_path,name,'/summ.mat']);
+    out = load([edf_summ_path,name,'/summ.mat']);
     out = out.out;
 
     all_spike_times = out.all_spike_times;
