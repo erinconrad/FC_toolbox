@@ -4,7 +4,7 @@ function mt_spike_validation(whichPts,overwrite)
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-edf_path = [results_folder,'edf_out/'];
+edf_path = [results_folder,'edf_summ_out/'];
 data_folder = [locations.main_folder,'data/'];
 
 % add script folder to path
