@@ -9,10 +9,11 @@ finds the mesial temporal ones, and calculates a single asymmetry index
 
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
-proximal = 1:12; % proximal contacts are those 1-6
-distal = 1:12; % distal contacts are 7-12
+average_level = 'contact'; % side = whole L vs R side; electrode = single electrode; contact = single contact
+do_all_intra_elec = 1; % do all contacts for bivariate measures, not just proximal to distal
+proximal = 1:6; % proximal contacts are those 1-6
+distal = 7:12; % distal contacts are 7-12
 
-%% Normalize
 
 %% Label stuff
 
@@ -42,34 +43,17 @@ maxn = 12; % up to 12 contacts per electrode
 nmt = length(which_elecs);
 
 
-%% Find the matching electrodes
-%{
-possible_matches = cell(2*nmt*12,1);
-count = 0;
-for i = 1:nmt
-    for k = 1:maxn
-        for j = 1:2
-            count = count + 1;
-            curr = [which_lats{j},which_elecs{i},sprintf('%d',k)];
-            possible_matches{count} = curr;
-        end
-    end
-end
-
-match = ismember(possible_matches,labels);
-match = possible_matches(match);
-%}
-
 %% calculate the AI measurement
 switch which_thing{1}
 
         
-    case {'inter_coh','inter_pearson','inter_rl','inter_bp','inter_plv'} % do inter-electrode (left to right) connectivity (NOT AI)
+    case {'inter_coh','inter_pearson','inter_rl','inter_bp',...
+            'inter_plv','inter_xcor','inter_rel_bp','inter_re','lags'} % do inter-electrode (left to right) connectivity (NOT AI)
 
-        
+        % Note lags is up here, because this is a directed measure
         
         % loop over electrodes
-        %{
+        %
         % initialize
         inter = nan(nmt,maxn,last_dim);
         for i = 1:nmt
@@ -92,28 +76,6 @@ switch which_thing{1}
 
         % Average across electrodes
         signed = squeeze(nanmean(inter,[1 2]))';
-
-        %}
-        % initialize
-        inter = nan(nmt,last_dim);
-        % loop over electrodes
-        for i = 1:nmt
-            % get all left on this electrode to all right on the
-            % contralateral
-            left_elec = strcmp(letters,['L',which_elecs{i}]);
-            right_elec = strcmp(letters,['R',which_elecs{i}]);
-            if uni == 1
-                % get average rl
-                inter(i,:) = nanmean(thing(left_elec|right_elec));
-
-            else
-                % get average inter-electrode connectivity
-                inter(i,:) = nanmean(thing(left_elec,right_elec,:),[1 2]);
-            end
-        % Average across electrodes
-        signed = squeeze(nanmean(inter,[1]));
-
-        end
 
         
     otherwise % doing AI
@@ -188,14 +150,18 @@ switch which_thing{1}
         
                             end
         
-                        case {'coh','pearson','plv'}
-                            %% Measure mesial to lateral connectivity
+                        case {'coh','pearson','plv','xcor','re'}
+                            %% Measure intra-electrode connectivity
                             
                             mesial_contacts = strcmp(letters,curr_elec) & ismember(number,proximal); % first 6 contacts are the proximal contacts
                             lateral_contacts = strcmp(letters,curr_elec) & ismember(number,distal); % last 6 are the distal contacts
                 
                             % measure connectivity mesial to lateral
-                            curr_intra = nanmean(thing(mesial_contacts,lateral_contacts,:),[1 2]);
+                            if do_all_intra_elec
+                                curr_intra = nanmean(thing(strcmp(letters,curr_elec),strcmp(letters,curr_elec),:),[1 2]);
+                            else
+                                curr_intra = nanmean(thing(mesial_contacts,lateral_contacts,:),[1 2]);
+                            end
                       
                             % Fill, repeating across all electrodes
                             intra(i,:,j,:) = repmat(curr_intra,1,maxn,1,1);
@@ -212,15 +178,29 @@ switch which_thing{1}
             nright = sum(intra(:,:,2,:),'all');
             signed = (nleft-nright)./sqrt(nleft^2+nright^2);
         else
-            old_intra = intra;
-            %intra = (intra-nanmean(intra,[1 2 3]))./nanstd(intra,[],[1 2 3]); % scale it according to stuff
-            %signed = (intra(:,:,1,:)-intra(:,:,2,:));
-            %signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
-            %signed = (squeeze(nanmean(signed,[1 2 3])))';
-            %intra = nanmean(intra,[1 2]);
-            %signed = (intra(:,:,1,:)-intra(:,:,2,:))./((intra(:,:,1,:)+intra(:,:,2,:)));
-            signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:)).^2+(intra(:,:,2,:)).^2);
-            signed = (squeeze(nanmean(signed,[1 2 3])))';
+            switch average_level
+                case 'contact'
+                    % This averages the AI for all L-R contact pairs, which
+                    % may overweight the pairs with lower values (e.g., if
+                    % very few spikes, the AI may be quite large). May
+                    % increase variance?
+                    signed = (intra(:,:,1,:)-intra(:,:,2,:))./((intra(:,:,1,:)+intra(:,:,2,:)));
+                    signed = (squeeze(nanmean(signed,[1 2 3])))';
+                case 'electrode'
+                    % This first averages the feature within each
+                    % electrode, calculates AI, and then averages across
+                    % the three electrodes
+                    intra_avg = nanmean(intra,2);
+                    signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./((intra_avg(:,:,1,:)+intra_avg(:,:,2,:)));
+                    signed = (squeeze(nanmean(signed,[1 2 3])))';
+                case 'side'
+                    % This averages the feature across the whole side, then
+                    % calculates the AI
+                    intra_avg = nanmean(intra,[1 2]);
+                    signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./((intra_avg(:,:,1,:)+intra_avg(:,:,2,:)));
+                    signed = (squeeze(nanmean(signed,[1 2 3])))';
+            end
+            %}
         end
     
         %% Average across ms  

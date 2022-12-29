@@ -5,11 +5,13 @@ rng(0)
 
 do_plot = 1;
 method = 'bag';
-ncycles = 1e2;
+ncycles = 30;
 response = 'soz_lats';%'soz_lats';%'outcome';
-pca_perc = 100;
+pca_perc = 90;
 which_outcome = 'engel';
 which_year = 1;
+percFeaturesToKeep = 10;
+rm_non_temporal = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -21,6 +23,14 @@ plot_folder = [results_folder,'analysis/new_outcome/plots/'];
 empty_class = cellfun(@isempty,T.(response));
 T(empty_class,:) = [];
 npts = size(T,1);
+
+%% Remove non temporal patients
+if rm_non_temporal
+    temporal = strcmp(T.soz_locs,'temporal');
+    T(~temporal,:) = [];
+    npts = size(T,1);
+end
+
 
 % initialize confusion matrix
 classes = unique(T.(response));
@@ -38,12 +48,17 @@ for i = 1:npts
 
     % make sure they're distinct
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
-    features_minus_null = features;
-    features_minus_null(strcmp(features_minus_null,'nelecs_1_car')) = [];
 
     % train classifier    
-    tc = lr_classifier(Ttrain,method,features_minus_null,response,pca_perc,ncycles);
-    tcnull = lr_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles);
+    %tc = nca_classifier(Ttrain,method,features,response,pca_perc,ncycles);
+    %tcnull = nca_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles);
+
+    tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,percFeaturesToKeep);
+    tcnull = general_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles,1);
+
+    %tc = lr_classifier(Ttrain,method,features,response,pca_perc,ncycles);
+    %tcnull = lr_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles);
+
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);

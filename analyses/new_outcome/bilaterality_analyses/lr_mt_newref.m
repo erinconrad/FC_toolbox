@@ -1,6 +1,6 @@
 function [T,features] =  lr_mt_newref
 do_little_plots = 0;
-do_big_plots = 1;
+do_big_plots = 0;
 %which_outcome = 1; % engel = 1, ilae = 2
 %which_outcome_year = 1;
 which_sleep_stage = 3; % all = 1, wake =2, sleep = 3;
@@ -107,17 +107,19 @@ for which_montage =[1 2 3] % machine,car, bipolar
     coh = mt_data.all_coh(:,which_montage,which_sleep_stage);
     pearson = mt_data.all_pearson(:,which_montage,which_sleep_stage);
     bp = mt_data.all_bp(:,which_montage,which_sleep_stage);
+    rel_bp = mt_data.all_rel_bp(:,which_montage,which_sleep_stage);
     plv = mt_data.all_plv(:,which_montage,which_sleep_stage);
     rl = mt_data.all_rl(:,which_montage,which_sleep_stage);
     spikes = mt_data.all_spikes(:,which_montage,which_sleep_stage);
-
-   % rl = cellfun(@(x) x',rl,'UniformOutput',false);
-   % spikes = cellfun(@(x) x',spikes,'UniformOutput',false);
+    xcor = mt_data.all_xcor(:,which_montage,which_sleep_stage);
+    re = mt_data.all_re(:,which_montage,which_sleep_stage);
+    se = mt_data.all_se(:,which_montage,which_sleep_stage);
+    lags = mt_data.all_lags(:,which_montage,which_sleep_stage);
 
     % for now, make spike data nan if it was bad in the original
     % pipeline (I need to do my own validation eventually)
     for i = 1:npts
-        %
+        %{
         if good_spikes(i) == 0
             spikes{i} = nan(size(spikes{i}));
             rl{i} = nan(size(rl{i}));
@@ -132,11 +134,19 @@ for which_montage =[1 2 3] % machine,car, bipolar
     end
     
     % Loop over features
-    for which_thing = {'bp'}
+    for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','re'}
         % Decide thing
         switch which_thing{1}
             case {'pearson','inter_pearson','near_pearson'}
                 thing = pearson;
+                uni = 0; % not univariate
+                last_dim = 1; % one frequency
+            case {'xcor','inter_xcor'}
+                thing = xcor;
+                uni = 0; % not univariate
+                last_dim = 1; % one frequency
+            case {'lags'}
+                thing = lags;
                 uni = 0; % not univariate
                 last_dim = 1; % one frequency
             case {'coh','near_coh','inter_coh'}
@@ -147,10 +157,22 @@ for which_montage =[1 2 3] % machine,car, bipolar
                 thing = plv;
                 uni = 0; % not univariate
                 last_dim = 6;%size(coh{1},3); % multiple frequencies
+            case {'re','inter_re'}
+                thing = re;
+                uni = 0; % not univariate
+                last_dim = 6;%size(coh{1},3); % multiple frequencies
             case {'bp','inter_bp'}
                 thing = bp;
                 uni = 1; % univariate
                 last_dim = 5;%size(bp{1},2); % multiple frequencies
+            case {'rel_bp','inter_rel_bp'}
+                thing = rel_bp;
+                uni = 1; % univariate
+                last_dim = 5;%size(bp{1},2); % multiple frequencies
+            case {'se'}
+                thing = se;
+                uni = 1; % univariate
+                last_dim = 1;%size(bp{1},2); % multiple frequencies
             case 'spikes'
                 thing = spikes;
                 uni = 1; % univariate
@@ -170,10 +192,12 @@ for which_montage =[1 2 3] % machine,car, bipolar
 
         %% Get asymmetry index
         %{
-        k = find(strcmp(names,'HUP143'));
-        calc_ai(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots)
+        %k = find(strcmp(names,'HUP167'));
+        k = 100;
+        calc_ai_sandbox(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots)
         %}
         
+
         ai = cellfun(@(x,y,z,w) ...
             calc_ai_sandbox(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
             labels,thing,names,mt_data.all_labels(:,1),'uniformoutput',false);
@@ -213,6 +237,7 @@ nfeatures = length(feat_names_s); % -2 to remove outcome and bilaterality
 all_feat = table2array(Ts(:,size(Ts,2)-nfeatures+1:end));
 feat_corr = corr(all_feat,'rows','pairwise','type','spearman');
 if do_big_plots
+
     figure
     set(gcf,'position',[-300 78 1400 1200])
    % tiledlayout(4,4,'tilespacing','tight','Padding','tight')
@@ -227,8 +252,10 @@ if do_big_plots
     c.Label.String = 'Correlation';
     %title('Correlation between L-R asymmetry indices')
     set(gca,'fontsize',15)
-    %print(gcf,[plot_folder,'feature_correlation'],'-dpng')
 
+    figure
+    set(gcf,'position',[-300 78 1400 1200])
+   % tiledlayout(4,4,'tilespacing','tight','Padding','tight')
 
     cols = [0 0.4470 0.7410;0.8500 0.3250 0.0980;0.9290 0.6940 0.1250];
 
