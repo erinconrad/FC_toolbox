@@ -10,7 +10,7 @@ response = 'soz_lats';%'soz_lats';%'outcome';
 pca_perc = 90;
 which_outcome = 'engel';
 which_year = 1;
-percFeaturesToKeep = 10;
+numFeaturesToKeep = 10;
 rm_non_temporal = 0;
 
 %% Get file locs
@@ -37,7 +37,7 @@ classes = unique(T.(response));
 nclasses = length(classes);
 C = zeros(nclasses,nclasses); % left, right, bilateral
 all_pred = cell(npts,1);
-Cnull = zeros(nclasses,nclasses);
+%Cnull = zeros(nclasses,nclasses);
 
 %% Do leave-one-patient-out classifier to predict laterality
 for i = 1:npts
@@ -49,12 +49,14 @@ for i = 1:npts
     % make sure they're distinct
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
 
+    %tc = class_feature_select(Ttrain,method,features,response,pca_perc,ncycles);
+
     % train classifier    
     %tc = nca_classifier(Ttrain,method,features,response,pca_perc,ncycles);
     %tcnull = nca_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles);
 
-    tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,percFeaturesToKeep);
-    tcnull = general_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles,1);
+    tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,numFeaturesToKeep);
+    %tcnull = general_classifier(Ttrain,method,{'spikes 1 car sleep'},response,pca_perc,ncycles,1);
 
     %tc = lr_classifier(Ttrain,method,features,response,pca_perc,ncycles);
     %tcnull = lr_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles);
@@ -63,7 +65,7 @@ for i = 1:npts
     % make prediction on left out
     pred = tc.predictFcn(Ttest);
     all_pred{i} = pred{1};
-    prednull = tcnull.predictFcn(Ttest);
+  %  prednull = tcnull.predictFcn(Ttest);
     
     % compare to true
     true = Ttest.(response);
@@ -76,32 +78,32 @@ for i = 1:npts
 
     C(which_row,which_column) = C(which_row,which_column) + 1;
 
-    which_column_null = find(strcmp(prednull,classes));
-    Cnull(which_row,which_column_null) = Cnull(which_row,which_column_null) + 1;
+  %  which_column_null = find(strcmp(prednull,classes));
+  %  Cnull(which_row,which_column_null) = Cnull(which_row,which_column_null) + 1;
     
     
 end
 
 %% Calculate accuracy and balanced accuracy
 accuracy = sum(diag(C))/sum(C(:));
-accuracy_null = sum(diag(Cnull))/sum(Cnull(:));
+%accuracy_null = sum(diag(Cnull))/sum(Cnull(:));
 
 % Balanced accuracy is the average across all classes of the number of 
 % data accurately predicted belonging to class m divided by the number of
 % data belonging to class m
 recall = nan(nclasses,1);
-recall_null = nan(nclasses,1);
+%recall_null = nan(nclasses,1);
 for i = 1:nclasses
     tp = C(i,i);
     fn = sum(C(i,~ismember(1:nclasses,i))); 
     recall(i) = tp/(tp+fn); % tp is number correctly predicted to be in class, tp + fn is everyone in the class
 
-    tpnull = Cnull(i,i);
-    fnnull = sum(Cnull(i,~ismember(1:nclasses,i)));
-    recall_null(i) = tpnull/(tpnull+fnnull);
+    %tpnull = Cnull(i,i);
+    %fnnull = sum(Cnull(i,~ismember(1:nclasses,i)));
+    %recall_null(i) = tpnull/(tpnull+fnnull);
 end
 balanced_accuracy = mean(recall);
-balanced_accuracy_null = mean(recall_null);
+%balanced_accuracy_null = mean(recall_null);
 
 %% Double check accuracy another way
 assert(sum(cellfun(@(x,y) strcmp(x,y),all_pred,T.(response)))/length(all_pred)==accuracy)
@@ -111,12 +113,12 @@ end
 
 %% Plot
 figure
-set(gcf,'position',[10 10 1400 500])
-tiledlayout(1,2,"TileSpacing",'tight','padding','tight')
+set(gcf,'position',[10 10 600 500])
+%tiledlayout(1,1,"TileSpacing",'tight','padding','tight')
 
 %% confusion matrix
 % Map numbers onto 0 to 1
-nexttile
+%nexttile
 new_numbers = map_numbers_onto_range(C,[1 0]);
 Ccolor = cat(3,ones(nclasses,nclasses,1),repmat(new_numbers,1,1,2));
 D = diag(new_numbers);
@@ -140,6 +142,8 @@ end
 title(sprintf('Accuracy: %1.1f%%\nBalanced accuracy: %1.1f%%',...
     accuracy*100,balanced_accuracy*100))
 set(gca,'fontsize',20)
+
+%{
 
 nexttile
 new_numbers = map_numbers_onto_range(Cnull,[1 0]);
@@ -167,6 +171,7 @@ title(sprintf('Null Accuracy: %1.1f%%\nBalanced accuracy: %1.1f%%',...
 set(gca,'fontsize',20)
 
 print(gcf,[plot_folder,'model'],'-dpng')
+%}
 
 %% Save data
 T = addvars(T,all_pred,'NewVariableNames','pred_lat','After','surg_lat');

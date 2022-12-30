@@ -51,7 +51,7 @@ meanloss = mean(lossvals,2);
 [~,idx] = min(meanloss); % Find the index
 bestlambda = lambdavals(idx); % best lambda
 
-if 0
+if 
 figure()
 plot(lambdavals,meanloss,'ro-')
 xlabel('Lambda')

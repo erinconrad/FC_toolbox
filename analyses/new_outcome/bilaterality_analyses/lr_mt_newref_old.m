@@ -118,8 +118,9 @@ for which_montage =[1 2 3] % machine,car, bipolar
 
     % for now, make spike data nan if it was bad in the original
     % pipeline (I need to do my own validation eventually)
+    %{
     for i = 1:npts
-        %{
+        %
         if good_spikes(i) == 0
             spikes{i} = nan(size(spikes{i}));
             rl{i} = nan(size(rl{i}));
@@ -130,8 +131,9 @@ for which_montage =[1 2 3] % machine,car, bipolar
             spikes{i} = nan(size(spikes{i}));
             rl{i} = nan(size(rl{i}));
         end
-        %}
+        
     end
+    %}
     
     % Loop over features
     for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','re'}
