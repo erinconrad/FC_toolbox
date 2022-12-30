@@ -92,7 +92,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 features = {};
 
-for which_sleep_stage = [2 3] % all = 1, wake =2, sleep = 3;
+for which_sleep_stage = 3 % all = 1, wake =2, sleep = 3;
     if which_sleep_stage == 1
         sleep_text = 'all';
     elseif which_sleep_stage == 2
@@ -188,8 +188,8 @@ for which_sleep_stage = [2 3] % all = 1, wake =2, sleep = 3;
     
             %% Get asymmetry index
             %{
-            k = find(strcmp(names,'HUP134'));
-            %k = 100;
+            %k = find(strcmp(names,'HUP134'));
+            k = 100;
             calc_ai_sandbox(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots)
             %}
             
@@ -310,6 +310,8 @@ end
 % First, remove those rows missing all columns
 T = Ts(~all_missing,:);
 
+
+%{
 % Next, perform imputation for those missing data from a given sleep stage
 % (set the corresponding columns to be the same as those from the other
 % sleep stage).
@@ -356,6 +358,7 @@ for i = 1:size(T,1)
 
     end
 end
+%}
 
 % Remove any remaining nan rows
 not_missing = ~any(ismissing(T(:,size(T,2)-nfeatures+1:end)),2);

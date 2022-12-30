@@ -3,20 +3,20 @@ function mt_lr_loo(T,features)
 % seed rng
 rng(0)
 
-do_plot = 1;
+%% Establish parameters
 method = 'bag';
-ncycles = 30;
-response = 'soz_lats';%'soz_lats';%'outcome';
+ncycles = 100;
+response = 'soz_lats';
 pca_perc = 90;
 which_outcome = 'engel';
 which_year = 1;
-numFeaturesToKeep = 10;
+nfeatures = round(sqrt(length(features)));
 rm_non_temporal = 0;
+combine_br = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-inter_folder = [results_folder,'analysis/new_outcome/data/'];
 plot_folder = [results_folder,'analysis/new_outcome/plots/'];
 
 %% Remove patients without response
@@ -31,6 +31,10 @@ if rm_non_temporal
     npts = size(T,1);
 end
 
+%% Combine right and bilateral
+if combine_br
+    T.soz_lats(strcmp(T.soz_lats,'right') | strcmp(T.soz_lats,'bilateral')) = {'br'};
+end
 
 % initialize confusion matrix
 classes = unique(T.(response));
@@ -49,18 +53,13 @@ for i = 1:npts
     % make sure they're distinct
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
 
-    %tc = class_feature_select(Ttrain,method,features,response,pca_perc,ncycles);
-
-    % train classifier    
+    % train classifier
+    %tc = ensemble_based_fs(Ttrain,features,response);
+   % tc = fscmrmr_classifier(Ttrain,method,features,response,pca_perc,ncycles);
     %tc = nca_classifier(Ttrain,method,features,response,pca_perc,ncycles);
-    %tcnull = nca_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles);
+    %tc = class_feature_select(Ttrain,method,features,response,ncycles);
 
-    tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,numFeaturesToKeep);
-    %tcnull = general_classifier(Ttrain,method,{'spikes 1 car sleep'},response,pca_perc,ncycles,1);
-
-    %tc = lr_classifier(Ttrain,method,features,response,pca_perc,ncycles);
-    %tcnull = lr_classifier(Ttrain,method,{'spikes_1_car'},response,pca_perc,ncycles);
-
+    tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);
@@ -142,7 +141,7 @@ end
 title(sprintf('Accuracy: %1.1f%%\nBalanced accuracy: %1.1f%%',...
     accuracy*100,balanced_accuracy*100))
 set(gca,'fontsize',20)
-
+print(gcf,[plot_folder,'model'],'-dpng')
 %{
 
 nexttile

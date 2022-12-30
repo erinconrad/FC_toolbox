@@ -23,8 +23,7 @@ for fold = 1:KFolds
     % Feature Ranking and Selection
     % Replace Inf/-Inf values with NaN to prepare data for normalization
     temp_predictors = standardizeMissing(temp_predictors, {Inf, -Inf});
-    % Normalize data for feature ranking
-    predictorMatrix = normalize(temp_predictors, "DataVariable", ~isCategoricalPredictor);
+    predictorMatrix = array2table((table2array(temp_predictors)-nanmean(table2array(temp_predictors),1))./nanstd(table2array(temp_predictors),[],1));
     newPredictorMatrix = zeros(size(predictorMatrix));
     for i = 1:size(predictorMatrix, 2)
         if isCategoricalPredictor(i)
@@ -37,7 +36,7 @@ for fold = 1:KFolds
     responseVector = grp2idx(temp_response);
     
     % Rank features using Kruskal Wallis algorithm
-    pvalues = nan(size(predictorMatrix, 2),1);
+    pValues = nan(size(predictorMatrix, 2),1);
     for i = 1:size(predictorMatrix, 2)
         pValues(i) = kruskalwallis(...
             predictorMatrix(:,i), ...
@@ -91,7 +90,7 @@ end
 
 % Do PCA
 [pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
-    numericPredictors);
+    normalizedPredictors);
 % Keep enough components to explain the desired amount of variance.
 explainedVarianceToKeepAsFraction = pc_perc/100;
 numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
@@ -126,9 +125,12 @@ switch method
             'Standardize', true, ...
             'ClassNames', classNames);
     case 'bag'
+        %{
         template = templateTree(...
             'MaxNumSplits', 100, ...
             'NumVariablesToSample', 'all');
+        %}
+        template = templateTree('PredictorSelection','interaction-curvature');
         
         classifier = fitcensemble(...
             predictors, ...
@@ -138,9 +140,11 @@ switch method
             'ClassNames', classNames,...
             'NumLearningCycles',ncycles);
     case 'boost'
+        
         template = templateTree(...
-            'MaxNumSplits', 100, ...
-            'NumVariablesToSample', 'all');
+            'MaxNumSplits', 10, ...
+            'NumVariablesToSample', 'all',...
+            'PredictorSelection','interaction-curvature');
         
         classifier = fitcensemble(...
             predictors, ...
@@ -148,7 +152,8 @@ switch method
             'Method', 'AdaBoostM2', ...
             'Learners', template, ...
             'ClassNames', classNames,...
-            'NumLearningCycles',100);
+            'NumLearningCycles',ncycles);
+
     case 'fancy_bag'
         template = templateTree(...
             'MaxNumSplits', 100, ...
@@ -172,6 +177,8 @@ switch method
             'Learners', template, ...
             'Coding', 'onevsone', ...
             'ClassNames', classNames);
+    case 'lr' % only for binary
+        classifier = fitclinear(predictors,response);
 
     case 'naiveBayes'
         distributionNames =  repmat({'Normal'}, 1, numComponentsToKeep);

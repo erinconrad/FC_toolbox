@@ -1,86 +1,47 @@
-function trainedClassifier = nca_classifier(trainingData,method,features,respVar,pc_perc,ncycles)
+function trainedClassifier = fscmrmr_classifier(trainingData,method,features,respVar,pca_perc,ncycles)
 
 %% Data prep
 inputTable = trainingData;
 predictorNames = features;
 predictors = inputTable(:, predictorNames);
-response = inputTable.(respVar);
-isCategoricalPredictor = repmat(false,1,length(predictorNames));
+response = inputTable(:,respVar);
 classNames = unique(response);
 
-%nca = fscnca(table2array(predictors),response,'FitMethod','exact');
 
-%% NCA for feature selection
-% Get data into format needed for NCA
-ytrain = response;
-Xtrain = table2array(predictors);
-
-% 5 fold cross validation
-KFolds = 5;
-cvp = cvpartition(ytrain, 'KFold', KFolds);
-numvalidsets = cvp.NumTestSets;
-n = length(ytrain);
-lambdavals = linspace(0,10,20)/n;
-lossvals = zeros(length(lambdavals),numvalidsets);
-
-% Loop over lambdas
-for i = 1:length(lambdavals)
-
-    % Loop over folds
-    for k = 1:numvalidsets
-
-        % Get fold-level training and testing data
-        X = Xtrain(cvp.training(k),:);
-        y = ytrain(cvp.training(k),:);
-        Xvalid = Xtrain(cvp.test(k),:);
-        yvalid = ytrain(cvp.test(k),:);
-
-        % Do the NCA for feature selectiom
-        nca = fscnca(X,y,'FitMethod','exact', ...
-             'Solver','sgd','Lambda',lambdavals(i), ...
-             'IterationLimit',30,'GradientTolerance',1e-4, ...
-             'Standardize',true);
-                  
-        % Calculate the loss values
-        lossvals(i,k) = loss(nca,Xvalid,yvalid,'LossFunction','classiferror');
-    end
-end
-
-% Average loss across folds for each lambda
-meanloss = mean(lossvals,2);
-[~,idx] = min(meanloss); % Find the index
-bestlambda = lambdavals(idx); % best lambda
-
-if 
-figure()
-plot(lambdavals,meanloss,'ro-')
-xlabel('Lambda')
-ylabel('Loss (MSE)')
-grid on
-end
-
-% fit nca on all training data
-nca = fscnca(Xtrain,ytrain,'FitMethod','exact','Solver','sgd',...
-    'Lambda',bestlambda,'Standardize',true,'Verbose',0);
-
+%% fscmrmr for feature selection
+% get right format
+T = [response,predictors];
+[idx,scores] = fscmrmr(T,respVar);
 
 if 0
-figure()
-plot(nca.FeatureWeights,'ro')
-xlabel('Feature index')
-ylabel('Feature weight')
-grid on
-xticks(1:length(features))
-xticklabels(features)
+    figure
+    bar(scores(idx))
+    xlabel('Predictor rank')
+    ylabel('Predictor importance score')
+    xticks(1:length(scores))
+    xticklabels(predictorNames(idx))
 end
 
-tol    = 0.01; % tolerance in matlab example
-selidx = find(nca.FeatureWeights > tol*max(nca.FeatureWeights)); % find features whose weights beat tolerance
+%% PCA
+% Run PCA on numeric predictors only. Categorical predictors are passed through PCA untouched.
+isCategoricalPredictorBeforePCA = isCategoricalPredictor;
+numericPredictors = predictors(:, ~isCategoricalPredictor);
+numericPredictors = table2array(varfun(@double, numericPredictors));
+% 'inf' values have to be treated as missing data for PCA.
+numericPredictors(isinf(numericPredictors)) = NaN;
 
-% restrict features to this set
-includedPredictorNames = predictorNames(selidx);
-predictors = predictors(:,selidx);
-isCategoricalPredictor = repmat(false,1,length(selidx));
+% Normalize the predictors prior to PCA
+normalizationFcn = @(x) (x-nanmean(x,1))./nanstd(x,[],1);
+normalizedPredictors = normalizationFcn(numericPredictors);
+% Do PCA
+[pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
+    normalizedPredictors);
+% Keep enough components to explain the desired amount of variance.
+explainedVarianceToKeepAsFraction = pca_perc/100;
+numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
+pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
+predictors = [array2table(pcaScores(:,1:numComponentsToKeep)), predictors(:, isCategoricalPredictor)];
+
 
 %% Train a classifier
 % This code specifies all the classifier options and trains the classifier.
@@ -164,16 +125,19 @@ end
 %% Create the result struct with predict function
 predictorExtractionFcn = @(t) t(:, predictorNames);
 featureSelectionFcn = @(x) x(:,includedPredictorNames);
+pcaTransformationFcn = @(x) [ array2table((table2array(varfun(@double, x(:, ~isCategoricalPredictorBeforePCA))) - pcaCenters) * pcaCoefficients), x(:,isCategoricalPredictorBeforePCA) ];
 oldPredictFcn = @(x) predict(classifier, x);
-predictFcn = @(x) oldPredictFcn(featureSelectionFcn(predictorExtractionFcn(x)));
+%predictFcn = @(x) oldPredictFcn(featureSelectionFcn(predictorExtractionFcn(x)));
+predictFcn = @(x) oldPredictFcn(pcaTransformationFcn(featureSelectionFcn(predictorExtractionFcn(x))));
+
 
 % Add additional fields to the result struct
 trainedClassifier.predictFcn = predictFcn;
 trainedClassifier.RequiredVariables = predictorNames;
-%trainedClassifier.PCACenters = pcaCenters;
-%trainedClassifier.PCACoefficients = pcaCoefficients;
+trainedClassifier.PCACenters = pcaCenters;
+trainedClassifier.PCACoefficients = pcaCoefficients;
 trainedClassifier.classifier = classifier;
-%trainedClassifier.pcaTransformationFcn = pcaTransformationFcn;
+trainedClassifier.pcaTransformationFcn = pcaTransformationFcn;
 trainedClassifier.featureSelectionFcn = featureSelectionFcn;
 trainedClassifier.predictorExtractionFcn = predictorExtractionFcn;
 trainedClassifier.oldPredictFcn = oldPredictFcn;

@@ -1,0 +1,20 @@
+function trainedClassifier = ensemble_based_fs(trainingData,features,respVar)
+
+T = [trainingData(:,respVar),trainingData(:,features)];
+Mdl = fitcensemble(T,respVar,'Method','Bag','NumLearningCycles',200);
+impOOB = oobPermutedPredictorImportance(Mdl);
+
+if 0
+    figure
+    bar(impOOB)
+    title('Unbiased Predictor Importance Estimates')
+    xlabel('Predictor variable')
+    ylabel('Importance')
+    h = gca;
+    h.XTick = 1:length(Mdl.PredictorNames);
+    h.XTickLabel = Mdl.PredictorNames;
+    h.XTickLabelRotation = 45;
+    h.TickLabelInterpreter = 'none';
+end
+
+end
