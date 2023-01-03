@@ -75,9 +75,6 @@ numericPredictors = table2array(varfun(@double, numericPredictors));
 % 'inf' values have to be treated as missing data for PCA.
 numericPredictors(isinf(numericPredictors)) = NaN;
 
-% Normalize the predictors prior to PCA
-normalizationFcn = @(x) (x-nanmean(x,1))./nanstd(x,[],1);
-normalizedPredictors = normalizationFcn(numericPredictors);
 
 if 0
     C = corr(numericPredictors);
@@ -89,8 +86,9 @@ if 0
 end
 
 % Do PCA
+w = 1./std(numericPredictors,[],1,"omitnan");
 [pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
-    normalizedPredictors);
+    numericPredictors,'centered',true,'VariableWeights',w);
 % Keep enough components to explain the desired amount of variance.
 explainedVarianceToKeepAsFraction = pc_perc/100;
 numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
@@ -193,8 +191,10 @@ end
 %% Create the result struct with predict function
 predictorExtractionFcn = @(t) t(:, predictorNames);
 featureSelectionFcn = @(x) x(:,includedPredictorNames);
-pcaTransformationFcn = @(x) [ array2table((table2array(varfun(@double, x(:, ~isCategoricalPredictorBeforePCA))) - pcaCenters) * pcaCoefficients), x(:,isCategoricalPredictorBeforePCA) ];
+pcaTransformationFcn = @(x) [ array2table((table2array(varfun(@double, x(:, ~isCategoricalPredictorBeforePCA))) - pcaCenters) .* w * pcaCoefficients), x(:,isCategoricalPredictorBeforePCA) ];
+%pcaTransformationFcn = @(x) array2table((normalizationFcn(table2array(varfun(@double, x)))) * pcaCoefficients);
 oldPredictFcn = @(x) predict(classifier, x);
+%predictFcn = @(x) oldPredictFcn(pcaTransformationFcn(array2table(normalizationFcn(table2array(featureSelectionFcn(predictorExtractionFcn(x)))))));
 predictFcn = @(x) oldPredictFcn(pcaTransformationFcn(featureSelectionFcn(predictorExtractionFcn(x))));
 
 % Add additional fields to the result struct

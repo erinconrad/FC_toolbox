@@ -1,4 +1,4 @@
-function all_coherence = faster_coherence_calc(values,fs)
+function all_coherence = faster_coherence_calc(values,fs,tw,do_tw)
 
 %% Parameters
 window = fs * 2;
@@ -22,22 +22,36 @@ end
 nan_rows = any(isnan(values),1); % find channels with nans for any time points
 values_no_nans = values(:,~nan_rows);
 nchs_no_nans = size(values_no_nans,2);
-temp_coherence = nan(nchs_no_nans,nchs_no_nans,nfreqs);
 
 
-for ich = 1:nchs_no_nans
+if do_tw
+    tw = round(tw*fs);
+    times = 1:tw:size(values,1);
+    temp_coherence = nan(nchs_no_nans,nchs_no_nans,nfreqs,length(times)-1);
+    for t = 1:length(times)-1
+        for ich = 1:nchs_no_nans
+            [cxy,f] = mscohere(values_no_nans(times(t):times(t+1),ich),values_no_nans(times(t):times(t+1),:),hamming(window),[],NFFT,fs);
+            for i_f = 1:nfreqs
+                temp_coherence(:,ich,i_f,t) = ...
+                    nanmean(cxy(f >= freqs(i_f,1) & f <= freqs(i_f,2),:),1);
+            end
+        end
 
-    % Do MS cohere on full thing
-    [cxy,f] = mscohere(values_no_nans(:,ich),values_no_nans,hamming(window),[],NFFT,fs);
-    %[cxy,f] = mscohere(values(:,ich),values,hamming(window),[],NFFT,fs);
+    end
+    temp_coherence = nanmean(temp_coherence,4);
+else
+    temp_coherence = nan(nchs_no_nans,nchs_no_nans,nfreqs);
+    for ich = 1:nchs_no_nans
 
-    % Average coherence in frequency bins of interest
-    for i_f = 1:nfreqs
-        temp_coherence(:,ich,i_f) = ...
-            nanmean(cxy(f >= freqs(i_f,1) & f <= freqs(i_f,2),:),1);
+        % Do MS cohere on full thing
+        [cxy,f] = mscohere(values_no_nans(:,ich),values_no_nans,hamming(window),[],NFFT,fs);
+    
+        % Average coherence in frequency bins of interest
+        for i_f = 1:nfreqs
+            temp_coherence(:,ich,i_f) = ...
+                nanmean(cxy(f >= freqs(i_f,1) & f <= freqs(i_f,2),:),1);
+        end
 
-        temp_coherence(:,ich,i_f) = ...
-            nanmean(cxy(f >= freqs(i_f,1) & f <= freqs(i_f,2),:),1);
     end
     
 end

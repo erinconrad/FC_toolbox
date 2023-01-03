@@ -1,9 +1,9 @@
 function out = individual_run_mt(file_path)
 
 %% Parameters
-show_data = 0;
+show_data = 1;
 test_flag = 0;
-tw = 2; % time window for network calculations.
+tw = 2; % time window for pearson correlation calculation. Think about this window for other things.
 
 %% Load the edf file
 C = strsplit(file_path,'/');
@@ -148,7 +148,7 @@ for im = 1:3
 
     % cross correlation with 2 second time windows (very similar to full
     % thing)
-    [xcor,lags] = cross_correlation(run_values,fs,tw,1);
+    [xcor,lags] = cross_correlation(run_values,fs,tw,0);
     
     if test_flag
         % cross correlation with full window
@@ -170,7 +170,7 @@ for im = 1:3
     end
 
     % Spectral entropy
-    se = spectral_entropy(values,fs,tw,1); % Erin edited to add tw
+    se = spectral_entropy(values,fs,tw,0); % Erin edited to add tw
     
     if test_flag
         se2 = spectral_entropy(values,fs,tw,1);
@@ -194,7 +194,8 @@ for im = 1:3
     end
 
     % Relative entropy - long and short time windows different
-    re = relative_entropy(run_values,fs,tw,1);
+    re = relative_entropy(run_values,fs,tw,0);
+    re_short_tw = relative_entropy(run_values,fs,tw,1);
     if test_flag
         
         figure; set(gcf,'position',[10 10 1400 400])
@@ -220,7 +221,8 @@ for im = 1:3
     end
     
     % PC
-    pc =  new_pearson_calc(run_values,fs,tw,1);
+    pc =  new_pearson_calc(run_values,fs,tw,0);
+    pc_short_tw =  new_pearson_calc(run_values,fs,tw,1);
     if test_flag
         pc2 =  new_pearson_calc(run_values,fs,tw,1);
         figure
@@ -241,8 +243,8 @@ for im = 1:3
     % Get alpha delta ratio
     ad_rat = calc_ad(run_values,fs);
     
-    % Get bandpower (performs similarly for short and long tw.)
-    [bp,rel_bp] = bp_calc_2(run_values,fs,[],tw,1); 
+    % Get bandpower (performs similarly for short and long tw. doing long)
+    [bp,rel_bp] = bp_calc_2(run_values,fs,[],tw,0); 
     if test_flag
         [bp2,rel_bp2] = bp_calc_2(run_values,fs,[],tw,1);
         figure; set(gcf,'position',[10 10 900 400])
@@ -269,8 +271,8 @@ for im = 1:3
         plot(bp(:,1),bp2(:,1),'o')
     end
     
-    % Get coherence. Two second time window breaks it. 10 seconds about the same as 1 minute
-    coh = faster_coherence_calc(run_values,fs,tw,1);
+    % Get coherence. Two second time window breaks it. 10 seconds about the same as 1 minute 
+    coh = faster_coherence_calc(run_values,fs,tw,0);
     if test_flag
         coh2 = faster_coherence_calc(run_values,fs,10,1);
         figure; set(gcf,'position',[10 10 1400 400])
@@ -294,8 +296,8 @@ for im = 1:3
         end
     end
 
-    % PLV - very similar short vs long time window.
-    plv = plv_calc(run_values,fs,tw,1);
+    % PLV - very similar short vs long time window. doing long.
+    plv = plv_calc(run_values,fs,tw,0);
     if test_flag
         plv2 = plv_calc(run_values,fs,tw,1);
         figure; set(gcf,'position',[10 10 1400 400])
@@ -325,6 +327,7 @@ for im = 1:3
     out.montage(im).bp = bp;
     out.montage(im).rel_bp = rel_bp;
     out.montage(im).pc = pc;
+    out.montage(im).pc_short_tw = pc_short_tw;
     out.montage(im).plv = plv;
     out.montage(im).coh = coh;
     out.montage(im).gdf = gdf;
@@ -335,6 +338,7 @@ for im = 1:3
     out.montage(im).xcor = xcor;
     out.montage(im).lags = lags;
     out.montage(im).re = re;
+    out.montage(im).re_short_tw = re_short_tw;
     out.montage(im).se = se;
     out.clean_labels = allowed_labels;
     out.fs = fs;
@@ -362,13 +366,6 @@ end
     %pause
     %close(gcf)
     clear tout
-
-    m = 1;
-    f = 1;
-    curr_re = out.montage(m).re(:,:,f);
-    curr_pc = out.montage(m).pc(:,:);
-    curr_xcor = out.montage(m).xcor(:,:);
-    curr_plv = out.montage(m).plv(:,:,f);
 
     figure; tiledlayout(1,3);
     for i = 1:3
@@ -416,6 +413,15 @@ end
         yticks(1:length(out.montage(i).labels))
         yticklabels(out.montage(i).labels)
     end
+
+    figure
+    m = 1;
+    f = 1;
+    curr_re = out.montage(m).re(:,:,f);
+    curr_re_short = out.montage(m).re_short_tw(:,:,f);
+    curr_pc = out.montage(m).pc;
+    curr_plv = out.montage(m).plv(:,:,f);
+    
  end
 
 

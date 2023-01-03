@@ -92,7 +92,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 features = {};
 
-for which_sleep_stage = 3 % all = 1, wake =2, sleep = 3;
+for which_sleep_stage = 1 % all = 1, wake =2, sleep = 3;
     if which_sleep_stage == 1
         sleep_text = 'all';
     elseif which_sleep_stage == 2
@@ -198,7 +198,7 @@ for which_sleep_stage = 3 % all = 1, wake =2, sleep = 3;
             %}
     
             ai = cell2mat(cellfun(@(x,y,z,w) ...
-                calc_ai_sandbox(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
+                calc_ai(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
                 labels,thing,names,mt_data.all_labels(:,1),'uniformoutput',false));
         
             
