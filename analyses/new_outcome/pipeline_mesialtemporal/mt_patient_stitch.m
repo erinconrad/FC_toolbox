@@ -4,6 +4,7 @@ function mt_patient_stitch(edf_path,name,overwrite)
 rng(0)
 
 %% See if I've done it
+edf_summ_path = [edf_path,'../edf_summ_out/'];
 if exist([edf_path,'../edf_summ_out/',name,'/summ.mat'],'file')~=0
     if overwrite == 0
         fprintf('\nAlready did %s, skipping.\n',name);
@@ -136,7 +137,7 @@ end
 
 %% Plot random spike detections
 for im = 1:nmontages
-    plot_random_spikes(all_spike_times{im},name,out.clean_labels,montages{im},edf_path)
+    plot_random_spikes(all_spike_times{im},name,out.clean_labels,montages{im},edf_path,edf_summ_path)
 end
 
 %% Output the stuff
