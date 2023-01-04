@@ -2,8 +2,8 @@ function [T,features] =  lr_mt
 
 %% Plots
 do_little_plots = 0;
-do_big_plots = 1;
-which_sleep_stages = 1;
+do_big_plots = 0;
+which_sleep_stages = 3;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -141,7 +141,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         %}
 
         % Loop over features
-        for which_thing = {'coh'}%{'spikes','rl','bp','se','pearson','xcor','coh','plv','re'}
+        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','re'}
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}
@@ -157,63 +157,39 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                     uni = 0; % not univariate
                     last_dim = 1; % one frequency
                     case {'xcor_iqr'}
-                    thing = xcor_iqr;
+                    thing = xcor_;
+                    uni = 0; % not univariate
+                    last_dim = 1; % one frequency
+                case {'lags'}
+                    thing = lags;
                     uni = 0; % not univariate
                     last_dim = 1; % one frequency
                 case {'coh','near_coh','inter_coh'}
                     thing = coh;
                     uni = 0; % not univariate
                     last_dim = 6;%size(coh{1},3); % multiple frequencies
-                case {'coh_iqr'}
-                    thing = coh_iqr;
-                    uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
                 case {'plv','near_plv','inter_plv'}
                     thing = plv;
-                    uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
-                case {'plv_iqr'}
-                    thing = plv_iqr;
                     uni = 0; % not univariate
                     last_dim = 6;%size(coh{1},3); % multiple frequencies
                 case {'re','inter_re'}
                     thing = re;
                     uni = 0; % not univariate
                     last_dim = 6;%size(coh{1},3); % multiple frequencies
-                case {'re_iqr'}
-                    thing = re_iqr;
-                    uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
                 case {'bp','inter_bp'}
                     thing = bp;
-                    uni = 1; % univariate
-                    last_dim = 5;%size(bp{1},2); % multiple frequencies
-                case {'bp_iqr'}
-                    thing = bp_iqr;
                     uni = 1; % univariate
                     last_dim = 5;%size(bp{1},2); % multiple frequencies
                 case {'rel_bp','inter_rel_bp'}
                     thing = rel_bp;
                     uni = 1; % univariate
                     last_dim = 5;%size(bp{1},2); % multiple frequencies
-                case {'rel_bp_iqr'}
-                    thing = rel_bp_iqr;
-                    uni = 1; % univariate
-                    last_dim = 5;%size(bp{1},2); % multiple frequencies
                 case {'se'}
                     thing = se;
                     uni = 1; % univariate
                     last_dim = 1;%size(bp{1},2); % multiple frequencies
-                case {'se_iqr'}
-                    thing = se_iqr;
-                    uni = 1; % univariate
-                    last_dim = 1;%size(bp{1},2); % multiple frequencies
                 case 'spikes'
                     thing = spikes;
-                    uni = 1; % univariate
-                    last_dim = 1; % one frequency
-                case 'spikes_iqr'
-                    thing = spikes_iqr;
                     uni = 1; % univariate
                     last_dim = 1; % one frequency
                 case 'nelecs'
@@ -222,10 +198,6 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                     uni = nan;
                 case {'rl','inter_rl'}
                     thing = rl;
-                    uni = 1;
-                    last_dim = 1;
-                case {'rl_iqr'}
-                    thing = rl_iqr;
                     uni = 1;
                     last_dim = 1;
             end
