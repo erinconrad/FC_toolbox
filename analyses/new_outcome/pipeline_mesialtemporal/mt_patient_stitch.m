@@ -1,11 +1,10 @@
-function mt_patient_stitch(edf_path,name,overwrite)
+function mt_patient_stitch(edf_path,edf_summ_path,name,overwrite)
 
 %% Seed random number generator so that I get the same result each time I do this.
 rng(0)
 
 %% See if I've done it
-edf_summ_path = [edf_path,'../edf_summ_out/'];
-if exist([edf_path,'../edf_summ_out/',name,'/summ.mat'],'file')~=0
+if exist([edf_summ_path,name,'/summ.mat'],'file')~=0
     if overwrite == 0
         fprintf('\nAlready did %s, skipping.\n',name);
         return
@@ -169,9 +168,9 @@ nout.montages = montages;
 out = nout;
 
 %% Save the file
-if ~exist([edf_path,'../edf_summ_out/',name],'dir')
-    mkdir([edf_path,'../edf_summ_out/',name])
+if ~exist([edf_summ_path,name],'dir')
+    mkdir([edf_summ_path,name])
 end
-save([edf_path,'../edf_summ_out/',name,'/summ.mat'],'out');
+save([edf_summ_path,name,'/summ.mat'],'out');
 
 end
