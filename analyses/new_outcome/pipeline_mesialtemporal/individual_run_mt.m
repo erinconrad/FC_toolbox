@@ -146,6 +146,9 @@ for im = 1:3
         run_values(isnan(run_values(:,ich)),ich) = nanmean(run_values(:,ich));
     end
 
+    % line length
+    ll = line_length(run_values);
+
     % cross correlation with 2 second time windows (very similar to full
     % thing)
     [xcor,lags] = cross_correlation(run_values,fs,tw,1);
@@ -196,7 +199,7 @@ for im = 1:3
     % Relative entropy - long and short time windows different
     re = relative_entropy(run_values,fs,tw,1);
     if test_flag
-        
+        re2 = relative_entropy(run_values,fs,tw,0);
         figure; set(gcf,'position',[10 10 1400 400])
         t = tiledlayout(1,size(re,3));
         for i = 1:size(re,3)
@@ -222,7 +225,7 @@ for im = 1:3
     % PC
     pc =  new_pearson_calc(run_values,fs,tw,1);
     if test_flag
-        pc2 =  new_pearson_calc(run_values,fs,tw,1);
+        pc2 =  new_pearson_calc(run_values,fs,tw,0);
         figure
         turn_nans_gray(pc); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
         title('Pearson correlation, full window')
@@ -272,7 +275,7 @@ for im = 1:3
     % Get coherence. Two second time window breaks it. 10 seconds about the same as 1 minute
     coh = faster_coherence_calc(run_values,fs,tw,1);
     if test_flag
-        coh2 = faster_coherence_calc(run_values,fs,10,1);
+        coh2 = faster_coherence_calc(run_values,fs,tw,0);
         figure; set(gcf,'position',[10 10 1400 400])
         t = tiledlayout(1,size(coh,3));
         for i = 1:size(coh,3)
@@ -335,6 +338,7 @@ for im = 1:3
     out.montage(im).xcor = xcor;
     out.montage(im).lags = lags;
     out.montage(im).re = re;
+    out.montage(im).ll = ll;
     out.montage(im).se = se;
     out.clean_labels = allowed_labels;
     out.fs = fs;
