@@ -2,7 +2,8 @@ function [T,features] =  lr_mt
 
 %% Plots
 do_little_plots = 0;
-do_big_plots = 1;
+do_big_plots = 0;
+which_sleep_stages = 3;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -92,7 +93,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats);
 features = {};
 
-for which_sleep_stage = 1 % all = 1, wake =2, sleep = 3;
+for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
     if which_sleep_stage == 1
         sleep_text = 'all';
     elseif which_sleep_stage == 2
@@ -130,7 +131,7 @@ for which_sleep_stage = 1 % all = 1, wake =2, sleep = 3;
         %}
 
         % Loop over features
-        for which_thing = {'re'}%{'spikes','rl','bp','se','pearson','xcor','coh','plv','re'}
+        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','re'}
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}
@@ -311,54 +312,54 @@ end
 T = Ts(~all_missing,:);
 
 
-%{
-% Next, perform imputation for those missing data from a given sleep stage
-% (set the corresponding columns to be the same as those from the other
-% sleep stage).
-% Loop over patients and columns
-for i = 1:size(T,1) 
-    for j = size(T,2)-nfeatures+1:size(T,2)
-        if isnan(T{i,j})
+if isequal(which_sleep_stages,[2 3])
+    % Next, perform imputation for those missing data from a given sleep stage
+    % (set the corresponding columns to be the same as those from the other
+    % sleep stage).
+    % Loop over patients and columns
+    for i = 1:size(T,1) 
+        for j = size(T,2)-nfeatures+1:size(T,2)
+            if isnan(T{i,j})
+                % get the variable name
+                var = T.Properties.VariableNames{j};
+    
+                % get the non sleep/wake portion
+                if contains(var,'wake')
+                    C = strsplit(var,' wake');
+                    new_var = [C{1},' sleep'];
+                elseif contains(var,'sleep')
+                    C = strsplit(var,' sleep');
+                    new_var = [C{1},' wake'];
+                end
+    
+                % Get the value from the other sleep stage
+                new_j = strcmp(T.Properties.VariableNames,new_var);
+                new_val = T{i,new_j};
+                T{i,j} = new_val;
+    
+            end
+        end
+    end
+    
+    % Do the same fix for the machine reference wake bandpower. Weird error for
+    % four patients that I should investigate
+    for i = 1:size(T,1) 
+        for j = size(T,2)-nfeatures+1:size(T,2)
             % get the variable name
             var = T.Properties.VariableNames{j};
-
-            % get the non sleep/wake portion
-            if contains(var,'wake')
+    
+            if contains(var,'bp') && contains(var,'machine') && contains(var,'wake') && abs(T{i,j})<1e-16 % wacky error
                 C = strsplit(var,' wake');
                 new_var = [C{1},' sleep'];
-            elseif contains(var,'sleep')
-                C = strsplit(var,' sleep');
-                new_var = [C{1},' wake'];
+                new_j = strcmp(T.Properties.VariableNames,new_var);
+                new_val = T{i,new_j};
+                T{i,j} = new_val;
             end
-
-            % Get the value from the other sleep stage
-            new_j = strcmp(T.Properties.VariableNames,new_var);
-            new_val = T{i,new_j};
-            T{i,j} = new_val;
-
+    
+    
         end
     end
 end
-
-% Do the same fix for the machine reference wake bandpower. Weird error for
-% four patients that I should investigate
-for i = 1:size(T,1) 
-    for j = size(T,2)-nfeatures+1:size(T,2)
-        % get the variable name
-        var = T.Properties.VariableNames{j};
-
-        if contains(var,'bp') && contains(var,'machine') && contains(var,'wake') && abs(T{i,j})<1e-16 % wacky error
-            C = strsplit(var,' wake');
-            new_var = [C{1},' sleep'];
-            new_j = strcmp(T.Properties.VariableNames,new_var);
-            new_val = T{i,new_j};
-            T{i,j} = new_val;
-        end
-
-
-    end
-end
-%}
 
 % Remove any remaining nan rows
 not_missing = ~any(ismissing(T(:,size(T,2)-nfeatures+1:end)),2);

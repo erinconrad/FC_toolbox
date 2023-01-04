@@ -4,7 +4,7 @@ function mt_lr_loo(T,features)
 rng(0)
 
 %% Establish parameters
-method = 'naiveBayes';
+method = 'bag';
 ncycles = 100;
 response = 'soz_lats';
 pca_perc = 90;
@@ -102,8 +102,10 @@ figure
 set(gcf,'position',[10 10 600 500])
 
 
+
 %% confusion matrix
 % Map numbers onto 0 to 1
+%nexttile
 new_numbers = map_numbers_onto_range(C,[1 0]);
 Ccolor = cat(3,ones(nclasses,nclasses,1),repmat(new_numbers,1,1,2));
 D = diag(new_numbers);
@@ -128,7 +130,35 @@ title(sprintf('Accuracy: %1.1f%%\nBalanced accuracy: %1.1f%%',...
     accuracy*100,balanced_accuracy*100))
 set(gca,'fontsize',20)
 print(gcf,[plot_folder,'model'],'-dpng')
+%{
 
+nexttile
+new_numbers = map_numbers_onto_range(Cnull,[1 0]);
+Ccolor = cat(3,ones(nclasses,nclasses,1),repmat(new_numbers,1,1,2));
+D = diag(new_numbers);
+Dcolor = [repmat(D,1,2),ones(length(D),1)];
+Ccolor(logical(repmat(eye(nclasses,nclasses),1,1,3))) = Dcolor;
+imagesc(Ccolor)
+
+xticks(1:nclasses)
+xticklabels((classes))
+yticks(1:nclasses)
+yticklabels((classes))
+xlabel('Predicted')
+ylabel('True')
+hold on
+for i = 1:nclasses
+    for j = 1:nclasses
+        text(i,j,sprintf('%d',Cnull(j,i)),'horizontalalignment','center','fontsize',20)
+    end
+end
+
+title(sprintf('Null Accuracy: %1.1f%%\nBalanced accuracy: %1.1f%%',...
+    accuracy_null*100,balanced_accuracy_null*100))
+set(gca,'fontsize',20)
+
+print(gcf,[plot_folder,'model'],'-dpng')
+%}
 
 %% Save data
 T = addvars(T,all_pred,'NewVariableNames','pred_lat','After','surg_lat');
