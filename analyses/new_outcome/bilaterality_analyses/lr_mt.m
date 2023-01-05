@@ -2,8 +2,8 @@ function [T,features] =  lr_mt
 
 %% Plots
 do_little_plots = 0;
-do_big_plots = 1;
-which_sleep_stages = 1;
+do_big_plots = 0;
+which_sleep_stages = 3;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -141,7 +141,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         %}
 
         % Loop over features
-        for which_thing = {'coh'}%{'spikes','rl','bp','se','pearson','xcor','coh','plv','re'}
+        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','re'} %{'spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr'}
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}

@@ -102,95 +102,95 @@ for p = 1:npts
 
     % Save all, wake, and sleep
     for im = 1:3
-        all_coh{p,im,1} = squeeze(nanmedian(coh(:,im,:,:,:),1));
-        all_coh{p,im,2} = squeeze(nanmedian(coh(wake,im,:,:,:),1));
-        all_coh{p,im,3} = squeeze(nanmedian(coh(sleep,im,:,:,:),1));
+        all_coh{p,im,1} = squeeze(nanmean(coh(:,im,:,:,:),1));
+        all_coh{p,im,2} = squeeze(nanmean(coh(wake,im,:,:,:),1));
+        all_coh{p,im,3} = squeeze(nanmean(coh(sleep,im,:,:,:),1));
 
-        all_plv{p,im,1} = squeeze(nanmedian(plv(:,im,:,:,:),1));
-        all_plv{p,im,2} = squeeze(nanmedian(plv(wake,im,:,:,:),1));
-        all_plv{p,im,3} = squeeze(nanmedian(plv(sleep,im,:,:,:),1));
+        all_plv{p,im,1} = squeeze(nanmean(plv(:,im,:,:,:),1));
+        all_plv{p,im,2} = squeeze(nanmean(plv(wake,im,:,:,:),1));
+        all_plv{p,im,3} = squeeze(nanmean(plv(sleep,im,:,:,:),1));
 
-        all_re{p,im,1} = squeeze(nanmedian(re(:,im,:,:,:),1));
-        all_re{p,im,2} = squeeze(nanmedian(re(wake,im,:,:,:),1));
-        all_re{p,im,3} = squeeze(nanmedian(re(sleep,im,:,:,:),1));
+        all_re{p,im,1} = squeeze(nanmean(re(:,im,:,:,:),1));
+        all_re{p,im,2} = squeeze(nanmean(re(wake,im,:,:,:),1));
+        all_re{p,im,3} = squeeze(nanmean(re(sleep,im,:,:,:),1));
     
-        all_spikes{p,im,1} = squeeze(nanmedian(spike_counts(:,im,:),1));
-        all_spikes{p,im,2} = squeeze(nanmedian(spike_counts(wake,im,:),1));
-        all_spikes{p,im,3} = squeeze(nanmedian(spike_counts(sleep,im,:),1));
+        all_spikes{p,im,1} = squeeze(nanmean(spike_counts(:,im,:),1));
+        all_spikes{p,im,2} = squeeze(nanmean(spike_counts(wake,im,:),1));
+        all_spikes{p,im,3} = squeeze(nanmean(spike_counts(sleep,im,:),1));
     
-        all_pearson{p,im,1} = squeeze(nanmedian(pc(:,im,:,:),1));
-        all_pearson{p,im,2} = squeeze(nanmedian(pc(wake,im,:,:),1));
-        all_pearson{p,im,3} = squeeze(nanmedian(pc(sleep,im,:,:),1));
+        all_pearson{p,im,1} = squeeze(nanmean(pc(:,im,:,:),1));
+        all_pearson{p,im,2} = squeeze(nanmean(pc(wake,im,:,:),1));
+        all_pearson{p,im,3} = squeeze(nanmean(pc(sleep,im,:,:),1));
 
-        all_xcor{p,im,1} = squeeze(nanmedian(xcor(:,im,:,:),1));
-        all_xcor{p,im,2} = squeeze(nanmedian(xcor(wake,im,:,:),1));
-        all_xcor{p,im,3} = squeeze(nanmedian(xcor(sleep,im,:,:),1));
+        all_xcor{p,im,1} = squeeze(nanmean(xcor(:,im,:,:),1));
+        all_xcor{p,im,2} = squeeze(nanmean(xcor(wake,im,:,:),1));
+        all_xcor{p,im,3} = squeeze(nanmean(xcor(sleep,im,:,:),1));
     
-        all_lags{p,im,1} = squeeze(nanmedian(lags(:,im,:,:),1));
-        all_lags{p,im,2} = squeeze(nanmedian(lags(wake,im,:,:),1));
-        all_lags{p,im,3} = squeeze(nanmedian(lags(sleep,im,:,:),1));
+        all_lags{p,im,1} = squeeze(nanmean(lags(:,im,:,:),1));
+        all_lags{p,im,2} = squeeze(nanmean(lags(wake,im,:,:),1));
+        all_lags{p,im,3} = squeeze(nanmean(lags(sleep,im,:,:),1));
 
-        all_rl{p,im,1} = squeeze(nanmedian(rl(:,im,:),1));
-        all_rl{p,im,2} = squeeze(nanmedian(rl(wake,im,:),1));
-        all_rl{p,im,3} = squeeze(nanmedian(rl(sleep,im,:),1));
+        all_rl{p,im,1} = squeeze(nanmean(rl(:,im,:),1));
+        all_rl{p,im,2} = squeeze(nanmean(rl(wake,im,:),1));
+        all_rl{p,im,3} = squeeze(nanmean(rl(sleep,im,:),1));
 
-        all_se{p,im,1} = squeeze(nanmedian(se(:,im,:),1));
-        all_se{p,im,2} = squeeze(nanmedian(se(wake,im,:),1));
-        all_se{p,im,3} = squeeze(nanmedian(se(sleep,im,:),1));
+        all_se{p,im,1} = squeeze(nanmean(se(:,im,:),1));
+        all_se{p,im,2} = squeeze(nanmean(se(wake,im,:),1));
+        all_se{p,im,3} = squeeze(nanmean(se(sleep,im,:),1));
     
-        all_bp{p,im,1} = squeeze(nanmedian(bp(:,im,:,:),1));
-        all_bp{p,im,2} = squeeze(nanmedian(bp(wake,im,:,:),1));
-        all_bp{p,im,3} = squeeze(nanmedian(bp(sleep,im,:,:),1));
+        all_bp{p,im,1} = squeeze(nanmean(bp(:,im,:,:),1));
+        all_bp{p,im,2} = squeeze(nanmean(bp(wake,im,:,:),1));
+        all_bp{p,im,3} = squeeze(nanmean(bp(sleep,im,:,:),1));
 
-        all_rel_bp{p,im,1} = squeeze(nanmedian(rel_bp(:,im,:,:),1));
-        all_rel_bp{p,im,2} = squeeze(nanmedian(rel_bp(wake,im,:,:),1));
-        all_rel_bp{p,im,3} = squeeze(nanmedian(rel_bp(sleep,im,:,:),1));
+        all_rel_bp{p,im,1} = squeeze(nanmean(rel_bp(:,im,:,:),1));
+        all_rel_bp{p,im,2} = squeeze(nanmean(rel_bp(wake,im,:,:),1));
+        all_rel_bp{p,im,3} = squeeze(nanmean(rel_bp(sleep,im,:,:),1));
 
-        %% Also measure IQR
+        %% Also measure STD
 
-        all_coh_iqr{p,im,1} = squeeze(iqr(coh(:,im,:,:,:),1));
-        all_coh_iqr{p,im,2} = squeeze(iqr(coh(wake,im,:,:,:),1));
-        all_coh_iqr{p,im,3} = squeeze(iqr(coh(sleep,im,:,:,:),1));
+        all_coh_iqr{p,im,1} = squeeze(nanstd(coh(:,im,:,:,:),[],1));
+        all_coh_iqr{p,im,2} = squeeze(nanstd(coh(wake,im,:,:,:),[],1));
+        all_coh_iqr{p,im,3} = squeeze(nanstd(coh(sleep,im,:,:,:),[],1));
 
-        all_plv_iqr{p,im,1} = squeeze(iqr(plv(:,im,:,:,:),1));
-        all_plv_iqr{p,im,2} = squeeze(iqr(plv(wake,im,:,:,:),1));
-        all_plv_iqr{p,im,3} = squeeze(iqr(plv(sleep,im,:,:,:),1));
+        all_plv_iqr{p,im,1} = squeeze(nanstd(plv(:,im,:,:,:),[],1));
+        all_plv_iqr{p,im,2} = squeeze(nanstd(plv(wake,im,:,:,:),[],1));
+        all_plv_iqr{p,im,3} = squeeze(nanstd(plv(sleep,im,:,:,:),[],1));
 
-        all_re_iqr{p,im,1} = squeeze(iqr(re(:,im,:,:,:),1));
-        all_re_iqr{p,im,2} = squeeze(iqr(re(wake,im,:,:,:),1));
-        all_re_iqr{p,im,3} = squeeze(iqr(re(sleep,im,:,:,:),1));
+        all_re_iqr{p,im,1} = squeeze(nanstd(re(:,im,:,:,:),[],1));
+        all_re_iqr{p,im,2} = squeeze(nanstd(re(wake,im,:,:,:),[],1));
+        all_re_iqr{p,im,3} = squeeze(nanstd(re(sleep,im,:,:,:),[],1));
     
-        all_spikes_iqr{p,im,1} = squeeze(iqr(spike_counts(:,im,:),1));
-        all_spikes_iqr{p,im,2} = squeeze(iqr(spike_counts(wake,im,:),1));
-        all_spikes_iqr{p,im,3} = squeeze(iqr(spike_counts(sleep,im,:),1));
+        all_spikes_iqr{p,im,1} = squeeze(nanstd(spike_counts(:,im,:),[],1));
+        all_spikes_iqr{p,im,2} = squeeze(nanstd(spike_counts(wake,im,:),[],1));
+        all_spikes_iqr{p,im,3} = squeeze(nanstd(spike_counts(sleep,im,:),[],1));
     
-        all_pearson_iqr{p,im,1} = squeeze(iqr(pc(:,im,:,:),1));
-        all_pearson_iqr{p,im,2} = squeeze(iqr(pc(wake,im,:,:),1));
-        all_pearson_iqr{p,im,3} = squeeze(iqr(pc(sleep,im,:,:),1));
+        all_pearson_iqr{p,im,1} = squeeze(nanstd(pc(:,im,:,:),[],1));
+        all_pearson_iqr{p,im,2} = squeeze(nanstd(pc(wake,im,:,:),[],1));
+        all_pearson_iqr{p,im,3} = squeeze(nanstd(pc(sleep,im,:,:),[],1));
 
-        all_xcor_iqr{p,im,1} = squeeze(iqr(xcor(:,im,:,:),1));
-        all_xcor_iqr{p,im,2} = squeeze(iqr(xcor(wake,im,:,:),1));
-        all_xcor_iqr{p,im,3} = squeeze(iqr(xcor(sleep,im,:,:),1));
+        all_xcor_iqr{p,im,1} = squeeze(nanstd(xcor(:,im,:,:),[],1));
+        all_xcor_iqr{p,im,2} = squeeze(nanstd(xcor(wake,im,:,:),[],1));
+        all_xcor_iqr{p,im,3} = squeeze(nanstd(xcor(sleep,im,:,:),[],1));
     
-        all_lags_iqr{p,im,1} = squeeze(iqr(lags(:,im,:,:),1));
-        all_lags_iqr{p,im,2} = squeeze(iqr(lags(wake,im,:,:),1));
-        all_lags_iqr{p,im,3} = squeeze(iqr(lags(sleep,im,:,:),1));
+        all_lags_iqr{p,im,1} = squeeze(nanstd(lags(:,im,:,:),[],1));
+        all_lags_iqr{p,im,2} = squeeze(nanstd(lags(wake,im,:,:),[],1));
+        all_lags_iqr{p,im,3} = squeeze(nanstd(lags(sleep,im,:,:),[],1));
 
-        all_rl_iqr{p,im,1} = squeeze(iqr(rl(:,im,:),1));
-        all_rl_iqr{p,im,2} = squeeze(iqr(rl(wake,im,:),1));
-        all_rl_iqr{p,im,3} = squeeze(iqr(rl(sleep,im,:),1));
+        all_rl_iqr{p,im,1} = squeeze(nanstd(rl(:,im,:),[],1));
+        all_rl_iqr{p,im,2} = squeeze(nanstd(rl(wake,im,:),[],1));
+        all_rl_iqr{p,im,3} = squeeze(nanstd(rl(sleep,im,:),[],1));
 
-        all_se_iqr{p,im,1} = squeeze(iqr(se(:,im,:),1));
-        all_se_iqr{p,im,2} = squeeze(iqr(se(wake,im,:),1));
-        all_se_iqr{p,im,3} = squeeze(iqr(se(sleep,im,:),1));
+        all_se_iqr{p,im,1} = squeeze(nanstd(se(:,im,:),[],1));
+        all_se_iqr{p,im,2} = squeeze(nanstd(se(wake,im,:),[],1));
+        all_se_iqr{p,im,3} = squeeze(nanstd(se(sleep,im,:),[],1));
     
-        all_bp_iqr{p,im,1} = squeeze(iqr(bp(:,im,:,:),1));
-        all_bp_iqr{p,im,2} = squeeze(iqr(bp(wake,im,:,:),1));
-        all_bp_iqr{p,im,3} = squeeze(iqr(bp(sleep,im,:,:),1));
+        all_bp_iqr{p,im,1} = squeeze(nanstd(bp(:,im,:,:),[],1));
+        all_bp_iqr{p,im,2} = squeeze(nanstd(bp(wake,im,:,:),[],1));
+        all_bp_iqr{p,im,3} = squeeze(nanstd(bp(sleep,im,:,:),[],1));
 
-        all_rel_bp_iqr{p,im,1} = squeeze(iqr(rel_bp(:,im,:,:),1));
-        all_rel_bp_iqr{p,im,2} = squeeze(iqr(rel_bp(wake,im,:,:),1));
-        all_rel_bp_iqr{p,im,3} = squeeze(iqr(rel_bp(sleep,im,:,:),1));
+        all_rel_bp_iqr{p,im,1} = squeeze(nanstd(rel_bp(:,im,:,:),[],1));
+        all_rel_bp_iqr{p,im,2} = squeeze(nanstd(rel_bp(wake,im,:,:),[],1));
+        all_rel_bp_iqr{p,im,3} = squeeze(nanstd(rel_bp(sleep,im,:,:),[],1));
     end
 
 end

@@ -3,7 +3,7 @@ function prep_data_mt
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-edf_path = [results_folder,'edf_summ_out/'];
+edf_path = [results_folder,'edf_summ_out/'];%[results_folder,'edf_summ_out_backup_Jan32023/'];%[results_folder,'edf_summ_out/'];
 sleep_stage_path = [results_folder,'edf_out/'];
 out_folder = [results_folder,'analysis/new_outcome/data/'];
 if ~exist(out_folder,'dir')
@@ -34,6 +34,17 @@ all_re = cell(npts,3,3);
 all_xcor = cell(npts,3,3);
 all_lags = cell(npts,3,3);
 all_rel_bp = cell(npts,3,3);
+all_coh_iqr = cell(npts,3,3);
+all_bp_iqr = cell(npts,3,3);
+all_spikes_iqr = cell(npts,3,3);
+all_rl_iqr = cell(npts,3,3);
+all_pearson_iqr = cell(npts,3,3);
+all_plv_iqr = cell(npts,3,3);
+all_se_iqr = cell(npts,3,3);
+all_re_iqr = cell(npts,3,3);
+all_xcor_iqr = cell(npts,3,3);
+all_lags_iqr = cell(npts,3,3);
+all_rel_bp_iqr = cell(npts,3,3);
 
 
 %% Loop over patients
@@ -135,51 +146,51 @@ for p = 1:npts
         all_rel_bp{p,im,2} = squeeze(nanmean(rel_bp(wake,im,:,:),1));
         all_rel_bp{p,im,3} = squeeze(nanmean(rel_bp(sleep,im,:,:),1));
 
-        %% Also measure IQR
+        %% Also measure STD
 
-        all_coh_iqr{p,im,1} = squeeze(nanmean(coh(:,im,:,:,:),1));
-        all_coh_iqr{p,im,2} = squeeze(nanmean(coh(wake,im,:,:,:),1));
-        all_coh_iqr{p,im,3} = squeeze(nanmean(coh(sleep,im,:,:,:),1));
+        all_coh_iqr{p,im,1} = squeeze(nanstd(coh(:,im,:,:,:),[],1));
+        all_coh_iqr{p,im,2} = squeeze(nanstd(coh(wake,im,:,:,:),[],1));
+        all_coh_iqr{p,im,3} = squeeze(nanstd(coh(sleep,im,:,:,:),[],1));
 
-        all_plv_iqr{p,im,1} = squeeze(nanmean(plv(:,im,:,:,:),1));
-        all_plv_iqr{p,im,2} = squeeze(nanmean(plv(wake,im,:,:,:),1));
-        all_plv_iqr{p,im,3} = squeeze(nanmean(plv(sleep,im,:,:,:),1));
+        all_plv_iqr{p,im,1} = squeeze(nanstd(plv(:,im,:,:,:),[],1));
+        all_plv_iqr{p,im,2} = squeeze(nanstd(plv(wake,im,:,:,:),[],1));
+        all_plv_iqr{p,im,3} = squeeze(nanstd(plv(sleep,im,:,:,:),[],1));
 
-        all_re_iqr{p,im,1} = squeeze(nanmean(re(:,im,:,:,:),1));
-        all_re_iqr{p,im,2} = squeeze(nanmean(re(wake,im,:,:,:),1));
-        all_re_iqr{p,im,3} = squeeze(nanmean(re(sleep,im,:,:,:),1));
+        all_re_iqr{p,im,1} = squeeze(nanstd(re(:,im,:,:,:),[],1));
+        all_re_iqr{p,im,2} = squeeze(nanstd(re(wake,im,:,:,:),[],1));
+        all_re_iqr{p,im,3} = squeeze(nanstd(re(sleep,im,:,:,:),[],1));
     
-        all_spikes_iqr{p,im,1} = squeeze(nanmean(spike_counts(:,im,:),1));
-        all_spikes_iqr{p,im,2} = squeeze(nanmean(spike_counts(wake,im,:),1));
-        all_spikes_iqr{p,im,3} = squeeze(nanmean(spike_counts(sleep,im,:),1));
+        all_spikes_iqr{p,im,1} = squeeze(nanstd(spike_counts(:,im,:),[],1));
+        all_spikes_iqr{p,im,2} = squeeze(nanstd(spike_counts(wake,im,:),[],1));
+        all_spikes_iqr{p,im,3} = squeeze(nanstd(spike_counts(sleep,im,:),[],1));
     
-        all_pearson_iqr{p,im,1} = squeeze(nanmean(pc(:,im,:,:),1));
-        all_pearson_iqr{p,im,2} = squeeze(nanmean(pc(wake,im,:,:),1));
-        all_pearson_iqr{p,im,3} = squeeze(nanmean(pc(sleep,im,:,:),1));
+        all_pearson_iqr{p,im,1} = squeeze(nanstd(pc(:,im,:,:),[],1));
+        all_pearson_iqr{p,im,2} = squeeze(nanstd(pc(wake,im,:,:),[],1));
+        all_pearson_iqr{p,im,3} = squeeze(nanstd(pc(sleep,im,:,:),[],1));
 
-        all_xcor_iqr{p,im,1} = squeeze(nanmean(xcor(:,im,:,:),1));
-        all_xcor_iqr{p,im,2} = squeeze(nanmean(xcor(wake,im,:,:),1));
-        all_xcor_iqr{p,im,3} = squeeze(nanmean(xcor(sleep,im,:,:),1));
+        all_xcor_iqr{p,im,1} = squeeze(nanstd(xcor(:,im,:,:),[],1));
+        all_xcor_iqr{p,im,2} = squeeze(nanstd(xcor(wake,im,:,:),[],1));
+        all_xcor_iqr{p,im,3} = squeeze(nanstd(xcor(sleep,im,:,:),[],1));
     
-        all_lags_iqr{p,im,1} = squeeze(nanmean(lags(:,im,:,:),1));
-        all_lags_iqr{p,im,2} = squeeze(nanmean(lags(wake,im,:,:),1));
-        all_lags_iqr{p,im,3} = squeeze(nanmean(lags(sleep,im,:,:),1));
+        all_lags_iqr{p,im,1} = squeeze(nanstd(lags(:,im,:,:),[],1));
+        all_lags_iqr{p,im,2} = squeeze(nanstd(lags(wake,im,:,:),[],1));
+        all_lags_iqr{p,im,3} = squeeze(nanstd(lags(sleep,im,:,:),[],1));
 
-        all_rl_iqr{p,im,1} = squeeze(nanmean(rl(:,im,:),1));
-        all_rl_iqr{p,im,2} = squeeze(nanmean(rl(wake,im,:),1));
-        all_rl_iqr{p,im,3} = squeeze(nanmean(rl(sleep,im,:),1));
+        all_rl_iqr{p,im,1} = squeeze(nanstd(rl(:,im,:),[],1));
+        all_rl_iqr{p,im,2} = squeeze(nanstd(rl(wake,im,:),[],1));
+        all_rl_iqr{p,im,3} = squeeze(nanstd(rl(sleep,im,:),[],1));
 
-        all_se_iqr{p,im,1} = squeeze(nanmean(se(:,im,:),1));
-        all_se_iqr{p,im,2} = squeeze(nanmean(se(wake,im,:),1));
-        all_se_iqr{p,im,3} = squeeze(nanmean(se(sleep,im,:),1));
+        all_se_iqr{p,im,1} = squeeze(nanstd(se(:,im,:),[],1));
+        all_se_iqr{p,im,2} = squeeze(nanstd(se(wake,im,:),[],1));
+        all_se_iqr{p,im,3} = squeeze(nanstd(se(sleep,im,:),[],1));
     
-        all_bp_iqr{p,im,1} = squeeze(nanmean(bp(:,im,:,:),1));
-        all_bp_iqr{p,im,2} = squeeze(nanmean(bp(wake,im,:,:),1));
-        all_bp_iqr{p,im,3} = squeeze(nanmean(bp(sleep,im,:,:),1));
+        all_bp_iqr{p,im,1} = squeeze(nanstd(bp(:,im,:,:),[],1));
+        all_bp_iqr{p,im,2} = squeeze(nanstd(bp(wake,im,:,:),[],1));
+        all_bp_iqr{p,im,3} = squeeze(nanstd(bp(sleep,im,:,:),[],1));
 
-        all_rel_bp_iqr{p,im,1} = squeeze(nanmean(rel_bp(:,im,:,:),1));
-        all_rel_bp_iqr{p,im,2} = squeeze(nanmean(rel_bp(wake,im,:,:),1));
-        all_rel_bp_iqr{p,im,3} = squeeze(nanmean(rel_bp(sleep,im,:,:),1));
+        all_rel_bp_iqr{p,im,1} = squeeze(nanstd(rel_bp(:,im,:,:),[],1));
+        all_rel_bp_iqr{p,im,2} = squeeze(nanstd(rel_bp(wake,im,:,:),[],1));
+        all_rel_bp_iqr{p,im,3} = squeeze(nanstd(rel_bp(sleep,im,:,:),[],1));
     end
 
 end
@@ -198,6 +209,17 @@ out.all_se = all_se;
 out.all_rel_bp = all_rel_bp;
 out.all_xcor = all_xcor;
 out.all_lags = all_lags;
+out.all_coh_iqr = all_coh_iqr;
+out.all_spikes_iqr = all_spikes_iqr;
+out.all_rl_iqr = all_rl_iqr;
+out.all_pearson_iqr = all_pearson_iqr;
+out.all_bp_iqr = all_bp_iqr;
+out.all_plv_iqr = all_plv_iqr;
+out.all_re_iqr = all_re_iqr;
+out.all_se_iqr = all_se_iqr;
+out.all_rel_bp_iqr = all_rel_bp_iqr;
+out.all_xcor_iqr = all_xcor_iqr;
+out.all_lags_iqr = all_lags_iqr;
 
 save([out_folder,'mt_out.mat'],'out')
 
