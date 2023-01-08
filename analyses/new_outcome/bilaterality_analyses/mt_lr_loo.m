@@ -4,7 +4,7 @@ function mt_lr_loo(T,features)
 rng(0)
 
 %% Establish parameters
-method = 'bag';
+method = 'naiveBayes';
 ncycles = 100;
 response = 'soz_lats';
 pca_perc = 90;
@@ -12,6 +12,7 @@ which_outcome = 'engel';
 which_year = 1;
 nfeatures = round(sqrt(length(features)));
 rm_non_temporal = 0;
+rm_bilateral = 0;
 combine_br = 0;
 
 %% Get file locs
@@ -34,6 +35,13 @@ end
 %% Combine right and bilateral
 if combine_br
     T.soz_lats(strcmp(T.soz_lats,'right') | strcmp(T.soz_lats,'bilateral')) = {'br'};
+    npts = size(T,1);
+end
+
+%% Remove bilateral
+if rm_bilateral
+    T(strcmp(T.soz_lats,'bilateral'),:) = [];
+    npts = size(T,1);
 end
 
 % initialize confusion matrix
@@ -41,6 +49,7 @@ classes = unique(T.(response));
 nclasses = length(classes);
 C = zeros(nclasses,nclasses); % left, right, bilateral
 all_pred = cell(npts,1);
+all_best_pred = cell(npts,1);
 
 %% Do leave-one-patient-out classifier to predict laterality
 for i = 1:npts
@@ -58,7 +67,9 @@ for i = 1:npts
     %tc = nca_classifier(Ttrain,method,features,response,pca_perc,ncycles);
     %tc = class_feature_select(Ttrain,method,features,response,ncycles);
 
+    %tc = pca_then_fs_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
     tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
+    all_best_pred{i} = tc.includedPredictorNames;
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);
@@ -76,6 +87,17 @@ for i = 1:npts
     C(which_row,which_column) = C(which_row,which_column) + 1;
 
 end
+
+%% Find best overall predictors
+all_best_pred = horzcat(all_best_pred{:});
+% Take the N with the most votes
+a=unique(all_best_pred,'stable');
+b=cellfun(@(x) sum(ismember(all_best_pred,x)),a,'un',0); % get counts for each
+counts = cell2mat(b);
+
+% Make sure counts are sorted
+[sorted_counts,I] = sort(counts,'descend');
+table(a(I)',sorted_counts')
 
 %% Calculate accuracy and balanced accuracy
 accuracy = sum(diag(C))/sum(C(:));
@@ -134,38 +156,44 @@ print(gcf,[plot_folder,'model'],'-dpng')
 T = addvars(T,all_pred,'NewVariableNames','pred_lat','After','surg_lat');
 writetable(T,[plot_folder,'model_pred.csv'])
 
-%{
+%
 %% Now predict outcome
-
-% Remove patients with missing data
-no_outcome = cellfun(@isempty,T.(response));
-no_surg = ~strcmp(T.surgery,'Laser ablation') & ~strcmp(T.surgery,'Resection');
-not_temporal = ~strcmp(T.surg_loc,'temporal');
-
-remove = no_outcome | no_surg | not_temporal;
-oT = T;
-oT(remove,:) = [];
 
 % Parse actual outcome
 outcome_name = [which_outcome,'_yr',sprintf('%d',which_year)];
+
+% Remove patients with missing data
+no_outcome = cellfun(@isempty,T.(outcome_name));
+no_surg = ~strcmp(T.surgery,'Laser ablation') & ~strcmp(T.surgery,'Resection');
+not_temporal = ~strcmp(T.surg_loc,'temporal');
+
+remove = no_outcome | no_surg;% | not_temporal;
+oT = T;
+oT(remove,:) = [];
+
+
 outcome = cellfun(@(x) parse_outcome_new(x,which_outcome),oT.(outcome_name),'UniformOutput',false);
+
+if 0
+    table(oT.pred_lat,oT.soz_lats,oT.engel_yr1)
+end
 
 
 %{\
 % Predict good outcome if predicted to be unilateral and agrees with surg
 % laterality
-%unilateral_pred = strcmp(oT.pred_lat,'left') | strcmp(oT.pred_lat,'right');
+unilateral_pred = strcmp(oT.pred_lat,'left') | strcmp(oT.pred_lat,'right');
 agree = cellfun(@(x,y) strcmp(x,y),oT.surg_lat,oT.pred_lat);
 %agree = cellfun(@(x,y) strcmp(x,y),oT.soz_lats,oT.pred_lat);
-%pred_good = unilateral_pred & agree; 
-pred_good = agree;
+pred_good = unilateral_pred & agree; 
+%pred_good = agree;
 
 % Predict bad outcome if predicted to be bilateral OR if disagrees with
 % surg laterality
 bilateral_pred = strcmp(oT.pred_lat,'bilateral');
 disagree = ~agree;
-%pred_bad = bilateral_pred | disagree;
-pred_bad = disagree;
+pred_bad = bilateral_pred | disagree;
+%pred_bad = disagree;
 
 assert(isequal(pred_good,~pred_bad))
 
@@ -180,7 +208,7 @@ accuracy_out = sum(diag(Cout))/sum(Cout(:));
 
 
 
-if do_plot
+if 1
     figure
     set(gcf,'position',[10 10 1000 400])
     tiledlayout(1,2)

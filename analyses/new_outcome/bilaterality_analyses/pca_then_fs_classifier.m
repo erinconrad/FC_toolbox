@@ -1,14 +1,30 @@
-function trainedClassifier = general_classifier(trainingData,method,features,respVar,pc_perc,ncycles,numFeaturesToKeep)
+function trainedClassifier = pca_then_fs_classifier(trainingData,method,features,respVar,pc_perc,ncycles,numFeaturesToKeep)
 
 %% Data prep
 inputTable = trainingData;
 predictorNames = features;
 predictors = inputTable(:, predictorNames);
 response = inputTable.(respVar);
-isCategoricalPredictor = repmat(false,1,length(predictorNames));
 classNames = unique(response);
 
-%nca = fscnca(table2array(predictors),response,'FitMethod','exact');
+%% PCA - figure out how to normalize
+% Apply a PCA to the predictor matrix.
+% Run PCA on numeric predictors only. Categorical predictors are passed through PCA untouched.
+numericPredictors = predictors;
+numericPredictors = table2array(varfun(@double, numericPredictors));
+% 'inf' values have to be treated as missing data for PCA.
+numericPredictors(isinf(numericPredictors)) = NaN;
+
+% Do PCA
+w = 1./var(numericPredictors,[],1,"omitnan");
+[pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
+    numericPredictors,'centered',true,'VariableWeights',w);
+% Keep enough components to explain the desired amount of variance.
+explainedVarianceToKeepAsFraction = pc_perc/100;
+numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
+pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
+predictors = [array2table(pcaScores(:,1:numComponentsToKeep))];
+
 
 %% 5-fold cross validation to select features
 KFolds = 5;
@@ -26,11 +42,7 @@ for fold = 1:KFolds
     predictorMatrix = array2table((table2array(temp_predictors)-nanmean(table2array(temp_predictors),1))./nanstd(table2array(temp_predictors),[],1));
     newPredictorMatrix = zeros(size(predictorMatrix));
     for i = 1:size(predictorMatrix, 2)
-        if isCategoricalPredictor(i)
-            newPredictorMatrix(:,i) = grp2idx(predictorMatrix{:,i});
-        else
-            newPredictorMatrix(:,i) = predictorMatrix{:,i};
-        end
+        newPredictorMatrix(:,i) = predictorMatrix{:,i}; 
     end
     predictorMatrix = newPredictorMatrix;
     responseVector = grp2idx(temp_response);
@@ -55,55 +67,15 @@ b=cellfun(@(x) sum(ismember(all_included_predictors,x)),a,'un',0); % get counts 
 counts = cell2mat(b);
 
 % Make sure counts are sorted
-[sorted_counts,I] = sort(counts,'descend');
+[~,I] = sort(counts,'descend');
 top_predictors = a(I(1:numFeaturesToKeep));
 includedPredictorNames = top_predictors;
 
 % Assign these as the new predictors
 predictors = predictors(:,includedPredictorNames);
-isCategoricalPredictor = repmat(false,1,length(includedPredictorNames));
-
-if 0
-    table(sorted_counts',a(I)')
-end
 
 
-%% PCA - figure out how to normalize
 
-
-% Apply a PCA to the predictor matrix.
-% Run PCA on numeric predictors only. Categorical predictors are passed through PCA untouched.
-isCategoricalPredictorBeforePCA = isCategoricalPredictor;
-numericPredictors = predictors(:, ~isCategoricalPredictor);
-numericPredictors = table2array(varfun(@double, numericPredictors));
-% 'inf' values have to be treated as missing data for PCA.
-numericPredictors(isinf(numericPredictors)) = NaN;
-
-
-if 0
-    C = corr(numericPredictors);
-    turn_nans_gray(C)
-    colorbar
-    xticklabels(includedPredictorNames)
-    yticklabels(includedPredictorNames)
-    set(gca,'fontsize',15)
-end
-
-% Do PCA
-w = 1./var(numericPredictors,[],1,"omitnan");
-[pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
-    numericPredictors,'centered',true,'VariableWeights',w);
-% Keep enough components to explain the desired amount of variance.
-explainedVarianceToKeepAsFraction = pc_perc/100;
-numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
-pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
-predictors = [array2table(pcaScores(:,1:numComponentsToKeep)), predictors(:, isCategoricalPredictor)];
-
-% Do some checks about what comprises the main components
-if 0
-    figure
-    biplot(pcaCoefficients(:,1:2),'Scores',pcaScores(:,1:2),'VarLabels',includedPredictorNames)
-end
 
 %% Train a classifier
 % This code specifies all the classifier options and trains the classifier.
@@ -183,7 +155,7 @@ switch method
         classifier = fitclinear(predictors,response);
 
     case 'naiveBayes'
-        distributionNames =  repmat({'Normal'}, 1, numComponentsToKeep);
+        distributionNames =  repmat({'Normal'}, 1, size(predictors,2));
         classifier = fitcnb(...
             predictors, ...
             response, ...
@@ -195,11 +167,9 @@ end
 %% Create the result struct with predict function
 predictorExtractionFcn = @(t) t(:, predictorNames);
 featureSelectionFcn = @(x) x(:,includedPredictorNames);
-pcaTransformationFcn = @(x) [ array2table((table2array(varfun(@double, x(:, ~isCategoricalPredictorBeforePCA))) - pcaCenters) .* w * pcaCoefficients), x(:,isCategoricalPredictorBeforePCA) ];
-%pcaTransformationFcn = @(x) array2table((normalizationFcn(table2array(varfun(@double, x)))) * pcaCoefficients);
+pcaTransformationFcn = @(x) [ array2table((table2array(varfun(@double, x)) - pcaCenters) .* w * pcaCoefficients)];
 oldPredictFcn = @(x) predict(classifier, x);
-%predictFcn = @(x) oldPredictFcn(pcaTransformationFcn(array2table(normalizationFcn(table2array(featureSelectionFcn(predictorExtractionFcn(x)))))));
-predictFcn = @(x) oldPredictFcn(pcaTransformationFcn(featureSelectionFcn(predictorExtractionFcn(x))));
+predictFcn = @(x) oldPredictFcn(featureSelectionFcn(pcaTransformationFcn(predictorExtractionFcn(x))));
 
 % Add additional fields to the result struct
 trainedClassifier.predictFcn = predictFcn;
@@ -207,7 +177,6 @@ trainedClassifier.RequiredVariables = predictorNames;
 trainedClassifier.PCACenters = pcaCenters;
 trainedClassifier.PCACoefficients = pcaCoefficients;
 trainedClassifier.classifier = classifier;
-trainedClassifier.includedPredictorNames = includedPredictorNames;
 trainedClassifier.pcaTransformationFcn = pcaTransformationFcn;
 trainedClassifier.featureSelectionFcn = featureSelectionFcn;
 trainedClassifier.predictorExtractionFcn = predictorExtractionFcn;

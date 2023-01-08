@@ -1,7 +1,7 @@
 function [T,features] =  lr_mt
 
 %% Plots
-do_little_plots = 0;
+do_little_plots = 1;
 do_big_plots = 0;
 which_sleep_stages = 3;
 
@@ -18,6 +18,9 @@ end
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
+
+% Frequency band names
+freq_names = {'broadband','delta','theta','alpha','beta','gamma'};
 
 %% Load data file
 data = load([inter_folder,'main_out.mat']);
@@ -141,7 +144,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         %}
 
         % Loop over features
-        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','re'} %{'spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr'}
+        for which_thing = {'spikes'}%{'spikes','rl','bp','se','pearson','xcor','coh','plv','re'} %{'spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr'};
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}
@@ -234,7 +237,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             
     
             %% Get asymmetry index
-            %{
+            %
             %k = find(strcmp(names,'HUP134'));
             k = 100;
             calc_ai_sandbox(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots)
@@ -245,7 +248,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             %}
     
             ai = cell2mat(cellfun(@(x,y,z,w) ...
-                calc_ai(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
+                calc_ai_sandbox(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
                 labels,thing,names,mt_data.all_labels(:,1),'uniformoutput',false));
         
             
@@ -253,7 +256,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             tnames_s = cell(last_dim,1);
             for i = 1:last_dim
                 % PUT ACTUAL FREQ BAND IN TEXT
-                tnames_s{i} = [which_thing{1},' ',num2str(i),' ',montage_text,' ',sleep_text];
+                tnames_s{i} = [which_thing{1},' ',freq_names{i},' ',montage_text,' ',sleep_text];
             end
             features = [features;tnames_s];
         
@@ -289,65 +292,69 @@ if do_big_plots
     %title('Correlation between L-R asymmetry indices')
     set(gca,'fontsize',15)
 
-    figure
-    set(gcf,'position',[-300 78 1400 1200])
-   % tiledlayout(4,4,'tilespacing','tight','Padding','tight')
 
-    cols = [0 0.4470 0.7410;0.8500 0.3250 0.0980;0.9290 0.6940 0.1250];
-
-     
-    for f = 1:length(features)
-        nexttile
-        curr_feat = Ts.(features{f});
-        boxplot(Ts.(features{f}),Ts.soz_lats,'colors',cols,'symbol','');
-        hold on
-        unique_lats = xticklabels;
-        nlats = length(unique_lats);
-        for il = 1:nlats
-            curr_lats = strcmp(Ts.soz_lats,unique_lats{il});
+    if 1
+        figure
+        set(gcf,'position',[-300 78 1400 1200])
+       % tiledlayout(4,4,'tilespacing','tight','Padding','tight')
+    
+        cols = [0 0.4470 0.7410;0.8500 0.3250 0.0980;0.9290 0.6940 0.1250];
+    
+         
+        for f = 1:length(features)
+            nexttile
+            curr_feat = Ts.(features{f});
+            boxplot(Ts.(features{f}),Ts.soz_lats,'colors',cols,'symbol','');
+            hold on
+            unique_lats = xticklabels;
+            nlats = length(unique_lats);
+            for il = 1:nlats
+                curr_lats = strcmp(Ts.soz_lats,unique_lats{il});
+                
+                plot(il + randn(sum(curr_lats),1)*0.05,curr_feat(curr_lats),'o','color',cols(il,:))
+            end
+            %set(h,{'linew'},{2})
+            %title(feat_names_s{f})
+            ylabel(strrep(features{f},'_car',''))
+            yl = ylim;
+            new_y = [yl(1) yl(1) + 1.3*(yl(2)-yl(1))];
+            ylim(new_y)
+            p = kruskalwallis(Ts.(features{f}),Ts.soz_lats,'off');
+            bon_p = 0.05/3;
+    
+            %% Only do post hoc tests if group comparison significant
+            if p < 0.05
+                % do post hoc
+                lrp = ranksum(curr_feat(strcmp(Ts.soz_lats,'left')),curr_feat(strcmp(Ts.soz_lats,'right')));
+                rbp = ranksum(curr_feat(strcmp(Ts.soz_lats,'right')),curr_feat(strcmp(Ts.soz_lats,'bilateral')));
+                lbp = ranksum(curr_feat(strcmp(Ts.soz_lats,'left')),curr_feat(strcmp(Ts.soz_lats,'bilateral')));
+    
+                ybar1 = yl(1) + 1.06*(yl(2)-yl(1));
+                ytext1 = yl(1) + 1.09*(yl(2)-yl(1));
+                ybar2 = yl(1) + 1.18*(yl(2)-yl(1));
+                ytext2 = yl(1) + 1.21*(yl(2)-yl(1));
+                if lrp < bon_p
+                    plot([1 2],[ybar1 ybar1],'k-','linewidth',1)
+                    text(1.5,ytext1,get_asterisks_bonferroni(lrp,3),'horizontalalignment','center','fontsize',15)
+                end
+                if rbp < bon_p
+                    plot([2 3],[ybar1 ybar1],'k-','linewidth',1)
+                    text(2.5,ytext1,get_asterisks_bonferroni(rbp,3),'horizontalalignment','center','fontsize',15)
+                end
+                if lbp < bon_p
+                    plot([1 3],[ybar2 ybar2],'k-','linewidth',1)
+                    text(2,ytext2,get_asterisks_bonferroni(lbp,3),'horizontalalignment','center','fontsize',15)
+                end
+            end
             
-            plot(il + randn(sum(curr_lats),1)*0.05,curr_feat(curr_lats),'o','color',cols(il,:))
+            
+           
+            set(gca,'fontsize',15)
         end
-        %set(h,{'linew'},{2})
-        %title(feat_names_s{f})
-        ylabel(strrep(features{f},'_car',''))
-        yl = ylim;
-        new_y = [yl(1) yl(1) + 1.3*(yl(2)-yl(1))];
-        ylim(new_y)
-        p = kruskalwallis(Ts.(features{f}),Ts.soz_lats,'off');
-        bon_p = 0.05/3;
-
-        %% Only do post hoc tests if group comparison significant
-        if p < 0.05
-            % do post hoc
-            lrp = ranksum(curr_feat(strcmp(Ts.soz_lats,'left')),curr_feat(strcmp(Ts.soz_lats,'right')));
-            rbp = ranksum(curr_feat(strcmp(Ts.soz_lats,'right')),curr_feat(strcmp(Ts.soz_lats,'bilateral')));
-            lbp = ranksum(curr_feat(strcmp(Ts.soz_lats,'left')),curr_feat(strcmp(Ts.soz_lats,'bilateral')));
-
-            ybar1 = yl(1) + 1.06*(yl(2)-yl(1));
-            ytext1 = yl(1) + 1.09*(yl(2)-yl(1));
-            ybar2 = yl(1) + 1.18*(yl(2)-yl(1));
-            ytext2 = yl(1) + 1.21*(yl(2)-yl(1));
-            if lrp < bon_p
-                plot([1 2],[ybar1 ybar1],'k-','linewidth',1)
-                text(1.5,ytext1,get_asterisks_bonferroni(lrp,3),'horizontalalignment','center','fontsize',15)
-            end
-            if rbp < bon_p
-                plot([2 3],[ybar1 ybar1],'k-','linewidth',1)
-                text(2.5,ytext1,get_asterisks_bonferroni(rbp,3),'horizontalalignment','center','fontsize',15)
-            end
-            if lbp < bon_p
-                plot([1 3],[ybar2 ybar2],'k-','linewidth',1)
-                text(2,ytext2,get_asterisks_bonferroni(lbp,3),'horizontalalignment','center','fontsize',15)
-            end
-        end
+            
         
-        
-       
-        set(gca,'fontsize',15)
-        
+        print(gcf,[plot_folder,'Fig2'],'-dpng')
     end
-    print(gcf,[plot_folder,'Fig2'],'-dpng')
 
 end
 

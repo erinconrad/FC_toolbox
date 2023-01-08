@@ -61,7 +61,7 @@ for i = 1:nmt
             % Can do this on individual contact level
             for k = 1:maxn
        
-                % Find the contacts matching this electrode
+                % Find the contacts matching this contact
                 matching_contacts = strcmp(letters,curr_elec) & number == k;
 
                 % should just have one match
@@ -79,11 +79,28 @@ for i = 1:nmt
 
         elseif uni == 0 % bivariate measures, will do intra-electrode connectivity
                 
+            %
             % Measure intra-electrode connectivity
             curr_intra = nanmean(thing(strcmp(letters,curr_elec),strcmp(letters,curr_elec),:),[1 2]);
             
             % Fill, repeating across all electrodes
             intra(i,:,j,:) = repmat(curr_intra,1,maxn,1,1);
+            %}
+
+            %{
+            for k = 1:maxn
+                % Find the contacts matching this contact
+                matching_contacts = strcmp(letters,curr_elec) & number == k;
+
+                % Measure average connectivity within the electode for this
+                % contact
+                curr_intra = nanmean(thing(matching_contacts,strcmp(letters,curr_elec),:),[1 2]);
+
+                % Fill
+                intra(i,k,j,:) = curr_intra;
+
+            end
+            %}
            
         end
 
