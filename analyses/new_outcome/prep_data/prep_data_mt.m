@@ -232,7 +232,7 @@ out.all_se_iqr = all_se_iqr;
 out.all_rel_bp_iqr = all_rel_bp_iqr;
 out.all_xcor_iqr = all_xcor_iqr;
 out.all_lags_iqr = all_lags_iqr;
-out.all_ll_iqr = out.all_ll_iqr;
+out.all_ll_iqr = all_ll_iqr;
 
 save([out_folder,'mt_out.mat'],'out')
 
