@@ -3,7 +3,7 @@ function out = filter_canonical_freqs(values,fs)
 %% Parameters
 order = 4;
 freqs = get_frequencies; 
-freqs = freqs(2:end,:); % remove the null one
+freqs = freqs(1:end-1,:); % remove the null one
 nchs = size(values,2);
 
 for ich = 1:nchs
@@ -17,7 +17,11 @@ out = nan(size(values,1),size(values,2),nfreqs+1);
 for f = 1:nfreqs
     out(:,:,f) = bandpass_any(values,fs,freqs(f,:),order);
 end
+
+% Put the raw signal at the END
 out(:,:,end) = values;
+
+
 L = size(values,1);
 fr = fs*(0:(L/2))/L;
 

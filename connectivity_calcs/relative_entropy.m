@@ -23,7 +23,7 @@ if do_tw
                     %h1 = histcounts(filteredData(:,ich),10);
                     %h2 = histcounts(filteredData(:,jch),10);
 
-                    h1 = (steve_histcounts(filteredData(:,ich),10))';
+                    h1 = (steve_histcounts(filteredData(:,ich),10))'; % faster
                     h2 = (steve_histcounts(filteredData(:,jch),10))';
                     h1 = h1/sum(h1); h2 = h2/sum(h2); % normalize?
                     S1 = sum(h1.*log(h1./h2));

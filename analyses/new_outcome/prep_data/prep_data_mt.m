@@ -33,6 +33,7 @@ all_se = cell(npts,3,3);
 all_re = cell(npts,3,3);
 all_xcor = cell(npts,3,3);
 all_lags = cell(npts,3,3);
+all_ll = cell(npts,3,3);
 all_rel_bp = cell(npts,3,3);
 all_coh_iqr = cell(npts,3,3);
 all_bp_iqr = cell(npts,3,3);
@@ -45,6 +46,7 @@ all_re_iqr = cell(npts,3,3);
 all_xcor_iqr = cell(npts,3,3);
 all_lags_iqr = cell(npts,3,3);
 all_rel_bp_iqr = cell(npts,3,3);
+all_ll_iqr = cell(npts,3,3);
 
 
 %% Loop over patients
@@ -70,6 +72,7 @@ for p = 1:npts
     se = info.all_se;
     times = info.all_times;
     labels = info.montage_labels;
+    ll = info.all_ll;
     
     fs = info.fs;
     plv = info.all_plv;
@@ -146,6 +149,10 @@ for p = 1:npts
         all_rel_bp{p,im,2} = squeeze(nanmean(rel_bp(wake,im,:,:),1));
         all_rel_bp{p,im,3} = squeeze(nanmean(rel_bp(sleep,im,:,:),1));
 
+        all_ll{p,im,1} = squeeze(nanmean(ll(:,im,:,:),1));
+        all_ll{p,im,2} = squeeze(nanmean(ll(wake,im,:,:),1));
+        all_ll{p,im,3} = squeeze(nanmean(ll(sleep,im,:,:),1));
+
         %% Also measure STD
 
         all_coh_iqr{p,im,1} = squeeze(nanstd(coh(:,im,:,:,:),[],1));
@@ -191,6 +198,10 @@ for p = 1:npts
         all_rel_bp_iqr{p,im,1} = squeeze(nanstd(rel_bp(:,im,:,:),[],1));
         all_rel_bp_iqr{p,im,2} = squeeze(nanstd(rel_bp(wake,im,:,:),[],1));
         all_rel_bp_iqr{p,im,3} = squeeze(nanstd(rel_bp(sleep,im,:,:),[],1));
+
+        all_ll_iqr{p,im,1} = squeeze(nanstd(ll(:,im,:,:),[],1));
+        all_ll_iqr{p,im,2} = squeeze(nanstd(ll(wake,im,:,:),[],1));
+        all_ll_iqr{p,im,3} = squeeze(nanstd(ll(sleep,im,:,:),[],1));
     end
 
 end
@@ -209,6 +220,7 @@ out.all_se = all_se;
 out.all_rel_bp = all_rel_bp;
 out.all_xcor = all_xcor;
 out.all_lags = all_lags;
+out.all_ll = all_ll;
 out.all_coh_iqr = all_coh_iqr;
 out.all_spikes_iqr = all_spikes_iqr;
 out.all_rl_iqr = all_rl_iqr;
@@ -220,6 +232,7 @@ out.all_se_iqr = all_se_iqr;
 out.all_rel_bp_iqr = all_rel_bp_iqr;
 out.all_xcor_iqr = all_xcor_iqr;
 out.all_lags_iqr = all_lags_iqr;
+out.all_ll_iqr = out.all_ll_iqr;
 
 save([out_folder,'mt_out.mat'],'out')
 

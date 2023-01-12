@@ -1,7 +1,7 @@
 function [all_power,rel_power] = bp_calc_2(run_values,fs,skip,tw,do_tw)
 
 freqs = get_frequencies; 
-freqs = freqs(2:end,:);
+freqs = freqs(1:end-1,:); % remove broadband
 nfreqs = size(freqs,1);
 
 nchs = size(run_values,2);
@@ -36,13 +36,15 @@ else
     
     end
 end
+% Add broadband at the END
+all_power = [all_power,(bandpower(run_values))'];
 
 all_power(skip,:) = nan;
 all_power(all(isnan(run_values),1),:) = nan;
 
 
-% also get relative power (divide signal by power in whole thing (first freq band is broadband)
-rel_power = all_power./all_power(:,1); 
+% also get relative power (divide signal by power in whole thing (last freq band is broadband)
+rel_power = all_power./all_power(:,end); 
 
 
 end

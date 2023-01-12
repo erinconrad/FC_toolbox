@@ -1,8 +1,8 @@
 function [T,features] =  lr_mt
 
 %% Plots
-do_little_plots = 1;
-do_big_plots = 0;
+do_little_plots = 0;
+do_big_plots = 1;
 which_sleep_stages = 3;
 
 %% Get file locs
@@ -144,7 +144,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         %}
 
         % Loop over features
-        for which_thing = {'spikes'}%{'spikes','rl','bp','se','pearson','xcor','coh','plv','re'} %{'spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr'};
+        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv'} %{'spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr'};
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}
@@ -181,6 +181,16 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                     last_dim = 6;%size(coh{1},3); % multiple frequencies
                 case {'re','inter_re'}
                     thing = re;
+                    
+                    
+                    %thing = cellfun(@(x)
+                    %exp(-x),thing,'UniformOutput',false); % do steve fix
+                    for i = 1:length(thing)
+                        x = thing{i};
+                        x(isinf(x)) = nan;
+                        thing{i} = x;
+                    end
+
                     uni = 0; % not univariate
                     last_dim = 6;%size(coh{1},3); % multiple frequencies
                 case {'re_iqr'}
@@ -237,10 +247,10 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             
     
             %% Get asymmetry index
-            %
+            %{
             %k = find(strcmp(names,'HUP134'));
             k = 100;
-            calc_ai_sandbox(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots)
+            ai1 = calc_ai_sandbox(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots);
             %}
             
             %{
@@ -276,21 +286,22 @@ nfeatures = length(features); % -2 to remove outcome and bilaterality
 all_feat = table2array(Ts(:,size(Ts,2)-nfeatures+1:end));
 feat_corr = corr(all_feat,'rows','pairwise','type','spearman');
 if do_big_plots
-
-    figure
-    set(gcf,'position',[-300 78 1400 1200])
-   % tiledlayout(4,4,'tilespacing','tight','Padding','tight')
-    nexttile
-    turn_nans_gray(feat_corr)
-    xticks(1:nfeatures)
-    xticklabels(cellfun(@(x) strrep(x,'_car',''),features,'uniformoutput',false))
-    yticks(1:nfeatures)
-    yticklabels(cellfun(@(x) strrep(x,'_car',''),features,'uniformoutput',false))
-    caxis([-1 1])
-    c = colorbar;
-    c.Label.String = 'Correlation';
-    %title('Correlation between L-R asymmetry indices')
-    set(gca,'fontsize',15)
+    if 0
+        figure
+        set(gcf,'position',[-300 78 1400 1200])
+       % tiledlayout(4,4,'tilespacing','tight','Padding','tight')
+        nexttile
+        turn_nans_gray(feat_corr)
+        xticks(1:nfeatures)
+        xticklabels(cellfun(@(x) strrep(x,'_car',''),features,'uniformoutput',false))
+        yticks(1:nfeatures)
+        yticklabels(cellfun(@(x) strrep(x,'_car',''),features,'uniformoutput',false))
+        caxis([-1 1])
+        c = colorbar;
+        c.Label.String = 'Correlation';
+        %title('Correlation between L-R asymmetry indices')
+        set(gca,'fontsize',15)
+    end
 
 
     if 1
@@ -358,12 +369,43 @@ if do_big_plots
 
 end
 
+%% Univariate analyses of features
+feature_p_val = nan(nfeatures,1);
+for i = 1:nfeatures
+    feature_p_val(i) = kruskalwallis(Ts.(features{i}),Ts.soz_lats,'off');
+end
+
+% False discovery rate
+[~,qvalues] = mafdr(feature_p_val);
+
+if 0
+    [~,I] = sort(qvalues,'ascend');
+    table(features(I),qvalues(I),feature_p_val(I))
+end
 
 
 %% Prep  output table
 % First, remove those rows missing all columns
 T = Ts(~all_missing,:);
 
+% Remove columns where everything is nan
+empty_column = zeros(size(T,2),1);
+for i = 1:size(T,2)
+    a = T{:,i};
+    if ~isnumeric(a), continue; end
+    if all(isnan(a))
+        empty_column(i) = 1;
+    end
+end
+empty_column = logical(empty_column);
+
+% get corresponding variable names
+empty_variables = T.Properties.VariableNames(empty_column);
+
+% remove
+T(:,empty_column) = [];
+features(ismember(features,empty_variables)) = [];
+nfeatures = length(features);
 
 if isequal(which_sleep_stages,[2 3])
     % Next, perform imputation for those missing data from a given sleep stage
