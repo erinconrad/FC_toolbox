@@ -3,7 +3,7 @@ function prep_data_mt
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-edf_path = [results_folder,'edf_summ_out_backup_Jan32023/'];%[results_folder,'edf_summ_out/'];
+edf_path = [results_folder,'edf_summ_out/'];
 sleep_stage_path = [results_folder,'edf_out/'];
 out_folder = [results_folder,'analysis/new_outcome/data/'];
 if ~exist(out_folder,'dir')
