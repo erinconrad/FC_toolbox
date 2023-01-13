@@ -1,4 +1,4 @@
-function [T,features] =  lr_mt
+function [T,features] =  lp
 
 %% Plots
 do_little_plots = 0;
@@ -126,6 +126,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         xcor = mt_data.all_xcor(:,which_montage,which_sleep_stage);
         re = mt_data.all_re(:,which_montage,which_sleep_stage);
         se = mt_data.all_se(:,which_montage,which_sleep_stage);
+        ll = mt_data.all_ll(:,which_montage,which_sleep_stage);
 
         coh_iqr = mt_data.all_coh_iqr(:,which_montage,which_sleep_stage);
         pearson_iqr = mt_data.all_pearson_iqr(:,which_montage,which_sleep_stage);
@@ -137,14 +138,14 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         xcor_iqr = mt_data.all_xcor_iqr(:,which_montage,which_sleep_stage);
         re_iqr= mt_data.all_re_iqr(:,which_montage,which_sleep_stage);
         se_iqr = mt_data.all_se_iqr(:,which_montage,which_sleep_stage);
-    
+        ll_iqr = mt_data.all_ll_iqr(:,which_montage,which_sleep_stage);
         
         %{
         ******  ADD SOMETHING TO THROW OUT BAD SPIKES???   **********
         %}
 
         % Loop over features
-        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv'} %{'spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr'};
+        for which_thing = {'se'}%{'spikes','rl','bp','se','pearson','xcor','coh','plv','ll','re'}%{'spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr','ll_iqr'}
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}
@@ -205,6 +206,14 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                     thing = bp_iqr;
                     uni = 1; % univariate
                     last_dim = 5;%size(bp{1},2); % multiple frequencies
+                case {'ll'}
+                    thing = ll;
+                    uni = 1; % univariate
+                    last_dim = 1;%size(bp{1},2); % multiple frequencies
+                case {'ll_iqr'}
+                    thing = ll_iqr;
+                    uni = 1; % univariate
+                    last_dim = 1;%size(bp{1},2); % multiple frequencies
                 case {'rel_bp','inter_rel_bp'}
                     thing = rel_bp;
                     uni = 1; % univariate
@@ -250,7 +259,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             %{
             %k = find(strcmp(names,'HUP134'));
             k = 100;
-            ai1 = calc_ai_sandbox(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots);
+            ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots);
             %}
             
             %{
@@ -258,7 +267,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             %}
     
             ai = cell2mat(cellfun(@(x,y,z,w) ...
-                calc_ai_sandbox(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
+                calc_ai_ns(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
                 labels,thing,names,mt_data.all_labels(:,1),'uniformoutput',false));
         
             
@@ -380,7 +389,7 @@ end
 
 if 0
     [~,I] = sort(qvalues,'ascend');
-    table(features(I),qvalues(I),feature_p_val(I))
+    table(features(I(1:20)),qvalues(I(1:20)),feature_p_val(I(1:20)))
 end
 
 
@@ -407,6 +416,16 @@ T(:,empty_column) = [];
 features(ismember(features,empty_variables)) = [];
 nfeatures = length(features);
 
+% Make nan rows the average across the other patients
+for i = 1:size(T,2)
+    a = T{:,i};
+    if ~isnumeric(a), continue; end
+    a(isnan(a)) = nanmean(a);
+    T{:,i} = a;
+end
+
+
+%{
 if isequal(which_sleep_stages,[2 3])
     % Next, perform imputation for those missing data from a given sleep stage
     % (set the corresponding columns to be the same as those from the other
@@ -455,6 +474,7 @@ if isequal(which_sleep_stages,[2 3])
         end
     end
 end
+%}
 
 % Remove any remaining nan rows
 not_missing = ~any(ismissing(T(:,size(T,2)-nfeatures+1:end)),2);

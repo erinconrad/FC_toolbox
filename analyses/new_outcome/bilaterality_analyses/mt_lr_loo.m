@@ -4,7 +4,7 @@ function mt_lr_loo(T,features)
 rng(0)
 
 %% Establish parameters
-method = 'knn';
+method = 'bag';
 ncycles = 100;
 response = 'soz_lats';
 pca_perc = 90;

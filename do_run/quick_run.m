@@ -22,7 +22,7 @@ if isempty(do_save)
 end
 
 if isempty(plot_montage)
-    plot_montage = 2;
+    plot_montage = 1;
 end
 
 
@@ -113,7 +113,7 @@ end
 %% Calculate network
 
 % Loop over montages
-for im = 1:2
+for im = 1
    
     
     if im == 1
@@ -142,8 +142,7 @@ for im = 1:2
     values(:,~is_run) = nan;
     skip = find(~is_run);
 
-    out = filter_canonical_freqs(values,fs);
-    
+
     % filters
     values = notch_filter(values,fs);
     values = bandpass_filter(values,fs);
@@ -152,7 +151,7 @@ for im = 1:2
     tout.montage(im).name = montage;
     
     % Loop over networks to run
-    for in = 1:2
+    for in = 1
 
         if in == 1
             which_net = 'pc';
@@ -173,11 +172,11 @@ for im = 1:2
         % Get spikes
         %gdf = detector_alt(values,fs);
         %gdf = detector_new_timing(values,fs);
-        gdf = clean_detector(values,fs);
+        gdf = clean_detector_test(values,fs);
         fprintf('\nDetected %d spikes\n',size(gdf,1));
         
         % coherence
-        coh = coherence_calc(values,fs);
+       % coh = coherence_calc(values,fs);
 
         % save
         out.montage(im).name = montage;
