@@ -1,7 +1,7 @@
 function all_plv = plv_calc(values,fs,tw,do_tw)
 
 %% Get filtered signal
-out = filter_canonical_freqs(values,fs);
+out = filter_canonical_freqs(values,fs); % broadband at end
 nfreqs = size(out,3);
 nchs = size(values,2);
 

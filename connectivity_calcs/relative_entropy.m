@@ -1,7 +1,7 @@
 function re = relative_entropy(values,fs,tw,do_tw)
 
 %% Get filtered signal
-out = filter_canonical_freqs(values,fs);
+out = filter_canonical_freqs(values,fs); % broadband is at the end
 nfreqs = size(out,3);
 nchs = size(values,2);
 

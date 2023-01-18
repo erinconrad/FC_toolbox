@@ -10,27 +10,27 @@ if do_tw
     se_all = nan(nchs,length(times)-1);
     
     for t = 1:length(times)-1
-    for ich = 1:nchs
-        xn = values(times(t):times(t+1),ich);
-        xn(isnan(xn)) = nanmean(xn);
-        if all(isnan(xn))
-            continue
+        for ich = 1:nchs
+            xn = values(times(t):times(t+1),ich);
+            xn(isnan(xn)) = nanmean(xn);
+            if all(isnan(xn))
+                continue
+            end
+            [se,te] = pentropy(xn,fs);
+        
+            if 0
+                tt = 1/fs*(0:length(xn)-1);
+                figure
+                nexttile
+                plot(tt,xn)
+                nexttile
+                plot(te,se)
+        
+            end
+            se_all(ich,t) = nanmean(se);
+        
+        
         end
-        [se,te] = pentropy(xn,fs);
-    
-        if 0
-            tt = 1/fs*(0:length(xn)-1);
-            figure
-            nexttile
-            plot(tt,xn)
-            nexttile
-            plot(te,se)
-    
-        end
-        se_all(ich,t) = nanmean(se);
-    
-    
-    end
     end
     
     se_all = nanmean(se_all,2);

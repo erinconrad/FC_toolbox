@@ -3,7 +3,7 @@ function gdf = detector_new_timing(values,fs)
 %{
 %}
 
-tmul = 19;
+tmul = 17;
 absthresh = 100;
 sur_time = 0.5;
 close_to_edge = 0.05;
@@ -139,7 +139,7 @@ for j = 1:nchs
         %get_spike_details(out,data,fndata,HFdata,fs)
         %
          % Re-align spikes to peak of the spikey component
-         timeToPeak = [-.15,.15]; %Only look 150 ms before and 150 ms after the currently defined peak
+         timeToPeak = [-.1,.1]; %Only look 100 ms before and 100 ms after the currently defined peak
          fullSurround = [-sur_time,sur_time]*fs;
          idxToPeak = timeToPeak*fs;
          
@@ -211,7 +211,7 @@ if ~isempty(gdf)
     diff_chs = [inf;diff(gdf(:,1))];
 
     % find those that are close in time and the same ch
-    too_close = abs(diff_times) < 100e-3*fs & diff_chs == 0;
+    too_close = abs(diff_times) < 200e-3*fs & diff_chs == 0;
 
     keep(too_close) = 0;
     keep = logical(keep);

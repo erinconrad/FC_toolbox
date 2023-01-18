@@ -1,9 +1,9 @@
 function out = filter_canonical_freqs(values,fs)
-
+% This gives broadband back at the end
 %% Parameters
 order = 4;
 freqs = get_frequencies; 
-freqs = freqs(1:end-1,:); % remove the null one
+freqs = freqs(1:end-1,:); % remove the broadband
 nchs = size(values,2);
 
 for ich = 1:nchs
@@ -18,7 +18,7 @@ for f = 1:nfreqs
     out(:,:,f) = bandpass_any(values,fs,freqs(f,:),order);
 end
 
-% Put the raw signal at the END
+% Put the raw signal back at the END
 out(:,:,end) = values;
 
 
