@@ -88,12 +88,10 @@ curr_times = times(rand_start:rand_end);
 curr_values = values(rand_start:rand_end,:);
 
 %% Reject bad channels
-%{
-take this out???????????
-%}
 which_chs = 1:nallowed;
 [bad,details] = identify_bad_chs(curr_values,which_chs,allowed_labels,fs);
 which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
+%}
 
 %% CAR reference
 [car_values,car_labels] = car_montage(curr_values,which_chs,allowed_labels);
@@ -211,22 +209,30 @@ for im = 1:3
     end
 
     % Relative entropy - long and short time windows different
-    re = relative_entropy(run_values,fs,tw,1);
+    re = relative_entropy(run_values,fs,tw,1); %broadband at the end
     if test_flag
         re2 = relative_entropy(run_values,fs,tw,0);
         figure; set(gcf,'position',[10 10 1400 400])
         t = tiledlayout(1,size(re,3));
         for i = 1:size(re,3)
-        nexttile; turn_nans_gray(re(:,:,i)); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
+            if sum(~(isnan(re(:,:,i))|isinf(re(:,:,i))),'all') == 0
+                nexttile; continue;
+            else
+                nexttile; turn_nans_gray(re(:,:,i)); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
+            end
         end
-        title(t,'Relative entropy, full tw')
+        title(t,'Relative entropy, short tw')
 
         figure; set(gcf,'position',[10 10 1400 400])
         t = tiledlayout(1,size(re,3));
         for i = 1:size(re,3)
-        nexttile; turn_nans_gray(re2(:,:,i)); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
+            if sum(~(isnan(re2(:,:,i))|isinf(re2(:,:,i))),'all') == 0
+                nexttile; continue;
+            else
+                nexttile; turn_nans_gray(re2(:,:,i)); yticks(1:size(xcor,1)); yticklabels(curr_labels); xticks(1:size(xcor,1)); xticklabels(curr_labels);
+            end
         end
-        title(t,'Relative entropy, short tw')
+        title(t,'Relative entropy, full tw')
 
         figure
         for i = 1:size(re,3)
@@ -253,13 +259,13 @@ for im = 1:3
     end
     
     % Spikes
-    gdf = detector_new_timing(run_values,fs);
+    gdf = detector_new_timing(run_values,fs); % Erin changed tmul from 19 to 17
     
     % Get alpha delta ratio
     ad_rat = calc_ad(run_values,fs);
     
     % Get bandpower (performs similarly for short and long tw.)
-    [bp,rel_bp] = bp_calc_2(run_values,fs,[],tw,1); 
+    [bp,rel_bp] = bp_calc_2(run_values,fs,[],tw,1); % broadband at the end
     if test_flag
         [bp2,rel_bp2] = bp_calc_2(run_values,fs,[],tw,1);
         figure; set(gcf,'position',[10 10 900 400])
@@ -287,7 +293,7 @@ for im = 1:3
     end
     
     % Get coherence. Two second time window breaks it. 10 seconds about the same as 1 minute
-    coh = faster_coherence_calc(run_values,fs,tw,1);
+    coh = faster_coherence_calc(run_values,fs,tw,1); % broadband at end
     if test_flag
         coh2 = faster_coherence_calc(run_values,fs,tw,0);
         figure; set(gcf,'position',[10 10 1400 400])
@@ -312,7 +318,7 @@ for im = 1:3
     end
 
     % PLV - very similar short vs long time window.
-    plv = plv_calc(run_values,fs,tw,1);
+    plv = plv_calc(run_values,fs,tw,1); % broadband at the end
     if test_flag
         plv2 = plv_calc(run_values,fs,tw,1);
         figure; set(gcf,'position',[10 10 1400 400])
@@ -374,11 +380,13 @@ end
  if show_data
     ex_chs = [];
     only_run = 0;
-    show_montage = 3;
+    show_montage = 2;
     simple_plot(tout,out,ex_chs,show_montage,out.montage(show_montage).gdf,...
-        only_run,skip)
+        only_run,out.montage(show_montage).skip)
     %pause
     %close(gcf)
+    return
+
     clear tout
 
     m = 1;
