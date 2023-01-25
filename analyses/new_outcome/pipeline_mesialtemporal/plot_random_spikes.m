@@ -1,7 +1,7 @@
 function plot_random_spikes(all_spikes,name,labels,montage,edf_path,edf_summ_path)
 
-nspikes = 50;
-surround = 3; % 2 seconds befor or after
+nspikes = 40;
+surround = 2; % 2 seconds befor or after
 ntotal = size(all_spikes,1);
 if ntotal == 0
     fprintf('\nNo spikes detected for %s\n',name)
@@ -11,7 +11,7 @@ else
 end
 figure
 set(gcf,'position',[10 10 1400 1000])
-tiledlayout(5,10,'tilespacing','tight','padding','tight')
+tiledlayout(5,8,'tilespacing','tight','padding','tight')
 
 for i = 1:nspikes
     

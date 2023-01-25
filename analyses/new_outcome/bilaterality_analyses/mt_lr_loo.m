@@ -7,7 +7,7 @@ rng(0)
 method = 'bag';
 ncycles = 100;
 response = 'soz_lats';
-pca_perc = 90;
+pca_perc = 80;
 which_outcome = 'engel';
 which_year = 1;
 nfeatures = round(sqrt(length(features)));

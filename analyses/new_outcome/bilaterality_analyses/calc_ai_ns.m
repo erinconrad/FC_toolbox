@@ -72,9 +72,9 @@ for i = 1:nmt
             assert(sum(matching_contacts) <= 1)
                    
             % Calculate "intra" for these contacts
-            if uni == 1
+            if uni == 1 % if univariate
                 curr_intra = nanmean(thing(matching_contacts,:,:),1); %just the thing
-            else
+            else % if bivariate
                 curr_intra = nanmean(thing(matching_contacts,strcmp(letters,curr_elec),:),[1 2]); % average for this contact with all contacts on same electrode
             end
             

@@ -1,9 +1,10 @@
-function [T,features] =  lp
+function [T,features] =  lr_mt
 
 %% Plots
 do_little_plots = 0;
-do_big_plots = 1;
-which_sleep_stages = 3;
+do_big_plots = 0;
+which_sleep_stages = [1 2 3]; % all = 1, wake =2, sleep = 3
+which_montages = [1 2 3]; % machine = 1,car = 2, bipolar = 3
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -20,7 +21,7 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 % Frequency band names
-freq_names = {'broadband','delta','theta','alpha','beta','gamma'};
+freq_names = {'delta','theta','alpha','beta','gamma','broadband'};
 
 %% Load data file
 data = load([inter_folder,'main_out.mat']);
@@ -51,7 +52,7 @@ ilae_yr2 = all_outcome(:,2,2);
 
 %% Clean SOZ localizations and lateralities
 soz_lats(strcmp(soz_lats,'diffuse')) = {'bilateral'}; % make diffuse be the same as bilateral
-soz_locs(contains(soz_locs,'temporal')) = {'temporal'};
+soz_locs(contains(soz_locs,'temporal')) = {'temporal'}; % make any temporal be temporal
 
 %% Consensus ablation or resection lat
 surg_lat = cell(npts,1);
@@ -105,7 +106,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         sleep_text = 'sleep';
     end
 
-    for which_montage =[1 2 3] % machine,car, bipolar
+    for which_montage =which_montages % machine = 1,car = 2, bipolar = 3
         
         if which_montage == 1
             montage_text = 'machine';
@@ -139,13 +140,13 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         re_iqr= mt_data.all_re_iqr(:,which_montage,which_sleep_stage);
         se_iqr = mt_data.all_se_iqr(:,which_montage,which_sleep_stage);
         ll_iqr = mt_data.all_ll_iqr(:,which_montage,which_sleep_stage);
-        
-        %{
-        ******  ADD SOMETHING TO THROW OUT BAD SPIKES???   **********
-        %}
 
+        % Find non-empty pts
+        non_empty = find(cellfun(@(x) ~isempty(x), bp));
+        first_non_empty = non_empty(1);
+        
         % Loop over features
-        for which_thing = {'se'}%{'spikes','rl','bp','se','pearson','xcor','coh','plv','ll','re'}%{'spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr','ll_iqr'}
+        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','ll','re','spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr','ll_iqr'}
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}
@@ -167,19 +168,19 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                 case {'coh','near_coh','inter_coh'}
                     thing = coh;
                     uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
+                    last_dim = size(coh{first_non_empty},3); % multiple frequencies
                 case {'coh_iqr'}
                     thing = coh_iqr;
                     uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
+                    last_dim = size(coh{first_non_empty},3); % multiple frequencies
                 case {'plv','near_plv','inter_plv'}
                     thing = plv;
                     uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
+                    last_dim = size(plv{first_non_empty},3); % multiple frequencies
                 case {'plv_iqr'}
                     thing = plv_iqr;
                     uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
+                    last_dim = size(plv{first_non_empty},3); % multiple frequencies
                 case {'re','inter_re'}
                     thing = re;
                     
@@ -193,19 +194,19 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                     end
 
                     uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
+                    last_dim = size(re{first_non_empty},3); % multiple frequencies
                 case {'re_iqr'}
                     thing = re_iqr;
                     uni = 0; % not univariate
-                    last_dim = 6;%size(coh{1},3); % multiple frequencies
+                    last_dim = size(re{first_non_empty},3); % multiple frequencies
                 case {'bp','inter_bp'}
                     thing = bp;
                     uni = 1; % univariate
-                    last_dim = 5;%size(bp{1},2); % multiple frequencies
+                    last_dim = size(bp{first_non_empty},2); % multiple frequencies
                 case {'bp_iqr'}
                     thing = bp_iqr;
                     uni = 1; % univariate
-                    last_dim = 5;%size(bp{1},2); % multiple frequencies
+                    last_dim = size(bp{first_non_empty},2); % multiple frequencies
                 case {'ll'}
                     thing = ll;
                     uni = 1; % univariate
@@ -217,11 +218,11 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                 case {'rel_bp','inter_rel_bp'}
                     thing = rel_bp;
                     uni = 1; % univariate
-                    last_dim = 5;%size(bp{1},2); % multiple frequencies
+                    last_dim = size(rel_bp{first_non_empty},2);% multiple frequencies
                 case {'rel_bp_iqr'}
                     thing = rel_bp_iqr;
                     uni = 1; % univariate
-                    last_dim = 5;%size(bp{1},2); % multiple frequencies
+                    last_dim = size(rel_bp{first_non_empty},2); % multiple frequencies
                 case {'se'}
                     thing = se;
                     uni = 1; % univariate
@@ -257,14 +258,11 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
     
             %% Get asymmetry index
             %{
-            %k = find(strcmp(names,'HUP134'));
-            k = 100;
+            k = find(strcmp(names,'HUP153'));
+            %k = 100;
             ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots);
             %}
             
-            %{
-            ***** NEED TO FINALIZE THE SANDBOX FUNCTION ******
-            %}
     
             ai = cell2mat(cellfun(@(x,y,z,w) ...
                 calc_ai_ns(x,y,z,w,uni,last_dim,which_thing,subplot_path,do_little_plots),...
@@ -275,7 +273,10 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             tnames_s = cell(last_dim,1);
             for i = 1:last_dim
                 % PUT ACTUAL FREQ BAND IN TEXT
-                tnames_s{i} = [which_thing{1},' ',freq_names{i},' ',montage_text,' ',sleep_text];
+                clean_thing = which_thing{1};
+                clean_thing = strrep(clean_thing,'_',' ');
+                clean_thing = strrep(clean_thing,'iqr','SD');
+                tnames_s{i} = [clean_thing,' ',freq_names{i},' ',montage_text,' ',sleep_text];
             end
             features = [features;tnames_s];
         
@@ -378,31 +379,18 @@ if do_big_plots
 
 end
 
-%% Univariate analyses of features
-feature_p_val = nan(nfeatures,1);
-for i = 1:nfeatures
-    feature_p_val(i) = kruskalwallis(Ts.(features{i}),Ts.soz_lats,'off');
-end
-
-% False discovery rate
-[~,qvalues] = mafdr(feature_p_val);
-
-if 0
-    [~,I] = sort(qvalues,'ascend');
-    table(features(I(1:20)),qvalues(I(1:20)),feature_p_val(I(1:20)))
-end
 
 
 %% Prep  output table
 % First, remove those rows missing all columns
 T = Ts(~all_missing,:);
 
-% Remove columns where everything is nan
+% Remove columns where most patients are nans
 empty_column = zeros(size(T,2),1);
 for i = 1:size(T,2)
     a = T{:,i};
     if ~isnumeric(a), continue; end
-    if all(isnan(a))
+    if sum(isnan(a)) >= 0.5*length(a)
         empty_column(i) = 1;
     end
 end
@@ -424,57 +412,6 @@ for i = 1:size(T,2)
     T{:,i} = a;
 end
 
-
-%{
-if isequal(which_sleep_stages,[2 3])
-    % Next, perform imputation for those missing data from a given sleep stage
-    % (set the corresponding columns to be the same as those from the other
-    % sleep stage).
-    % Loop over patients and columns
-    for i = 1:size(T,1) 
-        for j = size(T,2)-nfeatures+1:size(T,2)
-            if isnan(T{i,j})
-                % get the variable name
-                var = T.Properties.VariableNames{j};
-    
-                % get the non sleep/wake portion
-                if contains(var,'wake')
-                    C = strsplit(var,' wake');
-                    new_var = [C{1},' sleep'];
-                elseif contains(var,'sleep')
-                    C = strsplit(var,' sleep');
-                    new_var = [C{1},' wake'];
-                end
-    
-                % Get the value from the other sleep stage
-                new_j = strcmp(T.Properties.VariableNames,new_var);
-                new_val = T{i,new_j};
-                T{i,j} = new_val;
-    
-            end
-        end
-    end
-    
-    % Do the same fix for the machine reference wake bandpower. Weird error for
-    % four patients that I should investigate
-    for i = 1:size(T,1) 
-        for j = size(T,2)-nfeatures+1:size(T,2)
-            % get the variable name
-            var = T.Properties.VariableNames{j};
-    
-            if contains(var,'bp') && contains(var,'machine') && contains(var,'wake') && abs(T{i,j})<1e-16 % wacky error
-                C = strsplit(var,' wake');
-                new_var = [C{1},' sleep'];
-                new_j = strcmp(T.Properties.VariableNames,new_var);
-                new_val = T{i,new_j};
-                T{i,j} = new_val;
-            end
-    
-    
-        end
-    end
-end
-%}
 
 % Remove any remaining nan rows
 not_missing = ~any(ismissing(T(:,size(T,2)-nfeatures+1:end)),2);

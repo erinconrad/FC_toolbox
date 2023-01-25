@@ -43,6 +43,7 @@ for fold = 1:KFolds
             responseVector, ...
             'off');
     end
+    pValues(isnan(pValues)) = 1;
     [~,featureIndex] = sort(-log(pValues), 'descend');
     tempIncludedPredictorNames = temp_predictors.Properties.VariableNames(featureIndex(1:numFeaturesToKeep));
     all_included_predictors{fold} = tempIncludedPredictorNames;

@@ -1,7 +1,7 @@
 function combine_subplots
 
 %% Parameters
-which_things = {'spikes_1'};
+which_things = {'spikes_1','pearson_1'};
 
 %% Get file locs
 locations = fc_toolbox_locs;
