@@ -32,6 +32,8 @@ for i = 1:nspikes
     fs = round(info.NumSamples(1,1)/seconds(info.DataRecordDuration));
     rlabels = cellstr(info.SignalLabels);
 
+    
+
     % get allowable electrodes
     allowable_labels = get_allowable_elecs;
 
@@ -50,6 +52,14 @@ for i = 1:nspikes
         %% Fill up values
         values(:,is) = data.(curr_signal){1};
         
+    end
+
+    %% Downsample to 256 hz
+    if abs(fs-256)>1
+        %old_values = values; old_fs = fs; old_times = linspace(0,size(old_values,1)/old_fs,size(old_values,1));
+        p = 256; q = fs;
+        values = resample(values,p,q);
+        fs = 256;
     end
 
     % Get the channel index in this realigned data
