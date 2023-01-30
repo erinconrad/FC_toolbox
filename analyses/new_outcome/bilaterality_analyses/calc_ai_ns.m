@@ -35,6 +35,7 @@ number = cellfun(@(x) str2num(x{1}),number);
 letters = cellfun(@(x) regexp(x,'[a-zA-Z]+','Match'),labels,'uniformoutput',false);
 letters(cellfun(@isempty,letters)) = {{'zzzzz'}};
 letters = cellfun(@(x) x{1},letters,'uniformoutput',false);
+letter_no_side = cellfun(@(x) x(2),letters,'uniformoutput',false);
 
 maxn = 12; % up to 12 contacts per electrode
 nmt = length(which_elecs);
@@ -62,7 +63,6 @@ for i = 1:nmt
         end
         
 
-        % Can do this on individual contact level
         for k = 1:maxn
    
             % Find the contacts matching this electrode
@@ -70,12 +70,25 @@ for i = 1:nmt
 
             % should just have one match?
             assert(sum(matching_contacts) <= 1)
+
+            if contains(which_thing,'inter') % some inter-electrode measure
+                if uni == 1
+                    curr_intra = nanmean(thing(matching_contacts,:,:),1); %just the thing
+                else
+                    inter_match = strcmp(letter_no_side,which_elecs{i});
+                    curr_intra = nanmean(thing(matching_contacts,inter_match,:),[1 2]); %just the thing
+                end
+
+
+            else
                    
-            % Calculate "intra" for these contacts
-            if uni == 1 % if univariate
-                curr_intra = nanmean(thing(matching_contacts,:,:),1); %just the thing
-            else % if bivariate
-                curr_intra = nanmean(thing(matching_contacts,strcmp(letters,curr_elec),:),[1 2]); % average for this contact with all contacts on same electrode
+                % Calculate "intra" for these contacts
+                if uni == 1 % if univariate
+                    curr_intra = nanmean(thing(matching_contacts,:,:),1); %just the thing
+                else % if bivariate
+                    curr_intra = nanmean(thing(matching_contacts,strcmp(letters,curr_elec),:),[1 2]); % average for this contact with all contacts on same electrode
+                end
+
             end
             
             
@@ -91,30 +104,32 @@ for i = 1:nmt
 end
 
 %% Take AI
-
-switch average_level
-    case 'contact'
-        % This averages the AI for all L-R contact pairs, which
-        % may overweight the pairs with lower values (e.g., if
-        % very few spikes, the AI may be quite large). May
-        % increase variance?
-        signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:).^2+intra(:,:,2,:).^2));
-        signed = (squeeze(nanmean(signed,[1 2 3])))';
-    case 'electrode'
-        % This first averages the feature within each
-        % electrode, calculates AI, and then averages across
-        % the three electrodes
-        intra_avg = nanmean(intra,2);
-        signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./sqrt((intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
-        signed = (squeeze(nanmean(signed,[1 2 3])))';
-    case 'side'
-        % This averages the feature across the whole side, then
-        % calculates the AI
-        intra_avg = nanmean(intra,[1 2]);
-        signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./(sqrt(intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
-        signed = (squeeze(nanmean(signed,[1 2 3])))';
+if contains(which_thing,'inter')
+    signed = squeeze(nanmean(intra,[1 2 3]))';
+else
+    switch average_level
+        case 'contact'
+            % This averages the AI for all L-R contact pairs, which
+            % may overweight the pairs with lower values (e.g., if
+            % very few spikes, the AI may be quite large). May
+            % increase variance?
+            signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:).^2+intra(:,:,2,:).^2));
+            signed = (squeeze(nanmean(signed,[1 2 3])))';
+        case 'electrode'
+            % This first averages the feature within each
+            % electrode, calculates AI, and then averages across
+            % the three electrodes
+            intra_avg = nanmean(intra,2);
+            signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./sqrt((intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
+            signed = (squeeze(nanmean(signed,[1 2 3])))';
+        case 'side'
+            % This averages the feature across the whole side, then
+            % calculates the AI
+            intra_avg = nanmean(intra,[1 2]);
+            signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./(sqrt(intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
+            signed = (squeeze(nanmean(signed,[1 2 3])))';
+    end
 end
-    %}
 
 
 %% Average across ms  

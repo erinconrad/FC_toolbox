@@ -1,6 +1,11 @@
 function boxplot_with_points(x,categories,show_stats)
 
-cols = [0 0.4470 0.7410;0.8500 0.3250 0.0980;0.9290 0.6940 0.1250];
+%{
+cols = [0 0.4470 0.7410;...
+    0.8500 0.3250 0.0980;...
+    0.9290 0.6940 0.1250];
+%}
+cols = colormap(lines(length(unique(categories))));
 
 boxplot(x,categories,'colors',cols,'symbol','');
 hold on

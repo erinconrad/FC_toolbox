@@ -3,7 +3,7 @@ function [T,features] =  lr_mt
 %% Plots
 do_little_plots = 0;
 do_big_plots = 0;
-which_sleep_stages = [1 2 3]; % all = 1, wake =2, sleep = 3
+which_sleep_stages = [2 3]; % all = 1, wake =2, sleep = 3
 which_montages = [1 2 3]; % machine = 1,car = 2, bipolar = 3
 
 %% Get file locs
@@ -276,7 +276,11 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                 clean_thing = which_thing{1};
                 clean_thing = strrep(clean_thing,'_',' ');
                 clean_thing = strrep(clean_thing,'iqr','SD');
-                tnames_s{i} = [clean_thing,' ',freq_names{i},' ',montage_text,' ',sleep_text];
+                if last_dim == 1
+                    tnames_s{i} = [clean_thing,' ',montage_text,' ',sleep_text];
+                else
+                    tnames_s{i} = [clean_thing,' ',freq_names{i},' ',montage_text,' ',sleep_text];
+                end
             end
             features = [features;tnames_s];
         
@@ -385,12 +389,12 @@ end
 % First, remove those rows missing all columns
 T = Ts(~all_missing,:);
 
-% Remove columns where most patients are nans
+% Remove columns where many patients are nans
 empty_column = zeros(size(T,2),1);
 for i = 1:size(T,2)
     a = T{:,i};
     if ~isnumeric(a), continue; end
-    if sum(isnan(a)) >= 0.5*length(a)
+    if sum(isnan(a)) >= 0.1*length(a)
         empty_column(i) = 1;
     end
 end
@@ -404,6 +408,25 @@ T(:,empty_column) = [];
 features(ismember(features,empty_variables)) = [];
 nfeatures = length(features);
 
+% Remove rows where many columns are nans
+%{
+empty_row = zeros(size(T,1),1);
+Tfeat = table2array(T(:,features));
+for i = 1:size(Tfeat,1)
+    a = Tfeat(i,:);
+    if sum(isnan(a)|abs(a)<1e-4) >= 0.5*length(a)
+        empty_row(i) = 1;
+    end
+
+end
+empty_row = logical(empty_row);
+
+% remove
+T(empty_row,:) = [];
+%}
+
+%{ 
+NO do this AFTER SPLITTING - data leakage!!!
 % Make nan rows the average across the other patients
 for i = 1:size(T,2)
     a = T{:,i};
@@ -413,9 +436,11 @@ for i = 1:size(T,2)
 end
 
 
+
 % Remove any remaining nan rows
 not_missing = ~any(ismissing(T(:,size(T,2)-nfeatures+1:end)),2);
 T = T(not_missing,:);
+%}
 
 %% Double check labels
 if 0

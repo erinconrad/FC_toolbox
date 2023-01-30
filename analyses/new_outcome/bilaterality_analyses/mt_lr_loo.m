@@ -4,16 +4,33 @@ function mt_lr_loo(T,features)
 rng(0)
 
 %% Establish parameters
-method = 'bag';
+method = 'svm';
 ncycles = 100;
 response = 'soz_lats';
 pca_perc = 80;
 which_outcome = 'engel';
-which_year = 1;
+which_year = 2;
 nfeatures = round(sqrt(length(features)));
-rm_non_temporal = 0;
+rm_non_temporal = 1;
 rm_bilateral = 0;
 combine_br = 0;
+
+if strcmp(response,'outcome')
+    % Parse actual outcome
+    outcome_name = [which_outcome,'_yr',sprintf('%d',which_year)];
+    
+    % Remove patients with missing data
+    no_outcome = cellfun(@isempty,T.(outcome_name));
+    no_surg = ~strcmp(T.surgery,'Laser ablation') & ~strcmp(T.surgery,'Resection');
+    
+    remove = no_outcome | no_surg;
+    T(remove,:) = [];
+    
+    
+    outcome = cellfun(@(x) parse_outcome_new(x,which_outcome),T.(outcome_name),'UniformOutput',false);
+    T.outcome = outcome;
+end
+
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -61,13 +78,28 @@ for i = 1:npts
     % make sure they're distinct
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
 
+    % perform imputation of missing data
+    for j = 1:size(Ttrain,2)
+        a = Ttrain{:,j};
+        if ~isnumeric(a), continue; end
+
+        a(isnan(a)|abs(a)<1e-8) = nanmedian(a);
+        Ttrain{:,j} = a;
+
+        b = Ttest{:,j};
+        b(isnan(b)|abs(b)<1e-8) = nanmedian(a); % impute with training data median
+        Ttest{:,j} = b;
+    end
+
+
+
     % train classifier
     %tc = ensemble_based_fs(Ttrain,features,response);
    % tc = fscmrmr_classifier(Ttrain,method,features,response,pca_perc,ncycles);
     %tc = nca_classifier(Ttrain,method,features,response,pca_perc,ncycles);
     %tc = class_feature_select(Ttrain,method,features,response,ncycles);
 
-    %tc = pca_then_fs_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
+    %tc = pca_first_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
     tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
     all_best_pred{i} = tc.includedPredictorNames;
 

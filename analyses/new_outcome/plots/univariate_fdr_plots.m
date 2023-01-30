@@ -1,6 +1,7 @@
 function univariate_fdr_plots(T,features)
 
 %% Parameters
+rm_non_temporal = 1;
 response = 'soz_lats';
 
 %{
@@ -9,15 +10,23 @@ allowed_features = features(cellfun(@(x) contains(x,which_sleep_stage),features)
 %}
 allowed_features = features;
 
+%% Remove non temporal patients
+if rm_non_temporal
+    temporal = strcmp(T.soz_locs,'temporal');
+    T(~temporal,:) = [];
+end
 
 %% Initialize figure
 figure
+set(gcf,'position',[1 1 1400 1000])
+tiledlayout(2,2,"TileSpacing",'tight','padding','tight')
 
 
 %% Show spikes
-feature = 'spikes delta car all';
+feature = 'spikes car sleep';
+%feature = 'bp delta machine sleep';
 nexttile
-boxplot_with_points(T.(feature),T.(response),1)
+boxplot_with_points(T.(feature),T.(response),0)
 ylabel('Spike rate asymmetry index')
 set(gca,'fontsize',15)
 
@@ -67,7 +76,24 @@ legend([pl pr],{'Left vs right/bilateral','Right vs left/bilateral'},'location',
 title('FDR-adjusted p-values to distinguish specific laterality')
 set(gca,'fontsize',15)
 
-%% Correlation matrix
-%C = corr()
+%% For all/CAR, how do different AIs agree with eachother
+sleep_stage = 'sleep';
+ref = 'car';
+%networks = {'pearson','coh','plv','re','xcor'};
+curr_features = features(cellfun(@(x) contains(x,sleep_stage) && contains(x,ref) && ~contains(x,'SD'),features));
+%matofindices = unique(cell2mat(arrayfun(@(pat)(find(contains(curr_features,pat))),networks(:),'UniformOutput',false)));
+%curr_networks = curr_features(matofindices);
+C = corr(table2array(T(:,curr_features)),'rows','pairwise');
+
+nexttile
+turn_nans_gray(C)
+xticks(1:length(curr_features))
+yticks(1:length(curr_features))
+xticklabels(curr_features)
+yticklabels(curr_features)
+colorbar
+clim([-1 1])
+title('Correlation between AI features')
+set(gca,'fontsize',15)
 
 end
