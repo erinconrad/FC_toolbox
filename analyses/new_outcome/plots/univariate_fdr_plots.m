@@ -1,7 +1,7 @@
 function univariate_fdr_plots(T,features)
 
 %% Parameters
-rm_non_temporal = 1;
+rm_non_temporal = 0;
 response = 'soz_lats';
 
 %{
@@ -26,7 +26,7 @@ tiledlayout(2,2,"TileSpacing",'tight','padding','tight')
 feature = 'spikes car sleep';
 %feature = 'bp delta machine sleep';
 nexttile
-boxplot_with_points(T.(feature),T.(response),0)
+boxplot_with_points(T.(feature),T.(response),1)
 ylabel('Spike rate asymmetry index')
 set(gca,'fontsize',15)
 
@@ -91,6 +91,7 @@ xticks(1:length(curr_features))
 yticks(1:length(curr_features))
 xticklabels(curr_features)
 yticklabels(curr_features)
+colormap(parula)
 colorbar
 clim([-1 1])
 title('Correlation between AI features')
