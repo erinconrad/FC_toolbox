@@ -1,7 +1,7 @@
 function outcome_investigations(T,features)
 
 which_outcome = 'engel';
-which_year = 2;
+which_year = 1;
 rm_non_temporal = 1;
 
 %% Remove non temporal patients
@@ -24,9 +24,11 @@ heatmap(T,'soz_lats',outcome_name)
 end
 
 %% Compare outcomes by spike AI
+if 0
 feature = 'spikes car sleep';
 figure
 boxplot_with_points(T.(feature),T.(outcome_name),0)
+end
 
 
 end

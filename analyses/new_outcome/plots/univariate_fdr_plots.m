@@ -1,7 +1,7 @@
 function univariate_fdr_plots(T,features)
 
 %% Parameters
-rm_non_temporal = 0;
+rm_non_temporal = 1;
 response = 'soz_lats';
 
 %{
@@ -71,8 +71,8 @@ hold on
 pr = plot(qvalues2(I2(1:n_to_plot)),'o','markersize',15);
 plot(xlim,[0.05 0.05],'k--')
 xticklabels([])
-ylim([0 0.6])
-legend([pl pr],{'Left vs right/bilateral','Right vs left/bilateral'},'location','east','fontsize',15)
+ylim([0 0.3])
+legend([pl pr],{'Left vs right/bilateral','Right vs left/bilateral'},'location','northeast','fontsize',15)
 title('FDR-adjusted p-values to distinguish specific laterality')
 set(gca,'fontsize',15)
 
@@ -91,7 +91,6 @@ xticks(1:length(curr_features))
 yticks(1:length(curr_features))
 xticklabels(curr_features)
 yticklabels(curr_features)
-colormap(parula)
 colorbar
 clim([-1 1])
 title('Correlation between AI features')
