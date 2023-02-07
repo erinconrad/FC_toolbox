@@ -24,7 +24,7 @@ tiledlayout(2,2,"TileSpacing",'tight','padding','tight')
 
 %% Show spikes
 feature = 'spikes car sleep';
-%feature = 'bp delta machine sleep';
+%feature = 'plv theta bipolar wake';
 nexttile
 boxplot_with_points(T.(feature),T.(response),1)
 ylabel('Spike rate asymmetry index')

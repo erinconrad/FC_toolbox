@@ -5,7 +5,7 @@ rng(0)
 
 %% Establish parameters
 method = 'svm';
-ncycles = 100; % for bagged ensemble
+ncycles = 100; % for bagged ensemble only
 response = 'soz_lats';
 pca_perc = 90;
 which_outcome = 'engel';

@@ -5,7 +5,7 @@ rng(0)
 
 %% Establish parameters
 method = 'svm';
-ncycles = 100; % for bagged ensemble
+ncycles = 100; % for bagged ensemble only
 response = 'soz_lats';
 pca_perc = 90;
 which_outcome = 'engel';
@@ -181,6 +181,28 @@ if 0
     plot(xlim,[chi2 chi2])
     title(sprintf('bootstrap p = %1.3f, chi2p = %1.3f',p_boot,p))
 end
+
+% What about bootstrap a null model assigning predictions based on
+% probabilities of each laterality
+acc_boot = nan(nboot,1);
+bal_boot = nan(nboot,1);
+for ib = 1:nboot
+    [N,acc_boot(ib),bal_boot(ib)] = make_null_prediction(C);
+end
+if 0
+    figure
+    nexttile
+    plot(sort(acc_boot),'o')
+    hold on
+    plot(xlim,[accuracy accuracy])
+    %title(sprintf('bootstrap p = %1.3f, chi2p = %1.3f',p_boot,p))
+
+    nexttile
+    plot(sort(bal_boot),'o')
+    hold on
+    plot(xlim,[balanced_accuracy balanced_accuracy])
+end
+
 
 %% Plot
 figure

@@ -216,7 +216,7 @@ if do_save == 1
 end
 
 %% Show data
-if 1
+if 0
     %ex_chs = {'LA1','LA2','LA3','LA4'};
     
     ex_chs = [];
@@ -224,6 +224,27 @@ if 1
     simple_plot(tout,out,ex_chs,plot_montage,out.montage(plot_montage).spikes,...
         only_run,skip)
     
+end
+
+%% test for re:
+if 0
+        x = tout.montage(1).values;
+        a = [x(:,20),x(:,11),x(:,7),x(:,18)];
+        b = filter_canonical_freqs(a,fs);
+        fd = b(:,:,1); % delta
+        h1 = steve_histcounts(fd(:,1),10); h2 = steve_histcounts(fd(:,2),10); h3 = steve_histcounts(fd(:,3),10); h4 = steve_histcounts(fd(:,4),10);
+        h1 = h1/sum(h1); h2 = h2/sum(h2); h3 = h3/sum(h3); h4 = h4/sum(h4);
+        S14 = sum(h1.*log(h1./h4)); S41 = sum(h4.*log(h4./h1));
+        S34 = sum(h3.*log(h3./h4)); S43 = sum(h4.*log(h4./h3));
+        re = relative_entropy(a,fs,2,1);
+        figure
+        nexttile
+        plot(a(:,1)); hold on; plot(a(:,2)-200); plot(a(:,3)-400); plot(a(:,4)-600);
+        nexttile
+        plot(h1); hold on; plot(h2); plot(h3); plot(h4);
+        nexttile
+        turn_nans_gray(re(:,:,1))
+
 end
 
 %% Show the networks

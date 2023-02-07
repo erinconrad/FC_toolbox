@@ -13,10 +13,14 @@ if do_tw
     re = nan(nchs,nchs,nfreqs,length(times)-1);
     
     % loop over times and frequences
-    for t = 1:length(times)-1
+    for t = 1:length(times)
         for f = 1:nfreqs
         
-            filteredData = out(times(t):times(t+1),:,f);
+            if t == length(times)
+                filteredData = out(times(t):end,:,f);
+            else
+                filteredData = out(times(t):times(t+1),:,f);
+            end
         
             for ich = 1:nchs
                 for jch = ich+1:nchs
@@ -28,8 +32,28 @@ if do_tw
                     h1 = h1/sum(h1); h2 = h2/sum(h2); % normalize?
                     S1 = sum(h1.*log(h1./h2));
                     S2 = sum(h2.*log(h2./h1));
-                    re(ich,jch,f,t) = max([S1,S2]);
-                    re(jch,ich,f,t) = re(ich,jch,f,t);
+                    temp_re = max([S1,S2]);
+                    if isinf(temp_re)
+                        temp_re = nan;
+                    end
+                    re(ich,jch,f,t) = temp_re;
+                    re(jch,ich,f,t) = temp_re;
+                    
+                    if 0
+                        figure
+                        nexttile
+                        plot(filteredData(:,ich))
+                        hold on
+                        plot(filteredData(:,jch))
+
+                        nexttile
+                        plot(h1)
+                        hold on
+                        plot(h2)
+                        title(sprintf('RE: %1.2f',temp_re))
+                        pause
+                        close gcf
+                    end
                 end
             end
         end
