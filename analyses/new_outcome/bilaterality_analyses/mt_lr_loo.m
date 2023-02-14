@@ -4,22 +4,22 @@ function mt_lr_loo(T,features)
 rng(0)
 
 %% Establish parameters
-method = 'svm';
-ncycles = 100; % for bagged ensemble only
+method = 'lr';
+ncycles = 100; % for ensemble algorithms
 response = 'soz_lats';
-pca_perc = 90;
+pca_perc = 95;
 which_outcome = 'engel';
 which_year = 1;
 nfeatures = round(sqrt(length(features)));
-rm_non_temporal = 1;
+rm_non_temporal = 0;
 rm_bilateral = 0;
-just_spikes = 0;
-combine_br = 0;
+just_spikes = 1; % 0 = all features; 1: only spike features; 2: dumb spikes (1 or -1 for AI)
+combine_br = 1; % combine to make a 2 way classification
 outcome_soz = 0; % predict outcome using agreement between SOZ lat and surg lat
 pred_bad_if_bilat = 0;
 
 spike_features = features(cellfun(@(x) contains(x,'spikes'),features));
-if just_spikes
+if just_spikes == 1 || just_spikes == 2
     features = spike_features;
     nfeatures = length(features);
 end
@@ -59,9 +59,10 @@ if rm_non_temporal
 end
 
 %% Combine right and bilateral
-if combine_br
+if combine_br == 1
     T.soz_lats(strcmp(T.soz_lats,'right') | strcmp(T.soz_lats,'bilateral')) = {'br'};
-    npts = size(T,1);
+elseif combine_br == 2
+    T.soz_lats(strcmp(T.soz_lats,'left') | strcmp(T.soz_lats,'bilateral')) = {'bl'};
 end
 
 %% Remove bilateral
@@ -76,6 +77,7 @@ nclasses = length(classes);
 C = zeros(nclasses,nclasses); % left, right, bilateral
 all_pred = cell(npts,1);
 all_best_pred = cell(npts,1);
+all_scores = nan(npts,1);
 
 %% Do leave-one-patient-out classifier to predict laterality
 for i = 1:npts
@@ -100,17 +102,32 @@ for i = 1:npts
         Ttest{:,j} = b;
     end
 
+    % Dumb spikes
+    if just_spikes == 2
+        for j = 1:size(Ttrain,2)
+            if ~isnumeric(Ttrain{:,j}), continue; end
+            Ttrain{Ttrain{:,j}>0,j} = 1; Ttrain{Ttrain{:,j}<0,j} = -1;
+            Ttest{Ttest{:,j}>0,j} = 1; Ttest{Ttest{:,j}<0,j} = -1;
+        end
 
+    end
 
     % train classifier
-    %tc = ensemble_based_fs(Ttrain,features,response);
-   % tc = fscmrmr_classifier(Ttrain,method,features,response,pca_perc,ncycles);
-    %tc = nca_classifier(Ttrain,method,features,response,pca_perc,ncycles);
-    %tc = class_feature_select(Ttrain,method,features,response,ncycles);
+    switch method
+        case 'lr'
+            tc = lasso_classifier(Ttrain,features,response,pca_perc,classes);
 
-    %tc = pca_first_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
-    tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
-    all_best_pred{i} = tc.includedPredictorNames;
+            % Get ROC curve
+            all_scores(i) = tc.probabilityFcn(Ttest);
+            
+
+        otherwise
+            tc = general_classifier(Ttrain,method,features,response,pca_perc,ncycles,nfeatures);
+            all_best_pred{i} = tc.includedPredictorNames;
+    end
+
+    %tc.coef
+    %pause
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);
@@ -130,15 +147,19 @@ for i = 1:npts
 end
 
 %% Find best overall predictors
-all_best_pred = horzcat(all_best_pred{:});
-% Take the N with the most votes
-a=unique(all_best_pred,'stable');
-b=cellfun(@(x) sum(ismember(all_best_pred,x)),a,'un',0); % get counts for each
-counts = cell2mat(b);
-
-% Make sure counts are sorted
-[sorted_counts,I] = sort(counts,'descend');
-table(a(I)',sorted_counts')
+switch method
+    case 'lr'
+    otherwise
+        all_best_pred = horzcat(all_best_pred{:});
+        % Take the N with the most votes
+        a=unique(all_best_pred,'stable');
+        b=cellfun(@(x) sum(ismember(all_best_pred,x)),a,'un',0); % get counts for each
+        counts = cell2mat(b);
+        
+        % Make sure counts are sorted
+        [sorted_counts,I] = sort(counts,'descend');
+        table(a(I)',sorted_counts')
+end
 
 %% Calculate accuracy and balanced accuracy
 accuracy = sum(diag(C))/sum(C(:));
@@ -214,14 +235,42 @@ title(sprintf('Accuracy: %1.1f%%\nBalanced accuracy: %1.1f%%',...
 set(gca,'fontsize',20)
 print(gcf,[plot_folder,'model'],'-dpng')
 
+%% ROC curve (right now just for two class)
+[X,Y,~,AUC] = perfcurve(T.(response),all_scores,classes{2});
+figure
+plot(X,Y,'k-','linewidth',2)
+hold on
+plot([0 1],[0 1],'k--','linewidth',2)
+
+xlabel('False positive rate')
+ylabel('True positive rate')
+title(sprintf('AUC = %1.2f',AUC))
+set(gca,'fontsize',20)
+
 
 %% Save data
 T = addvars(T,all_pred,'NewVariableNames','pred_lat','After','surg_lat');
 writetable(T,[plot_folder,'model_pred.csv'])
 
+%% Alternate outcome analysis - compare model performance between good and poor outcome patients
+% Parse actual outcome
+%{
+outcome_name = [which_outcome,'_yr',sprintf('%d',which_year)];
+
+outcome = cellfun(@(x) parse_outcome_new(x,which_outcome),T.(outcome_name),'UniformOutput',false);
+surg = strcmp(T.surgery,'Laser ablation') | strcmp(T.surgery,'Resection');
+good_outcome = strcmp(outcome,'good') & surg == 1;
+poor_outcome = strcmp(outcome,'bad') & surg == 1;
+
+resp = T.(response);
+
+[~,~,~,AUC_good] = perfcurve(resp(good_outcome),all_scores(good_outcome),classes{2});
+[~,~,~,AUC_poor] = perfcurve(resp(poor_outcome),all_scores(poor_outcome),classes{2});
+%}
+
 
 %% Now predict outcome
-
+%
 % Parse actual outcome
 outcome_name = [which_outcome,'_yr',sprintf('%d',which_year)];
 
@@ -230,7 +279,7 @@ no_outcome = cellfun(@isempty,T.(outcome_name));
 no_surg = ~strcmp(T.surgery,'Laser ablation') & ~strcmp(T.surgery,'Resection');
 not_temporal = ~strcmp(T.surg_loc,'temporal');
 
-remove = no_outcome | no_surg | not_temporal;
+remove = no_outcome | no_surg;% | not_temporal;
 oT = T;
 oT(remove,:) = [];
 

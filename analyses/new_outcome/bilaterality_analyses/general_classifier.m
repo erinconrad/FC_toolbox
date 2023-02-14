@@ -38,10 +38,20 @@ for fold = 1:KFolds
     % Rank features using Kruskal Wallis algorithm
     pValues = nan(size(predictorMatrix, 2),1);
     for i = 1:size(predictorMatrix, 2)
+
+        %
         pValues(i) = kruskalwallis(...
             predictorMatrix(:,i), ...
             responseVector, ...
             'off');
+        %}
+
+        %{
+        p12 = ranksum(predictorMatrix(responseVector==1,i),predictorMatrix(responseVector==2,i));
+        p23 = ranksum(predictorMatrix(responseVector==2,i),predictorMatrix(responseVector==3,i));
+        p13 = ranksum(predictorMatrix(responseVector==1,i),predictorMatrix(responseVector==3,i));
+        pValues(i) = nanmedian([p12 p23 p13]);
+        %}
     end
     pValues(isnan(pValues)) = 1;
     [~,featureIndex] = sort(-log(pValues), 'descend');
@@ -70,8 +80,6 @@ end
 
 
 %% PCA - figure out how to normalize
-
-
 % Apply a PCA to the predictor matrix.
 % Run PCA on numeric predictors only. Categorical predictors are passed through PCA untouched.
 isCategoricalPredictorBeforePCA = isCategoricalPredictor;
@@ -91,7 +99,8 @@ if 0
 end
 
 % Do PCA
-w = 1./var(numericPredictors,[],1,"omitnan");
+w = 1./std(numericPredictors,[],1,"omitnan");
+%w = 1./var(numericPredictors,[],1,"omitnan"); % use std????
 [pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
     numericPredictors,'centered',true,'VariableWeights',w);
 % Keep enough components to explain the desired amount of variance.
@@ -157,6 +166,21 @@ switch method
             'ClassNames', classNames,...
             'NumLearningCycles',ncycles);
 
+    case 'boost1'
+        
+        template = templateTree(...
+            'MaxNumSplits', 10, ...
+            'NumVariablesToSample', 'all',...
+            'PredictorSelection','interaction-curvature');
+        
+        classifier = fitcensemble(...
+            predictors, ...
+            response, ...
+            'Method', 'AdaBoostM1', ...
+            'Learners', template, ...
+            'ClassNames', classNames,...
+            'NumLearningCycles',ncycles);
+
     case 'fancy_bag'
         template = templateTree(...
             'MaxNumSplits', 100, ...
@@ -181,7 +205,7 @@ switch method
             'Coding', 'onevsone', ...
             'ClassNames', classNames);
     case 'lr' % only for binary
-        classifier = fitclinear(predictors,response);
+        classifier = fitclinear(predictors,response,'Learner','logistic');
 
     case 'naiveBayes'
         distributionNames =  repmat({'Normal'}, 1, numComponentsToKeep);
