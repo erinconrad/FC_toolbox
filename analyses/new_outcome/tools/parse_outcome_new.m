@@ -7,12 +7,12 @@ switch type
     case 'ilae'
         if isempty(outcome)
             outcome_num = '';
-        elseif contains(outcome,'1') || contains(outcome,'2')
+        elseif contains(outcome,'1')
             outcome_num = 'good';
         else
             outcome_num = 'bad';
         end
-        rule = 'ILAE score of 1 or 2';
+        rule = 'ILAE score of 1 ';
         
     case 'engel'
         if isempty(outcome)

@@ -8,7 +8,7 @@ method = 'lr';
 ncycles = 100; % for ensemble algorithms
 response = 'soz_lats';
 pca_perc = 95;
-which_outcome = 'engel';
+which_outcome = 'ilae';
 which_year = 1;
 nfeatures = round(sqrt(length(features)));
 rm_non_temporal = 0;
@@ -30,12 +30,17 @@ if strcmp(response,'outcome')
     
     % Remove patients with missing data
     no_outcome = cellfun(@isempty,T.(outcome_name));
-    no_surg = ~strcmp(T.surgery,'Laser ablation') & ~strcmp(T.surgery,'Resection');
+    no_surg = ~strcmp(T.surgery,'Laser ablation') & ~contains(T.surgery,'Resection');
+    not_left_surg = ~strcmp(T.surg_lat,'left');
     
-    remove = no_outcome | no_surg;
+    if combine_br == 1
+        remove = no_outcome | no_surg | not_left_surg;
+    else
+        remove = no_outcome | no_surg;
+    end
     T(remove,:) = [];
-    
-    
+
+
     outcome = cellfun(@(x) parse_outcome_new(x,which_outcome),T.(outcome_name),'UniformOutput',false);
     T.outcome = outcome;
 end
@@ -236,6 +241,7 @@ set(gca,'fontsize',20)
 print(gcf,[plot_folder,'model'],'-dpng')
 
 %% ROC curve (right now just for two class)
+if combine_br == 1 || combine_br == 2
 [X,Y,~,AUC] = perfcurve(T.(response),all_scores,classes{2});
 figure
 plot(X,Y,'k-','linewidth',2)
@@ -246,6 +252,7 @@ xlabel('False positive rate')
 ylabel('True positive rate')
 title(sprintf('AUC = %1.2f',AUC))
 set(gca,'fontsize',20)
+end
 
 
 %% Save data
@@ -263,11 +270,34 @@ good_outcome = strcmp(outcome,'good') & surg == 1;
 poor_outcome = strcmp(outcome,'bad') & surg == 1;
 
 resp = T.(response);
+figure
+unpaired_plot(all_scores(good_outcome),all_scores(poor_outcome),{'good','bad'},'score')
 
-[~,~,~,AUC_good] = perfcurve(resp(good_outcome),all_scores(good_outcome),classes{2});
-[~,~,~,AUC_poor] = perfcurve(resp(poor_outcome),all_scores(poor_outcome),classes{2});
 %}
 
+
+
+if combine_br == 1
+    outcome_name = [which_outcome,'_yr',sprintf('%d',which_year)];
+
+    outcome = cellfun(@(x) parse_outcome_new(x,which_outcome),T.(outcome_name),'UniformOutput',false);
+    surg = (strcmp(T.surgery,'Laser ablation') | contains(T.surgery,'Resection'));
+    left_surg = surg & strcmp(T.surg_lat,'left');
+    left_surg_good = left_surg & strcmp(outcome,'good');
+    left_surg_bad = left_surg & strcmp(outcome,'bad');
+    figure
+    unpaired_plot(1-all_scores(left_surg_good),1-all_scores(left_surg_bad),{'good','bad'},'Modeled probability of left')
+    title('Predicted probability for patients who underwent left sided surgery')
+
+    outcome_num = cellfun(@(x) parse_outcome_num(x,which_outcome),T.(outcome_name));
+    surg = (strcmp(T.surgery,'Laser ablation') | contains(T.surgery,'Resection'));
+    left_surg = surg & strcmp(T.surg_lat,'left') & ~isnan(outcome_num);
+    figure
+    plot(all_scores(left_surg),outcome_num(left_surg),'o')
+    [r,p] = corr(all_scores(left_surg),outcome_num(left_surg));
+    title(sprintf('r = %1.2f, p = %1.2f',r,p))
+
+end
 
 %% Now predict outcome
 %
