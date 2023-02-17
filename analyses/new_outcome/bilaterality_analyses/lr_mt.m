@@ -1,9 +1,11 @@
-function [T,features] =  lr_mt
+function [T,features] =  lr_mt(which_sleep_stages)
 
 %% Plots
 do_little_plots = 0;
 do_big_plots = 0;
-which_sleep_stages = [2 3]; % all = 1, wake =2, sleep = 3
+if ~exist('which_sleep_stages','var')
+    which_sleep_stages = [2 3]; % all = 1, wake =2, sleep = 3
+end
 which_montages = [1 2 3]; % machine = 1,car = 2, bipolar = 3
 
 %% Get file locs

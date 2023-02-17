@@ -7,13 +7,14 @@ cols = [0 0.4470 0.7410;...
 %}
 cols = colormap(gca,lines(length(unique(categories))));
 
-boxplot(x,categories,'colors',cols,'symbol','');
+h = boxplot(x,categories,'colors',cols,'symbol','');
+set(h,{'linew'},{2})
 hold on
 unique_lats = xticklabels;
 nlats = length(unique_lats);
 for il = 1:nlats
     curr_lats = strcmp(categories,unique_lats{il}); 
-    plot(il + randn(sum(curr_lats),1)*0.05,x(curr_lats),'o','color',cols(il,:))
+    plot(il + randn(sum(curr_lats),1)*0.05,x(curr_lats),'o','color',cols(il,:),'linewidth',2)
 end
 plot(xlim,[0 0],'k--')
 
@@ -35,16 +36,16 @@ if show_stats
             ybar2 = yl(1) + 1.18*(yl(2)-yl(1));
             ytext2 = yl(1) + 1.21*(yl(2)-yl(1));
             if lrp < bon_p
-                plot([1 2],[ybar1 ybar1],'k-','linewidth',1)
-                text(1.5,ytext1,get_asterisks_bonferroni(lrp,3),'horizontalalignment','center','fontsize',15)
+                plot([1 2],[ybar1 ybar1],'k-','linewidth',2)
+                text(1.5,ytext1,get_asterisks_bonferroni(lrp,3),'horizontalalignment','center','fontsize',20)
             end
             if rbp < bon_p
-                plot([2 3],[ybar1 ybar1],'k-','linewidth',1)
-                text(2.5,ytext1,get_asterisks_bonferroni(rbp,3),'horizontalalignment','center','fontsize',15)
+                plot([2 3],[ybar1 ybar1],'k-','linewidth',2)
+                text(2.5,ytext1,get_asterisks_bonferroni(rbp,3),'horizontalalignment','center','fontsize',20)
             end
             if lbp < bon_p
-                plot([1 3],[ybar2 ybar2],'k-','linewidth',1)
-                text(2,ytext2,get_asterisks_bonferroni(lbp,3),'horizontalalignment','center','fontsize',15)
+                plot([1 3],[ybar2 ybar2],'k-','linewidth',2)
+                text(2,ytext2,get_asterisks_bonferroni(lbp,3),'horizontalalignment','center','fontsize',20)
             end
     else
         ybar1 = yl(1) + 1.06*(yl(2)-yl(1));

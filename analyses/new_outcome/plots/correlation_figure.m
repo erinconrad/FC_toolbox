@@ -25,7 +25,7 @@ nmontages = length(montage_names);
 
 % Establish network and univariate measures
 networks = {'all_coh','all_pearson','all_plv','all_xcor','all_re'};
-univariate = {'all_spikes','all_rl','all_bp','all_rel_bp','all_se', 'all_ll'};
+univariate = {'all_spikes','all_rl','all_bp','all_se', 'all_ll'};
 
 %% Load data file
 mt_data = load([inter_folder,'mt_out.mat']);
@@ -38,6 +38,8 @@ npts = size(mt_data.all_bp,1);
 
 %% Prep figure
 figure
+set(gcf,'position',[10 10 1300 1200])
+tiledlayout(2,2,'TileSpacing','tight','Padding','tight')
 
 %% Subfigure A: show the correlation between different nodal measures (take average for connectivity measures)
 all_things = [networks,univariate];
@@ -152,19 +154,21 @@ end
 all_nans = isnan(nanmean(ic,2));
 %assert(isequal(net_namesj(all_nans),{sprintf('rel bp %s broadband',montage_names{1})}))
 
-
+clean_net_names = strrep(net_namesi(~all_nans),sprintf(' %s',montage_names{1}),'');
 nexttile
 turn_nans_gray(ic(~all_nans,~all_nans))
 xticks(1:size(ic,1)-1);
 yticks(1:size(ic,1)-1);
 %xticklabels(strrep(net_namesj(~all_nans),sprintf(' %s',montage_names{1}),''))
-yticklabels(strrep(net_namesi(~all_nans),sprintf(' %s',montage_names{1}),''))
+xticklabels(clean_net_names)
+yticklabels(clean_net_names)
 colorbar
 clim([-1 1])
 set(gca,'fontsize',15)
-title(sprintf('Inter-feature correlation (all sleep stages, %s montage)',montage_names{1}))
+title(sprintf('Inter-feature correlation (electrode level)'))
 
 %% Subfigure B: How much correlation is there across montages for different features?
+which_freq = 6; % broadband
 thing_montages = nan(length(all_things),3);
 thing_montages_sd = nan(length(all_things),3);
 for in = 1:length(all_things)
@@ -234,10 +238,15 @@ for in = 1:length(all_things)
         
     end
 
-    % Average the correlations across frequencies and patients
+    % Average the correlations across patients, pick broadband frequency
     for im = 1:3
-        thing_montages(in,im) = squeeze(nanmean(montage_corr(im,:,:),[2 3]));
-        thing_montages_sd(in,im) = squeeze(nanmean(nanstd(montage_corr(im,:,:),[],2),3));
+        if nfreq == 1
+            thing_montages(in,im) = squeeze(nanmean(montage_corr(im,:,1),2));
+            thing_montages_sd(in,im) = squeeze((nanstd(montage_corr(im,:,1),[],2)));
+        else
+            thing_montages(in,im) = squeeze(nanmean(montage_corr(im,:,which_freq),2));
+            thing_montages_sd(in,im) = squeeze((nanstd(montage_corr(im,:,which_freq),[],2)));
+        end
     end
 
 
@@ -254,20 +263,151 @@ for i = 1:size(thing_montages,1)
         hold on
 
     end
+    
 end
+
+ylim([-0.5 1.5])
 xticks(1:size(thing_montages,1))
-xticklabels(net_names)
+xlim([0.5 size(thing_montages,1)+0.5])
+xticklabels(cellfun(@(x) strrep(x,'_',' '),net_names,'uniformoutput',false))
 ylabel('Correlation (r)')
 labels = cell(3,1);
 for i =1:3
     labels{i} = sprintf('%s-%s',strrep(all_montages{which_montages(i,1)},'_',' '),strrep(all_montages{which_montages(i,2)},'_',' '));
 end
-legend(lp,labels,'location','southeast','fontsize',15)
 set(gca,'fontsize',15)
-title('Inter-reference feature correlation')
+for i = 1:size(thing_montages,1)
+    if i<size(thing_montages,1)
+        plot([i+0.5 i+0.5],ylim,'k--')
+    end
+end
+legend(lp,labels,'location','southeast','fontsize',15)
+
+title('Inter-reference feature correlation (electrode level)')
 
 
-%% Subfigure C: How much correlaiton is there across sleep stages for different features?
+%% Now do lr_mt to get AI features
+which_sleep_stages = 1;
+[T,features] =  lr_mt(which_sleep_stages);
 
+%% Subfigure C: Inter-AI correlation
+% Restrict to desired montage and no SD
+montage_features = contains(features,sprintf('%s ',montage_names{1}));
+fT = T(:,features);
+fT = fT(:,montage_features);
+no_sd = ~contains(features(montage_features),'SD');
+fT = fT(:,no_sd);
+no_sd_names = features(montage_features); no_sd_names = no_sd_names(no_sd);
+
+% clean the names
+no_sd_names = strrep(no_sd_names,sprintf(' %s',montage_names{1}),'');
+no_sd_names = strrep(no_sd_names,' all','');
+
+% Do inter-feature correlation
+aic = corr(table2array(fT),table2array(fT),'rows','pairwise');
+
+% re-order things so the names match with the first subfigure
+[lia,locb] = ismember(clean_net_names,no_sd_names);
+assert(all(lia==1))
+no_sd_names = no_sd_names(locb);
+aic = aic(locb,locb);
+
+% plot it
+nexttile
+turn_nans_gray(aic)
+xticks(1:size(aic,1)-1);
+yticks(1:size(aic,1)-1);
+%xticklabels(strrep(net_namesj(~all_nans),sprintf(' %s',montage_names{1}),''))
+xticklabels(no_sd_names)
+yticklabels(no_sd_names)
+colorbar
+clim([-1 1])
+set(gca,'fontsize',15)
+title(sprintf('Inter-feature asymmetry index correlation (patient level)'))
+
+%% Subfigure D: Inter-reference AI correlation
+if which_freq == 6
+    freq_name = 'broadband';
+else
+    error('why are you messing with frequency')
+end
+ai_montages = nan(length(all_things),3);
+which_montages = nan(3,2);
+all_feature_names = strrep(all_things,'all_','');
+for in = 1:length(all_things)
+
+    curr_features = features(contains(features,sprintf('%s ',all_feature_names{in})));
+
+    % remove SD
+    curr_features(contains(curr_features,'SD')) = [];
+
+    % Get only desired frequency -  check if there are more than 3, that
+    % means there are multiple frequencies
+    if length(curr_features) == 18
+        curr_features(~contains(curr_features,freq_name)) = [];
+    elseif length(curr_features) == 3 % do nothign
+    else
+        error('what')
+    end
+    
+
+    for im = 1:3
+    
+        % will yield im=1->[2,3], im=2->[3,1], im=3->[1,2]
+        m1 = mod(im,3)+1;
+        m2 = mod(im+1,3)+1;
+        which_montages(im,:) = [m1,m2];
+    
+        mname1 = all_montages{m1};
+        mname2 = all_montages{m2};
+
+        mname1_feature = curr_features(contains(curr_features,mname1));
+        mname2_feature = curr_features(contains(curr_features,mname2));
+
+        % correlate the AIs
+        ai_montages(in,im) = corr(T.(mname1_feature{1}),T.(mname2_feature{1}),'rows','pairwise');
+
+    
+    end
+end
+
+% Ensure names align
+assert(isequal(all_feature_names,cellfun(@(x) strrep(x,'_',' '),net_names,'uniformoutput',false)))
+
+% Plot it
+nexttile
+cols = colormap(gca,lines(3));
+lp = nan(3,1);
+offset = 0.1;
+for i = 1:size(ai_montages,1)
+    
+    for j = 1:size(ai_montages,2)
+        lp(j) = plot(i+offset*j-offset*2,ai_montages(i,j),...
+            'o','color',cols(j,:),'linewidth',2,'markersize',12);
+        hold on
+
+    end
+
+    
+end
+ylim([-0.2 1.2])
+set(gca,'fontsize',15)
+xticks(1:size(ai_montages,1))
+xlim([0.5 size(ai_montages,1)+0.5])
+xticklabels(all_feature_names)
+ylabel('Correlation (r)')
+labels = cell(3,1);
+for i =1:3
+    labels{i} = sprintf('%s-%s',strrep(all_montages{which_montages(i,1)},'_',' '),strrep(all_montages{which_montages(i,2)},'_',' '));
+end
+for i = 1:size(ai_montages,1)
+    if i<size(ai_montages,1)
+        plot([i+0.5 i+0.5],ylim,'k--')
+    end
+end
+
+legend(lp,labels,'location','southeast','fontsize',15)
+
+title('Inter-reference asymmetry index correlation (patient level)')
 
 end
