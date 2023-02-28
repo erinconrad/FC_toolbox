@@ -18,8 +18,8 @@ addpath(genpath(scripts_folder));
 
 %% Initialize figure
 figure
-set(gcf,'position',[1 1 1400 1000])
-tiledlayout(2,2,"TileSpacing",'tight','padding','tight')
+set(gcf,'position',[1 1 1400 450])
+tiledlayout(1,3,"TileSpacing",'tight','padding','tight')
 
 %% Run the lr_mt to extract features
 [T,features] =  lr_mt;
@@ -77,29 +77,43 @@ title('Model performance by features')
 set(gca,'fontsize',20)
 
 
-%% C: ROC for L from R+BL for temporal vs ETLE
+%% C: ROC for L from R+BL for temporal vs ETLE - no don't do this
+%{
+% There aren't enough patients who are ETLE for this to be a meaningful
+% analysis. AUC is like 0.25 but for the number of patients this is not
+% significant.
 just_spikes = 0;
 combine_br = 1;
 temporal = classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,1);
-all = classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,0);
+extra = classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,2);
 
 % Get ROC stats
 [XT,YT,~,AUCT] = perfcurve(temporal.class,temporal.scores,temporal.pos_class);
-[XA,YA,~,AUCA] = perfcurve(all.class,all.scores,all.pos_class);
+[XE,YE,~,AUCE] = perfcurve(extra.class,extra.scores,extra.pos_class);
+
+% investigating ETLE
+n1 = sum(strcmp(extra.class,'br'));
+n2 = sum(strcmp(extra.class,'left'));
+U = AUCE*n1*n2;
+mu = n1*n2/2;
+sigmau = sqrt(n1*n2*(n1+n2+1)/12);
+z = (U-mu)/sigmau;
+p = normcdf(z);
 
 % Plot
 nexttile
-la = plot(XA,YA,'linewidth',2);
-hold on
 lt = plot(XT,YT,':','linewidth',2);
+hold on
+le = plot(XE,YE,'linewidth',2);
 plot([0 1],[0 1],'k--','linewidth',2)
 xlabel('False positive rate')
 ylabel('True positive rate')
-legend([la,lt],{sprintf('All SOZ: AUC = %1.2f',AUCA),...
-    sprintf('Temporal lobe SOZ: AUC = %1.2f',AUCT)},'fontsize',20,...
+legend([lt,le],{sprintf('Temporal (N = %d): AUC = %1.2f',temporal.npts,AUCT),...
+    sprintf('Extra-temporal (N = %d): AUC = %1.2f',extra.npts,AUCE)},'fontsize',20,...
     'location','southeast')
 title('Model performance by SOZ localization')
 set(gca,'fontsize',20)
+%}
 
 %% D: Confusion matrix for threshold 0.5
 C = all.C;

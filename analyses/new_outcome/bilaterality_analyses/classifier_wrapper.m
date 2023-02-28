@@ -15,9 +15,13 @@ T(empty_class,:) = [];
 npts = size(T,1);
 
 % Remove non temporal patients if desired
-if rm_non_temporal
+if rm_non_temporal == 1
     temporal = strcmp(T.soz_locs,'temporal');
     T(~temporal,:) = [];
+    npts = size(T,1);
+elseif rm_non_temporal == 2 % only include non-temporal (excludes diffuse and multifocal)
+    extra = strcmp(T.soz_locs,'other cortex') | strcmp(T.soz_locs,'frontal');
+    T(~extra,:) = [];
     npts = size(T,1);
 end
 
@@ -99,5 +103,6 @@ out.pos_class = classes{2};
 out.all_pred = all_pred;
 out.C = C;
 out.unique_classes = classes;
+out.npts = npts;
 
 end
