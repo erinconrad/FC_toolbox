@@ -1,4 +1,4 @@
-function mt_lr_loo(T,features)
+function all_scores = mt_lr_loo(T,features)
 
 % seed rng
 rng(0)
@@ -150,6 +150,8 @@ for i = 1:npts
     C(which_row,which_column) = C(which_row,which_column) + 1;
 
 end
+
+return
 
 %% Find best overall predictors
 switch method

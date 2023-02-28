@@ -152,4 +152,6 @@ title('Feature separation by SOZ laterality')
 legend({'left','right','bilateral'},'location','southeast','fontsize',15)
 set(gca,'fontsize',15)
 
+print(gcf,[plot_folder,'Fig3'],'-dpng')
+
 end

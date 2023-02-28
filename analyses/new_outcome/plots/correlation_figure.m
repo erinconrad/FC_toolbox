@@ -266,7 +266,8 @@ for i = 1:size(thing_montages,1)
     
 end
 
-ylim([-0.5 1.5])
+ylim([-1 1])
+plot(xlim,[0 0],'k--')
 xticks(1:size(thing_montages,1))
 xlim([0.5 size(thing_montages,1)+0.5])
 xticklabels(cellfun(@(x) strrep(x,'_',' '),net_names,'uniformoutput',false))
@@ -281,6 +282,7 @@ for i = 1:size(thing_montages,1)
         plot([i+0.5 i+0.5],ylim,'k--')
     end
 end
+
 legend(lp,labels,'location','southeast','fontsize',15)
 
 title('Inter-reference feature correlation (electrode level)')
@@ -390,7 +392,8 @@ for i = 1:size(ai_montages,1)
 
     
 end
-ylim([-0.2 1.2])
+ylim([-1 1])
+plot(xlim,[0 0],'k--')
 set(gca,'fontsize',15)
 xticks(1:size(ai_montages,1))
 xlim([0.5 size(ai_montages,1)+0.5])
@@ -406,8 +409,12 @@ for i = 1:size(ai_montages,1)
     end
 end
 
+
 legend(lp,labels,'location','southeast','fontsize',15)
 
 title('Inter-reference asymmetry index correlation (patient level)')
+
+print(gcf,[plot_folder,'Fig2'],'-dpng')
+
 
 end

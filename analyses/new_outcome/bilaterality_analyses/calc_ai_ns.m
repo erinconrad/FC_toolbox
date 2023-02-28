@@ -113,7 +113,8 @@ else
             % may overweight the pairs with lower values (e.g., if
             % very few spikes, the AI may be quite large). May
             % increase variance?
-            signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:).^2+intra(:,:,2,:).^2));
+            %signed = (intra(:,:,1,:)-intra(:,:,2,:))./sqrt((intra(:,:,1,:).^2+intra(:,:,2,:).^2));
+            signed = (intra(:,:,1,:)-intra(:,:,2,:))./((intra(:,:,1,:)+intra(:,:,2,:)));
             signed = (squeeze(nanmean(signed,[1 2 3])))';
         case 'electrode'
             % This first averages the feature within each
