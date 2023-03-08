@@ -8,7 +8,7 @@ method = 'lr';
 ncycles = 100; % for ensemble algorithms
 response = 'soz_lats';
 pca_perc = 90;
-which_outcome = 'ilae';
+which_outcome = 'engel';
 which_year = 1;
 nfeatures = round(sqrt(length(features)));
 rm_non_temporal = 0;
@@ -151,7 +151,6 @@ for i = 1:npts
 
 end
 
-return
 
 %% Find best overall predictors
 switch method

@@ -30,7 +30,9 @@ for p = 1:length(pt)
         file_column_name = sprintf('Var%d',f+2); % file 1 is Var3
         start_time = T.(file_column_name)(row);
         
-        assert(~isnan(start_time));
+        if isnan(start_time)
+            fprintf('\nWarning, no start time for %s file %d\n',name,f)
+        end
         
         pt(p).ieeg.file(f).start_time = start_time;
         
@@ -42,7 +44,7 @@ end
 for p = 1:length(pt)
     for f = 1:length(pt(p).ieeg.file)
         if ~isfield(pt(p).ieeg.file(f),'start_time') || isnan(pt(p).ieeg.file(f).start_time)
-            error('what');
+            fprintf('\nWarning, no start time for %s file %d\n',pt(p).name,f)
         end
         
     end

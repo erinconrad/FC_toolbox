@@ -64,6 +64,8 @@ while 1
             else
                 base_ieeg_name = sprintf('MP00%d',i);
             end
+        case 'musc_3T'
+            base_ieeg_name = sprintf('3T_MP00%d',i);
     end
     
     % Initialize stuff for ieeg files
@@ -164,6 +166,8 @@ while 1
             end
         case 'musc'
             pt(p).name = base_ieeg_name;
+        case 'musc_3T'
+            pt(p).name = strrep(base_ieeg_name,'3T_','');
     end
     
     % Save the file

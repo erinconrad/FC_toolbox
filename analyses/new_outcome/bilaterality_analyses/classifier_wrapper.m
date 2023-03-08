@@ -38,10 +38,11 @@ all_scores = nan(npts,1);
 nclasses = length(classes);
 C = zeros(nclasses,nclasses); % left, right, bilateral
 all_pred = cell(npts,1);
+all_names = cell(npts,1);
 
 %% Do leave-one-patient-out classifier to predict laterality
 for i = 1:npts
-    i
+    
     % split into training and testing
     Ttrain = T([1:i-1,i+1:end],:); % training all but current
     Ttest = T(i,:); % testing current
@@ -77,6 +78,7 @@ for i = 1:npts
 
     % Get score
     all_scores(i) = tc.probabilityFcn(Ttest);
+    all_names{i} = Ttest.names{1};
 
     % make prediction on left out
     pred = tc.predictFcn(Ttest);
@@ -104,5 +106,6 @@ out.all_pred = all_pred;
 out.C = C;
 out.unique_classes = classes;
 out.npts = npts;
+out.names = all_names;
 
 end
