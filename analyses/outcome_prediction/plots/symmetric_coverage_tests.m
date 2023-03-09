@@ -18,13 +18,11 @@ freqs = {'Delta (0.5-4 Hz)','Theta (4-8 Hz)','Alpha (8-12 Hz)','Beta (12-30 Hz)'
 locations = fc_toolbox_locs;
 plot_folder = locations.paper_plot_folder;
 
-bct_folder= locations.bct;
 atlas_folder = locations.paper_data_folder;
 
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
-addpath(genpath(bct_folder));
 
 %% Load out file with functional connectivity and spikes as well as SOZ info
 out = load([locations.paper_data_folder,'main_out.mat']);
