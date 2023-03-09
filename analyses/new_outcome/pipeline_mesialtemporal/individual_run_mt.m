@@ -17,8 +17,10 @@ num_samples = samples_per_time*info.NumDataRecords;
 fs = round(info.NumSamples(1,1)/seconds(info.DataRecordDuration));
 labels = cellstr(info.SignalLabels);
 
+name = pt(which_pt).name;
+
 %% get allowable electrodes (only LA, LB, LC, RA, RB, RC electrodes)
-potentially_allowable_labels = get_allowable_elecs;
+potentially_allowable_labels = get_allowable_elecs(name);
 
 %% Find labels that match allowable electrodes and have symmetric coverage
 allowed_labels = find_mt_symmetric_coverage(labels,potentially_allowable_labels);
@@ -178,6 +180,9 @@ which_chs = 1:nallowed;
 [bad,details] = identify_bad_chs(curr_values,which_chs,allowed_labels,fs);
 which_chs(ismember(which_chs,bad)) = []; % reduce channels to do analysis on
 %}
+
+%% Convert MUSC labels into HUP labels for simplicity
+allowed_labels = convert_musc_labels_to_hup(allowed_labels);
 
 %% CAR reference
 [car_values,car_labels] = car_montage(curr_values,which_chs,allowed_labels);
