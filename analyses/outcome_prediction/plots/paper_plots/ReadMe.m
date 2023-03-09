@@ -9,7 +9,6 @@ The code for this analysis can be found at:
 
 %% To re-generate plots and tables and re-run statistical tests
 %{
-TEST
 
 To run the code to regenerate the results plots and tables, perform the
 following steps:
