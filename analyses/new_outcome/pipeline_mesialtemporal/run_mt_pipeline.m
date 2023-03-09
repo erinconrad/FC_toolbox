@@ -8,6 +8,10 @@ edf_path = [results_folder,'edf_out/'];
 edf_summ_path = [results_folder,'edf_summ_out/'];
 data_folder = [locations.main_folder,'data/'];
 
+if ~exist(edf_summ_path,'dir')
+    mkdir(edf_summ_path)
+end
+
 %% Create an overlap log file
 overlap_log_file = [edf_summ_path,'overlap_log_file.csv'];
 if exist(overlap_log_file,'file') == 0
