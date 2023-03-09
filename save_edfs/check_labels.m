@@ -21,8 +21,15 @@ for l = 1:length(listing)
         continue
     end
 
+    
+
     sout = load([out_dir,listing(l).name,'/sleep_stage.mat']);
     sout = sout.sout;
+
+    if ~isfield(sout,'name')
+        continue
+    end
+
     sout.name
     sout.ChL
     pause

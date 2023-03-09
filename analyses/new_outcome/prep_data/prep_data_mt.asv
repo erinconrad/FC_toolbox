@@ -26,8 +26,8 @@ all_resec_lat = cell(npts,1);
 all_resec_loc = cell(npts,1);
 all_ablate_lat = cell(npts,1);
 all_ablate_loc = cell(npts,1);
-all_engel = cell(npts,2);
-all_ilae = cell(npts,2);
+all_engel = cell(npts,1);
+all_ilae = cell(npts,1);
 all_soz_loc = cell(npts,1);
 all_soz_lat = cell(npts,1);
 
@@ -76,8 +76,8 @@ for p = 1:npts
     all_resec_loc{p} = info.resec_loc;
     all_ablate_lat{p} = info.ablate_lat;
     all_ablate_loc{p} = info.ablate_loc;
-    all_engel{p,:} = info.engel;
-    all_ilae{p,:} = info.ilae;
+    all_engel{p} = info.engel;
+    all_ilae{p} = info.ilae;
     all_soz_loc{p} = info.soz_loc;
     all_soz_lat{p} = info.soz_lat;
 
@@ -256,15 +256,15 @@ out.all_xcor_iqr = all_xcor_iqr;
 out.all_lags_iqr = all_lags_iqr;
 out.all_ll_iqr = all_ll_iqr;
 
-out.all_surgery = all_surgery;
-out.all_resec_lat = all_resec_lat;
-out.all_resec_loc = all_resec_loc;
-out.all_ablate_lat = all_ablate_lat;
-out.all_ablate_loc = all_ablate_loc;
-out.all_engel = all_engel;
-out.all_ilae = all_ilae;
-out.all_soz_loc = all_soz_loc;
-out.all_soz_lat = all_soz_lat;
+all_surgery{p} = info.surgery;
+    all_resec_lat{p} = info.resec_lat;
+    all_resec_loc{p} = info.resec_loc;
+    all_ablate_lat{p} = info.ablate_lat;
+    all_ablate_loc{p} = info.ablate_loc;
+    all_engel{p} = info.engel;
+    all_ilae{p} = info.ilae;
+    all_soz_loc{p} = info.soz_loc;
+    all_soz_lat{p} = info.soz_lat;
 
 
 save([out_folder,'mt_out.mat'],'out')

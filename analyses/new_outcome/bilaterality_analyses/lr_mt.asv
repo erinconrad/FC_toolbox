@@ -45,7 +45,7 @@ ablation_lat = data.all_ablate_lat;
 resection_loc = data.all_resec_loc;
 ablation_loc = data.all_ablate_loc;
 good_spikes = data.good_spikes; % I don't end up using this. I just accept all spikes as truth.
-
+all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 
 %% All outcomes
 engel_yr1 = all_outcome(:,1,1);
@@ -54,20 +54,9 @@ ilae_yr1 = all_outcome(:,2,1);
 ilae_yr2 = all_outcome(:,2,2);
 %}
 
-all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 names = mt_data.all_names;
 npts = length(names);
 surgery = mt_data.all_surgery;
-resection_lat = mt_data.all_resec_lat;
-resection_loc = mt_data.all_resec_loc;
-ablation_lat = mt_data.all_ablate_lat;
-ablation_loc = mt_data.all_ablate_loc;
-engel_yr1 = mt_data.all_engel(:,1);
-engel_yr2 = mt_data.all_engel(:,2);
-ilae_yr1 = mt_data.all_ilae(:,1);
-ilae_yr2 = mt_data.all_ilae(:,2);
-soz_lats = mt_data.all_soz_lat;
-soz_locs = mt_data.all_soz_locs;
 
 
 %% Clean SOZ localizations and lateralities

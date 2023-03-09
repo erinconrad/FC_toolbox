@@ -1,9 +1,10 @@
-function out = individual_run_mt(file_path)
+function out = individual_run_mt(file_path,pt,which_pt,meta,which_edf_file,overlap_log_file)
 
 %% Parameters
 show_data = 0;
 test_flag = 0;
 tw = 2; % time window for network calculations.
+
 
 %% Load the edf file
 C = strsplit(file_path,'/');
@@ -26,6 +27,28 @@ if isempty(allowed_labels)
     return
 end
 nallowed = length(allowed_labels);
+
+%% Get the seizure times from the corresponding ieeg file
+% Find which is the correct ieeg file
+ieeg_file_name = meta.file_name;
+found_it = 0;
+for i = 1:length(pt(which_pt).ieeg.file)
+    if strcmp(ieeg_file_name,pt(which_pt).ieeg.file(i).name)
+        found_it = 1;
+        ieeg_file = i;
+        break
+    end
+end
+assert(found_it==1)
+
+% Get seizure times
+sz_times = pt(which_pt).ieeg.file(ieeg_file).sz_times;
+
+%% Re-align seizure times so that the start of this edf file is 0 
+% Get edf file start time
+edf_file_start_time = meta.times(which_edf_file,1);
+sz_times_aligned = sz_times - edf_file_start_time;
+
 
 %% Error if not left and right
 if sum(contains(allowed_labels,'L'))==0 || sum(contains(allowed_labels,'R'))==0
@@ -78,14 +101,77 @@ end
 %% Get times
 times = linspace(0,num_samples/fs,num_samples);
 
-%% Take a random one minute segment
+%% Find the times
 max_start = length(times) - fs*60-1; % must start 60 seconds before the end
-rand_start = randi(round(max_start));
-rand_end = rand_start + round(fs*60);
 
-%% Narrow values down to this time
-curr_times = times(rand_start:rand_end);
-curr_values = values(rand_start:rand_end,:);
+%{
+I tested the sz code looking at pt HUP170 edf file 22 sz time 120539.93. I
+confirmed that the data for LA1 looks approximately the same on ieeg.org as
+in the edf file. I also tried doing some random runs for this patient and
+saw it did indeed sometimes produce overlap and so try again
+
+if 0
+    figure
+    test_times = [498.93 543.9];
+    test_indices = round(test_times*fs);
+    plot(values(test_indices(1):test_indices(2),1))
+end
+
+%}
+
+
+
+% Wrap in a while loop
+while_counts = 0;
+while 1
+    % Take a random one minute segment
+    rand_start = randi(round(max_start));
+    rand_end = rand_start + round(fs*60);
+    
+    % Narrow values down to this time
+    curr_times = times(rand_start:rand_end);
+    curr_values = values(rand_start:rand_end,:);
+
+    % See if these times overlap with any seizure times.
+    start_1 = curr_times(1); end_1 = curr_times(end);
+    overlap = 0;
+    overlapping_sz = 0;
+    overlapping_sz_end = 0;
+    overlapping_sz_aligned = 0;
+    overlapping_sz_aligned_end = 0;
+    for s = 1:size(sz_times_aligned,1)
+        if do_times_overlap(start_1,end_1,...
+                sz_times_aligned(s,1),sz_times_aligned(s,2)) == 1
+            overlap = 1;
+            overlapping_sz = sz_times(s,1);
+            overlapping_sz_end = sz_times(s,2);
+            overlapping_sz_aligned = sz_times_aligned(s,1);
+            overlapping_sz_aligned_end = sz_times_aligned(s,2);
+            break
+        end
+    end
+
+    % If there is overlap, try again
+    if overlap == 1
+        while_counts = while_counts+1;
+
+        % I should also print this to a log because it shouldn't happen
+        % often
+        T = readtable(overlap_log_file);
+        T = [T;{pt(which_pt).name,meta.files{which_edf_file},overlapping_sz,...
+            overlapping_sz_end,overlapping_sz_aligned,...
+            overlapping_sz_aligned_end,start_1,end_1,while_counts}];
+        writetable(T,overlap_log_file);
+
+        if while_counts > 10
+            error('what')
+        end
+        continue;
+    else
+        break % if not, break out of loop
+    end
+
+end
 
 %% Reject bad channels
 which_chs = 1:nallowed;

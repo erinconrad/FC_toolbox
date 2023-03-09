@@ -1,4 +1,4 @@
-function mt_patient_stitch(pt,which_pt,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT)
+function mt_patient_stitch(pt,which_pt,edf_path,edf_summ_path,name,overwrite,overlap_log_file)
 
 %% Seed random number generator so that I get the same result each time I do this.
 rng(0)
@@ -46,17 +46,6 @@ ablate_lat = clinical.ablation_lat;
 ablate_loc = clinical.ablation_loc;
 engel = {clinical.engel{1},clinical.engel{2}};
 ilae = {clinical.ilae{1},clinical.ilae{2}};
-
-% Get the correct row of the SOZ table
-szr = nan;
-for k = 1:size(szT,1)
-    if strcmp(szT.name{k},name)
-        szr = k;
-        break
-    end
-end
-soz_loc = szT.region{k};
-soz_lat = szT.lateralization{k};
 
 
 % Loop over files
@@ -188,15 +177,7 @@ nout.labels = out.clean_labels;
 nout.montage_labels = montage_labels;
 nout.all_is_run = all_is_run;
 nout.montages = montages;
-nout.surgery = surgery;
-nout.resec_lat = resec_lat;
-nout.resec_loc = resec_loc;
-nout.ablate_lat = ablate_lat;
-nout.ablate_loc = ablate_loc;
-nout.engel = engel;
-nout.ilae = ilae;
-nout.soz_loc = soz_loc;
-nout.soz_lat = soz_lat;
+nout.
 
 out = nout;
 
