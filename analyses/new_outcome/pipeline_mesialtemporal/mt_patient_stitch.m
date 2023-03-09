@@ -27,7 +27,8 @@ labels = cellstr(info.SignalLabels);
 %nallowed = sum(allowed);
 
 % Get allowable labels
-potentially_allowable_labels = get_allowable_elecs;
+name = pt(which_pt).name;
+potentially_allowable_labels = get_allowable_elecs(name);
 
 % Find labels that match allowable electrodes and have symmetric coverage
 allowed_labels = find_mt_symmetric_coverage(labels,potentially_allowable_labels);
