@@ -35,7 +35,7 @@ for i = 1:nspikes
     
 
     % get allowable electrodes
-    allowable_labels = get_allowable_elecs;
+    allowable_labels = get_allowable_elecs(name);
 
     % Find labels that match allowable electrodes
     allowed = ismember(rlabels,allowable_labels);
