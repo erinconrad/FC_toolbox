@@ -4,6 +4,11 @@ function overlap = do_times_overlap(start_1,end_1,start_2,end_2)
 % entirely before 2) or if start_1 is > end_2 (implying 1 is entirely after
 % 2)
 
+if any(isnan([start_1,end_1,start_2,end_2]))
+    overlap = 0;
+    return
+end
+
 %% Double check that ends are after starts
 assert(end_1>=start_1 && end_2>=start_2)
 
