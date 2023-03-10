@@ -10,7 +10,11 @@ if any(isnan([start_1,end_1,start_2,end_2]))
 end
 
 %% Double check that ends are after starts
-assert(end_1>=start_1 && end_2>=start_2)
+if (end_1>=start_1 && end_2>=start_2)~=0
+    fprintf('\nwarning something wrong with times\n')
+    overlap = 0;
+    return
+end
 
 overlap = 1; % start assuming overlap
 
