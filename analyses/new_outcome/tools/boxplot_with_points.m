@@ -1,4 +1,4 @@
-function boxplot_with_points(x,categories,show_stats)
+function out = boxplot_with_points(x,categories,show_stats)
 
 %{
 cols = [0 0.4470 0.7410;...
@@ -23,14 +23,20 @@ if show_stats
     new_y = [yl(1) yl(1) + 1.3*(yl(2)-yl(1))];
     ylim(new_y)
 
-    p = kruskalwallis(x,categories,'off');
+    [p,tbl,stats] = kruskalwallis(x,categories,'off');
+    out.p = p;
+    out.tbl = tbl;
+    out.stats = stats;
+    out.eta2 = tbl{2,2}/(tbl{2,2}+tbl{3,2});
     bon_p = 0.05/3;
     if p < 0.05
             % do post hoc
             lrp = ranksum(x(strcmp(categories,'left')),x(strcmp(categories,'right')));
             rbp = ranksum(x(strcmp(categories,'right')),x(strcmp(categories,'bilateral')));
             lbp = ranksum(x(strcmp(categories,'left')),x(strcmp(categories,'bilateral')));
-
+            out.lrp = lrp;
+            out.rbp = rbp;
+            out.lbp = lbp;
             ybar1 = yl(1) + 1.06*(yl(2)-yl(1));
             ytext1 = yl(1) + 1.09*(yl(2)-yl(1));
             ybar2 = yl(1) + 1.18*(yl(2)-yl(1));

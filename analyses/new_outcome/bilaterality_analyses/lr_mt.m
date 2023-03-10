@@ -26,14 +26,15 @@ addpath(genpath(scripts_folder));
 freq_names = {'delta','theta','alpha','beta','gamma','broadband'};
 
 %% Load data file
-%data = load([inter_folder,'main_out.mat']);
-%data = data.out;
+
 
 mt_data = load([inter_folder,'mt_out.mat']);
 mt_data = mt_data.out;
 
 %% get variables of interest
-%{
+%
+data = load([inter_folder,'main_out.mat']);
+data = data.out;
 all_outcome = data.outcome; %outcome = all_outcome(:,which_outcome,which_outcome_year);
 surgery = data.all_surgery;
 soz_lats = data.all_soz_lats; 
@@ -45,7 +46,7 @@ ablation_lat = data.all_ablate_lat;
 resection_loc = data.all_resec_loc;
 ablation_loc = data.all_ablate_loc;
 good_spikes = data.good_spikes; % I don't end up using this. I just accept all spikes as truth.
-
+all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 
 %% All outcomes
 engel_yr1 = all_outcome(:,1,1);
@@ -53,7 +54,7 @@ engel_yr2 = all_outcome(:,1,2);
 ilae_yr1 = all_outcome(:,2,1);
 ilae_yr2 = all_outcome(:,2,2);
 %}
-
+%{
 all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 names = mt_data.all_names;
 npts = length(names);
@@ -68,6 +69,7 @@ ilae_yr1 = mt_data.all_ilae(:,1);
 ilae_yr2 = mt_data.all_ilae(:,2);
 soz_lats = mt_data.all_soz_lat;
 soz_locs = mt_data.all_soz_locs;
+%}
 
 
 %% Clean SOZ localizations and lateralities
