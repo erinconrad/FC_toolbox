@@ -40,6 +40,10 @@ for i = 1:nspikes
     % Find labels that match allowable electrodes
     allowed = ismember(rlabels,allowable_labels);
     allowed_labels = rlabels(allowed);
+
+    % Convert MUSC labels into HUP labels for consistency
+    allowed_labels = convert_musc_labels_to_hup(allowed_labels);
+
     nallowed = sum(allowed);
 
     % Initialize values

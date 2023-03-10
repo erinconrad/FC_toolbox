@@ -121,14 +121,16 @@ else
             % electrode, calculates AI, and then averages across
             % the three electrodes
             intra_avg = nanmean(intra,2);
-            signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./sqrt((intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
-            signed = (squeeze(nanmean(signed,[1 2 3])))';
+            error('what')
+            %signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./sqrt((intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
+            %signed = (squeeze(nanmean(signed,[1 2 3])))';
         case 'side'
             % This averages the feature across the whole side, then
             % calculates the AI
             intra_avg = nanmean(intra,[1 2]);
-            signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./(sqrt(intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
-            signed = (squeeze(nanmean(signed,[1 2 3])))';
+            error('what')
+            %signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./(sqrt(intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
+            %signed = (squeeze(nanmean(signed,[1 2 3])))';
     end
 end
 
