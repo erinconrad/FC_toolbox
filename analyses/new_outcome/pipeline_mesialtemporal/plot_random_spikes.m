@@ -41,9 +41,7 @@ for i = 1:nspikes
     allowed = ismember(rlabels,allowable_labels);
     allowed_labels = rlabels(allowed);
 
-    % Convert MUSC labels into HUP labels for consistency
-    allowed_labels = convert_musc_labels_to_hup(allowed_labels);
-
+    
     nallowed = sum(allowed);
 
     % Initialize values
@@ -65,6 +63,9 @@ for i = 1:nspikes
         values = resample(values,p,q);
         fs = 256;
     end
+
+    % Convert MUSC labels into HUP labels for consistency
+    allowed_labels = convert_musc_labels_to_hup(allowed_labels);
 
     % Get the channel index in this realigned data
     rch = find(strcmp(allowed_labels,labels{ch}));
