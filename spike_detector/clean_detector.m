@@ -1,4 +1,4 @@
-function gdf = clean_detector(values,fs)
+function gdf = clean_detector(values,fs, options)
 
 %{
 Inputs:
@@ -23,18 +23,31 @@ Dependencies:
 Information:
 - This was originally written by Camilo Bermudez 7/31/13 and modified by
 Erin Conrad at UPenn 12/9/22.
+- Updated arguments 3/9/2023, bscheid@seas.upenn.edu
 %}
 
 %% Parameters
-tmul = 19; % minimum relative amplitude (compared to baseline)
-absthresh = 100; % minimum absolute amplitude (uV)
-sur_time = 0.5; % surround time (in s) against which to compare for relative amplitude
-close_to_edge = 0.05; % time (in s) surrounding start and end of sample to ignore 
-too_high_abs = 1e3; % amplitude above which I reject it as artifact
-spkdur = [15 200]; % spike duration must be within this range (in ms)
-spkdur = spkdur*fs/1000;   % convert above to samples;
-lpf1 = 30; % low pass filter for spikey component
-hpf  = 7; % high pass filter for spikey component
+arguments
+    values
+    fs
+    options.tmul = 19; % minimum relative amplitude (compared to baseline)
+    options.absthresh = 100; % minimum absolute amplitude (uV)
+    options.sur_time = 0.5; % surround time (in s) against which to compare for relative amplitude
+    options.close_to_edge = 0.05; % time (in s) surrounding start and end of sample to ignore 
+    options.too_high_abs = 1e3; % amplitude above which I reject it as artifact
+    options.spkdur = [15 200]; % spike duration must be within this range (in ms)
+    options.lpf1 = 30; % low pass filter for spikey component
+    options.hpf  = 7; % high pass filter for spikey component
+end
+
+    tmul = options.tmul; 
+    absthresh = options.absthresh; 
+    sur_time = options.sur_time; 
+    close_to_edge = options.close_to_edge; 
+    too_high_abs = options.too_high_abs; 
+    spkdur = options.spkdur*fs/1000; 
+    lpf1 = options.lpf1; 
+    hpf  = options.hpf; 
 
 %% Initialize things
 all_spikes  = [];
