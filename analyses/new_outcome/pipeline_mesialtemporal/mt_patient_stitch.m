@@ -111,6 +111,8 @@ for f = 1:nfiles
     all_times(f,:) = abs_times;
 
     %% Figure out labels
+    % Convert MUSC labels into HUP labels for consistency
+    allowed_labels = convert_musc_labels_to_hup(allowed_labels);
     assert(isequal(allowed_labels,out.clean_labels))
     
     for im = 1:nmontages
