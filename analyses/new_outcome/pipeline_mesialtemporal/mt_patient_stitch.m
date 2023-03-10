@@ -40,13 +40,25 @@ nallowed = length(allowed_labels);
 
 % Get demographic data
 clinical = pt(which_pt).clinical;
-surgery = clinical.surgery;
-resec_lat = clinical.resection_lat;
-resec_loc = clinical.resection_loc;
-ablate_lat = clinical.ablation_lat;
-ablate_loc = clinical.ablation_loc;
-engel = {clinical.engel{1},clinical.engel{2}};
-ilae = {clinical.ilae{1},clinical.ilae{2}};
+
+if isempty(clinical)
+    surgery = [];
+    resec_lat = [];
+    resec_loc = [];
+    ablate_lat = [];
+    ablate_loc = [];
+    engel = [];
+    ilae = [];
+
+else
+    surgery = clinical.surgery;
+    resec_lat = clinical.resection_lat;
+    resec_loc = clinical.resection_loc;
+    ablate_lat = clinical.ablation_lat;
+    ablate_loc = clinical.ablation_loc;
+    engel = {clinical.engel{1},clinical.engel{2}};
+    ilae = {clinical.ilae{1},clinical.ilae{2}};
+end
 
 % Get the correct row of the SOZ table
 szr = nan;
