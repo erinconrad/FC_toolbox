@@ -38,6 +38,7 @@ arguments
     options.spkdur = [15 200]; % spike duration must be within this range (in ms)
     options.lpf1 = 30; % low pass filter for spikey component
     options.hpf  = 7; % high pass filter for spikey component
+    options.multiChannelRequirements = true
 end
 
     tmul = options.tmul; 
@@ -72,11 +73,18 @@ for j = 1:nchs
     spikes   = [];
 
     % Low pass filter to remove artifact
-    lpdata = eegfilt(data, lpf1, 'lp',fs); % low pass filter
+    if ~isstruct(lpf1)
+        lpdata = eegfilt(data, lpf1, 'lp',fs); % low pass filter
+    else
+        lpdata = filtfilt(lpf1.B,lpf1.A,data);
+    end
 
     % high pass filter to get the spikey part
-    hpdata   = eegfilt(lpdata, hpf, 'hp',fs); % high pass filter
-
+    if ~isstruct(hpf)
+        hpdata   = eegfilt(lpdata, hpf, 'hp',fs); % high pass filter
+    end
+        hpdata = filtfilt(hpf.B,hpf.A,lpdata);
+        
     % establish the baseline for the relative amplitude threshold
     lthresh = median(abs(hpdata)); 
     thresh  = lthresh*tmul;     % this is the final threshold we want to impose
@@ -228,7 +236,7 @@ end
 %% Multichannel requirements
 % Require spike to be on at least 2 channels and no more than half of the
 % channels within 100 ms
-if ~isempty(gdf)
+if ~isempty(gdf) && options.multiChannelRequirements
     gdf =  multi_channel_requirements2(gdf,nchs,fs);
 end
 
