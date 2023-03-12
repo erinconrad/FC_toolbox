@@ -54,40 +54,43 @@ end
 all_spikes  = [];
 nchs = size(values,2);
 
+% re-adjust the mean of the data to be zero
+data = values - mean(values,1,'omitnan');
+
+% Low pass filter to remove artifact
+if ~isstruct(lpf1)
+    lpdata = eegfilt(data, lpf1, 'lp',fs); % low pass filter
+else
+    lpdata = filtfilt(lpf1.B,lpf1.A,data);
+end
+
+% high pass filter to get the spikey part
+if ~isstruct(hpf)
+    hpdata_all   = eegfilt(lpdata, hpf, 'hp',fs); % high pass filter
+end
+    hpdata_all = filtfilt(hpf.B,hpf.A,lpdata);
+    
+% establish the baseline for the relative amplitude threshold
+lthresh = median(abs(hpdata_all), 1); 
+thresh  = lthresh*tmul;     % this is the final threshold we want to impose
+
+if length(absthresh) == 1, absthresh = repelem(absthresh, nchs); 
+else, assert(length(absthresh) == nchs, 'absThresh must be a scalar or vector equal to # channels')
+end
+
 %% Iterate channels and detect spikes
 for j = 1:nchs
     
     % initialize out array with final spike info
     out = [];
     
-    % specify ch
-    data = values(:,j);
-    
+    hpdata = hpdata_all(:,j);
+
     % Skip if all nans
-    if sum(isnan(data)) > 0, continue; end
-    
-    % re-adjust the mean of the data to be zero
-    data = data - nanmean(data);
-        
+    if sum(isnan(hpdata)) > 0, continue; end
+            
     % initialize array with tentative spike info
     spikes   = [];
-
-    % Low pass filter to remove artifact
-    if ~isstruct(lpf1)
-        lpdata = eegfilt(data, lpf1, 'lp',fs); % low pass filter
-    else
-        lpdata = filtfilt(lpf1.B,lpf1.A,data);
-    end
-
-    % high pass filter to get the spikey part
-    if ~isstruct(hpf)
-        hpdata   = eegfilt(lpdata, hpf, 'hp',fs); % high pass filter
-    end
-        hpdata = filtfilt(hpf.B,hpf.A,lpdata);
-        
-    % establish the baseline for the relative amplitude threshold
-    lthresh = median(abs(hpdata)); 
-    thresh  = lthresh*tmul;     % this is the final threshold we want to impose
 
     % Run the spike detector to find both negative and positive spikes
     for k = 1:2
@@ -104,17 +107,20 @@ for j = 1:nchs
         idx      = find(diff(spp) <= spkdur(2));       % find peak-to-peak durations within allowable range
         startdx  = spp(idx);
         startdx1 = spp(idx+1);
+        strtMean = mean([startdx, startdx1],2);
+
+        % find the valley that is between the two peaks
+        [~,imn] = pdist2(spv, strtMean, 'euclidean', 'smallest', 1);
+        spkmintic = spv(imn);
 
         % Loop over peaks
         for i = 1:length(startdx)
-            spkmintic = spv((spv > startdx(i) & spv < startdx1(i))); % find the valley that is between the two peaks
-
             % If the height from valley to either peak is big enough, it could
             % be a spike
-            max_height = max(abs(kdata(startdx1(i)) - kdata(spkmintic)),abs(kdata(startdx(i)) - kdata(spkmintic)));
-            if max_height > thresh   % see if the peaks are big enough
+            max_height = max(abs(kdata(startdx1(i)) - kdata(spkmintic(i))),abs(kdata(startdx(i)) - kdata(spkmintic(i))));
+            if max_height > thresh(j)   % see if the peaks are big enough
                 
-                spikes(end+1,1) = spkmintic; % add timestamp to the spike list
+                spikes(end+1,1) = spkmintic(i); % add timestamp to the spike list
                 spikes(end,2)   = (startdx1(i)-startdx(i)); % add spike duration to list
                 spikes(end,3)   = max_height;  % add spike amplitude to list
 
@@ -138,7 +144,7 @@ for j = 1:nchs
           
         alt_thresh = median(abs(hpdata(istart:iend)))*tmul;
         
-        if spikes(i,3) > alt_thresh && spikes(i,3) > absthresh  % both parts together are bigger than thresh: so have some flexibility in relative sizes
+        if spikes(i,3) > alt_thresh && spikes(i,3) > absthresh(j)  % both parts together are bigger than thresh: so have some flexibility in relative sizes
             if spikes(i,2)*1000/fs > spkdur(1)    % spike wave cannot be too sharp: then it is either too small or noise
                 if spikes(i,3) < too_high_abs
                     out(end+1,:) = spikes(i,:);  % add info of spike to output list
