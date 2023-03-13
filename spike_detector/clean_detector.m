@@ -30,14 +30,14 @@ Erin Conrad at UPenn 12/9/22.
 arguments
     values
     fs
-    options.tmul = 19; % minimum relative amplitude (compared to baseline)
-    options.absthresh = 100; % minimum absolute amplitude (uV)
+    options.tmul = 19; % minimum relative amplitude (compared to baseline). 
+    options.absthresh = 100; % min absolute amplitude (uV). Can be a scalar or vector with one value per channel
     options.sur_time = 0.5; % surround time (in s) against which to compare for relative amplitude
     options.close_to_edge = 0.05; % time (in s) surrounding start and end of sample to ignore 
     options.too_high_abs = 1e3; % amplitude above which I reject it as artifact
     options.spkdur = [15 200]; % spike duration must be within this range (in ms)
-    options.lpf1 = 30; % low pass filter for spikey component
-    options.hpf  = 7; % high pass filter for spikey component
+    options.lpf1 = 30; % scalar: low pass cutoff freq for spikey component, or filter coefficient struct: lpf1.B, lpf1.A
+    options.hpf  = 7; % scalar: high pass cutoff freq for spikey component, or filter cofficient struct: hpf.B, hpf.A
     options.multiChannelRequirements = true
 end
 
@@ -61,7 +61,7 @@ data = values - mean(values,1,'omitnan');
 if ~isstruct(lpf1)
     lpdata = eegfilt(data, lpf1, 'lp',fs); % low pass filter
 else
-    lpdata = filtfilt(lpf1.B,lpf1.A,data);
+    lpdata = filtfilt(lpf1.B,lpf1.A,data); % filter with passed inputs
 end
 
 % high pass filter to get the spikey part
@@ -75,6 +75,7 @@ end
 lthresh = median(abs(hpdata_all), 1); 
 thresh  = lthresh*tmul;     % this is the final threshold we want to impose
 
+% set absthresh for each channel
 if length(absthresh) == 1, absthresh = repelem(absthresh, nchs); 
 else, assert(length(absthresh) == nchs, 'absThresh must be a scalar or vector equal to # channels')
 end
@@ -110,7 +111,8 @@ for j = 1:nchs
         startdx1 = spp(idx+1);
         strtMean = mean([startdx, startdx1],2);
 
-        % find the valley that is between the two peaks
+        % find the valley that is between the two peaks (get the index of
+        % the valley that is closest to the mean of the peaks).
         [~,imn] = pdist2(spv, strtMean, 'euclidean', 'smallest', 1);
         spkmintic = spv(imn);
 
@@ -129,7 +131,6 @@ for j = 1:nchs
 
         end
     end
-
 
     toosmall = [];
     toosharp = [];
