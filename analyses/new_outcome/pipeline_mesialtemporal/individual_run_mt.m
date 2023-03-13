@@ -44,7 +44,11 @@ end
 assert(found_it==1)
 
 % Get seizure times
-sz_times = pt(which_pt).ieeg.file(ieeg_file).sz_times;
+if ~isfield(pt(which_pt).ieeg.file(ieeg_file),'sz_times')
+    sz_times = [];
+else
+    sz_times = pt(which_pt).ieeg.file(ieeg_file).sz_times;
+end
 
 %% Re-align seizure times so that the start of this edf file is 0 
 % Get edf file start time
