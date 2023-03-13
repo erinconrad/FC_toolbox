@@ -106,6 +106,11 @@ for ip = whichPts
         last_file = 0;
     end
 
+    %% Make sure the times don't exceed the dataset duration
+    if times(end,2) > pt(ip).ieeg.file(f).duration
+        error('The dataset isn''t long enough for this.');
+    end
+
     %% Loop over times and get data
     file_name = pt(ip).ieeg.file(f).name;
     for t = last_file+1:ntimes

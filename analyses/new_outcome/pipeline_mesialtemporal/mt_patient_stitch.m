@@ -14,6 +14,9 @@ if exist([edf_summ_path,name,'/summ.mat'],'file')~=0
 end
 
 %% Load meta
+if ~exist([edf_path,name,'/meta.mat'],'file')
+    return
+end
 meta = load([edf_path,name,'/meta.mat']);
 meta = meta.meta;
 times = meta.times;
