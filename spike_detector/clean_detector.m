@@ -67,8 +67,9 @@ end
 % high pass filter to get the spikey part
 if ~isstruct(hpf)
     hpdata_all   = eegfilt(lpdata, hpf, 'hp',fs); % high pass filter
-end
+else
     hpdata_all = filtfilt(hpf.B,hpf.A,lpdata);
+end
     
 % establish the baseline for the relative amplitude threshold
 lthresh = median(abs(hpdata_all), 1); 
