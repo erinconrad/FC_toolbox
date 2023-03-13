@@ -48,10 +48,22 @@ for ip = whichPts
         f = 2; % 2nd dataset
         ff_start = pt(ip).ieeg.file(f).start_time;
         dl_start = (start_time-ff_start)*3600*24; % 8 pm of the first day of the 2nd dataset
+    elseif strcmp(pt_name,'HUP149')
+        f = 2; % 2nd dataset
+        ff_start = pt(ip).ieeg.file(f).start_time;
+        dl_start = (start_time-ff_start)*3600*24; % 8 pm of the first day of the 2nd dataset
     elseif strcmp(pt_name,'HUP215')
         f = 2; % 2nd dataset
         ff_start = pt(ip).ieeg.file(f).start_time;
         dl_start = (start_time-ff_start)*3600*24 - 3600*3; % 5 pm of the first day of the 2nd dataset. Earlier so we can get it all from a single dataset
+    elseif strcmp(pt_name,'MP0002')
+        f = 2;
+        ff_start = pt(ip).ieeg.file(f).start_time;
+        dl_start = (start_time-ff_start)*3600*24;
+    elseif strcmp(pt_name,'MP0004')
+        f = 2;
+        ff_start = pt(ip).ieeg.file(f).start_time;
+        dl_start = (start_time-ff_start)*3600*24;
     else
         f = 1; % which ieeg.org dataset
         % Get start time of day of first file
