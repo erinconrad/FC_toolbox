@@ -90,10 +90,10 @@ for p = 1:npts
     all_ablate_lat{p} = info.ablate_lat;
     all_ablate_loc{p} = info.ablate_loc;
     if isempty(info.engel)
-         info.engel = [nan nan];
+         info.engel = {nan nan};
     end
     if isempty(info.ilae)
-        info.ilae = [nan nan];
+        info.ilae = {nan nan};
     end
     all_engel(p,:) = info.engel;
     all_ilae(p,:) = info.ilae;
