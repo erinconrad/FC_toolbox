@@ -49,6 +49,7 @@ legend([ll,lr],{sprintf('Left vs right/bilateral: AUC = %1.2f',AUCL),...
 title('Model performance by laterality')
 set(gca,'fontsize',20)
 
+
 %% B: ROC for L from R+BL for all features, just spikes, "binary spikes"
 combine_br = 1; % L vs R+BL
 rm_non_temporal = 0; % all patients

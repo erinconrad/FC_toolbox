@@ -76,8 +76,8 @@ for p = 1:npts
     all_resec_loc{p} = info.resec_loc;
     all_ablate_lat{p} = info.ablate_lat;
     all_ablate_loc{p} = info.ablate_loc;
-    all_engel{p,:} = info.engel;
-    all_ilae{p,:} = info.ilae;
+    all_engel(p,:) = info.engel;
+    all_ilae(p,:) = info.ilae;
     all_soz_loc{p} = info.soz_loc;
     all_soz_lat{p} = info.soz_lat;
 
