@@ -3,6 +3,7 @@ function prep_data_mt
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
+data_folder = [locations.main_folder,'data/'];
 edf_path = [results_folder,'edf_summ_out/'];
 sleep_stage_path = [results_folder,'edf_out/'];
 out_folder = [results_folder,'analysis/new_outcome/data/'];
@@ -14,11 +15,22 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
+%{
 %% Load the current output file
 data = load([out_folder,'main_out.mat']);
 data = data.out;
 all_names = data.all_names;
 npts = length(all_names);
+%}
+
+%% Load pt folder to get names
+pt = load([data_folder,'pt.mat']);
+pt = pt.pt;
+npts = length(pt);
+all_names = cell(npts,1);
+for ip = 1:npts
+    all_names{ip} = pt(ip).name;
+end
 
 % Clinical stuff
 all_surgery = cell(npts,1);
@@ -64,6 +76,7 @@ all_ll_iqr = cell(npts,3,3);
 for p = 1:npts
 
     name = all_names{p};
+
 
     % Load the edf summary file
     if exist([edf_path,name,'/summ.mat'],'file') == 0, continue; end
