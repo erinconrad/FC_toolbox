@@ -5,6 +5,11 @@ if isempty(outcome)
     return
 end
 
+if isnumeric(outcome) && isnan(outcome)
+    outcome_num = nan;
+    return
+end
+
 switch type
     case 'ilae'
         if contains(outcome,'1')
@@ -19,6 +24,7 @@ switch type
             outcome_num = 5;
         end
     case 'engel'
+        
         if contains(outcome,'V')
             outcome_num = 4;
         elseif contains(outcome,'III')

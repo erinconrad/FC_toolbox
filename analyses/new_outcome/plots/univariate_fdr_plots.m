@@ -1,6 +1,7 @@
 function univariate_fdr_plots
 
 %% Parameters
+which_pts = 'all';
 rm_non_temporal = 0;
 response = 'soz_lats';
 
@@ -34,6 +35,17 @@ allowed_features = features(cellfun(@(x) contains(x,which_sleep_stage),features)
 %}
 allowed_features = features;
 
+%% Restrict to desired hospital
+switch which_pts
+    case 'all'
+    case 'hup'
+        hup = contains(T.names,'HUP');
+        T(~hup,:) = [];
+    case 'musc'
+        musc = contains(T.names,'MP');
+        T(~musc,:) = [];
+end
+
 %% Remove non temporal patients
 if rm_non_temporal
     temporal = strcmp(T.soz_locs,'temporal');
@@ -50,7 +62,7 @@ tiledlayout(2,2,"TileSpacing",'tight','padding','tight')
 feature = 'spikes car sleep';
 %feature = 'plv theta bipolar wake';
 nexttile
-stats = boxplot_with_points(T.(feature),T.(response),1);
+stats = boxplot_with_points(T.(feature),T.(response),1,{'left','right','bilateral'});
 spikes = T.(feature);
 left_soz_spikes = spikes(strcmp(T.(response),'left'));
 right_soz_spikes = spikes(strcmp(T.(response),'right'));
@@ -177,10 +189,20 @@ fprintf(fid,['We compared the ability of interictal feature AI to distinguish le
 % need to decide about imputation, etc.
 X = table2array(T(:,features));
 soz_lats = T.soz_lats;
+%{
 % for now just remove rows with any nans
 nan_rows = any(isnan(X),2);
 X(nan_rows,:) = [];
 soz_lats(nan_rows) = [];
+%}
+
+% Imputation of nans. Make Nans equal to mean across other rows for that
+% column
+for ic = 1:size(X,2)
+    nan_row = isnan(X(:,ic));
+    X(nan_row,ic) = nanmean(X(:,ic));
+end
+
 right = strcmp(soz_lats,'right');
 left = strcmp(soz_lats,'left');
 bilateral = strcmp(soz_lats,'bilateral');

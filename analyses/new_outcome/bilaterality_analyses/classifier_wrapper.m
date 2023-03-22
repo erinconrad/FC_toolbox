@@ -1,7 +1,9 @@
-function out = classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal)
+function out = classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal,response)
 
 % Define response
-response = 'soz_lats';
+if isempty(response)
+    response = 'soz_lats';
+end
 
 % Restrict to spike features if desired
 spike_features = features(cellfun(@(x) contains(x,'spikes'),features));
@@ -11,7 +13,7 @@ end
 
 % Remove patients without response
 empty_class = cellfun(@isempty,T.(response));
-T(empty_class,:) = [];
+assert(sum(empty_class)==0)
 npts = size(T,1);
 
 % Remove non temporal patients if desired
@@ -30,7 +32,17 @@ if combine_br == 1
     T.soz_lats(strcmp(T.soz_lats,'right') | strcmp(T.soz_lats,'bilateral')) = {'br'};
 elseif combine_br == 2
     T.soz_lats(strcmp(T.soz_lats,'left') | strcmp(T.soz_lats,'bilateral')) = {'bl'};
+elseif combine_br == 3
+    T.soz_lats(strcmp(T.soz_lats,'left') | strcmp(T.soz_lats,'right')) = {'lr'};
 end
+
+% if doing outcome model, take absolute value
+if strcmp(response,'outcome')
+    a = table2array(T(:,features));
+    b = abs(a);
+    T(:,features) = array2table(b);
+end
+
 
 % Initialize ROC parameters
 classes = unique(T.(response));
@@ -50,6 +62,8 @@ for i = 1:npts
     % make sure they're distinct
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
 
+    
+
     % perform imputation of missing data
     for j = 1:size(Ttrain,2)
         a = Ttrain{:,j};
@@ -63,21 +77,41 @@ for i = 1:npts
         Ttest{:,j} = b;
     end
 
+    
+    
+
     % Dumb spikes - binarize spikes according to which side has more
+    
     if just_spikes == 2
+        binTtrain = Ttrain;
+        binTtest = Ttest;
         for j = 1:size(Ttrain,2)
             if ~isnumeric(Ttrain{:,j}), continue; end
-            Ttrain{Ttrain{:,j}>0,j} = 1; Ttrain{Ttrain{:,j}<0,j} = -1;
-            Ttest{Ttest{:,j}>0,j} = 1; Ttest{Ttest{:,j}<0,j} = -1;
+            binTtrain{Ttrain{:,j}>0,j} = 1; binTtrain{Ttrain{:,j}<0,j} = 0;
+            binTtest{Ttest{:,j}>0,j} = 1; binTtest{Ttest{:,j}<0,j} = 0;
+            binTtrain{:,j} = logical(binTtrain{:,j});
+            binTtest{:,j} = logical(binTtest{:,j});
         end
+        Ttrain = binTtrain;
+        Ttest = binTtest;
+    end
+    
 
+    %% Classifier
+    if combine_br == 0 && ~strcmp(response,'outcome')
+        % Do the general classifier
+        
+        tc = general_classifier(Ttrain,'svm',features,response,pca_perc,1e2,length(features));
+
+    else
+        % Do the lasso classifier
+        tc = lasso_classifier(Ttrain,features,response,pca_perc,classes);
+    
+        % Get score
+        all_scores(i) = tc.probabilityFcn(Ttest);
     end
 
-    % Do the lasso calculator
-    tc = lasso_classifier(Ttrain,features,response,pca_perc,classes);
 
-    % Get score
-    all_scores(i) = tc.probabilityFcn(Ttest);
     all_names{i} = Ttest.names{1};
 
     % make prediction on left out

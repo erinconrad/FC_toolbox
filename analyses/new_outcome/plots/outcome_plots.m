@@ -1,10 +1,12 @@
 function outcome_plots(T,features)
 
 %% Parameters
-pca_perc = 90;
+pca_perc = 95;
 which_outcome = 'engel';
-which_year = 2;
+which_year = 1;
 outcome_approach = 'prob';
+only_temp = 0;
+direct_model = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -28,6 +30,7 @@ switch which_outcome
     case 'engel'
         good_outcome = @(x) strcmp(x(2),'A') | strcmp(x(2),'B') | strcmp(x(2),'C') | strcmp(x(2),'D');
     case 'ilae'
+        good_outcome = @(x) contains(x,'2') | contains(x,'1');
 
 end
 
@@ -79,6 +82,62 @@ set(gca,'fontsize',20)
 
 
 %% Modeled probability of left by outcome for those who underwent surgery
+if direct_model
+
+
+
+    
+    % Just predict outcome
+    % Get outcomes
+    outcome_name = [which_outcome,'_yr',sprintf('%d',which_year)];
+    outcome = cellfun(@(x) parse_outcome_new(x,which_outcome),T.(outcome_name),'UniformOutput',false);
+
+    % Find those who had left sided surgery
+    surg = (strcmp(T.surgery,'Laser ablation') | contains(T.surgery,'Resection'));
+
+    % Only want outcome for those who had surgery
+    outcome(~surg) = {''};
+    T.outcome = outcome;
+
+    % proof of concept
+    if 1
+        
+        good = strcmp(outcome,'good');
+        left = strcmp(T.soz_lats,'left');
+        right = strcmp(T.soz_lats,'right');
+        curr = T.('spikes machine sleep');
+        figure
+        nexttile
+        unpaired_plot(abs(curr(good)),abs(curr(~good)),{'good','bad'},'spikes')
+        nexttile
+        unpaired_plot(curr(left),curr(right),{'left','right'},'spikes')
+    end
+
+    % remove empty class
+    empty_class = cellfun(@isempty,T.outcome);
+    T(empty_class,:) = [];
+
+    % model
+    just_spikes = 1; % ALl features
+    rm_non_temporal = 0; % All patients
+    combine_br = 0;
+    out =  classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal,'outcome');
+    [X,Y,~,AUC] = perfcurve(out.class,out.scores,out.pos_class);
+
+
+    nexttile
+    lg = plot(X,Y,'linewidth',2);
+    hold on
+    plot([0 1],[0 1],'k--','linewidth',2)
+    xlabel('False positive rate')
+    ylabel('True positive rate')
+    legend(sprintf('AUC = %1.2f',AUC),'fontsize',20,...
+        'location','southeast')
+    title({'Model performance by outcome'})
+    set(gca,'fontsize',20)
+
+
+else
 
 %{
 Approaches to this analysis:
@@ -95,7 +154,6 @@ T(empty_class,:) = [];
 % Do the model
 just_spikes = 1; % ALl features
 rm_non_temporal = 0; % All patients
-combine_br = 1;
 
 % Remove non temporal patients if desired
 if rm_non_temporal == 1
@@ -106,27 +164,41 @@ elseif rm_non_temporal == 2 % only include non-temporal (excludes diffuse and mu
     T(~extra,:) = [];
 end
 
-out =  classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal);
+% Do the models
+left =  classifier_wrapper(T,features,pca_perc,1,just_spikes,rm_non_temporal,[]);
+right =  classifier_wrapper(T,features,pca_perc,2,just_spikes,rm_non_temporal,[]);
 
-assert(isequal(out.names,T.names))
+% Ensure that patient order in table lines up with that of model output
+assert(all(strcmp(T.names,left.names))); assert(all(strcmp(T.names,right.names))) 
 
-% Find those who had left sided surgery
-surg = (strcmp(T.surgery,'Laser ablation') | contains(T.surgery,'Resection'));
+% Find those who had surgery
+if only_temp
+    surg = ((strcmp(T.surgery,'Laser ablation') | contains(T.surgery,'Resection'))) & strcmp(T.surg_loc,'temporal');
+else
+    surg = (strcmp(T.surgery,'Laser ablation') | contains(T.surgery,'Resection'));
+end
 left_surg = surg & strcmp(T.surg_lat,'left');
-left_temporal_surg = surg & strcmp(T.surg_loc,'temporal');
+right_surg = surg & strcmp(T.surg_lat,'right');
+
+% Match the score to the surg
+scores = nan(length(left_surg),1);
+left_scores = left.scores;
+right_scores = right.scores;
+scores(left_surg) = left_scores(left_surg);
+scores(right_surg) = right_scores(right_surg);
 
 % Get outcomes
 outcome_name = [which_outcome,'_yr',sprintf('%d',which_year)];
 outcome = cellfun(@(x) parse_outcome_new(x,which_outcome),T.(outcome_name),'UniformOutput',false);
-left_surg_good = left_surg & strcmp(outcome,'good');
-left_surg_bad = left_surg & strcmp(outcome,'bad');
+surg_good = surg & strcmp(outcome,'good');
+surg_bad = surg & strcmp(outcome,'bad');
+
+%outcome_num =cellfun(@(x)  parse_outcome_num(x,which_outcome), T.(outcome_name));
 
 if 0
     
-    oT = table(out.names,out.scores,out.class,out.all_pred,left_surg_good,T.("spikes bipolar sleep"),...
-        'VariableNames',{'name','prob','true','pred','good_out','Spike AI'});
-    oT(left_surg_good == false & left_surg_bad==false,:) = [];
-    oT
+    table(T.names(surg_good|surg_bad),scores(surg_good|surg_bad),surg_good(surg_good|surg_bad))
+    table(T.names((surg_good|surg_bad)&left_surg),scores((surg_good|surg_bad)&left_surg),surg_good((surg_good|surg_bad)&left_surg))
 end
 
 % Plot
@@ -134,20 +206,35 @@ nexttile
 
 switch outcome_approach
     case 'prob'
-        unpaired_plot(out.scores(left_surg_good),out.scores(left_surg_bad),{'Good','Poor'},'Modeled probability of left')
-        title({'Prediction concordance for patients','who underwent left sided surgery'})
+        unpaired_plot(scores(surg_good),scores(surg_bad),{'Good','Poor'},'Modeled probability of concordant laterality')
+        %unpaired_plot(left_scores(surg_good&left_surg),left_scores(surg_bad&left_surg),{'Good','Poor'},'Modeled probability of concordant laterality')
+        title({'Prediction concordance for patients','who underwent surgery'})
+        xlim([0.5 2.5])
+        set(gca,'fontsize',20)
     case 'auc'
         
-        [Xg,Yg,~,AUCg] = perfcurve(out.class(left_surg_good),out.scores(left_surg_good),out.pos_class);
-        [Xb,Yb,~,AUCb] = perfcurve(out.class(left_surg_bad),out.scores(left_surg_bad),out.pos_class);
+        [Xg,Yg,~,AUCg] = perfcurve(left.class(surg_good&left_surg),left.scores(surg_good&left_surg),left.pos_class);
+        [Xb,Yb,~,AUCb] = perfcurve(left.class(surg_bad&left_surg),left.scores(surg_bad&left_surg),left.pos_class);
 
-end
+        lg = plot(Xg,Yg,'linewidth',2);
+        hold on
+        lb = plot(Xb,Yb,':','linewidth',2);
+        plot([0 1],[0 1],'k--','linewidth',2)
+        xlabel('False positive rate')
+        ylabel('True positive rate')
+        legend([lg,lb],{sprintf('Good outcome: AUC = %1.2f',AUCg),...
+            sprintf('Bad outcome: AUC = %1.2f',AUCb)},'fontsize',20,...
+            'location','southeast')
+        title({'Model performance by outcome'})
+        set(gca,'fontsize',20)
 
         
-
-set(gca,'FontSize',20)
+end
 
 %% Model performance by good vs bad outcome???
+print(gcf,[plot_folder,'Fig6'],'-dpng')
 
+
+end
 
 end

@@ -1,5 +1,8 @@
 function [T,features] =  lr_mt(which_sleep_stages)
 
+%% Parameters
+only_hup = 0;
+
 %% Plots
 do_little_plots = 0;
 do_big_plots = 0;
@@ -26,13 +29,14 @@ addpath(genpath(scripts_folder));
 freq_names = {'delta','theta','alpha','beta','gamma','broadband'};
 
 %% Load data file
-
-
 mt_data = load([inter_folder,'mt_out.mat']);
 mt_data = mt_data.out;
 
+%% Load Manual validation file
+T = readtable('Manual validation.xlsx','Sheet','outcome');
+
 %% get variables of interest
-%
+%{
 data = load([inter_folder,'main_out.mat']);
 data = data.out;
 all_outcome = data.outcome; %outcome = all_outcome(:,which_outcome,which_outcome_year);
@@ -54,7 +58,7 @@ engel_yr2 = all_outcome(:,1,2);
 ilae_yr1 = all_outcome(:,2,1);
 ilae_yr2 = all_outcome(:,2,2);
 %}
-%{
+%
 all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 names = mt_data.all_names;
 npts = length(names);
@@ -68,18 +72,24 @@ engel_yr2 = mt_data.all_engel(:,2);
 ilae_yr1 = mt_data.all_ilae(:,1);
 ilae_yr2 = mt_data.all_ilae(:,2);
 soz_lats = mt_data.all_soz_lat;
-soz_locs = mt_data.all_soz_locs;
+soz_locs = mt_data.all_soz_loc;
 %}
+
+%% Fix the outcomes for the patients I manually validated
+[engel_yr1,engel_yr2,ilae_yr1,ilae_yr2] = replace_with_my_outcomes(names,engel_yr1,ilae_yr1,engel_yr2,ilae_yr2,T);
 
 
 %% Clean SOZ localizations and lateralities
+soz_lats(cellfun(@isempty,soz_lats)) = {''};
+soz_locs(cellfun(@isempty,soz_locs)) = {''};
 soz_lats(strcmp(soz_lats,'diffuse')) = {'bilateral'}; % make diffuse be the same as bilateral
 soz_locs(contains(soz_locs,'temporal')) = {'temporal'}; % make any temporal be temporal
 
 %% Consensus ablation or resection lat
 surg_lat = cell(npts,1);
 for i = 1:npts
-    if strcmp(resection_lat{i},'na') && strcmp(ablation_lat{i},'na')
+    if isempty(resection_lat{i}) && isempty(ablation_lat{i})
+    elseif strcmp(resection_lat{i},'na') && strcmp(ablation_lat{i},'na')
     elseif strcmp(resection_lat{i},'na')
         surg_lat{i} = ablation_lat{i};
     elseif strcmp(ablation_lat{i},'na')
@@ -96,7 +106,8 @@ end
 %% Consensus ablation or reseciton loc
 surg_loc = cell(npts,1);
 for i = 1:npts
-    if strcmp(resection_loc{i},'na') && strcmp(ablation_loc{i},'NA')
+    if isempty(resection_loc{i}) && isempty(ablation_loc{i})
+    elseif strcmp(resection_loc{i},'na') && strcmp(ablation_loc{i},'NA')
     elseif strcmp(resection_loc{i},'ATL')
         surg_loc{i} = 'temporal';
     elseif contains(ablation_loc{i},'temporal')
@@ -108,6 +119,7 @@ end
 
 
 %% Parse surgery
+surgery(cellfun(@isempty,surgery)) = {''};
 resection_or_ablation = cellfun(@(x) ...
     contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
     surgery);
@@ -280,9 +292,9 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
     
             %% Get asymmetry index
             %{
-            k = find(strcmp(names,'HUP153'));
-            %k = 100;
-            ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,do_little_plots);
+            %k = find(strcmp(names,'HUP153'));
+            k = 80;
+            ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,1);
             %}
             
     
@@ -472,6 +484,13 @@ for i = 1:length(good_labels)
     pause
 end
 end
+
+%% Restrict to HUP patients
+if only_hup
+    hup_pt = contains(T.names,'HUP');
+    T(~hup_pt,:) = [];
+end
+    
 
 
 end

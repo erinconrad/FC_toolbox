@@ -1,4 +1,4 @@
-function out = boxplot_with_points(x,categories,show_stats)
+function out = boxplot_with_points(x,categories,show_stats,groupOrder)
 
 %{
 cols = [0 0.4470 0.7410;...
@@ -7,7 +7,7 @@ cols = [0 0.4470 0.7410;...
 %}
 cols = colormap(gca,lines(length(unique(categories))));
 
-h = boxplot(x,categories,'colors',cols,'symbol','');
+h = boxplot(x,categories,'colors',cols,'symbol','','GroupOrder',groupOrder);
 set(h,{'linew'},{2})
 hold on
 unique_lats = xticklabels;
@@ -58,6 +58,9 @@ if show_stats
         ytext1 = yl(1) + 1.09*(yl(2)-yl(1));
         plot([1 3],[ybar1 ybar1],'k-','linewidth',1)
         text(2,ytext1,'ns','horizontalalignment','center','fontsize',15)
+        out.lrp = nan;
+        out.rbp = nan;
+        out.lbp = nan;
 
     end
 

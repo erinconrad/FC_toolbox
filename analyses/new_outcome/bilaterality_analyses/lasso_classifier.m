@@ -1,7 +1,7 @@
 function trainedClassifier = lasso_classifier(trainingData,features,respVar,pc_perc,classes)
 
 % Seed a random number generator
-%rng(0)
+rng(0)
 
 %% Data prep
 inputTable = trainingData;
@@ -24,6 +24,7 @@ numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVariance
 pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
 predictors = array2table(pcaScores(:,1:numComponentsToKeep));
 
+
 %% LASSO logistic regression
 % Make response ones and zeros
 response_bin = nan(length(response),1);
@@ -38,10 +39,12 @@ class_from_bin = @(x) possible_responses(x+1); % if 0->possible_responses{1}, if
 assert(isequal(class_from_bin(response_bin),response)) % confirm I get original classes back
 
 % do the Lasso
-[B,FitInfo] = lassoglm(table2array(predictors),response_bin,'binomial','CV',3);
+
+[B,FitInfo] = lassoglm(table2array(predictors),response_bin,'binomial','CV',5);
 idxLambdaMinDeviance = FitInfo.IndexMinDeviance;
 B0 = FitInfo.Intercept(idxLambdaMinDeviance);
 coef = [B0; B(:,idxLambdaMinDeviance)];
+
 
 % Do logistic regression
 lr_prob = @(x) glmval(coef,x,'logit');

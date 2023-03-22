@@ -9,75 +9,78 @@ isCategoricalPredictor = repmat(false,1,length(predictorNames));
 classNames = unique(response);
 
 %nca = fscnca(table2array(predictors),response,'FitMethod','exact');
+if numFeaturesToKeep == length(features)
+    includedPredictorNames =  predictorNames;
+else
 
-%% 5-fold cross validation to select features
-KFolds = 5;
-cvp = cvpartition(response, 'KFold', KFolds);
-all_included_predictors = cell(KFolds,1);
-
-for fold = 1:KFolds
-
-    temp_predictors = predictors(cvp.training(fold), :);
-    temp_response = response(cvp.training(fold), :);
-
-    % Feature Ranking and Selection
-    % Replace Inf/-Inf values with NaN to prepare data for normalization
-    temp_predictors = standardizeMissing(temp_predictors, {Inf, -Inf});
-    predictorMatrix = array2table((table2array(temp_predictors)-nanmean(table2array(temp_predictors),1))./nanstd(table2array(temp_predictors),[],1));
-    newPredictorMatrix = zeros(size(predictorMatrix));
-    for i = 1:size(predictorMatrix, 2)
-        if isCategoricalPredictor(i)
-            newPredictorMatrix(:,i) = grp2idx(predictorMatrix{:,i});
-        else
-            newPredictorMatrix(:,i) = predictorMatrix{:,i};
-        end
-    end
-    predictorMatrix = newPredictorMatrix;
-    responseVector = grp2idx(temp_response);
+    %% 5-fold cross validation to select features
+    KFolds = 5;
+    cvp = cvpartition(response, 'KFold', KFolds);
+    all_included_predictors = cell(KFolds,1);
     
-    % Rank features using Kruskal Wallis algorithm
-    pValues = nan(size(predictorMatrix, 2),1);
-    for i = 1:size(predictorMatrix, 2)
-
-        %
-        pValues(i) = kruskalwallis(...
-            predictorMatrix(:,i), ...
-            responseVector, ...
-            'off');
-        %}
-
-        %{
-        p12 = ranksum(predictorMatrix(responseVector==1,i),predictorMatrix(responseVector==2,i));
-        p23 = ranksum(predictorMatrix(responseVector==2,i),predictorMatrix(responseVector==3,i));
-        p13 = ranksum(predictorMatrix(responseVector==1,i),predictorMatrix(responseVector==3,i));
-        pValues(i) = nanmedian([p12 p23 p13]);
-        %}
+    for fold = 1:KFolds
+    
+        temp_predictors = predictors(cvp.training(fold), :);
+        temp_response = response(cvp.training(fold), :);
+    
+        % Feature Ranking and Selection
+        % Replace Inf/-Inf values with NaN to prepare data for normalization
+        temp_predictors = standardizeMissing(temp_predictors, {Inf, -Inf});
+        predictorMatrix = array2table((table2array(temp_predictors)-nanmean(table2array(temp_predictors),1))./nanstd(table2array(temp_predictors),[],1));
+        newPredictorMatrix = zeros(size(predictorMatrix));
+        for i = 1:size(predictorMatrix, 2)
+            if isCategoricalPredictor(i)
+                newPredictorMatrix(:,i) = grp2idx(predictorMatrix{:,i});
+            else
+                newPredictorMatrix(:,i) = predictorMatrix{:,i};
+            end
+        end
+        predictorMatrix = newPredictorMatrix;
+        responseVector = grp2idx(temp_response);
+        
+        % Rank features using Kruskal Wallis algorithm
+        pValues = nan(size(predictorMatrix, 2),1);
+        for i = 1:size(predictorMatrix, 2)
+    
+            %
+            pValues(i) = kruskalwallis(...
+                predictorMatrix(:,i), ...
+                responseVector, ...
+                'off');
+            %}
+    
+            %{
+            p12 = ranksum(predictorMatrix(responseVector==1,i),predictorMatrix(responseVector==2,i));
+            p23 = ranksum(predictorMatrix(responseVector==2,i),predictorMatrix(responseVector==3,i));
+            p13 = ranksum(predictorMatrix(responseVector==1,i),predictorMatrix(responseVector==3,i));
+            pValues(i) = nanmedian([p12 p23 p13]);
+            %}
+        end
+        pValues(isnan(pValues)) = 1;
+        [~,featureIndex] = sort(-log(pValues), 'descend');
+        tempIncludedPredictorNames = temp_predictors.Properties.VariableNames(featureIndex(1:numFeaturesToKeep));
+        all_included_predictors{fold} = tempIncludedPredictorNames;
     end
-    pValues(isnan(pValues)) = 1;
-    [~,featureIndex] = sort(-log(pValues), 'descend');
-    tempIncludedPredictorNames = temp_predictors.Properties.VariableNames(featureIndex(1:numFeaturesToKeep));
-    all_included_predictors{fold} = tempIncludedPredictorNames;
+    all_included_predictors = horzcat(all_included_predictors{:});
+    
+    % Take the N with the most votes
+    a=unique(all_included_predictors,'stable');
+    b=cellfun(@(x) sum(ismember(all_included_predictors,x)),a,'un',0); % get counts for each
+    counts = cell2mat(b);
+    
+    % Make sure counts are sorted
+    [sorted_counts,I] = sort(counts,'descend');
+    top_predictors = a(I(1:numFeaturesToKeep));
+    includedPredictorNames = top_predictors;
+    
+    % Assign these as the new predictors
+    predictors = predictors(:,includedPredictorNames);
+    isCategoricalPredictor = repmat(false,1,length(includedPredictorNames));
+    
+    if 0
+        table(sorted_counts',a(I)')
+    end
 end
-all_included_predictors = horzcat(all_included_predictors{:});
-
-% Take the N with the most votes
-a=unique(all_included_predictors,'stable');
-b=cellfun(@(x) sum(ismember(all_included_predictors,x)),a,'un',0); % get counts for each
-counts = cell2mat(b);
-
-% Make sure counts are sorted
-[sorted_counts,I] = sort(counts,'descend');
-top_predictors = a(I(1:numFeaturesToKeep));
-includedPredictorNames = top_predictors;
-
-% Assign these as the new predictors
-predictors = predictors(:,includedPredictorNames);
-isCategoricalPredictor = repmat(false,1,length(includedPredictorNames));
-
-if 0
-    table(sorted_counts',a(I)')
-end
-
 
 %% PCA - figure out how to normalize
 % Apply a PCA to the predictor matrix.
