@@ -292,9 +292,9 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
     
             %% Get asymmetry index
             %{
-            %k = find(strcmp(names,'HUP153'));
-            k = 80;
-            ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,1);
+            k = find(strcmp(names,'HUP214'));
+            %k = 80;
+            ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,0);
             %}
             
     

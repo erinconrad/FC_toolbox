@@ -14,7 +14,7 @@ D: Show example of AI according to epilepsy laterality
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 plot_folder = [results_folder,'analysis/new_outcome/plots/Methods/'];
-pial_folder = [locations.main_folder,'data/example_surf/RID405/'];
+pial_folder = [locations.main_folder,'data/example_surf/RID652/'];
 inter_folder = [results_folder,'analysis/new_outcome/data/'];
 freesurfer_path = '/Applications/freesurfer/7.3.2/matlab/';
 
@@ -24,8 +24,9 @@ addpath(genpath(scripts_folder));
 
 addpath(genpath(freesurfer_path))
 
-
+if 0
 %% Read pial files
+
 lobj = SurfStatReadSurf([pial_folder,'lh.pial']);
 lvertices = lobj.coord';
 lfaces = (lobj.tri);
@@ -35,9 +36,14 @@ rvertices = robj.coord';
 rfaces = robj.tri;
 
 %% Get electrodes
-T1 = readtable([pial_folder,'sub-RID0405_ses-clinical01_space-T00mri_atlas-DKTantspynet_radius-2_desc-vox_coordinates.csv']);
-T = readtable([pial_folder,'sub-RID0405_ses-clinical01_space-T00mri_desc-mm_electrodes.txt']);
-names = T1.name;
+%T1 = readtable([pial_folder,'sub-RID0296_ses-clinical01_space-T00mri_atlas-DKTantspynet_radius-2_desc-vox_coordinates.csv']);
+%names = T1.name;
+T1 = readtable([pial_folder,'sub-RID0652_electrode_names.txt'],'ReadVariableNames',false);
+names = T1.Var1;
+
+%T = readtable([pial_folder,'sub-RID0652_ses-clinical01_space-T00mri_desc-mm_electrodes.txt']);
+T = readtable([pial_folder,'sub-RID0652_ses-research3T_space-T00mri_desc-mm_electrodes.txt']);
+
 locs = [T.Var1 T.Var2 T.Var3];
 allowable_labels = get_allowable_elecs('HUP100');
 mt_symm = find_mt_symmetric_coverage(names,allowable_labels);
@@ -94,15 +100,32 @@ for i = 1:length(end_elecs)
     end
 end
 
-view(-176,4)
+view(-180,-90)%view(-176,4) %view(-182,-5)
 axis off
 print(gcf,[plot_folder,'elecs_example'],'-dpng')
 print(gcf,[plot_folder,'elecs_example'],'-depsc')
 
 close(gcf)
+end
 
 %% B snippet of eeg with features
 
 %% Asymmetry index
+
+%% Now do lr_mt to get AI features
+[T,features] =  lr_mt; 
+response = 'soz_lats';
+figure
+%% Show spikes
+feature = 'spikes car sleep';
+h = boxplot_with_points(T.(feature),T.(response),0,{'left','right','bilateral'});
+spikes = T.(feature);
+left_soz_spikes = spikes(strcmp(T.(response),'left'));
+right_soz_spikes = spikes(strcmp(T.(response),'right'));
+ylabel('Spike rate asymmetry index')
+%title('Spike rate asymmetry index by SOZ laterality')
+set(gca,'fontsize',20)
+print(gcf,[plot_folder,'AI_example'],'-dpng')
+print(gcf,[plot_folder,'AI_example'],'-depsc')
 
 end

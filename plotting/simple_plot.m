@@ -60,7 +60,7 @@ for i = 1:length(chs)
         ch_offsets(i) = offset;
         ch_bl(i) = -offset + nanmedian(values(:,ich));
 
-        text(dur+0.05,ch_bl(i),sprintf('%s',labels{ich}),'fontsize',20)
+        %text(dur+0.05,ch_bl(i),sprintf('%s',labels{ich}),'fontsize',20)
         
         last_min = min(values(:,ich));
     end
@@ -68,9 +68,17 @@ for i = 1:length(chs)
    
     if i<length(chs)
         
+        if 1
+            if ~isnan(max(values(:,chs(i+1)))) && ~isnan(last_min)
+                offset = offset + 200;
+            end
+
+        else
         
-        if ~isnan(max(values(:,chs(i+1)))) & ~isnan(last_min)
-            offset = offset - (last_min - max(values(:,chs(i+1))));
+            if ~isnan(max(values(:,chs(i+1)))) & ~isnan(last_min)
+                offset = offset - (last_min - max(values(:,chs(i+1))));
+            end
+
         end
             %{
         if ~isnan(min(values(:,ich)) - max(values(:,chs(i+1))))
@@ -82,7 +90,8 @@ for i = 1:length(chs)
 end
 xlabel('Time (seconds)')
 set(gca,'fontsize',20)
-    
+
+if 0
 for s = 1:size(gdf,1)
     %index = spikes(s,1);
     index = gdf(s,2);
@@ -97,6 +106,7 @@ for s = 1:size(gdf,1)
     
     plot(time,value_sp - offset_sp,'ko','markersize',10,'linewidth',2)
     
+end
 end
 
 

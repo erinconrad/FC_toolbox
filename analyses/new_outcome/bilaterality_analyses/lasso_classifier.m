@@ -51,11 +51,32 @@ lr_prob = @(x) glmval(coef,x,'logit');
 lr_prediction = @(x) (x>=0.5);
 
 
-%% Create the result struct with predict function
+% Make functions
 predictorExtractionFcn = @(t) t(:, predictorNames);
 pcaTransformationFcn = @(x) (table2array(varfun(@double, x)) - pcaCenters) .* w * pcaCoefficients;
+invTransformationFcn = @(x) x'/pcaCoefficients/w+pcaCenters;
 predictFcn = @(x) class_from_bin(lr_prediction(lr_prob(pcaTransformationFcn(predictorExtractionFcn(x)))));
 probabilityFcn = @(x) lr_prob(pcaTransformationFcn(predictorExtractionFcn(x)));
+
+%% Back out the feature importance
+% Get the coefficients minus the intercept
+coef_minus_intercept = coef(2:end);
+
+% Back transform to original feature space
+coef_orig = invTransformationFcn(coef_minus_intercept);
+
+% Sort by the absolute value of the coefficients, in descending order
+[sorted_abs,I] = sort(abs(coef_orig),'descend');
+
+% Get the features
+sorted_features = predictorNames(I);
+
+% test
+if 0
+    stem(coef_orig(I(1:20)))
+    xticks(1:length(I(1:20)))
+    xticklabels(sorted_features(1:20))
+end
 
 % Add additional fields to the result struct
 trainedClassifier.predictFcn = predictFcn;
@@ -66,6 +87,8 @@ trainedClassifier.PCACoefficients = pcaCoefficients;
 trainedClassifier.probabilityFcn = probabilityFcn;
 trainedClassifier.pcaTransformationFcn = pcaTransformationFcn;
 trainedClassifier.predictorExtractionFcn = predictorExtractionFcn;
+trainedClassifier.invTransformationFcn = invTransformationFcn;
+trainedClassifier.sorted_features = sorted_features;
 trainedClassifier.About = 'This struct is a trained model exported from Classification Learner R2022a.';
 trainedClassifier.HowToPredict = sprintf('To make predictions on a new table, T, use: \n  yfit = c.predictFcn(T) \nreplacing ''c'' with the name of the variable that is this struct, e.g. ''trainedModel''. \n \nThe table, T, must contain the variables returned by: \n  c.RequiredVariables \nVariable formats (e.g. matrix/vector, datatype) must match the original training data. \nAdditional variables are ignored. \n \nFor more information, see <a href="matlab:helpview(fullfile(docroot, ''stats'', ''stats.map''), ''appclassification_exportmodeltoworkspace'')">How to predict using an exported model</a>.');
 

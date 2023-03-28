@@ -216,7 +216,7 @@ if do_save == 1
 end
 
 %% Show data
-if 0
+if 1
     %ex_chs = {'LA1','LA2','LA3','LA4'};
     
     ex_chs = [];

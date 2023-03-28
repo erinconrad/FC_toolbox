@@ -1,4 +1,4 @@
-function out = boxplot_with_points(x,categories,show_stats,groupOrder)
+function [h,out] = boxplot_with_points(x,categories,show_stats,groupOrder)
 
 %{
 cols = [0 0.4470 0.7410;...
@@ -17,6 +17,10 @@ for il = 1:nlats
     plot(il + randn(sum(curr_lats),1)*0.05,x(curr_lats),'o','color',cols(il,:),'linewidth',2)
 end
 plot(xlim,[0 0],'k--')
+
+% Make unique lats pretty
+unique_lats_upper = cellfun(@(x) [upper(x(1)) x(2:end)],unique_lats,'UniformOutput',false);
+xticklabels(unique_lats_upper )
 
 if show_stats
     yl = ylim;
