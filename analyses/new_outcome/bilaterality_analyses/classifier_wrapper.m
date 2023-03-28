@@ -146,7 +146,7 @@ end
 comb_features = all_best_features(:); % transform to 1d cell array
 empty_comb = cellfun(@isempty,comb_features);
 comb_features(empty_comb) = [];
-[C,ia,ic] = unique(comb_features); % get unique features
+[unique_features,ia,ic] = unique(comb_features); % get unique features
 a_counts = accumarray(ic,1); % get counts
 
 % test
@@ -154,7 +154,7 @@ if 0
     [sorted_counts,I] = sort(a_counts,'descend');
     stem(a_counts(I(1:20)))
     xticks(1:20)
-    xticklabels(C(I(1:20)))
+    xticklabels(unique_features(I(1:20)))
 end
 
 
@@ -167,7 +167,7 @@ out.C = C;
 out.unique_classes = classes;
 out.npts = npts;
 out.names = all_names;
-out.unique_features = C;
+out.unique_features = unique_features;
 out.counts = a_counts;
 
 end
