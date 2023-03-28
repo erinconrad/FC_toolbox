@@ -144,6 +144,8 @@ end
 
 % Find the features that show up the most in the winning set
 comb_features = all_best_features(:); % transform to 1d cell array
+empty_comb = cellfun(@isempty,comb_features);
+comb_features(empty_comb) = [];
 [C,ia,ic] = unique(comb_features); % get unique features
 a_counts = accumarray(ic,1); % get counts
 
