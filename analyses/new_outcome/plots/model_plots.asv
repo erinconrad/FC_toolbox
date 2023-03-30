@@ -177,8 +177,8 @@ rt_ci = prctile(boot_rt,[2.5,97.5]);
 
 [~,~,~,AUCLE] = perfcurve(outl.class(etle),outl.scores(etle),outl.pos_class);
 [~,~,~,AUCRE] = perfcurve(outr.class(etle),outr.scores(etle),outr.pos_class);
-boot_le = bootstrap_aucs(outl.class(etle),outl.scores(etle),outl.pos_class,nb);
-boot_re = bootstrap_aucs(outr.class(etle),outr.scores(etle),outr.pos_class,nb);
+boot_le = bootstrap_aucs(outl.class(etle),outl.scores(etle),lefts.pos_class,nb);
+boot_re = bootstrap_aucs(rights.class(etle),rights.scores(etle),rights.pos_class,nb);
 le_ci = prctile(boot_le,[2.5,97.5]);
 re_ci = prctile(boot_re,[2.5,97.5]);
 
@@ -341,8 +341,8 @@ set(gca,'fontsize',20)
 %}
 
 %% Confusion matrix for threshold 0.5 for left (spikes only)
-C = outl.C;
-classes = outl.unique_classes;
+C = lefts.C;
+classes = lefts.unique_classes;
 nclasses = length(classes);
 
 % Calculate accuracy
@@ -390,8 +390,8 @@ set(gca,'fontsize',20)
 
 
 %% Confusion matrix for threshold 0.5 for right (spikes only)
-C = outr.C;
-classes = outr.unique_classes;
+C = rights.C;
+classes = rights.unique_classes;
 nclasses = length(classes);
 
 % Calculate accuracy

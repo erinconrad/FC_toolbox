@@ -1,8 +1,19 @@
-function h = turn_nans_gray(im)
+function h = turn_nans_gray(im,special_color,target)
+
+    if exist('special_color','var') == 0
+        special_color = [0.7 0.7 0.7];
+    end
+
+
+        if exist('target','var') == 0
+            target = gca;
+        end
+
+    cmap = colormap(target);
     h = imagesc(im);
     % white
-    cmap = colormap;
-    nanjet = [ 0.7,0.7,0.7; cmap  ];
+    
+    nanjet = [special_color; cmap  ];
     nanjetLen = length(nanjet); 
     pctDataSlotStart = 2/nanjetLen;
     pctDataSlotEnd   = 1;
@@ -16,7 +27,7 @@ function h = turn_nans_gray(im)
     cmin = dmin - (pctDataSlotStart * cLimRange);
     cmax = dmax;
     
-    set(gca,'colormap',nanjet);
+    set(target,'colormap',nanjet);
     if cmin == cmax && cmin == 1
         cmin = 0;
     end
