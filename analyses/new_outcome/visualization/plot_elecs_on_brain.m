@@ -6,7 +6,7 @@ results_folder = [locations.main_folder,'results/'];
 data_folder = '/data/Human_Data/CNT_iEEG_BIDS/';
 inter_folder = [results_folder,'analysis/new_outcome/data/'];
 freesurfer_path = '/tools/freesurfer/matlab/';
-out_folder = [results_folder,'/analysis/new_outcome/plots/elec_locs/'];
+out_folder = [results_folder,'analysis/new_outcome/plots/elec_locs/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
@@ -30,9 +30,11 @@ T = readtable('Manual validation.xlsx','Sheet','RIDs');
 non_missing = find(~all_missing);
 npts = length(non_missing);
 for i = 1:npts
-    name = names(non_missing(i));
-    if ~ismember(name,in_name)
-        continue
+    name = names{non_missing(i)};
+    if ~isempty(in_name)
+        if ~ismember(name,in_name)
+            continue
+        end
     end
 
     % find matching row
