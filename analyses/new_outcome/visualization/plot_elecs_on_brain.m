@@ -60,7 +60,11 @@ for i = 1:npts
     end
 
     % Load T1 file and get transformation matrix
+   
     t1_file = [data_folder,folder_text,'derivatives/freesurfer/mri/T1.mgz'];
+    if ~exist(t1_file,'file')
+        continue
+    end
     mri = MRIread(t1_file);
     vox_2_ras = mri.vox2ras;
     tkras = mri.tkrvox2ras;
