@@ -24,7 +24,7 @@ addpath(genpath(scripts_folder));
 
 addpath(genpath(freesurfer_path))
 
-if 0
+if 1
 %% Read pial files
 
 lobj = SurfStatReadSurf([pial_folder,'lh.pial']);

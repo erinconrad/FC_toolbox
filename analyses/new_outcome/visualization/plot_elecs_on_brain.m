@@ -3,7 +3,7 @@ function plot_elecs_on_brain(in_name)
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-data_folder = '/DATA/Human_Data/CNT_iEEG_BIDS/';
+data_folder = '/data/Human_Data/CNT_iEEG_BIDS/';
 inter_folder = [results_folder,'analysis/new_outcome/data/'];
 freesurfer_path = '/tools/freesurfer/matlab/';
 out_folder = [results_folder,'/analysis/new_outcome/plots/elec_locs/'];
