@@ -141,7 +141,7 @@ for i = 1:npts
     
     view(-180,-90)%view(-176,4) %view(-182,-5)
     axis off
-    print(gcf,[out_folder,name],'-dpng')
+    print(gcf,[out_folder,name{1}],'-dpng')
     
     close(gcf)
 
