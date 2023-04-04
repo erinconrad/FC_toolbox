@@ -146,6 +146,7 @@ for i = 1:npts
     view(-180,-90)%view(-176,4) %view(-182,-5)
     axis off
     print(gcf,[out_folder,name],'-dpng')
+    savefig(gcf,[out_folder,name,'.fig'])
     
     close(gcf)
 
