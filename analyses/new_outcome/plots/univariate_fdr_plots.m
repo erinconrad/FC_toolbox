@@ -1,7 +1,7 @@
 function univariate_fdr_plots
 
 %% Parameters
-which_pts = 'all';
+which_pts = 'hup';
 rm_non_temporal = 0;
 response = 'soz_lats';
 
@@ -62,7 +62,7 @@ tiledlayout(2,2,"TileSpacing",'tight','padding','tight')
 feature = 'spikes car sleep';
 %feature = 'plv theta bipolar wake';
 nexttile
-stats = boxplot_with_points(T.(feature),T.(response),1,{'left','right','bilateral'});
+[~,stats] = boxplot_with_points(T.(feature),T.(response),1,{'left','right','bilateral'});
 spikes = T.(feature);
 left_soz_spikes = spikes(strcmp(T.(response),'left'));
 right_soz_spikes = spikes(strcmp(T.(response),'right'));

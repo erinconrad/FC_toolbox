@@ -35,7 +35,7 @@ letters(cellfun(@isempty,letters)) = {{'zzzzz'}};
 letters = cellfun(@(x) x{1},letters,'uniformoutput',false);
 letter_no_side = cellfun(@(x) x(2),letters,'uniformoutput',false);
 
-maxn = 10; % up to 12 contacts per electrode
+maxn = 12; % up to 12 contacts per electrode
 nmt = length(which_elecs);
 
 

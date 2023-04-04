@@ -73,7 +73,11 @@ ilae_yr1 = mt_data.all_ilae(:,1);
 ilae_yr2 = mt_data.all_ilae(:,2);
 soz_lats = mt_data.all_soz_lat;
 soz_locs = mt_data.all_soz_loc;
+disconnected = mt_data.all_disconnected;
 %}
+
+% Find and exclude patients for whom majority of record is disconnected
+most_disconnected = sum(disconnected == 1,2) >= 0.5* size(disconnected,2);
 
 %% Fix the outcomes for the patients I manually validated
 [engel_yr1,engel_yr2,ilae_yr1,ilae_yr2] = replace_with_my_outcomes(names,engel_yr1,ilae_yr1,engel_yr2,ilae_yr2,T);
@@ -421,7 +425,7 @@ end
 
 %% Prep  output table
 % First, remove those rows missing all columns
-T = Ts(~all_missing,:);
+T = Ts(~all_missing & ~most_disconnected,:);
 
 % Remove columns where many patients are nans
 empty_column = zeros(size(T,2),1);
