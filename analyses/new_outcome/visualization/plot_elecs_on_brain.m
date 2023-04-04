@@ -95,7 +95,7 @@ for i = 1:npts
     % get electrode names
     listing = dir([module2,'*electrode_names.txt']);
     assert(length(listing)==1)
-    Tnames = readtable([module2,listing.name]);
+    Tnames = readtable([module2,listing.name],'ReadVariableNames',false);
     names = Tnames.Var1;
 
     % plot the brain surface
