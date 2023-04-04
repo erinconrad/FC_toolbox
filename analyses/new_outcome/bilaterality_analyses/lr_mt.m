@@ -180,7 +180,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         first_non_empty = non_empty(1);
         
         % Loop over features
-        for which_thing = {'rl'}%{'spikes','rl','bp','se','pearson','xcor','coh','plv','ll','re','spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr','ll_iqr'}
+        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','ll','re','spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr','ll_iqr'}
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}
@@ -291,7 +291,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             
     
             %% Get asymmetry index
-            %
+            %{
             k = find(strcmp(names,'HUP105'));
             %k = 80;
             ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,0);
