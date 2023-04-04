@@ -75,13 +75,14 @@ for i = 1:npts
     lvt = all_trans(lvertices);
 
     % get electrode names
+    module2 = [data_folder,folder_text,'derivatives/ieeg_recon/module2/']; % module2 folder
     listing = dir([module2,'*electrode_names.txt']);
     assert(length(listing)==1)
     Tnames = readtable([module2,listing.name],'ReadVariableNames',false);
     enames = Tnames.Var1;
 
     % Get electrode localizations
-    module2 = [data_folder,folder_text,'derivatives/ieeg_recon/module2/']; % module2 folder
+    
     listing = dir([module2,'*.txt']);
     nlist = length(listing);
     found_it = 0;
