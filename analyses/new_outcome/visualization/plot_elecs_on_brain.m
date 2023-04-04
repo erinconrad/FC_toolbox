@@ -1,4 +1,4 @@
-function plot_elecs_on_brain(in_name)
+function plot_elecs_on_brain(overwrite,in_name)
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -31,12 +31,20 @@ non_missing = find(~all_missing);
 npts = length(non_missing);
 for i = 1:npts
     name = names{non_missing(i)};
+    
     if ~isempty(in_name)
         if ~ismember(name,in_name)
             continue
         end
     end
 
+    if exist([out_folder,name,'.fig'],'file') ~=0
+        if overwrite == 0
+            fprintf('\nSkipping %s\n',name);
+            continue
+        end
+    end
+    fprintf('\nDoing %s\n',name);
     % find matching row
     r = strcmp(T.name,name);
     assert(sum(r)==1)
@@ -62,6 +70,15 @@ for i = 1:npts
 
     % load pial files and get vertices and faces and apply transformation
     pial_folder = [data_folder,folder_text,'derivatives/freesurfer/surf/'];
+
+    if ~exist(pial_folder,'dir')
+        continue
+    end
+
+    if ~exist([pial_folder,'lh.pial'],'file')
+        continue
+    end
+
     lobj = SurfStatReadSurf([pial_folder,'lh.pial']);
     lvertices = lobj.coord';
     lfaces = (lobj.tri);
@@ -77,7 +94,9 @@ for i = 1:npts
     % get electrode names
     module2 = [data_folder,folder_text,'derivatives/ieeg_recon/module2/']; % module2 folder
     listing = dir([module2,'*electrode_names.txt']);
-    assert(length(listing)==1)
+    if length(listing)==0
+        continue
+    end
     Tnames = readtable([module2,listing.name],'ReadVariableNames',false);
     enames = Tnames.Var1;
 
@@ -95,7 +114,9 @@ for i = 1:npts
 
     end
     
-    assert(found_it==1)
+    if found_it == 0
+        continue
+    end
     eT = readtable([module2,fname]);
     locs = [eT.Var1 eT.Var2 eT.Var3];
     allowable_labels = get_allowable_elecs('HUP100');
