@@ -59,7 +59,7 @@ for i = 1:npts
     all_trans = @(x) first_three_columns(transform(x));
 
     % load pial files and get vertices and faces and apply transformation
-    pial_folder = [data_folder,folder_text,'derivatives/fresurfer/surf/'];
+    pial_folder = [data_folder,folder_text,'derivatives/freesurfer/surf/'];
     lobj = SurfStatReadSurf([pial_folder,'lh.pial']);
     lvertices = lobj.coord';
     lfaces = (lobj.tri);
