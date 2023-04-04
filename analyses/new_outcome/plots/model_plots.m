@@ -33,7 +33,7 @@ empty_class = cellfun(@isempty,T.soz_lats);
 T(empty_class,:) = [];
 
 %% ROC for L from R+BL for all features, just spikes, "binary spikes"
-just_spikes = 1;% all patients (spikes for now for speed)
+just_spikes = 0;% all patients (spikes for now for speed)
 rm_non_temporal = 0; 
 left = classifier_wrapper(T,features,pca_all_perc,1,just_spikes,rm_non_temporal,[]);
 right = classifier_wrapper(T,features,pca_all_perc,2,just_spikes,rm_non_temporal,[]);
