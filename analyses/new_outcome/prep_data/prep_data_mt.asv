@@ -154,7 +154,7 @@ for p = 1:npts
     wake = strcmp(seeg_stage,'W');
 
     all_n_wake_sleep(p,:) = [sum(wake) sum(sleep)];
-    all_n_wake_sleep_connected(p,:) = [sum(wake&~low_amplitude) sum(sleep&~low_amplitude)];
+    all_n_wake_sleep_connected(p,:) = [sum()]
     
 
     % Save all, wake, and sleep
@@ -300,7 +300,7 @@ out.all_soz_loc = all_soz_loc;
 out.all_soz_lat = all_soz_lat;
 
 out.all_n_wake_sleep = all_n_wake_sleep;
-out.all_n_wake_sleep_connected = all_n_wake_sleep_connected;
+
 
 save([out_folder,'mt_out.mat'],'out')
 
