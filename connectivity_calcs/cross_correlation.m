@@ -19,8 +19,8 @@ if do_tw
         % the autocorrelations at zero lag equal 1
         [r,lags] = xcorr(values(times(t):times(t+1),:),ml,'normalized');
         
-        % find the maximum xcorr, and its corresponding lag, for each channel pair
-        [M,I] = max(r,[],1);
+        % find the maximum ABS VALUE xcorr, and its corresponding lag, for each channel pair
+        [M,I] = max(abs(r),[],1);
         nlags = lags(I);
         
         % back out what channels are what

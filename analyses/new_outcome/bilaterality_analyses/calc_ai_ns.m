@@ -12,8 +12,6 @@ which_lats = {'L','R'};
 average_level = 'contact'; % side = whole L vs R side; electrode = single electrode; contact = single contact
 
 
-%% Label stuff
-
 %% Misc
 % replace '-' with '--'
 if isempty(labels)
@@ -37,7 +35,7 @@ letters(cellfun(@isempty,letters)) = {{'zzzzz'}};
 letters = cellfun(@(x) x{1},letters,'uniformoutput',false);
 letter_no_side = cellfun(@(x) x(2),letters,'uniformoutput',false);
 
-maxn = 12; % up to 12 contacts per electrode
+maxn = 10; % up to 12 contacts per electrode
 nmt = length(which_elecs);
 
 
@@ -73,9 +71,9 @@ for i = 1:nmt
 
             if contains(which_thing,'inter') % some inter-electrode measure
                 if uni == 1
-                    curr_intra = nanmean(thing(matching_contacts,:,:),1); %just the thing
+                    curr_intra = nanmean(thing(matching_contacts,number <= maxn,:),1); %just the thing
                 else
-                    inter_match = strcmp(letter_no_side,which_elecs{i});
+                    inter_match = strcmp(letter_no_side,which_elecs{i} & number <= maxn);
                     curr_intra = nanmean(thing(matching_contacts,inter_match,:),[1 2]); %just the thing
                 end
 
