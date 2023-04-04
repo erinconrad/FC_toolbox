@@ -95,8 +95,8 @@ for i = 1:npts
 
     end
     assert(found_it==1)
-    T = readtable([module2,fname]);
-    locs = [T.Var1 T.Var2 T.Var3];
+    eT = readtable([module2,fname]);
+    locs = [eT.Var1 eT.Var2 eT.Var3];
     allowable_labels = get_allowable_elecs('HUP100');
     mt_symm = find_mt_symmetric_coverage(enames,allowable_labels);
     mt = ismember(enames,mt_symm);
