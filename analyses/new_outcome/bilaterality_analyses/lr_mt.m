@@ -76,8 +76,8 @@ soz_locs = mt_data.all_soz_loc;
 disconnected = mt_data.all_disconnected;
 %}
 
-% Find and exclude patients for whom majority of record is disconnected
-most_disconnected = sum(disconnected == 1,2) >= 0.5* size(disconnected,2);
+% Find and exclude patients for whom bulk of record is disconnected
+most_disconnected = sum(disconnected == 1,2) >= 0.9* size(disconnected,2);
 
 %% Fix the outcomes for the patients I manually validated
 [engel_yr1,engel_yr2,ilae_yr1,ilae_yr2] = replace_with_my_outcomes(names,engel_yr1,ilae_yr1,engel_yr2,ilae_yr2,T);
