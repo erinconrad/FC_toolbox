@@ -93,7 +93,7 @@ for i = 1:npts
     mt = ismember(names,mt_symm);
 
     % get electrode names
-    listing = dir([module2,'*.electrode_names.txt']);
+    listing = dir([module2,'*electrode_names.txt']);
     assert(length(listing)==1)
     Tnames = readtable([module2,listing.name]);
     names = Tnames.Var1;
