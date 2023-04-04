@@ -74,6 +74,12 @@ for i = 1:npts
     rvt = all_trans(rvertices);
     lvt = all_trans(lvertices);
 
+    % get electrode names
+    listing = dir([module2,'*electrode_names.txt']);
+    assert(length(listing)==1)
+    Tnames = readtable([module2,listing.name],'ReadVariableNames',false);
+    enames = Tnames.Var1;
+
     % Get electrode localizations
     module2 = [data_folder,folder_text,'derivatives/ieeg_recon/module2/']; % module2 folder
     listing = dir([module2,'*.txt']);
@@ -91,14 +97,10 @@ for i = 1:npts
     T = readtable([module2,fname]);
     locs = [T.Var1 T.Var2 T.Var3];
     allowable_labels = get_allowable_elecs('HUP100');
-    mt_symm = find_mt_symmetric_coverage(names,allowable_labels);
-    mt = ismember(names,mt_symm);
+    mt_symm = find_mt_symmetric_coverage(enames,allowable_labels);
+    mt = ismember(enames,mt_symm);
 
-    % get electrode names
-    listing = dir([module2,'*electrode_names.txt']);
-    assert(length(listing)==1)
-    Tnames = readtable([module2,listing.name],'ReadVariableNames',false);
-    names = Tnames.Var1;
+    
 
     % plot the brain surface
     figure
@@ -141,7 +143,7 @@ for i = 1:npts
     
     view(-180,-90)%view(-176,4) %view(-182,-5)
     axis off
-    print(gcf,[out_folder,name{1}],'-dpng')
+    print(gcf,[out_folder,name],'-dpng')
     
     close(gcf)
 
