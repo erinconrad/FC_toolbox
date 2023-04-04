@@ -1,4 +1,4 @@
-function plot_elecs_on_brain
+function plot_elecs_on_brain(in_name)
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -31,6 +31,9 @@ non_missing = find(~all_missing);
 npts = length(non_missing);
 for i = 1:npts
     name = names(non_missing(i));
+    if ~ismember(name,in_name)
+        continue
+    end
 
     % find matching row
     r = strcmp(T.name,name);
