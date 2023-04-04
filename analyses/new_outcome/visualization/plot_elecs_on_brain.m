@@ -87,7 +87,7 @@ for i = 1:npts
     nlist = length(listing);
     found_it = 0;
     for l = 1:nlist
-        if contains(listing(l).name,'mm')
+        if contains(listing(l).name,'mm_electrodes')
             found_it = 1;
             fname = listing(l).name;
             break
