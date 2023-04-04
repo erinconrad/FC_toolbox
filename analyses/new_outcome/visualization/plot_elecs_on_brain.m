@@ -94,7 +94,7 @@ for i = 1:npts
         end
 
     end
-    fname
+    
     assert(found_it==1)
     eT = readtable([module2,fname]);
     locs = [eT.Var1 eT.Var2 eT.Var3];
