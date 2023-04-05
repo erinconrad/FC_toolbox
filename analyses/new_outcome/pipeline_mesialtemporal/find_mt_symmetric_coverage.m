@@ -36,6 +36,7 @@ if 0
     table(out_labels(contains(out_labels,'L')),out_labels(contains(out_labels,'R')))
 end
 % Make sure left and right ones are the same
-assert(isequal(strrep(out_labels(contains(out_labels,'L')),'L',''),strrep(out_labels(contains(out_labels,'R')),'R','')))
+assert(isequal(strrep(sort(out_labels(contains(out_labels,'L'))),'L',''),strrep(sort(out_labels(contains(out_labels,'R'))),'R','')))
+  
 
 end
