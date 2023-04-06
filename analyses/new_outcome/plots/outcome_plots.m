@@ -1,6 +1,7 @@
-function outcome_plots(T,features)
+function outcome_plots
 
 %% Parameters
+rm_wake = 1;
 pca_perc = 95;
 which_outcome = 'engel';
 which_year = 1;
@@ -19,6 +20,15 @@ end
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
+
+%% Run the lr_mt to extract features
+if rm_wake
+    [T,features] =  lr_mt(3);
+else
+    [T,features] =  lr_mt;
+end
+empty_class = cellfun(@isempty,T.soz_lats);
+T(empty_class,:) = [];
 
 %% Initialize figure
 figure
