@@ -3,7 +3,7 @@ function model_plots
 %% Parameters
 pca_all_perc = 95;
 pca_spikes_perc = 95;
-rm_wake = 0;
+rm_wake = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;
