@@ -118,7 +118,7 @@ if direct_model
     T(empty_class,:) = [];
 
     % model
-    just_spikes = 1; % ALl features
+    just_spikes = 0; % ALl features
     rm_non_temporal = 0; % All patients
     combine_br = 0;
     out =  classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal,'outcome');
@@ -152,7 +152,7 @@ empty_class = cellfun(@isempty,T.(response));
 T(empty_class,:) = [];
 
 % Do the model
-just_spikes = 1; % ALl features
+just_spikes = 0; % ALl features
 rm_non_temporal = 0; % All patients
 
 % Remove non temporal patients if desired
