@@ -66,6 +66,7 @@ right_unique = right.unique_features;
 [~,Iright] = sort(right_counts,'descend');
 
 % Plot
+if 0
 nexttile
 bar(1:20,left_counts(Ileft(1:20)),'white')
 text(1:20,left_counts(Ileft(1:20)),left_unique(Ileft(1:20)),...
@@ -77,6 +78,7 @@ ylabel('Occurrences in top-ranked features')
 title('Best features to identify left-sided SOZ')
 set(gca,'fontsize',20)
 
+end
 
 
 
@@ -115,7 +117,7 @@ rightd = classifier_wrapper(T,features,pca_spikes_perc,2,just_spikes,rm_non_temp
 [XL,YL,~,AUCL] = perfcurve(leftd.class,leftd.scores,leftd.pos_class);
 [XR,YR,~,AUCR] = perfcurve(rightd.class,rightd.scores,rightd.pos_class);
 
-if 0
+if 1
 % Plot
 nexttile
 ll = plot(XL,YL,'linewidth',2);
