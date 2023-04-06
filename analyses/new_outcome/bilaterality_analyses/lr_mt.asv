@@ -456,8 +456,7 @@ nfeatures = length(features);
 %}
 
 %% Look for remaining nans
-% The following steps demonstrate the reasons for nan values. I believe I
-% have accounted for all of them.
+% The follow
 if 0
 nT = T(T.no_wake==0,~contains(T.Properties.VariableNames,'rl')); % rl has nans a lot, also get nans if no wake
 nfeatures = features(~contains(features,'rl'));

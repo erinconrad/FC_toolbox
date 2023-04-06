@@ -174,6 +174,7 @@ for p = 1:npts
         all_spikes{p,im,1} = squeeze(nanmean(spike_counts(~low_amplitude,im,:),1));
         all_spikes{p,im,2} = squeeze(nanmean(spike_counts(wake&~low_amplitude,im,:),1));
         all_spikes{p,im,3} = squeeze(nanmean(spike_counts(sleep&~low_amplitude,im,:),1));
+
     
         all_pearson{p,im,1} = squeeze(nanmean(pc(~low_amplitude,im,:,:),1));
         all_pearson{p,im,2} = squeeze(nanmean(pc(wake&~low_amplitude,im,:,:),1));
