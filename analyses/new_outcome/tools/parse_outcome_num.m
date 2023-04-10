@@ -22,6 +22,8 @@ switch type
             outcome_num = 4;
         elseif contains(outcome,'5')
             outcome_num = 5;
+        else
+            outcome_num = nan;
         end
     case 'engel'
         
@@ -33,6 +35,8 @@ switch type
             outcome_num = 2;
         elseif contains(outcome,'I')
             outcome_num = 1;
+        else
+            outcome_num = nan;
         end
 
 end

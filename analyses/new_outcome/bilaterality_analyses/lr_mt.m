@@ -83,6 +83,13 @@ most_disconnected = sum(disconnected == 1,2) >= 0.9* size(disconnected,2);
 % Identify patients for whom there is little wake or sleep connected
 no_wake = all_n_wake_sleep_connected(:,1) < 5;
 no_sleep = all_n_wake_sleep_connected(:,2) < 5;
+n_wake = all_n_wake_sleep_connected(:,1);
+n_sleep = all_n_wake_sleep_connected(:,2);
+n_connected = sum(disconnected == 0,2);
+
+% get number of symmetric labels
+ref_labels = mt_data.all_labels(:,1);
+n_symmetric = cellfun(@length,ref_labels);
 
 %% Fix the outcomes for the patients I manually validated
 [engel_yr1,engel_yr2,ilae_yr1,ilae_yr2] = replace_with_my_outcomes(names,engel_yr1,ilae_yr1,engel_yr2,ilae_yr2,T);
@@ -137,7 +144,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 
 %% Get features
 % Initialize table
-Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats,no_wake,no_sleep);
+Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats,no_wake,no_sleep,n_wake,n_sleep,n_connected,n_symmetric);
 features = {};
 
 for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
