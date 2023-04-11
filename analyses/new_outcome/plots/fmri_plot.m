@@ -25,7 +25,6 @@ mt_mask = niftiread([file_path,'mesial_temporal_roi.nii.gz']);
 mni_brain = niftiread([file_path,'tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz']);
 
 %% Define temporal ROIs
-% Where did we get these?
 temporal_hippo_amygdala_left = [108 110 112 114 116 118  74  78  86 212 214 216];
 temporal_hippo_amygdala_right = [109 111 113 115 117 119  75  79  87 213 215 217];
 
@@ -153,7 +152,7 @@ lat(strcmp(lat,'B')) = {'bilateral'};
 
 %% Make figure
 figure
-set(gcf,'position',[10 10 650 800])
+set(gcf,'position',[10 10 530 800])
 tiledlayout(3,2,'tilespacing','tight','padding','compact')
 
 %% Brains
@@ -210,7 +209,7 @@ nexttile([1 2])
 [~,stats] = boxplot_with_points(AI,lat,1,{'left','right','bilateral'});
 set(gca,'fontsize',20)
 ylabel('Asymmetry index')
-title('fMRI Connectivity Asymmetry by SOZ laterality')
+title('fMRI asymmetry by SOZ laterality')
 
 annotation('textbox', [0.05 0.90 1 0.1],...
     'String', 'Regions included in connectivity calculations', ...
