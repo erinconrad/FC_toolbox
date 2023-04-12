@@ -143,7 +143,7 @@ for i = 1:npts
     lh.FaceColor = [0.7 0.6 0.6];
     scatter3(locs(~mt,1),locs(~mt,2),locs(~mt,3),'markerfacecolor','w','markeredgecolor','k')
     scatter3(locs(mt,1),locs(mt,2),locs(mt,3),'markerfacecolor','w','markeredgecolor','r')
-    text(locs(:,1),locs(:,2),locs(:,3),names,'HorizontalAlignment','center','fontsize',15)
+    text(locs(:,1),locs(:,2),locs(:,3),enames,'HorizontalAlignment','center','fontsize',15)
     
     
     %{
