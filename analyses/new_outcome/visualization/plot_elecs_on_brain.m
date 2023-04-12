@@ -141,10 +141,12 @@ for i = 1:npts
     lh.LineStyle = 'none';
     lh.FaceAlpha = 0.1;
     lh.FaceColor = [0.7 0.6 0.6];
-    scatter3(locs(~mt,1),locs(~mt,2),locs(~mt,3),'markerfacecolor','k','markeredgecolor','k')
-    scatter3(locs(mt,1),locs(mt,2),locs(mt,3),'markerfacecolor','r','markeredgecolor','r')
+    scatter3(locs(~mt,1),locs(~mt,2),locs(~mt,3),'markerfacecolor','w','markeredgecolor','k')
+    scatter3(locs(mt,1),locs(mt,2),locs(mt,3),'markerfacecolor','w','markeredgecolor','r')
+    text(locs(:,1),locs(:,2),locs(:,3),names,'HorizontalAlignment','center','fontsize',15)
     
     
+    %{
     % Name LA, LB, etc.
     end_elecs = {'LA12','LB12','LC12','RA12','RB12','RC12'};
     for e = 1:length(end_elecs)
@@ -167,6 +169,7 @@ for i = 1:npts
             
         end
     end
+    %}
     
     view(-180,-90)%view(-176,4) %view(-182,-5)
     axis off

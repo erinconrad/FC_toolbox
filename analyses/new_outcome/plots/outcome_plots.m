@@ -128,7 +128,7 @@ if direct_model
     T(empty_class,:) = [];
 
     % model
-    just_spikes = 0; % ALl features
+    just_spikes = 1; % ALl features
     rm_non_temporal = 0; % All patients
     combine_br = 0;
     out =  classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal,'outcome');

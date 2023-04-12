@@ -1,8 +1,8 @@
 function fmri_plot
 
-%{
-Need to match lateralities with my lateralities
-%}
+
+rm_ieeg = 0;
+rm_controls = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -23,6 +23,20 @@ T = readtable([file_path,'df.csv']);
 bT = readtable([file_path,'BNA_subregions.xlsx']);
 mt_mask = niftiread([file_path,'mesial_temporal_roi.nii.gz']);
 mni_brain = niftiread([file_path,'tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz']);
+
+%% Remove controls
+if rm_controls
+    controls = strcmp(T.Final_Lat,'Control');
+    T(controls,:) = [];
+end
+
+%% Remove ieeg?
+ieeg = strcmp(T.IEEG,'IEEG');
+if rm_ieeg
+    
+    T(ieeg,:) = [];
+end
+
 
 %% Define temporal ROIs
 temporal_hippo_amygdala_left = [108 110 112 114 116 118  74  78  86 212 214 216];
@@ -67,6 +81,8 @@ AI = (left_str-right_str)./(left_str+right_str);
 
 %% Get lateralities
 lat = T.Final_Lat;
+
+
 
 %% Check lats
 % Load manual validation file
@@ -137,18 +153,12 @@ naT(cellfun(@isempty,hup_names),:) = [];
 assert(isequal(naT.hup_lats,naT.Final_Lat))
 
 
-
-
-% remove controls
-controls = strcmp(lat,'Control');
-lat(controls) = [];
-AI(controls) = [];
-
-
-% change names
+%% change names
 lat(strcmp(lat,'L')) = {'left'};
 lat(strcmp(lat,'R')) = {'right'};
 lat(strcmp(lat,'B')) = {'bilateral'};
+
+
 
 %% Make figure
 figure
@@ -206,7 +216,7 @@ set(gca,'fontsize',20)
 
 %% Main plot
 nexttile([1 2])
-[~,stats] = boxplot_with_points(AI,lat,1,{'left','right','bilateral'});
+[~,stats] = boxplot_with_points(AI,lat,1,{'left','right','bilateral','Control'},[]);
 set(gca,'fontsize',20)
 ylabel('Asymmetry index')
 title('fMRI asymmetry by SOZ laterality')

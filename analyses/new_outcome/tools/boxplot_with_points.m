@@ -1,4 +1,4 @@
-function [h,out] = boxplot_with_points(x,categories,show_stats,groupOrder)
+function [h,out] = boxplot_with_points(x,categories,show_stats,groupOrder,specialMarker)
 
 %{
 cols = [0 0.4470 0.7410;...
@@ -14,7 +14,15 @@ unique_lats = xticklabels;
 nlats = length(unique_lats);
 for il = 1:nlats
     curr_lats = strcmp(categories,unique_lats{il}); 
-    plot(il + randn(sum(curr_lats),1)*0.05,x(curr_lats),'o','color',cols(il,:),'linewidth',2)
+    if ~exist('specialMarker','var') || isempty(specialMarker)
+        plot(il + randn(sum(curr_lats),1)*0.05,x(curr_lats),'o','color',cols(il,:),'linewidth',2)
+    else
+
+        plot(il -0.1,x(curr_lats&~specialMarker),'o','color',cols(il,:),'linewidth',2)
+        if sum(curr_lats&specialMarker) ~=0
+            plot(il +0.1,x(curr_lats&specialMarker),'*','color',cols(il,:),'linewidth',2)
+        end
+    end
 end
 plot(xlim,[0 0],'k--')
 
