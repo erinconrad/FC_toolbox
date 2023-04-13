@@ -55,6 +55,7 @@ allowed_labels = find_mt_symmetric_coverage(labels,potentially_allowable_labels)
 if isempty(allowed_labels)
     fprintf('\n No allowed electrodes for %s, skipping.\n',name);
     return
+
 end
 nallowed = length(allowed_labels);
 
