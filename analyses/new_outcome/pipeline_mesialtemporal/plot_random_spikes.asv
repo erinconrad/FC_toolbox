@@ -95,7 +95,6 @@ for i = 1:nspikes
 
     % Get the channel index in this realigned data
     rch = find(strcmp(allowed_labels,labels{ch}));
-    %rch = find(strcmp(old_allowed,labels{ch}));
     
     % apply the montage
     switch montage

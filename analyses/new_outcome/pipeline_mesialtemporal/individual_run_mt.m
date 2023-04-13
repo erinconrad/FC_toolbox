@@ -45,7 +45,7 @@ if isempty(allowed_labels)
     return
 end
 nallowed = length(allowed_labels);
-old_allowed = old_labels(final_allowed_idx);
+old_allowed = old_labels(final_allowed_idx); % restrict the old labels to be the acceptable ones in the same order
 
 %% Get the seizure times from the corresponding ieeg file
 % Find which is the correct ieeg file
@@ -84,7 +84,7 @@ values = nan(num_samples,nallowed);
 
 % Separately call edfread for each signal
 for is = 1:nallowed
-    curr_signal = old_allowed{is};
+    curr_signal = old_allowed{is}; % pull the old label
     
     % Get timetable for that signal
     T = edfread(file_path,'SelectedSignals',curr_signal);
