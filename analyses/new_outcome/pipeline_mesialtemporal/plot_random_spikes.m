@@ -55,10 +55,6 @@ for i = 1:nspikes
 
     % Find labels that match allowable electrodes and have symmetric coverage
     [allowed_labels,final_allowed_idx] = find_mt_symmetric_coverage(rlabels,allowable_labels);
-    if isempty(allowed_labels)
-        out = [];
-        return
-    end
     nallowed = length(allowed_labels);
     old_allowed = old_labels(final_allowed_idx);
 

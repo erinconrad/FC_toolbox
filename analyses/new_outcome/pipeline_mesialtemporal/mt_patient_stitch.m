@@ -234,7 +234,7 @@ nout.ilae = ilae;
 nout.soz_loc = soz_loc;
 nout.soz_lat = soz_lat;
 nout.allowed_labels = allowed_labels;
-nout.old_allowed_labels = old_allowed;
+nout.old_allowed_labels = out.old_allowed_labels;
 
 out = nout;
 
