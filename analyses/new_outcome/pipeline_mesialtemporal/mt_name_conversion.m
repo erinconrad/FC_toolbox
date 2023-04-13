@@ -12,7 +12,7 @@ if N >= 127, return; end
 %% Assume it's a HUP G/S/D patient. Start translating names
 
 % Find amygdala-ish electrodes
-amy = contains(labels,'DA') | contains(labels,'AMY') & cellfun(@(x) ~isstrprop(x(4),'alpha'));
+amy = contains(labels,'DA') | contains(labels,'AMY') & cellfun(@(x) ~isstrprop(x(4),'alpha'),labels);
 
 % Find hippocampal-ish electrodes
 hipp = contains(labels,'DH') | contains(labels,'HIP');
