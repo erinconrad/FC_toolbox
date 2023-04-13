@@ -46,6 +46,7 @@ if ~isempty(exc)
 end
 
 % Turn non-A, B, C MT electrodes into A, B, C
+old_labels = labels;
 labels = mt_name_conversion(labels,name);
 
 % Find labels that match allowable electrodes and have symmetric coverage
