@@ -2,6 +2,8 @@ function out = mt_patient_stitch(pt,which_pt,edf_path,edf_summ_path,name,overwri
 
 %% Seed random number generator so that I get the same result each time I do this.
 rng(0)
+out.allowed_labels = [];
+out.name = name;
 
 %% See if I've done it
 if exist([edf_summ_path,name,'/summ.mat'],'file')~=0
