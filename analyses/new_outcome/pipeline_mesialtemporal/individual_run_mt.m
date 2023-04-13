@@ -35,15 +35,17 @@ if ~isempty(exc)
 end
 
 %% Turn non-A, B, C MT electrodes into A, B, C
+old_labels = labels;
 labels = mt_name_conversion(labels,name);
 
 %% Find labels that match allowable electrodes and have symmetric coverage
-allowed_labels = find_mt_symmetric_coverage(labels,potentially_allowable_labels);
+[allowed_labels,final_allowed_idx] = find_mt_symmetric_coverage(labels,potentially_allowable_labels);
 if isempty(allowed_labels)
     out = [];
     return
 end
 nallowed = length(allowed_labels);
+old_allowed = old_labels(final_allowed_idx);
 
 %% Get the seizure times from the corresponding ieeg file
 % Find which is the correct ieeg file
@@ -82,7 +84,7 @@ values = nan(num_samples,nallowed);
 
 % Separately call edfread for each signal
 for is = 1:nallowed
-    curr_signal = allowed_labels{is};
+    curr_signal = old_allowed{is};
     
     % Get timetable for that signal
     T = edfread(file_path,'SelectedSignals',curr_signal);
@@ -478,6 +480,7 @@ for im = 1:3
     out.name = name;
     out.freqs = freqs;
     out.dm = dm;
+    out.old_allowed_labels = old_allowed;
 
     if show_data
         tout.montage(im).values = values;

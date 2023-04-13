@@ -1,4 +1,4 @@
-function out_labels = find_mt_symmetric_coverage(labels,allowable_labels)
+function [out_labels,allowed_idx] = find_mt_symmetric_coverage(labels,allowable_labels)
 
 %% Find possibly allowed labels (those that match allowable labels (mesial temporal-targeted electrodes)
 allowed = ismember(labels,allowable_labels);
@@ -31,6 +31,8 @@ end
 
 final_allowed_idx = logical(final_allowed_idx);
 out_labels = allowed_labels(final_allowed_idx);
+
+allowed_idx = ismember(labels,out_labels);
 
 if 0
     table(out_labels(contains(out_labels,'L')),out_labels(contains(out_labels,'R')))

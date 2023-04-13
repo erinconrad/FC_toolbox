@@ -112,6 +112,7 @@ all_spike_times = cell(nmontages,1);
 all_ll = nan(nfiles,nmontages,nallowed);
 montages = cell(nmontages,3);
 montage_labels = cell(nmontages,3);
+
 all_is_run = nan(nfiles,nmontages,nallowed);
 
 skip_pt = 0;
@@ -232,6 +233,8 @@ nout.engel = engel;
 nout.ilae = ilae;
 nout.soz_loc = soz_loc;
 nout.soz_lat = soz_lat;
+nout.allowed_labels = allowed_labels;
+nout.old_allowed_labels = old_allowed;
 
 out = nout;
 
