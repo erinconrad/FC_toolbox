@@ -1,5 +1,5 @@
 %% RUN MT pipeline
-function run_mt_pipeline(whichPts,overwrite)
+function out = run_mt_pipeline(whichPts,overwrite)
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -29,6 +29,7 @@ addpath(genpath(scripts_folder));
 %% LOad validation file
 validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
 szT = readtable(validation_file,'Sheet','SOZ');
+mT = readtable(validation_file,'Sheet','strange_elec_names');
 
 
 %% Load pt folder
@@ -42,7 +43,7 @@ end
 for i = 1:length(whichPts)
     ip = whichPts(i);
     name = pt(ip).name;
-    mt_patient_stitch(pt,ip,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT)
+    out(i) = mt_patient_stitch(pt,ip,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT,mT);
 
 end
 

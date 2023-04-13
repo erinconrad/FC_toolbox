@@ -1,4 +1,4 @@
-function mt_patient_stitch(pt,which_pt,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT)
+function out = mt_patient_stitch(pt,which_pt,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT,mT)
 
 %% Seed random number generator so that I get the same result each time I do this.
 rng(0)
@@ -33,10 +33,32 @@ labels = cellstr(info.SignalLabels);
 name = pt(which_pt).name;
 potentially_allowable_labels = get_allowable_elecs(name);
 
+% Remove some potentially allowable labels if they aren't really targeting mesial temporal region for that patient
+exr = strcmp(mT.name,name); assert(sum(exr==1));
+exc = mT.exclude{exr};
+if ~isempty(exc)
+    C = strsplit(exc,', ');
+    rm_allow = zeros(length(potentially_allowable_labels),1);
+    for i = 1:length(C) % loop over exclusion labels
+        rm_allow(contains(potentially_allowable_labels,C{i},'ignorecase',true)) = 1;
+    end
+    potentially_allowable_labels(rm_allow==1) = [];
+end
+
+% Turn non-A, B, C MT electrodes into A, B, C
+labels = mt_name_conversion(labels,name);
+
 % Find labels that match allowable electrodes and have symmetric coverage
 allowed_labels = find_mt_symmetric_coverage(labels,potentially_allowable_labels);
 if isempty(allowed_labels)
     fprintf('\n No allowed electrodes for %s, skipping.\n',name);
+    out.allowed_labels = [];
+    out.name = name;
+    return
+else
+    fprintf('\n Did %s\n',name);
+    out.allowed_labels = allowed_labels;
+    out.name = name;
     return
 end
 nallowed = length(allowed_labels);
@@ -104,7 +126,7 @@ for f = 1:nfiles
     fprintf('\nDoing %s file %d of %d...',name,f,nfiles);
 
     %% Do the individual run
-    out = individual_run_mt(file_path,pt,which_pt,meta,f,overlap_log_file);
+    out = individual_run_mt(file_path,pt,which_pt,meta,f,overlap_log_file,mT);
     fprintf('took %1.1f s\n',toc);
 
 
