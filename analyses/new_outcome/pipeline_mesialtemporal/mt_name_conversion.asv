@@ -15,7 +15,7 @@ if N >= 127, return; end
 amy = (contains(labels,'DA') | contains(labels,'AMY')) & (~contains(labels,'DAS') & ~contains(labels,'DAH')) ;
 
 % Find hippocampal-ish electrodes
-hipp = contains(labels,'DH') | contains(labels,'HIP') | contains(labels,'DAH');
+hipp = contains(labels,'DH') | contains(labels,'HIP') | co;
 
 % Make the new A or B label
 mid = cell(length(labels),1);
