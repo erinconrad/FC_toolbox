@@ -63,7 +63,6 @@ for i = 1:nspikes
     %allowed_labels = rlabels(allowed);
 
     
-    nallowed = sum(allowed);
 
     % Initialize values
     values = nan(num_samples,nallowed);
