@@ -49,7 +49,7 @@ old_allowed = old_labels(final_allowed_idx); % restrict the old labels to be the
 
 % confirm that the allowed labels and old allowed labels have matching
 % order
-assert(isequal(mt_name_conversion(old_allowed,name),allowed_labels))
+assert(isequal(mt_name_conversion(old_allowed_labels,name),allowed_labels))
 
 %% Get the seizure times from the corresponding ieeg file
 % Find which is the correct ieeg file
