@@ -190,7 +190,7 @@ while 1
             overlapping_sz_aligned_end,start_1,end_1,while_counts}];
         writetable(T,overlap_log_file);
 
-        if while_counts > 10
+        if while_counts > 20
             error('what')
         end
         continue;
