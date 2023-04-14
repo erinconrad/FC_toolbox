@@ -112,7 +112,7 @@ all_spike_times = cell(nmontages,1);
 all_ll = nan(nfiles,nmontages,nallowed);
 montages = cell(nmontages,3);
 montage_labels = cell(nmontages,3);
-skipped_file = zeros(nfiles,1);
+skipped_file = 
 
 all_is_run = nan(nfiles,nmontages,nallowed);
 
@@ -125,10 +125,7 @@ for f = 1:nfiles
     %% Do the individual run
     out = individual_run_mt(file_path,pt,which_pt,meta,f,overlap_log_file,mT);
     fprintf('took %1.1f s\n',toc);
-    if isempty(out) 
-        skipped_file(f) = 1;
-        continue; 
-    end
+    if isempty(out), continue; end
 
 
     %% Figure out times
@@ -240,7 +237,6 @@ nout.soz_loc = soz_loc;
 nout.soz_lat = soz_lat;
 nout.allowed_labels = allowed_labels;
 nout.old_allowed_labels = out.old_allowed_labels;
-nout.skipped_file = skipped_file;
 
 out = nout;
 
