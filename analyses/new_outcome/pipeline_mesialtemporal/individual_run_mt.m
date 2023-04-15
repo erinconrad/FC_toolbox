@@ -190,7 +190,7 @@ while 1
             overlapping_sz_aligned_end,start_1,end_1,while_counts}];
         writetable(T,overlap_log_file);
 
-        if while_counts > 20
+        if while_counts > 20 % give up and skip the run!
             out = [];
             return
         end

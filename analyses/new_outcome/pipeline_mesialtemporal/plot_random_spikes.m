@@ -42,9 +42,9 @@ for i = 1:nspikes
     exc = mT.exclude{exr};
     if ~isempty(exc)
         C = strsplit(exc,', ');
-        rm_allow = zeros(length(potentially_allowable_labels),1);
+        rm_allow = zeros(length(allowable_labels),1);
         for j = 1:length(C) % loop over exclusion labels
-            rm_allow(contains(potentially_allowable_labels,C{j},'ignorecase',true)) = 1;
+            rm_allow(contains(allowable_labels,C{j},'ignorecase',true)) = 1;
         end
         allowable_labels(rm_allow==1) = [];
     end

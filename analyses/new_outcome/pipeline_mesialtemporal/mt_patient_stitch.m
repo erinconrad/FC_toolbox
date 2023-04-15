@@ -202,9 +202,7 @@ end
 if ~exist([edf_summ_path,name],'dir')
     mkdir([edf_summ_path,name])
 end
-for im = 1:nmontages
-    plot_random_spikes(all_spike_times{im},name,out.clean_labels,montages{im},edf_path,edf_summ_path,mT)
-end
+
 
 %% Output the stuff
 nout.all_times = all_times;
@@ -249,5 +247,9 @@ if ~exist([edf_summ_path,name],'dir')
     mkdir([edf_summ_path,name])
 end
 save([edf_summ_path,name,'/summ.mat'],'out');
+
+for im = 1:nmontages
+    plot_random_spikes(all_spike_times{im},name,out.clean_labels,montages{im},edf_path,edf_summ_path,mT)
+end
 
 end
