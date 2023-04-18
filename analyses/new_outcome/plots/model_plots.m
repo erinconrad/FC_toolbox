@@ -1,4 +1,4 @@
-function model_plots(rm_wake)
+function model_plots(rm_wake,rm_non_temporal)
 
 %% Parameters
 pca_all_perc = 95;
@@ -35,7 +35,6 @@ T(empty_class,:) = [];
 
 %% ROC for L from R+BL for all features, just spikes, "binary spikes"
 just_spikes = 0;% all patients (spikes for now for speed)
-rm_non_temporal = 0; 
 left = classifier_wrapper(T,features,pca_all_perc,1,just_spikes,rm_non_temporal,[]);
 right = classifier_wrapper(T,features,pca_all_perc,2,just_spikes,rm_non_temporal,[]);
 
@@ -86,7 +85,6 @@ end
 %% ROC curve for multi-feature LR classifier to separate L from R+BL, also R from L+BL
 % Do the classifier for L from R+BL
 just_spikes = 1; % Just spikes
-rm_non_temporal = 0; % All patients
 lefts = classifier_wrapper(T,features,pca_spikes_perc,1,just_spikes,rm_non_temporal,[]);
 rights = classifier_wrapper(T,features,pca_spikes_perc,2,just_spikes,rm_non_temporal,[]);
 
@@ -110,7 +108,6 @@ set(gca,'fontsize',20)
 
 %% Dumb spikes
 just_spikes = 2; % Just spikes
-rm_non_temporal = 0; % All patients
 leftd = classifier_wrapper(T,features,pca_spikes_perc,1,just_spikes,rm_non_temporal,[]);
 rightd = classifier_wrapper(T,features,pca_spikes_perc,2,just_spikes,rm_non_temporal,[]);
 
