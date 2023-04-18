@@ -4,10 +4,11 @@ function outcome_plots
 rm_wake = 1;
 pca_perc = 95;
 which_outcome = 'engel';
-which_year = 1;
+which_year = 2;
 outcome_approach = 'prob';
 only_temp = 0;
 direct_model = 0;
+rm_non_temporal = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -129,7 +130,7 @@ if direct_model
 
     % model
     just_spikes = 1; % ALl features
-    rm_non_temporal = 0; % All patients
+    rm_non_temporal = 1; % All patients
     combine_br = 0;
     out =  classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal,'outcome');
     [X,Y,~,AUC] = perfcurve(out.class,out.scores,out.pos_class);
@@ -162,8 +163,7 @@ empty_class = cellfun(@isempty,T.(response));
 T(empty_class,:) = [];
 
 % Do the model
-just_spikes = 0; % ALl features
-rm_non_temporal = 0; % All patients
+just_spikes = 1; % ALl features
 
 % Remove non temporal patients if desired
 if rm_non_temporal == 1

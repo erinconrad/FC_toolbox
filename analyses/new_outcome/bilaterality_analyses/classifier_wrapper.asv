@@ -172,9 +172,8 @@ out.unique_classes = classes;
 out.npts = npts;
 out.names = all_names;
 
-if combine_br ~= 0
-    out.unique_features = unique_features;
-    out.counts = a_counts;
-end
+if combine_
+out.unique_features = unique_features;
+out.counts = a_counts;
 
 end

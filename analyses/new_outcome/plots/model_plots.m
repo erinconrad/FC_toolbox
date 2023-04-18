@@ -136,6 +136,7 @@ outl = lefts; % spikes model
 outr = rights;
 
 %% Compare model performance by hospital and by epilepsy localization
+%{
 nb = 1e3;
 %{
 ADD BOOTSTRAPPING EVENTUALLY TO GET CONFIDENCE INTERVALS ON AUCS
@@ -234,6 +235,7 @@ leg_p = legend([lp,rp],{sprintf('Left vs right/bilateral'),...
     'location','south');
 title('Model performance by clinical factors')
 set(gca,'fontsize',20)
+%}
 
 
 %% Validation
@@ -272,8 +274,9 @@ set(gca,'fontsize',20)
 %
 
 %% Three-way classifier
-%{
-out = classifier_wrapper(T,features,pca_perc,0,1,0);
+combine_br = 0;
+just_spikes = 1;
+out =  classifier_wrapper(T,features,pca_spikes_perc,combine_br,just_spikes,rm_non_temporal,[]);
 
 % confusion matrix
 nexttile

@@ -46,8 +46,14 @@ C = zeros(nclasses,nclasses); % left, right, bilateral
 %% Train the model on the training data
 Ttrain = T(train,:);
 Ttest = T(test,:);
-tc = lasso_classifier(Ttrain,features,response,pca_perc,classes);
-all_scores = tc.probabilityFcn(Ttest);
+
+if combine_br == 0
+    tc = general_classifier(Ttrain,'svm',features,response,pca_perc,1e2,length(features));
+    all_scores = [];
+else
+    tc = lasso_classifier(Ttrain,features,response,pca_perc,classes);
+    all_scores = tc.probabilityFcn(Ttest);
+end
 all_names = Ttest.names;
 all_pred = tc.predictFcn(Ttest);
 
