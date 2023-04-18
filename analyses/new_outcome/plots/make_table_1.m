@@ -32,6 +32,8 @@ etle = ~tle;
 
 % Remove from T (all subsequent things map to the patients in T)
 T(etle,:) = [];
+tle(etle,:) = [];
+etle(etle,:) = [];
 
 
 
