@@ -2,7 +2,7 @@ function univariate_fdr_plots
 
 %% Parameters
 which_pts = 'hup';
-rm_non_temporal = 0;
+rm_non_temporal = 1;
 response = 'soz_lats';
 
 %% Get file locs
