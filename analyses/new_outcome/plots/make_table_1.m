@@ -1,5 +1,8 @@
 function make_table_1
 
+%% Parameters
+rm_non_temporal = 1;
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -21,6 +24,15 @@ T(empty_class,:) = [];
 %% Load the pt file
 pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
+
+%% Go through and remove non-temporal patients
+soz_loc = T.soz_locs;
+tle = contains(soz_loc,'temporal');
+etle = ~tle;
+
+% Remove from T (all subsequent things map to the patients in T)
+T(etle,:) = [];
+
 
 
 %% Grab demographic variables from table
@@ -49,10 +61,9 @@ resection = contains(surg,'Resection');
 ablation = contains(surg,'ablation');
 device = contains(surg,'RNS') | contains(surg,'DBS') | contains(surg,'VNS');
 
-soz_loc = T.soz_locs;
+
 soz_lat = T.soz_lats;
-tle = contains(soz_loc,'temporal');
-etle = ~tle;
+
 left = strcmp(soz_lat,'left');
 right = strcmp(soz_lat,'right');
 bilateral = strcmp(soz_lat,'bilateral');
