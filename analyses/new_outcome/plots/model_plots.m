@@ -132,8 +132,8 @@ set(gca,'fontsize',20)
 end
 
 %% Decide what method to use for further analyses
-outl = left; % main model
-outr = right;
+outl = lefts; % spikes model
+outr = rights;
 
 %% Compare model performance by hospital and by epilepsy localization
 nb = 1e3;
@@ -162,6 +162,7 @@ boot_rm = bootstrap_aucs(outr.class(musc),outr.scores(musc),outr.pos_class,nb);
 lm_ci = prctile(boot_lm,[2.5,97.5]);
 rm_ci = prctile(boot_rm,[2.5,97.5]);
 
+if ~rm_non_temporal
 % Performance by SOZ localization
 tle = contains(T.soz_locs,'temporal');
 etle = contains(T.soz_locs,'other cortex') | contains(T.soz_locs,'frontal') | ...
@@ -181,6 +182,7 @@ boot_le = bootstrap_aucs(outl.class(etle),outl.scores(etle),outl.pos_class,nb);
 boot_re = bootstrap_aucs(outr.class(etle),outr.scores(etle),outr.pos_class,nb);
 le_ci = prctile(boot_le,[2.5,97.5]);
 re_ci = prctile(boot_re,[2.5,97.5]);
+end
 
 % plot
 cols = [0, 0.4470, 0.7410;0.8500, 0.3250, 0.0980];
@@ -201,23 +203,31 @@ hold on
 errorbar(startg+2*smallg+mediumg,AUCRM,AUCRM-rm_ci(1),rm_ci(2)-AUCRM,...
     'o','color',cols(2,:),'markersize',15,'linewidth',2)
 
-errorbar(startg+2*smallg+mediumg+bigg,AUCLT,AUCLT-lt_ci(1),lt_ci(2)-AUCLT,...
-    'o','color',cols(1,:),'markersize',15,'linewidth',2)
-hold on
-errorbar(startg+3*smallg+mediumg+bigg,AUCRT,AUCRT-rt_ci(1),rt_ci(2)-AUCRT,...
-    'o','color',cols(2,:),'markersize',15,'linewidth',2)
+if ~rm_non_temporal
+    errorbar(startg+2*smallg+mediumg+bigg,AUCLT,AUCLT-lt_ci(1),lt_ci(2)-AUCLT,...
+        'o','color',cols(1,:),'markersize',15,'linewidth',2)
+    hold on
+    errorbar(startg+3*smallg+mediumg+bigg,AUCRT,AUCRT-rt_ci(1),rt_ci(2)-AUCRT,...
+        'o','color',cols(2,:),'markersize',15,'linewidth',2)
+    
+    errorbar(startg+3*smallg+2*mediumg+bigg,AUCLE,AUCLE-le_ci(1),le_ci(2)-AUCLE,...
+        'o','color',cols(1,:),'markersize',15,'linewidth',2)
+    hold on
+    errorbar(startg+4*smallg+2*mediumg+bigg,AUCRE,AUCRE-re_ci(1),re_ci(2)-AUCRE,...
+        'o','color',cols(2,:),'markersize',15,'linewidth',2)
+    xticks([(startg+startg+smallg)/2,(startg+smallg+mediumg+startg+2*smallg+mediumg)/2,...
+        (startg+2*smallg+mediumg+bigg+startg+3*smallg+mediumg+bigg)/2,...
+        (startg+3*smallg+2*mediumg+bigg+startg+4*smallg+2*mediumg+bigg)/2])
+    xticklabels({'HUP','MUSC','TLE','ETLE'})
+    xlim([startg-smallg startg+4*smallg+2*mediumg+bigg+smallg])
+else
+    xticks([(startg+startg+smallg)/2,(startg+smallg+mediumg+startg+2*smallg+mediumg)/2])
+    xticklabels({'HUP','MUSC'})
+    xlim([startg-smallg startg+2*smallg+mediumg+smallg])
 
-errorbar(startg+3*smallg+2*mediumg+bigg,AUCLE,AUCLE-le_ci(1),le_ci(2)-AUCLE,...
-    'o','color',cols(1,:),'markersize',15,'linewidth',2)
-hold on
-errorbar(startg+4*smallg+2*mediumg+bigg,AUCRE,AUCRE-re_ci(1),re_ci(2)-AUCRE,...
-    'o','color',cols(2,:),'markersize',15,'linewidth',2)
+end
 
-xticks([(startg+startg+smallg)/2,(startg+smallg+mediumg+startg+2*smallg+mediumg)/2,...
-    (startg+2*smallg+mediumg+bigg+startg+3*smallg+mediumg+bigg)/2,...
-    (startg+3*smallg+2*mediumg+bigg+startg+4*smallg+2*mediumg+bigg)/2])
-xticklabels({'HUP','MUSC','TLE','ETLE'})
-xlim([startg-smallg startg+4*smallg+2*mediumg+bigg+smallg])
+
 ylabel('AUC')
 leg_p = legend([lp,rp],{sprintf('Left vs right/bilateral'),...
     sprintf('Right vs left/bilateral')},'fontsize',20,...
