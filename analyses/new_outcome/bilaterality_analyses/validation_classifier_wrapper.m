@@ -48,7 +48,7 @@ Ttrain = T(train,:);
 Ttest = T(test,:);
 
 if combine_br == 0
-    tc = general_classifier(Ttrain,'svm',features,response,pca_perc,1e2,length(features));
+    tc = general_classifier(Ttrain,'svm_cost',features,response,pca_perc,1e2,length(features));
     all_scores = [];
 else
     tc = lasso_classifier(Ttrain,features,response,pca_perc,classes);

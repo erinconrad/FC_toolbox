@@ -34,7 +34,7 @@ T(empty_class,:) = [];
 %% Initialize figure
 figure
 set(gcf,'position',[1 1 1400 450])
-tiledlayout(1,3,"TileSpacing",'tight','padding','compact')
+tiledlayout(1,3,"TileSpacing",'tight','padding','loose')
 
 %% Define good outcome
 switch which_outcome
@@ -194,8 +194,8 @@ right_surg = surg & strcmp(T.surg_lat,'right');
 scores = nan(length(left_surg),1);
 left_scores = left.scores;
 right_scores = right.scores;
-scores(left_surg) = left_scores(left_surg);
-scores(right_surg) = right_scores(right_surg);
+scores(left_surg) = left_scores(left_surg);%-right_scores(left_surg);
+scores(right_surg) = right_scores(right_surg);%-left_scores(right_surg);
 
 % Get outcomes
 outcome_name = [which_outcome,'_yr',sprintf('%d',which_year)];

@@ -1,7 +1,7 @@
 function univariate_fdr_plots
 
 %% Parameters
-which_pts = 'hup';
+which_pts = 'all';
 rm_non_temporal = 1;
 response = 'soz_lats';
 
@@ -55,7 +55,7 @@ end
 %% Initialize figure
 figure
 set(gcf,'position',[1 1 1400 1000])
-tiledlayout(2,2,"TileSpacing",'tight','padding','tight')
+t = tiledlayout(2,2,"TileSpacing",'tight','padding','tight');
 
 
 %% Show spikes
@@ -85,6 +85,55 @@ fprintf(fid,[' Fig. 3A shows the spike rate AI (in sleep, common average referen
     sum(left_soz_spikes>0),length(left_soz_spikes),...
     sum(right_soz_spikes>0),length(right_soz_spikes));
 %}
+
+%% PCA/clustering 
+% need to decide about imputation, etc.
+X = table2array(T(:,features));
+soz_lats = T.soz_lats;
+%{
+% for now just remove rows with any nans
+nan_rows = any(isnan(X),2);
+X(nan_rows,:) = [];
+soz_lats(nan_rows) = [];
+%}
+
+% Imputation of nans. Make Nans equal to mean across other rows for that
+% column
+for ic = 1:size(X,2)
+    nan_row = isnan(X(:,ic));
+    X(nan_row,ic) = nanmean(X(:,ic));
+end
+
+right = strcmp(soz_lats,'right');
+left = strcmp(soz_lats,'left');
+bilateral = strcmp(soz_lats,'bilateral');
+
+% normalize
+X = (X-nanmean(X,1))./nanstd(X,[],1);
+[coeff,score,latent] = pca(X);
+nexttile(t)
+plot(score(left,1),score(left,2),'o','markersize',12,'linewidth',2)
+hold on
+plot(score(right,1),score(right,2),'+','markersize',12,'linewidth',2)
+plot(score(bilateral,1),score(bilateral,2),'*','markersize',12,'linewidth',2)
+xlabel('Component 1 score')
+ylabel('Component 2 score')
+title('Feature separation by SOZ laterality')
+legend({'left','right','bilateral'},'location','southeast','fontsize',15)
+set(gca,'fontsize',15)
+
+fprintf(fid,['<p>We next attempted to visualize the ability of the set of interictal EEG '...
+    'AI features as a whole to separate epilepsy lateralities given the high '...
+    'degree of inter-feature correlation. We performed PCA across all features after '...
+    'normalizing the features by subtracting the mean and dividing by the standard '...
+    'deviation across patients. We obtained the two principal components that explained '...
+    'most of the variance in the features (the number two was chosen for visualization purposes. '...
+    'Fig. 3D shows the scores for the first two principal components for patients with '...
+    'different SOZ lateralities. Patients with left-sided SOZs tend to cluster in the upper '...
+    'right corner, with higher scores for both principal components. However, there is no '...
+    'clear separation in the first two principal components between patients with right-sided '...
+    'SOZs and patients with bilateral SOZs</p>.']);
+
 %% Univariate analyses of features
 nfeatures = length(allowed_features);
 feature_p_val = nan(nfeatures,1);
@@ -107,7 +156,7 @@ plot(feature_eta2(I(1:n_to_plot)),'ko','markersize',15,'linewidth',2)
 hold on
 for i = 1:n_to_plot
     if sorted_qvalues(i) < 0.05
-        plot(i,feature_eta2(I(i)),'k*','markersize',15,'linewidth',2)
+      %  plot(i,feature_eta2(I(i)),'k*','markersize',15,'linewidth',2)
     end
 end
 %}
@@ -146,30 +195,53 @@ feature_p_val(isnan(feature_p_val)) = 1;
 n_to_plot = 20;
 [~,I1] = sort(abs(feature_eta2(:,1)),'descend'); [~,I2] = sort(abs(feature_eta2(:,2)),'descend'); 
 sorted_q1 = qvalues1(I1(1:n_to_plot)); sorted_q2 = qvalues2(I2(1:n_to_plot));
-nexttile
-pl = plot(abs(feature_eta2(I1(1:n_to_plot),1)),'o','markersize',15,'color',[0 0.4470 0.7410],'linewidth',2);
+tt = tiledlayout(t,1,1);
+tt.Layout.Tile = 4;
+tt.Layout.TileSpan = [1 1];
+ax1 = axes(tt);
+ax2 = axes(tt);
+ax2.XAxisLocation = 'bottom';
+ax2.YAxisLocation = 'right';
+pl = plot(ax1,abs(feature_eta2(I1(1:n_to_plot),1)),'o','markersize',15,'color',[0 0.4470 0.7410],'linewidth',2);
 hold on
-pr = plot(abs(feature_eta2(I2(1:n_to_plot),2)),'o','markersize',15,'color',[0.8500 0.3250 0.0980],'linewidth',2);
+pr = plot(ax2,abs(feature_eta2(I2(1:n_to_plot),2)),'o','markersize',15,'color',[0.8500 0.3250 0.0980],'linewidth',2);
+%{
 for i =1:n_to_plot
     if sorted_q1 < 0.05
-        plot(i,abs(feature_eta2(I1(i),1)),'*','markersize',15,'color',[0 0.4470 0.7410],'linewidth',2);
+        plot(ax1,i,abs(feature_eta2(I1(i),1)),'*','markersize',15,'color',[0 0.4470 0.7410],'linewidth',2);
     end
 
     if sorted_q2 < 0.05
-        plot(i,abs(feature_eta2(I2(i),2)),'*','markersize',15,'color',[0.8500 0.3250 0.0980],'linewidth',2);
+        plot(ax2,i,abs(feature_eta2(I2(i),2)),'*','markersize',15,'color',[0.8500 0.3250 0.0980],'linewidth',2);
     end
 end
-
+%}
+ax2.XColor = [0.8500 0.3250 0.0980];
+ax2.YColor = [0.8500 0.3250 0.0980];
+ax1.XColor = [0 0.4470 0.7410];
+ax1.YColor = [0 0.4470 0.7410];
+ax2.Color = 'none';
+ax1.Box = 'off';
+ax2.Box = 'off';
+ax1.YLim = [min([min(abs(feature_eta2(I1(1:n_to_plot),1))),min(abs(feature_eta2(I2(1:n_to_plot),2)))])-0.2,...
+    max([max(abs(feature_eta2(I1(1:n_to_plot),1))),max(abs(feature_eta2(I2(1:n_to_plot),2)))])+0.2];
+ax2.YLim = [min([min(abs(feature_eta2(I1(1:n_to_plot),1))),min(abs(feature_eta2(I2(1:n_to_plot),2)))])-0.2,...
+    max([max(abs(feature_eta2(I1(1:n_to_plot),1))),max(abs(feature_eta2(I2(1:n_to_plot),2)))])+0.2];
 if 0
     table(feature_eta2(I2,2),qvalues2(I2),feature_p_val(I2,2))
 end
+ax1.XTick = 1:n_to_plot;
+ax2.XTick = 1:n_to_plot;
+ax1.XTickLabel = cellfun(@greek_letters_plots,allowed_features(I1(1:n_to_plot)),'uniformoutput',false);
+ax2.XTickLabel = cellfun(@greek_letters_plots,allowed_features(I2(1:n_to_plot)),'uniformoutput',false);
+ax1.XAxisLocation = 'top';
 
-xticklabels([])
+
+%xticklabels([])
 legend([pl pr],{'Left vs right/bilateral','Right vs left/bilateral'},'location','northeast','fontsize',15)
-title('Effect sizes (Cohen''s {\it d}) to distinguish specific laterality')
-set(gca,'fontsize',15)
-xlabel('Features (ordered by effect size)')
-ylabel('|Cohen''s {\it d}|')
+%title('Effect sizes (Cohen''s {\it d}) to distinguish specific laterality')
+set(ax1,'fontsize',15); set(ax2,'fontsize',15)
+ylabel(ax1,'|Cohen''s {\it d}|','color','k','fontsize',15)
 
 fprintf(fid,['We compared the ability of interictal feature AI to distinguish left-sided SOZs '...
     'versus right-sided SOZs. We separately calculated the absolute value of the effect size (Cohen''s <i>d</i>) '...
@@ -185,53 +257,7 @@ fprintf(fid,['We compared the ability of interictal feature AI to distinguish le
     'discovery rate.</p>']);
 
 
-%% PCA/clustering 
-% need to decide about imputation, etc.
-X = table2array(T(:,features));
-soz_lats = T.soz_lats;
-%{
-% for now just remove rows with any nans
-nan_rows = any(isnan(X),2);
-X(nan_rows,:) = [];
-soz_lats(nan_rows) = [];
-%}
 
-% Imputation of nans. Make Nans equal to mean across other rows for that
-% column
-for ic = 1:size(X,2)
-    nan_row = isnan(X(:,ic));
-    X(nan_row,ic) = nanmean(X(:,ic));
-end
-
-right = strcmp(soz_lats,'right');
-left = strcmp(soz_lats,'left');
-bilateral = strcmp(soz_lats,'bilateral');
-
-% normalize
-X = (X-nanmean(X,1))./nanstd(X,[],1);
-[coeff,score,latent] = pca(X);
-nexttile
-plot(score(left,1),score(left,2),'o','markersize',12,'linewidth',2)
-hold on
-plot(score(right,1),score(right,2),'+','markersize',12,'linewidth',2)
-plot(score(bilateral,1),score(bilateral,2),'*','markersize',12,'linewidth',2)
-xlabel('Component 1 score')
-ylabel('Component 2 score')
-title('Feature separation by SOZ laterality')
-legend({'left','right','bilateral'},'location','southeast','fontsize',15)
-set(gca,'fontsize',15)
-
-fprintf(fid,['<p>We next attempted to visualize the ability of the set of interictal EEG '...
-    'AI features as a whole to separate epilepsy lateralities given the high '...
-    'degree of inter-feature correlation. We performed PCA across all features after '...
-    'normalizing the features by subtracting the mean and dividing by the standard '...
-    'deviation across patients. We obtained the two principal components that explained '...
-    'most of the variance in the features (the number two was chosen for visualization purposes. '...
-    'Fig. 3D shows the scores for the first two principal components for patients with '...
-    'different SOZ lateralities. Patients with left-sided SOZs tend to cluster in the upper '...
-    'right corner, with higher scores for both principal components. However, there is no '...
-    'clear separation in the first two principal components between patients with right-sided '...
-    'SOZs and patients with bilateral SOZs</p>.']);
 
 print(gcf,[plot_folder,'Fig3'],'-dpng')
 

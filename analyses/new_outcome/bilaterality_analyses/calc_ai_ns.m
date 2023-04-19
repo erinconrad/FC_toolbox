@@ -9,7 +9,7 @@ finds the mesial temporal ones, and calculates a single asymmetry index
 
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
-average_level = 'contact'; % side = whole L vs R side; electrode = single electrode; contact = single contact
+average_level = 'side'; % side = whole L vs R side; electrode = single electrode; contact = single contact
 
 
 %% Misc
@@ -119,16 +119,16 @@ else
             % electrode, calculates AI, and then averages across
             % the three electrodes
             intra_avg = nanmean(intra,2);
-            error('what')
-            %signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./sqrt((intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
-            %signed = (squeeze(nanmean(signed,[1 2 3])))';
+            %error('what')
+            signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./sqrt((intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
+            signed = (squeeze(nanmean(signed,[1 2 3])))';
         case 'side'
             % This averages the feature across the whole side, then
             % calculates the AI
             intra_avg = nanmean(intra,[1 2]);
-            error('what')
-            %signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./(sqrt(intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
-            %signed = (squeeze(nanmean(signed,[1 2 3])))';
+            %error('what')
+            signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./(sqrt(intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
+            signed = (squeeze(nanmean(signed,[1 2 3])))';
     end
 end
 
