@@ -7,7 +7,7 @@ data_folder = '/data/Human_Data/CNT_iEEG_BIDS/';
 inter_folder = [results_folder,'analysis/new_outcome/data/'];
 freesurfer_path = '/tools/freesurfer/matlab/';
 out_folder = [results_folder,'analysis/new_outcome/plots/elec_locs/'];
-data_folder = [locations.main_folder,'data/'];
+other_data_folder = [locations.main_folder,'data/'];
 if ~exist(out_folder,'dir')
     mkdir(out_folder)
 end
@@ -26,7 +26,7 @@ all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 names = mt_data.all_names;
 
 %% Load pt file
-pt = load([data_folder,'pt.mat']);
+pt = load([other_data_folder,'pt.mat']);
 pt = pt.pt;
 
 %% Load Manual validation file
