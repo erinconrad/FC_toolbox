@@ -152,7 +152,7 @@ for i = 1:npts
     [Lia,Locb] = ismember(enames,atropos_names);
     assert(isequal(atropos_names(Locb(Lia)),enames(Lia)))
     atropos_labels(Lia) = atropos_labels(Locb(Lia)); atropos_labels(~Lia) = {''};
-    dkt_labels(Lia) = dkt_labels(Locb(Lia)); dkt_labels(~Lia) = {''};
+    dkt_labels(Lia) = dkt_labels(Locb(Lia)); d_labels(~Lia) = {''};
 
     % plot the brain surface
     figure
@@ -168,9 +168,7 @@ for i = 1:npts
     lh.FaceColor = [0.7 0.6 0.6];
     scatter3(locs(~mt,1),locs(~mt,2),locs(~mt,3),'markerfacecolor','w','markeredgecolor','k')
     scatter3(locs(mt,1),locs(mt,2),locs(mt,3),'markerfacecolor','w','markeredgecolor','r')
-    text(locs(:,1),locs(:,2),locs(:,3),...
-        cellfun(@(x,y,z) sprintf('%s, %s, %s',x,y,z), enames, atropos_labels, dkt_labels,'uniformoutput',false),...
-        'HorizontalAlignment','center','fontsize',8)
+    text(locs(:,1),locs(:,2),locs(:,3),enames,'HorizontalAlignment','center','fontsize',10)
     
     
     %{

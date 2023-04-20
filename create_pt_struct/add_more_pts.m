@@ -47,6 +47,9 @@ switch which_step
         
         % Add seizure times
         add_sz_times_multiple_sources
+
+        % Add atlas parcellations
+        add_atlas_parcellations
         
     case 'post_manual_addition'
         
