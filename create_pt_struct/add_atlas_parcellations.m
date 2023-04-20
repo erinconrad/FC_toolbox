@@ -18,6 +18,11 @@ pt = pt.pt;
 for p = 1:length(pt)
     name = pt(p).name;
     rid = pt(p).rid;
+
+    if isempty(pt(p).elecs_native)
+        fprintf('\nSkipping %s because no elecs\n',name);
+        continue; 
+    end
     
     elec_names = pt(p).elecs_native.elec_names;
 
@@ -37,7 +42,7 @@ for p = 1:length(pt)
     d_listing = dir([module3_folder,'*DKT*.csv']);
 
     if isempty(a_listing)
-        fprintf('\nSkipping %s\n',name);
+        fprintf('\nSkipping %s because cannot find atlas\n',name);
         continue; 
     end
 
