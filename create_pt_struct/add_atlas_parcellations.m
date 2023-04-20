@@ -79,8 +79,8 @@ for p = 1:length(pt)
 
     a_label(Lia) = a_label(Locb(Lia)); a_label(~Lia) = {''};
     d_label(Lia) = d_label(Locb(Lia)); d_label(~Lia) = {''};
-    a_xyz(Lia,:) = a_xyz(Locb(Lia),:); a_xyz(~Lia,:) = [nan nan nan];
-    d_xyz(Lia,:) = d_xyz(Locb(Lia),:); d_xyz(~Lia,:) = [nan nan nan];
+    a_xyz(Lia,:) = a_xyz(Locb(Lia),:); a_xyz(~Lia,:) = nan(size(sum(~Lia),3));
+    d_xyz(Lia,:) = d_xyz(Locb(Lia),:); d_xyz(~Lia,:) = nan(size(sum(~Lia),3));
     a_idx(Lia) = a_idx(Locb(Lia)); a_idx(~Lia) = nan;
     d_idx(Lia) = d_idx(Locb(Lia)); d_idx(~Lia) = nan;
     
