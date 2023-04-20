@@ -19,13 +19,7 @@ for p = 1:length(pt)
     name = pt(p).name;
     rid = pt(p).rid;
 
-    if isempty(pt(p).elecs_native)
-        fprintf('\nSkipping %s because no elecs\n',name);
-        continue; 
-    end
     
-    elec_names = pt(p).elecs_native.elec_names;
-
     % Load the relevant atlas parcellation files
     if rid < 100
         rid_text = ['sub-RID',sprintf('00%d',rid)];
@@ -68,6 +62,7 @@ for p = 1:length(pt)
     a_label = aT.label;
     d_label = dT.label;
 
+    %{
     % Reconcile electrode names and re-order as needed
     assert(isequal(a_name,d_name))
     assert(isequal(a_xyz,d_xyz))
@@ -83,17 +78,18 @@ for p = 1:length(pt)
     d_xyz(Lia,:) = d_xyz(Locb(Lia),:); d_xyz(~Lia,:) = nan(size(sum(~Lia),3));
     a_idx(Lia) = a_idx(Locb(Lia)); a_idx(~Lia) = nan;
     d_idx(Lia) = d_idx(Locb(Lia)); d_idx(~Lia) = nan;
+    %}
     
     % fill up
-    pt(p).elecs_native.atropos.names = elec_names;
-    pt(p).elecs_native.atropos.xyz = a_xyz;
-    pt(p).elecs_native.atropos.idx = a_idx;
-    pt(p).elecs_native.atropos.label = a_label;
+    pt(p).atropos.names = a_name;
+    pt(p).atropos.xyz = a_xyz;
+    pt(p).atropos.idx = a_idx;
+    pt(p).atropos.label = a_label;
 
-    pt(p).elecs_native.dkt.names = elec_names;
-    pt(p).elecs_native.dkt.xyz = d_xyz;
-    pt(p).elecs_native.dkt.idx = d_idx;
-    pt(p).elecs_native.dkt.label = d_label;
+    pt(p).dkt.names = d_name;
+    pt(p).dkt.xyz = d_xyz;
+    pt(p).dkt.idx = d_idx;
+    pt(p).dkt.label = d_label;
     
     save([data_folder,'pt.mat'],'pt');
 
