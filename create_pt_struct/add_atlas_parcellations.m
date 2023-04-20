@@ -72,15 +72,17 @@ for p = 1:length(pt)
     assert(isequal(a_name,d_name))
     assert(isequal(a_xyz,d_xyz))
 
-    [Lia,Locb] = ismember(a_name,elec_names);
-    assert(isequal(a_name(Locb(Lia)),elec_names))
+    %
+    %assert(isequal(a_name(Locb(Lia)),elec_names))
+    [Lia,Locb] = ismember(elec_names,a_name);
+    assert(isequal(a_name(Locb(Lia)),elec_names(Lia)))
 
-    a_label = a_label(Locb(Lia));
-    d_label = d_label(Locb(Lia));
-    a_xyz = a_xyz(Locb(Lia));
-    d_xyz = d_xyz(Locb(Lia));
-    a_idx = a_idx(Locb(Lia));
-    d_idx = d_idx(Locb(Lia));
+    a_label(Lia) = a_label(Locb(Lia)); a_label(~Lia) = {''};
+    d_label(Lia) = d_label(Locb(Lia)); d_label(~Lia) = {''};
+    a_xyz(Lia,:) = a_xyz(Locb(Lia),:); a_xyz(~Lia,:) = [nan nan nan];
+    d_xyz(Lia,:) = d_xyz(Locb(Lia),:); d_xyz(~Lia,:) = [nan nan nan];
+    a_idx(Lia) = a_idx(Locb(Lia)); a_idx(~Lia) = nan;
+    d_idx(Lia) = d_idx(Locb(Lia)); d_idx(~Lia) = nan;
     
     % fill up
     pt(p).elecs_native.atropos.names = elec_names;
