@@ -68,6 +68,7 @@ for i = 1:npts
    
     t1_file = [data_folder,folder_text,'derivatives/freesurfer/mri/T1.mgz'];
     if ~exist(t1_file,'file')
+        fprintf('\nNo T1 for %s, skipping\n',name);
         continue
     end
     mri = MRIread(t1_file);
@@ -81,10 +82,12 @@ for i = 1:npts
     pial_folder = [data_folder,folder_text,'derivatives/freesurfer/surf/'];
 
     if ~exist(pial_folder,'dir')
+        fprintf('\nNo pial dir for %s, skipping\n',name);
         continue
     end
 
     if ~exist([pial_folder,'lh.pial'],'file')
+        fprintf('\nNo pial file for %s, skipping\n',name);
         continue
     end
 
@@ -104,6 +107,7 @@ for i = 1:npts
     module2 = [data_folder,folder_text,'derivatives/ieeg_recon/module2/']; % module2 folder
     listing = dir([module2,'*electrode_names.txt']);
     if length(listing)==0
+        fprintf('\nNo elec names for %s, skipping\n',name);
         continue
     end
     Tnames = readtable([module2,listing.name],'ReadVariableNames',false);
@@ -124,6 +128,7 @@ for i = 1:npts
     end
     
     if found_it == 0
+        fprintf('\nNo elec locs for %s, skipping\n',name);
         continue
     end
     eT = readtable([module2,fname]);
