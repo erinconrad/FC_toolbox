@@ -33,15 +33,19 @@ for p = 1:length(pt)
 
     module3_folder = [pt_folder,'derivatives/ieeg_recon/module3/'];
 
-    atropos_file = [rid_text,'_ses-research3T_space-T00mri_atlas-atropos_radius-2_desc-vox_coordinates.csv'];
-    dkt_file = [rid_text,'_ses-research3T_space-T00mri_atlas-DKTantspynet_radius-2_desc-vox_coordinates.csv'];
+    a_listing = dir([module3_folder,'*atropos*.csv']);
+    d_listing = dir([module3_folder,'*DKT*.csv']);
 
-    if ~exist([module3_folder,atropos_file],'file')
-        continue
+    if isempty(a_listing)
+        fprintf('\nSkipping %s\n',name);
+        continue; 
     end
 
-    aT = readtable([module3_folder,atropos_file]);
-    dT = readtable([module3_folder,dkt_file]);
+    atropos_file = [module3_folder,a_listing(1).name];
+    dkt_file = [module3_folder,d_listing(1).name];
+
+    aT = readtable(atropos_file);
+    dT = readtable(dkt_file);
 
     % get elec names
     a_name = aT.name;
