@@ -46,6 +46,10 @@ for p = 1:length(pt)
     aT = readtable(atropos_file);
     dT = readtable(dkt_file);
 
+    if isempty(aT) || isempty(dT)
+        continue
+    end
+
     % get elec names
     a_name = aT.name;
     d_name = dT.name;
