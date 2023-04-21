@@ -73,8 +73,6 @@ all_ll_iqr = cell(npts,3,3);
 all_n_wake_sleep = nan(npts,2);
 all_disconnected = nan(npts,72);
 all_n_wake_sleep_connected = nan(npts,2);
-all_atropos = cell(npts,1);
-all_dkt = cell(npts,1);
 
 
 %% Loop over patients
@@ -132,21 +130,17 @@ for p = 1:npts
     clean_labels = cellfun(@(x) strrep(x,'-Ref',''),labels{1,1},'UniformOutput',false);
 
     % get atlas parcellations
-    if ~isemtpty(pt(p).atropos)
-        aatlas = pt(p).atropos.label;
-        alabels = mt_name_conversion(pt(p).atropos.names,name);
-        datlas = pt(p).dkt.label;
-        dlabels = mt_name_conversion(pt(p).dkt.names,name);
-        assert(isequal(alabels,dlabels))
-    
-        [Lia,Locb] = ismember(alabels,clean_labels);
-        assert(isequal(clean_labels,alabels(Lia)))
-        aatlas = aatlas(Lia);
-        datlas = datlas(Lia);
-        
-        all_atropos{p} = aatlas;
-        all_dkt{p} = datlas;
-    end
+    aatlas = pt(p).atropos.label;
+    alabels = mt_name_conversion(pt(p).atropos.names,name);
+    datlas = pt(p).dkt.label;
+    dlabels = mt_name_conversion(pt(p).dkt.names,name);
+    assert(isequal(alabels,dlabels))
+
+    [Lia,Locb] = ismember(alabels,clean_labels);
+    assert(is)
+    aatlas(Lia) = aatlas(Locb(Lia)); aatlas(~Lia) = {''};
+    datlas(Lia) = datlas(Locb(Lia)); datlas(~Lia) = {''};
+    %}
 
     % find disconnected periods
     bp_machine_bb = squeeze(bp(:,1,:,6)); % get machine reference broadband bandpower
