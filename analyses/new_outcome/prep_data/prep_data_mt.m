@@ -139,11 +139,20 @@ for p = 1:npts
         dlabels = mt_name_conversion(pt(p).dkt.names,name);
         assert(isequal(alabels,dlabels))
     
-        [Lia,Locb] = ismember(alabels,clean_labels);
-        assert(isequal(clean_labels,alabels(Lia)))
-        aatlas = aatlas(Lia);
-        datlas = datlas(Lia);
+        [Lia,~] = ismember(alabels,clean_labels);
+        [~,Locb] = ismember(clean_labels,alabels(Lia));
+        txf_fcn1 = @(x) x(Lia);
+        txf_fcn2 = @(x) x(Locb);
+        txf_fcn = @(x) txf_fcn2(txf_fcn1(x));
+
+        assert(isequal(clean_labels,txf_fcn(alabels)))
+        aatlas = txf_fcn(aatlas);
+        datlas = txf_fcn(datlas);
         
+        if 0
+            table(clean_labels,aatlas,datlas)
+        end
+
         all_atropos{p} = aatlas;
         all_dkt{p} = datlas;
     end
