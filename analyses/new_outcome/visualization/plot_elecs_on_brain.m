@@ -149,10 +149,10 @@ for i = 1:npts
     assert(found_it == 1)
 
     if isempty(pt(p).atropos)
-        atropos_labels = [];
-        atropos_names = [];
-        dkt_labels = [];
-        dkt_names = [];
+        atropos_labels = {};
+        atropos_names = {};
+        dkt_labels = {};
+        dkt_names = {};
     else
         atropos_labels = pt(p).atropos.label;
         atropos_names = pt(p).atropos.names;
