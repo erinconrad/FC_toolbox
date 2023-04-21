@@ -319,6 +319,8 @@ out.all_engel = all_engel;
 out.all_ilae = all_ilae;
 out.all_soz_loc = all_soz_loc;
 out.all_soz_lat = all_soz_lat;
+out.all_atropos = all_atropos;
+out.all_dkt = all_dkt;
 
 out.all_n_wake_sleep = all_n_wake_sleep;
 out.all_n_wake_sleep_connected = all_n_wake_sleep_connected;
