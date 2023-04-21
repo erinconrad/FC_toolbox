@@ -132,7 +132,7 @@ for p = 1:npts
     clean_labels = cellfun(@(x) strrep(x,'-Ref',''),labels{1,1},'UniformOutput',false);
 
     % get atlas parcellations
-    if ~isemtpty(pt(p).atropos)
+    if ~isempty(pt(p).atropos)
         aatlas = pt(p).atropos.label;
         alabels = mt_name_conversion(pt(p).atropos.names,name);
         datlas = pt(p).dkt.label;
