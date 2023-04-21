@@ -148,10 +148,18 @@ for i = 1:npts
     end
     assert(found_it == 1)
 
-    atropos_labels = pt(p).atropos.label;
-    atropos_names = pt(p).atropos.names;
-    dkt_labels = pt(p).dkt.label;
-    dkt_names = pt(p).dkt.names;
+    if isempty(pt(p).atropos)
+        atropos_labels = [];
+        atropos_names = [];
+        dkt_labels = [];
+        dkt_names = [];
+    else
+        atropos_labels = pt(p).atropos.label;
+        atropos_names = pt(p).atropos.names;
+        dkt_labels = pt(p).dkt.label;
+        dkt_names = pt(p).dkt.names;
+    end
+    
     assert(isequal(dkt_names,atropos_names))
 
     [Lia,Locb] = ismember(enames,atropos_names);
