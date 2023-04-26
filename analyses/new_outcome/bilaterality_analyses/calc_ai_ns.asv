@@ -9,7 +9,7 @@ finds the mesial temporal ones, and calculates a single asymmetry index
 
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
-average_level = 'contact'; % side = whole L vs R side; electrode = single electrode; contact = single contact
+average_level = 'electrode'; % side = whole L vs R side; electrode = single electrode; contact = single contact
 
 
 %% Misc
@@ -21,12 +21,10 @@ end
 labels = cellfun(@(x) strrep(x,'-','--'),labels,'uniformoutput',false);
 
 %% Rule to remove elecs not in brain
-if isempty(atropos)
-    out_of_brain = zeros(length(atropos),1);
-else
-    out_of_brain = cellfun(@(x,y) (strcmp(x,'CSF') || strcmp(x,'EmptyLabel')) && strcmp(y,'EmptyLabel'),atropos,dkt);
+out_of_brain = cellfun(@(x,y) (strcmp(x,'CSF') || strcmp(x,'EmptyLabel')) && strcmp(y,'EmptyLabel'),atropos,dkt);
+if 0
+    table(atropos,dkt,out_of_brain)
 end
-
 
 
 %% Get numeric info
@@ -55,24 +53,14 @@ opp_partner = nan(length(letter_no_side_number),1);
 for i = 1:length(letter_no_side_number)
     poss_opp_partners = find(strcmp(letter_no_side_number,letter_no_side_number(i)));
     poss_opp_partners(poss_opp_partners==i) = [];
-    if length(poss_opp_partners) == 0
+    if length(poss_opp_partners) ~= 1
         error('what')
     end
-    opp_partner(i) = poss_opp_partners(1);
+    opp_partner(i) = poss_opp_partners;
 end
 
 % Define ones to remove
-to_rm_idx = [find(out_of_brain),opp_partner(out_of_brain)];
-to_rm = zeros(length(letter_no_side_number),1);
-to_rm(to_rm_idx) = 1;
-to_rm = logical(to_rm);
-
-if 0
-    table(atropos,dkt,out_of_brain,letter_no_side_number,to_rm)
-end
-
-% Make the thing nans
-thing(to_rm) = nan;
+to_rm = out_of_brain | opp_partner(out_of_brain);
 
 %% calculate the AI measurement
 % initialize
