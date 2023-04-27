@@ -1,4 +1,4 @@
-function gdf = clean_detector(values,fs)
+function gdf = clean_detector(values,fs, options)
 
 %{
 Inputs:
@@ -23,22 +23,62 @@ Dependencies:
 Information:
 - This was originally written by Camilo Bermudez 7/31/13 and modified by
 Erin Conrad at UPenn 12/9/22.
+- Updated arguments 3/9/2023, bscheid@seas.upenn.edu
 %}
 
 %% Parameters
-tmul = 19; % minimum relative amplitude (compared to baseline)
-absthresh = 100; % minimum absolute amplitude (uV)
-sur_time = 0.5; % surround time (in s) against which to compare for relative amplitude
-close_to_edge = 0.05; % time (in s) surrounding start and end of sample to ignore 
-too_high_abs = 1e3; % amplitude above which I reject it as artifact
-spkdur = [15 200]; % spike duration must be within this range (in ms)
-spkdur = spkdur*fs/1000;   % convert above to samples;
-lpf1 = 30; % low pass filter for spikey component
-hpf  = 7; % high pass filter for spikey component
+arguments
+    values
+    fs
+    options.tmul = 19; % minimum relative amplitude (compared to baseline). 
+    options.absthresh = 100; % min absolute amplitude (uV). Can be a scalar or vector with one value per channel
+    options.sur_time = 0.5; % surround time (in s) against which to compare for relative amplitude
+    options.close_to_edge = 0.05; % time (in s) surrounding start and end of sample to ignore 
+    options.too_high_abs = 1e3; % amplitude above which I reject it as artifact
+    options.spkdur = [15 200]; % spike duration must be within this range (in ms)
+    options.lpf1 = 30; % scalar: low pass cutoff freq for spikey component, or filter coefficient struct: lpf1.B, lpf1.A
+    options.hpf  = 7; % scalar: high pass cutoff freq for spikey component, or filter cofficient struct: hpf.B, hpf.A
+    options.multiChannelRequirements = true
+end
+
+    tmul = options.tmul; 
+    absthresh = options.absthresh; 
+    sur_time = options.sur_time; 
+    close_to_edge = options.close_to_edge; 
+    too_high_abs = options.too_high_abs; 
+    spkdur = options.spkdur*fs/1000; 
+    lpf1 = options.lpf1; 
+    hpf  = options.hpf; 
 
 %% Initialize things
 all_spikes  = [];
 nchs = size(values,2);
+
+% re-adjust the mean of the data to be zero
+data = values - mean(values,1,'omitnan');
+
+% Low pass filter to remove artifact
+if ~isstruct(lpf1)
+    lpdata = eegfilt(data, lpf1, 'lp',fs); % low pass filter
+else
+    lpdata = filtfilt(lpf1.B,lpf1.A,data); % filter with passed inputs
+end
+
+% high pass filter to get the spikey part
+if ~isstruct(hpf)
+    hpdata_all   = eegfilt(lpdata, hpf, 'hp',fs); % high pass filter
+else
+    hpdata_all = filtfilt(hpf.B,hpf.A,lpdata);
+end
+    
+% establish the baseline for the relative amplitude threshold
+lthresh = median(abs(hpdata_all), 1); 
+thresh  = lthresh*tmul;     % this is the final threshold we want to impose
+
+% set absthresh for each channel
+if length(absthresh) == 1, absthresh = repelem(absthresh, nchs); 
+else, assert(length(absthresh) == nchs, 'absThresh must be a scalar or vector equal to # channels')
+end
 
 %% Iterate channels and detect spikes
 for j = 1:nchs
@@ -46,27 +86,13 @@ for j = 1:nchs
     % initialize out array with final spike info
     out = [];
     
-    % specify ch
-    data = values(:,j);
-    
+    hpdata = hpdata_all(:,j);
+
     % Skip if all nans
-    if sum(isnan(data)) > 0, continue; end
-    
-    % re-adjust the mean of the data to be zero
-    data = data - nanmean(data);
-        
+    if sum(isnan(hpdata)) > 0, continue; end
+            
     % initialize array with tentative spike info
     spikes   = [];
-
-    % Low pass filter to remove artifact
-    lpdata = eegfilt(data, lpf1, 'lp',fs); % low pass filter
-
-    % high pass filter to get the spikey part
-    hpdata   = eegfilt(lpdata, hpf, 'hp',fs); % high pass filter
-
-    % establish the baseline for the relative amplitude threshold
-    lthresh = median(abs(hpdata)); 
-    thresh  = lthresh*tmul;     % this is the final threshold we want to impose
 
     % Run the spike detector to find both negative and positive spikes
     for k = 1:2
@@ -83,17 +109,21 @@ for j = 1:nchs
         idx      = find(diff(spp) <= spkdur(2));       % find peak-to-peak durations within allowable range
         startdx  = spp(idx);
         startdx1 = spp(idx+1);
+        strtMean = mean([startdx, startdx1],2);
+
+        % find the valley that is between the two peaks (get the index of
+        % the valley that is closest to the mean of the peaks).
+        [~,imn] = pdist2(spv, strtMean, 'euclidean', 'smallest', 1);
+        spkmintic = spv(imn);
 
         % Loop over peaks
         for i = 1:length(startdx)
-            spkmintic = spv((spv > startdx(i) & spv < startdx1(i))); % find the valley that is between the two peaks
-
             % If the height from valley to either peak is big enough, it could
             % be a spike
-            max_height = max(abs(kdata(startdx1(i)) - kdata(spkmintic)),abs(kdata(startdx(i)) - kdata(spkmintic)));
-            if max_height > thresh   % see if the peaks are big enough
+            max_height = max(abs(kdata(startdx1(i)) - kdata(spkmintic(i))),abs(kdata(startdx(i)) - kdata(spkmintic(i))));
+            if max_height > thresh(j)   % see if the peaks are big enough
                 
-                spikes(end+1,1) = spkmintic; % add timestamp to the spike list
+                spikes(end+1,1) = spkmintic(i); % add timestamp to the spike list
                 spikes(end,2)   = (startdx1(i)-startdx(i)); % add spike duration to list
                 spikes(end,3)   = max_height;  % add spike amplitude to list
 
@@ -101,7 +131,6 @@ for j = 1:nchs
 
         end
     end
-
 
     toosmall = [];
     toosharp = [];
@@ -117,7 +146,7 @@ for j = 1:nchs
           
         alt_thresh = median(abs(hpdata(istart:iend)))*tmul;
         
-        if spikes(i,3) > alt_thresh && spikes(i,3) > absthresh  % both parts together are bigger than thresh: so have some flexibility in relative sizes
+        if spikes(i,3) > alt_thresh && spikes(i,3) > absthresh(j)  % both parts together are bigger than thresh: so have some flexibility in relative sizes
             if spikes(i,2)*1000/fs > spkdur(1)    % spike wave cannot be too sharp: then it is either too small or noise
                 if spikes(i,3) < too_high_abs
                     out(end+1,:) = spikes(i,:);  % add info of spike to output list
@@ -150,7 +179,7 @@ for j = 1:nchs
                 min(round(currIdx+fullSurround(2)),length(hpdata));
             idxToLook = max(1,round(currIdx+idxToPeak(1))):...
                     min(round(currIdx+idxToPeak(2)),length(hpdata));  
-            snapshot = data(idxToLook)-median(data(surround_idx)); % Look at the high frequency data (where the mean is substracted already)
+            snapshot = hpdata(idxToLook)-median(hpdata(surround_idx)); % Look at the high frequency data (where the mean is substracted already)
             [~,I] = max(abs(snapshot)); % The peak is the maximum absolute value of this
             out(i,1) = idxToLook(1) + I - 1;
          end
@@ -215,7 +244,7 @@ end
 %% Multichannel requirements
 % Require spike to be on at least 2 channels and no more than half of the
 % channels within 100 ms
-if ~isempty(gdf)
+if ~isempty(gdf) && options.multiChannelRequirements
     gdf =  multi_channel_requirements2(gdf,nchs,fs);
 end
 
