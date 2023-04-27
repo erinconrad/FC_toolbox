@@ -179,7 +179,7 @@ for j = 1:nchs
                 min(round(currIdx+fullSurround(2)),length(hpdata));
             idxToLook = max(1,round(currIdx+idxToPeak(1))):...
                     min(round(currIdx+idxToPeak(2)),length(hpdata));  
-            snapshot = data(idxToLook)-median(data(surround_idx)); % Look at the high frequency data (where the mean is substracted already)
+            snapshot = hpdata(idxToLook)-median(hpdata(surround_idx)); % Look at the high frequency data (where the mean is substracted already)
             [~,I] = max(abs(snapshot)); % The peak is the maximum absolute value of this
             out(i,1) = idxToLook(1) + I - 1;
          end
