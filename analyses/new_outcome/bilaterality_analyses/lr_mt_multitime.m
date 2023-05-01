@@ -1,4 +1,4 @@
-function [T,features] =  lr_mt_multitime(which_sleep_stages)
+function [T,features,way,dur,sample,ss] =  lr_mt_multitime(which_sleep_stages)
 
 %% Parameters
 only_hup = 0;
@@ -109,15 +109,14 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 % Initialize table
 Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats,no_wake,no_sleep,n_wake,n_sleep,n_connected,n_symmetric);
 features = {};
+way = [];
+dur = [];
+sample = [];
+ss = [];
 
 for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
-    if which_sleep_stage == 1
-        sleep_text = 'all';
-    elseif which_sleep_stage == 2
-        sleep_text = 'wake';
-    elseif which_sleep_stage == 3
-        sleep_text = 'sleep';
-    end
+    sleep_text = sprintf('_ss%d',which_sleep_stage);
+    
 
     for which_montage =which_montages % machine = 1,car = 2, bipolar = 3
         
@@ -138,11 +137,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         % Loop over the two ways of doing subsampling
         for iw = 1:2
 
-            if iw == 1
-                way_text = '_rand_';
-            else
-                way_text = '_cont_';
-            end
+            way_text = sprintf('_way%d',iw);
 
             % Loop over durations
             for id = 1:ndurations
@@ -169,6 +164,11 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                     feat_name = [which_thing{1},'_',montage_text,'_',sleep_text,...
                         way_text,dur_text,samp_text];
                     features = [features,feat_name];
+                    way = [way;iw];
+                    dur = [dur;id];
+                    sample = [sample;is];
+                    ss = [ss;which_sleep_stage];
+
                     Ts = addvars(Ts,ai);
                     Ts = splitvars(Ts,'ai','NewVariableNames',feat_name);
                 end
