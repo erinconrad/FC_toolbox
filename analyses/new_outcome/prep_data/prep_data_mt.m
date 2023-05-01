@@ -256,8 +256,19 @@ for p = 1:npts
             % If duration requested exceeds available data, it will just
             % resample the same thing many times. I think this is ok.
             rand_all = randi(length(connected_all),durations(id),samples_per_duration); 
-            rand_sleep = randi(length(connected_sleep),durations(id),samples_per_duration); 
-            rand_wake = randi(length(connected_wake),durations(id),samples_per_duration); 
+
+            if isempty(connected_sleep)
+                rand_sleep = nan(durations(id),samples_per_duration); 
+            else
+                rand_sleep = randi(length(connected_sleep),durations(id),samples_per_duration); 
+            end
+            
+
+            if isempty(connected_wake)
+                rand_wake = nan(durations(id),samples_per_duration); 
+            else
+                rand_wake = randi(length(connected_wake),durations(id),samples_per_duration); 
+            end
             
             for is = 1:samples_per_duration
                 spikes_subsample{p,im,1,1,id,is} = squeeze(nanmean(spike_counts(rand_all(:,is),im,:),1)); % average across the samples in the duration
@@ -268,9 +279,20 @@ for p = 1:npts
             % Method 2: continuous samples. If I request more than I have,
             % it will take what it can.
             rand_all = randi(length(connected_all)-durations(id)+1,1,samples_per_duration);
-            rand_wake = randi(max(length(connected_wake)-durations(id)+1,1),1,samples_per_duration);
-            rand_sleep = randi(max(length(connected_sleep)-durations(id)+1,1),1,samples_per_duration);
+            if isempty(connected_wake)
+                rand_wake = nan(1,samples_per_duration);
+            else
+                rand_wake = randi(max(length(connected_wake)-durations(id)+1,1),1,samples_per_duration);
+            end
 
+            if isempty(connected_sleep)
+                rand_sleep = nan(1,samples_per_duration);
+            else
+                rand_sleep = randi(max(length(connected_sleep)-durations(id)+1,1),1,samples_per_duration);
+
+            end
+
+            
             amount_to_add = repmat((1:durations(id))',1,samples_per_duration); % get a continuous length
 
             actual_times_all = rand_all+amount_to_add;
