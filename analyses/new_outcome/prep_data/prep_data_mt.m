@@ -306,18 +306,30 @@ for p = 1:npts
             actual_times_all = rand_all+amount_to_add;
             actual_times_all = max(actual_times_all,1);
             actual_times_all = min(actual_times_all,length(connected_all));
-
-            actual_times_wake = rand_wake+amount_to_add;
-            actual_times_wake = max(actual_times_wake,1);
-            actual_times_wake = min(actual_times_wake,length(connected_wake));
-
-            actual_times_sleep = rand_sleep+amount_to_add;
-            actual_times_sleep = max(actual_times_sleep,1);
-            actual_times_sleep = min(actual_times_sleep,length(connected_sleep));
-
             rand_all_added = connected_all(actual_times_all); % get the ordered connected periods
-            rand_wake_added = connected_wake(actual_times_wake);
-            rand_sleep_added = connected_sleep(actual_times_sleep);
+
+            if ~isempty(rand_wake)
+                actual_times_wake = rand_wake+amount_to_add;
+                actual_times_wake = max(actual_times_wake,1);
+                actual_times_wake = min(actual_times_wake,length(connected_wake));
+                rand_wake_added = connected_wake(actual_times_wake);
+            else
+                rand_wake_added = [];
+            end
+
+            if ~isempty(rand_sleep)
+
+                actual_times_sleep = rand_sleep+amount_to_add;
+                actual_times_sleep = max(actual_times_sleep,1);
+                actual_times_sleep = min(actual_times_sleep,length(connected_sleep));
+                rand_sleep_added = connected_sleep(actual_times_sleep);
+            else
+                rand_sleep_added = [];
+            end
+
+            
+            
+            
 
             for is = 1:samples_per_duration
                 spikes_subsample{p,im,1,2,id,is} = squeeze(nanmean(spike_counts(rand_all_added(:,is),im,:),1));
