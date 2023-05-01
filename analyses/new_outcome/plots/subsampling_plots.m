@@ -48,7 +48,6 @@ for iw = 1:nways
         way_text = 'continuous';
     end
 
-    nexttile
 
     % Loop over nss
     for iss = 1:nss
@@ -114,11 +113,11 @@ for iw = 1:nways
         hold on
         er = errorbar(1:ndurs,median_r,L_r,U_r,'o','color',[0.8500, 0.3250, 0.0980]);
 
-        legend([el,er],{'Left vs right/bilateral','Right vs left/bilateral'})
+        legend([el,er],{'Left vs right/bilateral','Right vs left/bilateral'},'location','southeast')
         xticks(1:ndurs)
         xticklabels({'1 min','2 mins','5 mins','10 mins','20 mins'})
         ylabel('Median (IQR) AUC')
-        title(sprintf('Classification accuracy for shorter durations (%s sampling, %s)',way_text,ss_text))
+        title(sprintf('Model accuracy by duration\n(%s sampling, %s)',way_text,ss_text))
         set(gca,'fontsize',15)
 
     end
