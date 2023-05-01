@@ -258,35 +258,43 @@ for p = 1:npts
             rand_all = randi(length(connected_all),durations(id),samples_per_duration); 
 
             if isempty(connected_sleep)
-                rand_sleep = nan(durations(id),samples_per_duration); 
+                rand_sleep = []; 
             else
                 rand_sleep = randi(length(connected_sleep),durations(id),samples_per_duration); 
             end
             
 
             if isempty(connected_wake)
-                rand_wake = nan(durations(id),samples_per_duration); 
+                rand_wake = []; 
             else
                 rand_wake = randi(length(connected_wake),durations(id),samples_per_duration); 
             end
             
             for is = 1:samples_per_duration
+                
+                
                 spikes_subsample{p,im,1,1,id,is} = squeeze(nanmean(spike_counts(rand_all(:,is),im,:),1)); % average across the samples in the duration
-                spikes_subsample{p,im,2,1,id,is} = squeeze(nanmean(spike_counts(rand_wake(:,is),im,:),1));
-                spikes_subsample{p,im,3,1,id,is} = squeeze(nanmean(spike_counts(rand_sleep(:,is),im,:),1));
+                
+                if ~isempty(rand_wake)
+                    spikes_subsample{p,im,2,1,id,is} = squeeze(nanmean(spike_counts(rand_wake(:,is),im,:),1));
+                end
+
+                if ~isempty(rand_sleep)
+                    spikes_subsample{p,im,3,1,id,is} = squeeze(nanmean(spike_counts(rand_sleep(:,is),im,:),1));
+                end
             end
 
             % Method 2: continuous samples. If I request more than I have,
             % it will take what it can.
             rand_all = randi(length(connected_all)-durations(id)+1,1,samples_per_duration);
             if isempty(connected_wake)
-                rand_wake = nan(1,samples_per_duration);
+                rand_wake = [];
             else
                 rand_wake = randi(max(length(connected_wake)-durations(id)+1,1),1,samples_per_duration);
             end
 
             if isempty(connected_sleep)
-                rand_sleep = nan(1,samples_per_duration);
+                rand_sleep = [];
             else
                 rand_sleep = randi(max(length(connected_sleep)-durations(id)+1,1),1,samples_per_duration);
 
@@ -313,8 +321,14 @@ for p = 1:npts
 
             for is = 1:samples_per_duration
                 spikes_subsample{p,im,1,2,id,is} = squeeze(nanmean(spike_counts(rand_all_added(:,is),im,:),1));
-                spikes_subsample{p,im,2,2,id,is} = squeeze(nanmean(spike_counts(rand_wake_added(:,is),im,:),1));
-                spikes_subsample{p,im,3,2,id,is} = squeeze(nanmean(spike_counts(rand_sleep_added(:,is),im,:),1));
+
+                if ~isempty(rand_wake_added)
+                    spikes_subsample{p,im,2,2,id,is} = squeeze(nanmean(spike_counts(rand_wake_added(:,is),im,:),1));
+                end
+
+                if ~isempty(rand_sleep_added)
+                    spikes_subsample{p,im,3,2,id,is} = squeeze(nanmean(spike_counts(rand_sleep_added(:,is),im,:),1));
+                end
             end
 
         end
