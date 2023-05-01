@@ -1,0 +1,192 @@
+function [T,features] =  lr_mt_multitime(which_sleep_stages)
+
+%% Parameters
+only_hup = 0;
+which_montages = [1 2 3];
+do_little_plots = 0;
+
+%% Get file locs
+locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+inter_folder = [results_folder,'analysis/new_outcome/data/'];
+plot_folder = [results_folder,'analysis/new_outcome/plots/'];
+subplot_path = [plot_folder,'ai_subplots/'];
+if ~exist(subplot_path,'dir')
+    mkdir(subplot_path)
+end
+
+% add script folder to path
+scripts_folder = locations.script_folder;
+addpath(genpath(scripts_folder));
+
+
+%% Load data file
+mt_data = load([inter_folder,'mt_out.mat']);
+mt_data = mt_data.out;
+all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
+names = mt_data.all_names;
+npts = length(names);
+surgery = mt_data.all_surgery;
+resection_lat = mt_data.all_resec_lat;
+resection_loc = mt_data.all_resec_loc;
+ablation_lat = mt_data.all_ablate_lat;
+ablation_loc = mt_data.all_ablate_loc;
+engel_yr1 = mt_data.all_engel(:,1);
+engel_yr2 = mt_data.all_engel(:,2);
+ilae_yr1 = mt_data.all_ilae(:,1);
+ilae_yr2 = mt_data.all_ilae(:,2);
+soz_lats = mt_data.all_soz_lat;
+soz_locs = mt_data.all_soz_loc;
+disconnected = mt_data.all_disconnected;
+all_n_wake_sleep_connected = mt_data.all_n_wake_sleep_connected;
+atropos = mt_data.all_atropos;
+dkt = mt_data.all_dkt;
+all_spikes = mt_data.spikes_subsample;
+
+% Find and exclude patients for whom bulk of record is disconnected
+most_disconnected = sum(disconnected == 1,2) >= 0.9* size(disconnected,2);
+
+% Identify patients for whom there is little wake or sleep connected
+no_wake = all_n_wake_sleep_connected(:,1) < 5;
+no_sleep = all_n_wake_sleep_connected(:,2) < 5;
+n_wake = all_n_wake_sleep_connected(:,1);
+n_sleep = all_n_wake_sleep_connected(:,2);
+n_connected = sum(disconnected == 0,2);
+
+% get number of symmetric labels
+ref_labels = mt_data.all_labels(:,1);
+n_symmetric = cellfun(@length,ref_labels);
+
+
+%% Clean SOZ localizations and lateralities
+soz_lats(cellfun(@isempty,soz_lats)) = {''};
+soz_locs(cellfun(@isempty,soz_locs)) = {''};
+soz_lats(strcmp(soz_lats,'diffuse')) = {'bilateral'}; % make diffuse be the same as bilateral
+soz_locs(contains(soz_locs,'temporal')) = {'temporal'}; % make any temporal be temporal
+
+%% Consensus ablation or resection lat
+surg_lat = cell(npts,1);
+for i = 1:npts
+    if isempty(resection_lat{i}) && isempty(ablation_lat{i})
+    elseif strcmp(resection_lat{i},'na') && strcmp(ablation_lat{i},'na')
+    elseif strcmp(resection_lat{i},'na')
+        surg_lat{i} = ablation_lat{i};
+    elseif strcmp(ablation_lat{i},'na')
+        surg_lat{i} = resection_lat{i};
+    else
+        if ~strcmp(resection_lat{i},ablation_lat{i})
+            error('what');
+        end
+        surg_lat{i} = resection_lat{i};
+    end
+
+end
+
+%% Consensus ablation or reseciton loc
+surg_loc = cell(npts,1);
+for i = 1:npts
+    if isempty(resection_loc{i}) && isempty(ablation_loc{i})
+    elseif strcmp(resection_loc{i},'na') && strcmp(ablation_loc{i},'NA')
+    elseif strcmp(resection_loc{i},'ATL')
+        surg_loc{i} = 'temporal';
+    elseif contains(ablation_loc{i},'temporal')
+        surg_loc{i} = 'temporal';
+    else
+        surg_loc{i} = 'other';
+    end
+end
+
+
+%% Parse surgery
+surgery(cellfun(@isempty,surgery)) = {''};
+resection_or_ablation = cellfun(@(x) ...
+    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
+    surgery);
+outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
+
+
+%% Get features
+% Initialize table
+Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats,no_wake,no_sleep,n_wake,n_sleep,n_connected,n_symmetric);
+features = {};
+
+for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
+    if which_sleep_stage == 1
+        sleep_text = 'all';
+    elseif which_sleep_stage == 2
+        sleep_text = 'wake';
+    elseif which_sleep_stage == 3
+        sleep_text = 'sleep';
+    end
+
+    for which_montage =which_montages % machine = 1,car = 2, bipolar = 3
+        
+        if which_montage == 1
+            montage_text = 'machine';
+        elseif which_montage == 2
+            montage_text = 'car';
+        elseif which_montage == 3
+            montage_text = 'bipolar';
+        end
+        labels = mt_data.all_labels(:,which_montage);
+        
+       
+        spikes = all_spikes(:,which_montage,which_sleep_stage,:,:,:);
+        ndurations = size(spikes,5);
+        nsamples = size(spikes,6);
+
+        % Loop over the two ways of doing subsampling
+        for iw = 1:2
+
+            if iw == 1
+                way_text = '_rand_';
+            else
+                way_text = '_cont_';
+            end
+
+            % Loop over durations
+            for id = 1:ndurations
+
+                dur_text = sprintf('_dur%d',id);
+                
+                % Loop over subsamplings
+                for is = 1:nsamples
+
+                    samp_text = sprintf('_samp%d',is);
+                    
+                    % Get specific spikes
+                    thing = squeeze(spikes(:,1,1,iw,id,is));
+                    which_thing = {'spikes'};
+                    uni = 1;
+                    last_dim = 1;
+
+                    % Get AI
+                    ai = cell2mat(cellfun(@(x,y,z,w,a,d) ...
+                    calc_ai_ns(x,y,z,w,a,d,uni,last_dim,which_thing,subplot_path,do_little_plots),...
+                    labels,thing,names,mt_data.all_labels(:,1),atropos,dkt,'uniformoutput',false));
+
+                    % Fill up table
+                    feat_name = [which_thing{1},'_',montage_text,'_',sleep_text,...
+                        way_text,dur_text,samp_text];
+                    features = [features,feat_name];
+                    Ts = addvars(Ts,ai);
+                    Ts = splitvars(Ts,'ai','NewVariableNames',feat_name);
+                end
+
+            end
+
+        end
+              
+  
+    end
+
+end
+
+
+%% Prep  output table
+% First, remove those rows missing all columns
+T = Ts(~all_missing & ~most_disconnected,:);
+
+
+
+end

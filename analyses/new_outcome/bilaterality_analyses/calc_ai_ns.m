@@ -9,7 +9,7 @@ finds the mesial temporal ones, and calculates a single asymmetry index
 
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
-average_level = 'electrode'; % side = whole L vs R side; electrode = single electrode; contact = single contact
+average_level = 'contact'; % side = whole L vs R side; electrode = single electrode; contact = single contact
 
 
 %% Misc
