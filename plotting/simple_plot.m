@@ -91,7 +91,7 @@ end
 xlabel('Time (seconds)')
 set(gca,'fontsize',20)
 
-if 0
+if 1
 for s = 1:size(gdf,1)
     %index = spikes(s,1);
     index = gdf(s,2);

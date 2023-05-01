@@ -113,7 +113,7 @@ end
 %% Calculate network
 
 % Loop over montages
-for im = 1
+for im = 1:2
    
     
     if im == 1

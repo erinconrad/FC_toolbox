@@ -1,5 +1,9 @@
 function prep_data_mt
 
+%% Parameters
+durations = [1 2 5 10 20];
+samples_per_duration = 10;
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -75,6 +79,9 @@ all_disconnected = nan(npts,72);
 all_n_wake_sleep_connected = nan(npts,2);
 all_atropos = cell(npts,1);
 all_dkt = cell(npts,1);
+
+% Initialize subsampling stuff
+spikes_subsample = cell(npts,3,3,2,length(durations),samples_per_duration);
 
 
 %% Loop over patients
@@ -237,6 +244,78 @@ for p = 1:npts
         all_ll{p,im,2} = squeeze(nanmean(ll(wake&~low_amplitude,im,:,:),1));
         all_ll{p,im,3} = squeeze(nanmean(ll(sleep&~low_amplitude,im,:,:),1));
 
+        %% Do spike subsampling analysis
+        connected_all = (find(~low_amplitude))';
+        connected_sleep = (find(~low_amplitude & sleep))';
+        connected_wake = (find(~low_amplitude & wake))';
+
+        % Loop over durations
+        for id = 1:length(durations)
+
+            % Method 1: random independent samples (with replacement)
+            % If duration requested exceeds available data, it will just
+            % resample the same thing many times. I think this is ok.
+            rand_all = randi(length(connected_all),durations(id),samples_per_duration); 
+            rand_sleep = randi(length(connected_sleep),durations(id),samples_per_duration); 
+            rand_wake = randi(length(connected_wake),durations(id),samples_per_duration); 
+            
+            for is = 1:samples_per_duration
+                spikes_subsample{p,im,1,1,id,is} = squeeze(nanmean(spike_counts(rand_all(:,is),im,:),1)); % average across the samples in the duration
+                spikes_subsample{p,im,2,1,id,is} = squeeze(nanmean(spike_counts(rand_wake(:,is),im,:),1));
+                spikes_subsample{p,im,3,1,id,is} = squeeze(nanmean(spike_counts(rand_sleep(:,is),im,:),1));
+            end
+
+            % Method 2: continuous samples. If I request more than I have,
+            % it will take what it can.
+            rand_all = randi(length(connected_all)-durations(id)+1,1,samples_per_duration);
+            rand_wake = randi(max(length(connected_wake)-durations(id)+1,1),1,samples_per_duration);
+            rand_sleep = randi(max(length(connected_sleep)-durations(id)+1,1),1,samples_per_duration);
+
+            amount_to_add = repmat((1:durations(id))',1,samples_per_duration); % get a continuous length
+
+            actual_times_all = rand_all+amount_to_add;
+            actual_times_all = max(actual_times_all,1);
+            actual_times_all = min(actual_times_all,length(connected_all));
+
+            actual_times_wake = rand_wake+amount_to_add;
+            actual_times_wake = max(actual_times_wake,1);
+            actual_times_wake = min(actual_times_wake,length(connected_wake));
+
+            actual_times_sleep = rand_sleep+amount_to_add;
+            actual_times_sleep = max(actual_times_sleep,1);
+            actual_times_sleep = min(actual_times_sleep,length(connected_sleep));
+
+            rand_all_added = connected_all(actual_times_all); % get the ordered connected periods
+            rand_wake_added = connected_wake(actual_times_wake);
+            rand_sleep_added = connected_sleep(actual_times_sleep);
+
+            for is = 1:samples_per_duration
+                spikes_subsample{p,im,1,2,id,is} = squeeze(nanmean(spike_counts(rand_all_added(:,is),im,:),1));
+                spikes_subsample{p,im,2,2,id,is} = squeeze(nanmean(spike_counts(rand_wake_added(:,is),im,:),1));
+                spikes_subsample{p,im,3,2,id,is} = squeeze(nanmean(spike_counts(rand_sleep_added(:,is),im,:),1));
+            end
+
+        end
+
+        if 0
+            % test the subsampling
+            figure
+            tiledlayout(1,2)
+            for is = 1:2
+                nexttile
+                a = squeeze(spikes_subsample(p,im,1,is,:,:));
+                for id = 1:length(durations)
+                    b = cell2mat(a(id,:));
+                    rho = corr(b,'rows','pairwise');
+                    drho = logical(eye(size(rho)));
+                    rho(drho) = nan;
+                    median_rho = nanmedian(rho,'all');
+                    plot(id,median_rho,'o','markersize',10)
+                    hold on
+                end
+            end
+        end
+
         %% Also measure STD
 
         all_coh_iqr{p,im,1} = squeeze(nanstd(coh(~low_amplitude,im,:,:,:),[],1));
@@ -288,6 +367,8 @@ for p = 1:npts
         all_ll_iqr{p,im,3} = squeeze(nanstd(ll(sleep&~low_amplitude,im,:,:),[],1));
     end
 
+    
+
 end
 
 %% Save
@@ -333,6 +414,7 @@ out.all_dkt = all_dkt;
 
 out.all_n_wake_sleep = all_n_wake_sleep;
 out.all_n_wake_sleep_connected = all_n_wake_sleep_connected;
+out.spikes_subsample = spikes_subsample;
 
 save([out_folder,'mt_out.mat'],'out')
 
