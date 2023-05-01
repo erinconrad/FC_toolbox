@@ -286,7 +286,7 @@ for p = 1:npts
 
             % Method 2: continuous samples. If I request more than I have,
             % it will take what it can.
-            rand_all = randi(length(connected_all)-durations(id)+1,1,samples_per_duration);
+            rand_all = randi(max(1,length(connected_all)-durations(id)+1),1,samples_per_duration);
             if isempty(connected_wake)
                 rand_wake = [];
             else
