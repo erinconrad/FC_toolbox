@@ -13,7 +13,7 @@ average_level = 'contact'; % side = whole L vs R side; electrode = single electr
 
 % this should only happen in the subsampling analysis
 if isempty(thing)
-    signed = nan;
+    signed = nan(1,last_dim);
     return
 end
 

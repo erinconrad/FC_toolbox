@@ -316,9 +316,10 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             %}
             
     
-            ai = cell2mat(cellfun(@(x,y,z,w,a,d) ...
+            ai_cell = (cellfun(@(x,y,z,w,a,d) ...
                 calc_ai_ns(x,y,z,w,a,d,uni,last_dim,which_thing,subplot_path,do_little_plots),...
                 labels,thing,names,mt_data.all_labels(:,1),atropos,dkt,'uniformoutput',false));
+            ai = cell2mat(ai_cell);
         
             
             %% AI table
