@@ -11,6 +11,11 @@ which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
 average_level = 'contact'; % side = whole L vs R side; electrode = single electrode; contact = single contact
 
+% this should only happen in the subsampling analysis
+if isempty(thing)
+    signed = nan;
+    return
+end
 
 %% Misc
 % replace '-' with '--'
