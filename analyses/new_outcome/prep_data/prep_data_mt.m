@@ -256,11 +256,13 @@ for p = 1:npts
             % If duration requested exceeds available data, it will just
             % resample the same thing many times. I think this is ok.
             rand_all = randi(length(connected_all),durations(id),samples_per_duration); 
+            rand_all = connected_all(rand_all);
 
             if isempty(connected_sleep)
                 rand_sleep = []; 
             else
                 rand_sleep = randi(length(connected_sleep),durations(id),samples_per_duration); 
+                rand_sleep = connected_sleep(rand_sleep);
             end
             
 
@@ -268,6 +270,7 @@ for p = 1:npts
                 rand_wake = []; 
             else
                 rand_wake = randi(length(connected_wake),durations(id),samples_per_duration); 
+                rand_wake = connected_wake(rand_wake);
             end
             
             for is = 1:samples_per_duration
