@@ -87,6 +87,9 @@ perc_sleep = n_sleep./n_connected;
 female = nan(npts,1);
 age_onset = nan(npts,1);
 age_implant = nan(npts,1);
+has_dkt = zeros(npts,1);
+has_atropos = zeros(npts,1);
+
 
 % loop over patients
 for ip = 1:length(pt)
@@ -112,6 +115,18 @@ for ip = 1:length(pt)
 
     age_onset(r) = pt(ip).clinical.age_onset;
     age_implant(r) = pt(ip).clinical.age_implant;
+
+    if isfield(pt(ip),'atropos')
+        if ~isempty(pt(ip).atropos)
+            has_atropos(r) = 1;
+        end
+    end
+
+    if isfield(pt(ip),'dkt')
+        if ~isempty(pt(ip).dkt)
+            has_dkt(r) = 1;
+        end
+    end
 
 end
 
@@ -259,5 +274,9 @@ if 0
     unpaired_plot(duration(left),duration(right),{'left','right'},'duration')
     % looks like no difference
 end
+
+%% Make another table with missing atlas data
+mT = table(name,has_atopos,has_dkt);
+writetable(mT,[plot_folder,'missingAtlasTable.csv']);
 
 end
