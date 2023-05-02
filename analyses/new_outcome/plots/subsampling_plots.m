@@ -17,7 +17,7 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Run the lr_mt to extract features
-[T,features,way,dur,sample,ss] =  lr_mt_multitime([1 3]);
+[T,features,way,dur,sample,ss] =  lr_mt_multitime([2 3]);
 empty_class = cellfun(@isempty,T.soz_lats);
 T(empty_class,:) = [];
 
@@ -37,7 +37,7 @@ nss = length(all_ss);
 
 %% Prep figure
 figure
-tiledlayout(2,2)
+tiledlayout(2,2,'TileSpacing','tight','Padding','tight')
 
 % Loop over rand and continuous
 for iw = 1:nways
@@ -112,6 +112,7 @@ for iw = 1:nways
         el = errorbar(1:ndurs,median_l,L_l,U_l,'o','color',[0, 0.4470, 0.7410]);
         hold on
         er = errorbar(1:ndurs,median_r,L_r,U_r,'o','color',[0.8500, 0.3250, 0.0980]);
+        ylim([0 1])
 
         legend([el,er],{'Left vs right/bilateral','Right vs left/bilateral'},'location','southeast')
         xticks(1:ndurs)
@@ -125,5 +126,6 @@ for iw = 1:nways
 end
 
 print(gcf,[plot_folder,'subsample'],'-dpng')
+savefig(gcf,[plot_folder,'subsample','.fig'])
 
 end
