@@ -89,6 +89,7 @@ age_onset = nan(npts,1);
 age_implant = nan(npts,1);
 has_dkt = zeros(npts,1);
 has_atropos = zeros(npts,1);
+rid = nan(npts,1);
 
 
 % loop over patients
@@ -126,6 +127,10 @@ for ip = 1:length(pt)
         if ~isempty(pt(ip).dkt)
             has_dkt(r) = 1;
         end
+    end
+
+    if ~isempty(pt(ip).rid)
+        rid(r) = pt(ip).rid;
     end
 
 end
@@ -276,7 +281,7 @@ if 0
 end
 
 %% Make another table with missing atlas data
-mT = table(name,has_atopos,has_dkt);
+mT = table(rid,name,has_atropos,has_dkt);
 writetable(mT,[plot_folder,'missingAtlasTable.csv']);
 
 end
