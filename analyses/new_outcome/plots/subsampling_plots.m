@@ -67,7 +67,7 @@ for iw = 1
         
         % Loop over ndurs -  these will be different error bar points
         for id = 1:ndurs
-            fprintf('\nDoing way %d, ss %d, dur %d',iw,iss,id);
+            fprintf('\nDoing way %d, ss %d, dur %d...',iw,iss,id);
             curr_dur = all_durs(id);
             
             
@@ -95,6 +95,7 @@ for iw = 1
                 all_auc_r(id,is) = AUCR;
 
             end
+            fprintf('median left AUC is %1.2f\n',nanmedian(all_auc_l(id,:)))
 
         end
 
