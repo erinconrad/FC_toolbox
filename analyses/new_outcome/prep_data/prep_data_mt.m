@@ -468,6 +468,7 @@ out.all_dkt = all_dkt;
 out.all_n_wake_sleep = all_n_wake_sleep;
 out.all_n_wake_sleep_connected = all_n_wake_sleep_connected;
 out.spikes_subsample = spikes_subsample;
+out.durations = durations;
 
 save([out_folder,'mt_out.mat'],'out')
 

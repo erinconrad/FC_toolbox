@@ -39,6 +39,9 @@ nss = length(all_ss);
 figure
 tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
 
+% Plan to save all data
+all_data = nan(nss,2,ndurs,nsamples) % left, right;
+
 % Loop over rand and continuous
 for iw = 1
     curr_way = all_ways(iw);
@@ -121,11 +124,16 @@ for iw = 1
         title(sprintf('Model accuracy by duration\n(%s sampling, %s)',way_text,ss_text))
         set(gca,'fontsize',15)
 
+        % save data
+        all_data(iss,1,:,:) = all_auc_l;
+        all_data(iss,2,:,:) = all_auc_r;
+
     end
 
 end
 
 print(gcf,[plot_folder,'subsample'],'-dpng')
 savefig(gcf,[plot_folder,'subsample','.fig'])
+save([plot_folder,'subsample.mat'],'all_data');
 
 end
