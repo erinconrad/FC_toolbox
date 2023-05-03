@@ -147,7 +147,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
                 % Loop over subsamplings
                 for is = 1:nsamples
 
-                    samp_text = sprintf('_samp%d',is);
+                    samp_text = sprintf('_samp%d_',is);
                     
                     % Get specific spikes
                     thing = squeeze(spikes(:,1,1,iw,id,is));
