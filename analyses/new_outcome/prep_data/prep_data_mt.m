@@ -1,8 +1,8 @@
 function prep_data_mt
 
 %% Parameters
-durations = [1 2 5 10 20];
-samples_per_duration = 10;
+durations = [1 5 10 20 30];
+samples_per_duration = 20;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -289,60 +289,62 @@ for p = 1:npts
 
             % Method 2: continuous samples. If I request more than I have,
             % it will take what it can.
-            rand_all = randi(max(1,length(connected_all)-durations(id)+1),1,samples_per_duration);
-            if isempty(connected_wake)
-                rand_wake = [];
-            else
-                rand_wake = randi(max(length(connected_wake)-durations(id)+1,1),1,samples_per_duration);
-            end
-
-            if isempty(connected_sleep)
-                rand_sleep = [];
-            else
-                rand_sleep = randi(max(length(connected_sleep)-durations(id)+1,1),1,samples_per_duration);
-
-            end
-
-            
-            amount_to_add = repmat((1:durations(id))',1,samples_per_duration); % get a continuous length
-
-            actual_times_all = rand_all+amount_to_add;
-            actual_times_all = max(actual_times_all,1);
-            actual_times_all = min(actual_times_all,length(connected_all));
-            rand_all_added = connected_all(actual_times_all); % get the ordered connected periods
-
-            if ~isempty(rand_wake)
-                actual_times_wake = rand_wake+amount_to_add;
-                actual_times_wake = max(actual_times_wake,1);
-                actual_times_wake = min(actual_times_wake,length(connected_wake));
-                rand_wake_added = connected_wake(actual_times_wake);
-            else
-                rand_wake_added = [];
-            end
-
-            if ~isempty(rand_sleep)
-
-                actual_times_sleep = rand_sleep+amount_to_add;
-                actual_times_sleep = max(actual_times_sleep,1);
-                actual_times_sleep = min(actual_times_sleep,length(connected_sleep));
-                rand_sleep_added = connected_sleep(actual_times_sleep);
-            else
-                rand_sleep_added = [];
-            end
-
-            
-            
-            
-
-            for is = 1:samples_per_duration
-                spikes_subsample{p,im,1,2,id,is} = squeeze(nanmean(spike_counts(rand_all_added(:,is),im,:),1));
-
-                if ~isempty(rand_wake_added)
-                    spikes_subsample{p,im,2,2,id,is} = squeeze(nanmean(spike_counts(rand_wake_added(:,is),im,:),1));
+            if 0
+                rand_all = randi(max(1,length(connected_all)-durations(id)+1),1,samples_per_duration);
+                if isempty(connected_wake)
+                    rand_wake = [];
+                else
+                    rand_wake = randi(max(length(connected_wake)-durations(id)+1,1),1,samples_per_duration);
                 end
-
-                if ~isempty(rand_sleep_added)
-                    spikes_subsample{p,im,3,2,id,is} = squeeze(nanmean(spike_counts(rand_sleep_added(:,is),im,:),1));
+    
+                if isempty(connected_sleep)
+                    rand_sleep = [];
+                else
+                    rand_sleep = randi(max(length(connected_sleep)-durations(id)+1,1),1,samples_per_duration);
+    
+                end
+    
+                
+                amount_to_add = repmat((1:durations(id))',1,samples_per_duration); % get a continuous length
+    
+                actual_times_all = rand_all+amount_to_add;
+                actual_times_all = max(actual_times_all,1);
+                actual_times_all = min(actual_times_all,length(connected_all));
+                rand_all_added = connected_all(actual_times_all); % get the ordered connected periods
+    
+                if ~isempty(rand_wake)
+                    actual_times_wake = rand_wake+amount_to_add;
+                    actual_times_wake = max(actual_times_wake,1);
+                    actual_times_wake = min(actual_times_wake,length(connected_wake));
+                    rand_wake_added = connected_wake(actual_times_wake);
+                else
+                    rand_wake_added = [];
+                end
+    
+                if ~isempty(rand_sleep)
+    
+                    actual_times_sleep = rand_sleep+amount_to_add;
+                    actual_times_sleep = max(actual_times_sleep,1);
+                    actual_times_sleep = min(actual_times_sleep,length(connected_sleep));
+                    rand_sleep_added = connected_sleep(actual_times_sleep);
+                else
+                    rand_sleep_added = [];
+                end
+    
+                
+                
+                
+    
+                for is = 1:samples_per_duration
+                    spikes_subsample{p,im,1,2,id,is} = squeeze(nanmean(spike_counts(rand_all_added(:,is),im,:),1));
+    
+                    if ~isempty(rand_wake_added)
+                        spikes_subsample{p,im,2,2,id,is} = squeeze(nanmean(spike_counts(rand_wake_added(:,is),im,:),1));
+                    end
+    
+                    if ~isempty(rand_sleep_added)
+                        spikes_subsample{p,im,3,2,id,is} = squeeze(nanmean(spike_counts(rand_sleep_added(:,is),im,:),1));
+                    end
                 end
             end
 

@@ -33,7 +33,9 @@ if isempty(desired_threshold)
     %}
 end
 
-true_labels = arrayfun(@num2str,true_labels,'uniformoutput',false);
+if isnumeric(true_labels)
+    true_labels = arrayfun(@num2str,true_labels,'uniformoutput',false);
+end
 
 pred_labels = cell(length(true_labels),1);
 pred_labels(scores > desired_threshold) = {'1'};
