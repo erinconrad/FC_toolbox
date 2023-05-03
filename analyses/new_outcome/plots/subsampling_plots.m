@@ -37,10 +37,10 @@ nss = length(all_ss);
 
 %% Prep figure
 figure
-tiledlayout(2,2,'TileSpacing','tight','Padding','tight')
+tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
 
 % Loop over rand and continuous
-for iw = 1:nways
+for iw = 1
     curr_way = all_ways(iw);
     if curr_way == 1
         way_text = 'random';
@@ -53,9 +53,9 @@ for iw = 1:nways
     for iss = 1:nss
         nexttile
         curr_ss = all_ss(iss);
-        if curr_ss == 1
+        if curr_ss == 2
             ss_text = 'wake';
-        else
+        elseif curr_ss == 3
             ss_text = 'sleep';
         end
 
