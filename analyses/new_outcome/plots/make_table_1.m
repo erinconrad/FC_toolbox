@@ -1,7 +1,7 @@
 function make_table_1
 
 %% Parameters
-rm_non_temporal = 1;
+rm_non_temporal = 0;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -30,12 +30,13 @@ soz_loc = T.soz_locs;
 tle = contains(soz_loc,'temporal');
 etle = ~tle;
 
-% Remove from T (all subsequent things map to the patients in T)
-T(etle,:) = [];
-tle(etle,:) = [];
-etle(etle,:) = [];
+if rm_non_temporal
+    % Remove from T (all subsequent things map to the patients in T)
+    T(etle,:) = [];
+    tle(etle,:) = [];
+    etle(etle,:) = [];
 
-
+end
 
 %% Grab demographic variables from table
 % Get the patient names
@@ -283,5 +284,26 @@ end
 %% Make another table with missing atlas data
 mT = table(rid,name,has_atropos,has_dkt);
 writetable(mT,[plot_folder,'missingAtlasTable.csv']);
+
+%% Prelim data for R01 aims
+a = cellfun(@(x) regexp(x,'\d*','Match'),name);
+b = cellfun(@(x) str2num(x), a);
+N = sum(contains(name,'HUP')& ((b>=159 & b<=199) | (b == 140 | b ==143))); % 2018-2019
+Nbilat = sum((contains(name,'HUP')& ((b>=159 & b<=199) | (b == 140 | b ==143))) & bilateral == 1);
+%{
+Looks like we started doing mostly stereo with HUP127, November 2016. Going
+5 years out, this would take us up to Nov 2021, or HUP226. There are 57
+between hUP127 and HUP224, which is as far as I processed. HUP225 did not
+have bilateral MT, but HUP226 did. So 58 over 5 years. 11.6/year. 23 in 2
+years. However, 37% of these were bilateral. So only 14.5 unilateral in 2
+years.......
+
+Ok what if I only look at 2018 and 2019 (two normal years, assuming 2020,
+and 2021 screwed up due to COVID). HUP159-199 + 2 stragglers (HUP140 and
+143). Then I get 29 bilateral MT  implants, 9 of whom had bilateral SOZ 
+(31%). So then I can estimate 20 unilateral patients with bilateral MT implants,
+ which gets 90% power.
+%}
+
 
 end

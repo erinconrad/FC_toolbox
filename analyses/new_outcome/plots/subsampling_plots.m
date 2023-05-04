@@ -40,7 +40,7 @@ figure
 tiledlayout(1,2,'TileSpacing','tight','Padding','tight')
 
 % Plan to save all data
-all_data = nan(nss,2,ndurs,nsamples) % left, right;
+all_data = nan(nss,2,ndurs,nsamples); % left, right;
 
 % Loop over rand and continuous
 for iw = 1
