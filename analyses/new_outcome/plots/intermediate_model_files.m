@@ -68,8 +68,8 @@ rights.AUCR = AUCR;
 
 %% ROC for binary spikes
 just_spikes = 2; % Binary spikes
-leftd = classifier_wrapper(T,features,pca_spikes_perc,1,just_spikes,rm_non_temporal,[]);
-rightd = classifier_wrapper(T,features,pca_spikes_perc,2,just_spikes,rm_non_temporal,[]);
+leftd = classifier_wrapper(T,features,pca_perc,1,just_spikes,rm_non_temporal,[]);
+rightd = classifier_wrapper(T,features,pca_perc,2,just_spikes,rm_non_temporal,[]);
 
 % Get ROC stats
 [XL,YL,~,AUCL] = perfcurve(leftd.class,leftd.scores,leftd.pos_class);
@@ -87,7 +87,7 @@ fprintf('done, took %1.1f seconds',toc);
 fprintf('\nStarting subsampling analysis.\n')
 tic
 % Run the lr_mt to extract features
-[T,features,way,dur,sample,ss] =  lr_mt_multitime([2 3]); 
+[T,features,way,dur,sample,ss,durations] =  lr_mt_multitime([2 3]); 
 empty_class = cellfun(@isempty,T.soz_lats);
 T(empty_class,:) = [];
 
@@ -106,20 +106,15 @@ all_data = nan(nss,2,ndurs,nsamples);
 
 % Loop over nss
 for iss = 1:nss
-    nexttile
+    
     curr_ss = all_ss(iss);
-    if curr_ss == 2
-        ss_text = 'wake';
-    elseif curr_ss == 3
-        ss_text = 'sleep';
-    end
 
     all_auc_l = nan(ndurs,nsamples);
     all_auc_r = nan(ndurs,nsamples);
     
     % Loop over ndurs -  these will be different error bar points
     for id = 1:ndurs
-        fprintf('\nDoing way %d, ss %d, dur %d...',iw,iss,id);
+        fprintf('\nDoing ss %d, dur %d...',iss,id);
         curr_dur = all_durs(id);
         
         
@@ -128,7 +123,7 @@ for iss = 1:nss
             curr_sample = all_samples(is);
 
             % Get the relevant features
-            relevant_features = contains(features,sprintf('_way%d_',curr_way)) & ...
+            relevant_features = contains(features,'_way1_') & ...
                 contains(features,sprintf('_ss%d_',curr_ss)) & ...
                 contains(features,sprintf('_dur%d_',curr_dur)) & ...
                 contains(features,sprintf('_samp%d_',curr_sample));
@@ -136,12 +131,12 @@ for iss = 1:nss
 
             % run the model
             just_spikes = 1; % Just spikes
-            lefts = classifier_wrapper(T,curr_features,pca_spikes_perc,1,just_spikes,rm_non_temporal,[]);
-            rights = classifier_wrapper(T,curr_features,pca_spikes_perc,2,just_spikes,rm_non_temporal,[]);
+            leftss = classifier_wrapper(T,curr_features,pca_perc,1,just_spikes,rm_non_temporal,[]);
+            rightss = classifier_wrapper(T,curr_features,pca_perc,2,just_spikes,rm_non_temporal,[]);
 
             % Get ROC stats
-            [~,~,~,AUCL] = perfcurve(lefts.class,lefts.scores,lefts.pos_class);
-            [~,~,~,AUCR] = perfcurve(rights.class,rights.scores,rights.pos_class);
+            [~,~,~,AUCL] = perfcurve(leftss.class,leftss.scores,leftss.pos_class);
+            [~,~,~,AUCR] = perfcurve(rightss.class,rightss.scores,rightss.pos_class);
 
             all_auc_l(id,is) = AUCL;
             all_auc_r(id,is) = AUCR;
@@ -158,5 +153,17 @@ for iss = 1:nss
 end
 fprintf('\nDone with subsampling analysis, took %1.1f seconds.\n',toc)
 
+
+% Put everything in an out file
+out.full_model.left = left;
+out.full_model.right = right;
+out.spike_model.left = lefts;
+out.spike_model.right = rights;
+out.binary_spike_model.left = leftd;
+out.binary_spike_model.right = rightd;
+out.subsampling.data = all_data;
+out.subsampling.durations = durations;
+
+save([plot_folder,'models.mat'],'out')
 
 end

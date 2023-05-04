@@ -1,4 +1,4 @@
-function [T,features,way,dur,sample,ss] =  lr_mt_multitime(which_sleep_stages)
+function [T,features,way,dur,sample,ss,durations] =  lr_mt_multitime(which_sleep_stages)
 
 %% Parameters
 only_hup = 0;
@@ -42,6 +42,7 @@ all_n_wake_sleep_connected = mt_data.all_n_wake_sleep_connected;
 atropos = mt_data.all_atropos;
 dkt = mt_data.all_dkt;
 all_spikes = mt_data.spikes_subsample;
+durations = mt_data.durations;
 
 % Find and exclude patients for whom bulk of record is disconnected
 most_disconnected = sum(disconnected == 1,2) >= 0.9* size(disconnected,2);
