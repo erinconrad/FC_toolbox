@@ -220,9 +220,9 @@ hold on
 er = errorbar(1:ndurs,median_r,L_r,U_r,'o','color',[0.8500, 0.3250, 0.0980]);
 %}
 
-el = shaded_error_bars_fc(1:ndurs,median_l,[L_l;U_l],[0, 0.4470, 0.7410]);
+el = shaded_error_bars_fc(1:ndurs,median_l,[L_l';U_l'],[0, 0.4470, 0.7410]);
 hold on
-er = shaded_error_bars_fc(1:ndurs,median_r,[L_r;U_r],[0.8500, 0.3250, 0.0980]);
+er = shaded_error_bars_fc(1:ndurs,median_r,[L_r';U_r'],[0.8500, 0.3250, 0.0980]);
 ylim([0.4 1])
 
 legend([el,er],{'Left vs right/bilateral','Right vs left/bilateral'},'location','southeast')
