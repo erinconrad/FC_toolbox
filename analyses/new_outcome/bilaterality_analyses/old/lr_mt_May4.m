@@ -36,6 +36,29 @@ mt_data = mt_data.out;
 T = readtable('Manual validation.xlsx','Sheet','outcome');
 
 %% get variables of interest
+%{
+data = load([inter_folder,'main_out.mat']);
+data = data.out;
+all_outcome = data.outcome; %outcome = all_outcome(:,which_outcome,which_outcome_year);
+surgery = data.all_surgery;
+soz_lats = data.all_soz_lats; 
+soz_locs = data.all_soz_locs; 
+names = data.all_names;
+npts = length(names);
+resection_lat = data.all_resec_lat;
+ablation_lat = data.all_ablate_lat;
+resection_loc = data.all_resec_loc;
+ablation_loc = data.all_ablate_loc;
+good_spikes = data.good_spikes; % I don't end up using this. I just accept all spikes as truth.
+all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
+
+%% All outcomes
+engel_yr1 = all_outcome(:,1,1);
+engel_yr2 = all_outcome(:,1,2);
+ilae_yr1 = all_outcome(:,2,1);
+ilae_yr2 = all_outcome(:,2,2);
+%}
+%
 all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 names = mt_data.all_names;
 npts = length(names);
@@ -54,6 +77,7 @@ disconnected = mt_data.all_disconnected;
 all_n_wake_sleep_connected = mt_data.all_n_wake_sleep_connected;
 atropos = mt_data.all_atropos;
 dkt = mt_data.all_dkt;
+%}
 
 % Find and exclude patients for whom bulk of record is disconnected
 most_disconnected = sum(disconnected == 1,2) >= 0.9* size(disconnected,2);
@@ -69,7 +93,7 @@ n_connected = sum(disconnected == 0,2);
 ref_labels = mt_data.all_labels(:,1);
 n_symmetric = cellfun(@length,ref_labels);
 
-%% Fix the outcomes for the patients I manually corrected
+%% Fix the outcomes for the patients I manually validated
 [engel_yr1,engel_yr2,ilae_yr1,ilae_yr2] = replace_with_my_outcomes(names,engel_yr1,ilae_yr1,engel_yr2,ilae_yr2,T);
 
 

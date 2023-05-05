@@ -19,6 +19,8 @@ switch type
     case 'engel'
         if isempty(outcome)
             outcome_num = '';
+        elseif isnumeric(outcome) && isnan(outcome)
+            outcome_num = '';
             
         elseif strcmp(outcome,'IA') || strcmp(outcome,'IB') || ...
                 strcmp(outcome,'IC') || strcmp(outcome, 'ID')

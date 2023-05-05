@@ -63,7 +63,6 @@ for i = 1:npts
 
     % make sure they're distinct
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
-
     
 
     % perform imputation of missing data
@@ -71,17 +70,15 @@ for i = 1:npts
         a = Ttrain{:,j};
         if ~isnumeric(a), continue; end
 
-        a(isnan(a)|abs(a)<1e-10) = nanmedian(a);
+        a(isnan(a)) = nanmedian(a);
         Ttrain{:,j} = a;
 
         b = Ttest{:,j};
-        b(isnan(b)|abs(b)<1e-10) = nanmedian(a); % impute with training data median
+        b(isnan(b)) = nanmedian(a); % impute with training data median
         Ttest{:,j} = b;
     end
 
     
-    
-
     % Dumb spikes - binarize spikes according to which side has more
     
     if just_spikes == 2

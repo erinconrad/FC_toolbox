@@ -214,16 +214,21 @@ L_l = median_l - P_l_25;
 L_r = median_r - P_r_25;
 
 % Plot it
-%{
-el = errorbar(1:ndurs,median_l,L_l,U_l,'o','color',[0, 0.4470, 0.7410]);
+
+
+el = shaded_error_bars_fc(1:ndurs,median_l,[P_l_75';P_l_25'],[0, 0.4470, 0.7410]);
 hold on
-er = errorbar(1:ndurs,median_r,L_r,U_r,'o','color',[0.8500, 0.3250, 0.0980]);
+er = shaded_error_bars_fc(1:ndurs,median_r,[P_r_75';P_r_25'],[0.8500, 0.3250, 0.0980]);
+
+
+errorbar(1:ndurs,median_l,L_l,U_l,'o','color',[0, 0.4470, 0.7410],...
+    'LineWidth',2,'MarkerSize',10);
+hold on
+errorbar(1:ndurs,median_r,L_r,U_r,'o','color',[0.8500, 0.3250, 0.0980],...
+    'LineWidth',2,'MarkerSize',10);
 %}
 
-el = shaded_error_bars_fc(1:ndurs,median_l,[L_l';U_l'],[0, 0.4470, 0.7410]);
-hold on
-er = shaded_error_bars_fc(1:ndurs,median_r,[L_r';U_r'],[0.8500, 0.3250, 0.0980]);
-ylim([0.4 1])
+ylim([0.6 0.9])
 
 legend([el,er],{'Left vs right/bilateral','Right vs left/bilateral'},'location','southeast')
 xticks(1:ndurs)
