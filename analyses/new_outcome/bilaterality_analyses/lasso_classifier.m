@@ -39,7 +39,6 @@ class_from_bin = @(x) possible_responses(x+1); % if 0->possible_responses{1}, if
 assert(isequal(class_from_bin(response_bin),response)) % confirm I get original classes back
 
 % do the Lasso
-
 [B,FitInfo] = lassoglm(table2array(predictors),response_bin,'binomial','CV',5);
 idxLambdaMinDeviance = FitInfo.IndexMinDeviance;
 B0 = FitInfo.Intercept(idxLambdaMinDeviance);

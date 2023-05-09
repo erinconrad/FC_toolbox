@@ -135,8 +135,7 @@ for i = 1:nclasses
         text(i,j,sprintf('%d',C(j,i)),'horizontalalignment','center','fontsize',20)
     end
 end
-title(sprintf('Accuracy:%1.1f%%\nBalanced accuracy: %1.1f%%',...
-    accuracy*100,balanced_accuracy*100))
+title(sprintf('Example lateralization using threshold AI = 0.4\nAccuracy: %1.1f (post-hoc, not cross-validated)',accuracy*100))
 set(gca,'fontsize',20)
 
 
