@@ -6,7 +6,10 @@ if isempty(response)
 end
 
 % Restrict to spike features if desired
-spike_features = {'spikes bipolar sleep'};%features(contains(features,'spikes'));
+spike_features = features(contains(features,'spikes') & contains(features,'bipolar') & ...
+    ~contains(features,'SD'));
+
+%features(contains(features,'spikes'));
 if just_spikes == 1 || just_spikes == 2
     features = spike_features;
 end
