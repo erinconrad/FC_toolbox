@@ -1,19 +1,24 @@
 function out = validation_classifier_wrapper(T,train,test,features,pca_perc,combine_br,just_spikes,rm_non_temporal)
+% this code is the wrapping function to train a model on a training dataset
+% and test on an external validation set
 
 % Define response
 response = 'soz_lats';
 
 % Restrict to spike features if desired
-spike_features = features(cellfun(@(x) contains(x,'spikes'),features));
+spike_features = features(contains(features,'spikes') & contains(features,'bipolar') & ...
+    ~contains(features,'SD'));
+
 if just_spikes == 1 || just_spikes == 2
     features = spike_features;
 end
 
 % Remove patients without response
 empty_class = cellfun(@isempty,T.(response));
-T(empty_class,:) = [];
-train(empty_class) = [];
-test(empty_class) = [];
+assert(sum(empty_class)==0) % I should already have removed these
+%T(empty_class,:) = [];
+%train(empty_class) = [];
+%test(empty_class) = [];
 npts = size(T,1);
 
 % Remove non temporal patients if desired
@@ -43,22 +48,48 @@ classes = unique(T.(response));
 nclasses = length(classes);
 C = zeros(nclasses,nclasses); % left, right, bilateral
 
-%% Train the model on the training data
+% Establish training and testing data
 Ttrain = T(train,:);
 Ttest = T(test,:);
+
+% Perform imputation of missing data
+for j = 1:size(Ttrain,2)
+    a = Ttrain{:,j};
+    if ~isnumeric(a), continue; end
+
+    a(isnan(a)) = nanmedian(a);
+    Ttrain{:,j} = a;
+
+    b = Ttest{:,j};
+    b(isnan(b)) = nanmedian(a); % impute with training data median
+    Ttest{:,j} = b;
+end
 
 if combine_br == 0
     tc = general_classifier(Ttrain,'svm_cost',features,response,pca_perc,1e2,length(features));
     all_scores = [];
 else
-    tc = lasso_classifier(Ttrain,features,response,pca_perc,classes);
+    % train the model on the training data
+    tc = lasso_classifier_cost(Ttrain,features,response,pca_perc,classes);
+
+    % get the probability of the testing data
     all_scores = tc.probabilityFcn(Ttest);
 end
 all_names = Ttest.names;
 all_pred = tc.predictFcn(Ttest);
+%alt_pred = tc.altPredictFcn(Ttest);
 
+%% Make confusion matrix
+positive = strcmp(Ttest.(response),classes{2});
+negative = strcmp(Ttest.(response),classes{1});
+pred_positive = strcmp(all_pred,classes{2});
+pred_negative = strcmp(all_pred,classes{1});
+C(1,1) = sum(positive & pred_positive);
+C(1,2) = sum(positive & pred_negative);
+C(2,1) = sum(negative & pred_positive);
+C(2,2) = sum(negative & pred_negative);
 
-% Prepare output structure
+%% Prepare output structure
 out.scores = all_scores;
 out.class = Ttest.(response);
 out.pos_class = classes{2};
@@ -68,5 +99,17 @@ out.unique_classes = classes;
 out.npts = npts;
 out.names = all_names;
 out.tc = tc;
+%out.alt_pred = alt_pred;
+
+out.accuracy = (C(1,1)+C(2,2))/sum(C,'all');
+
+recall = nan(nclasses,1);
+for i = 1:nclasses
+    tp = C(i,i);
+    fn = sum(C(i,~ismember(1:nclasses,i))); 
+    recall(i) = tp/(tp+fn); % tp is number correctly predicted to be in class, tp + fn is everyone in the class
+end
+out.balanced_accuracy = mean(recall);
+
 
 end

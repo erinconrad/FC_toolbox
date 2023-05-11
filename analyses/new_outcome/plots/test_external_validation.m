@@ -1,0 +1,150 @@
+function test_external_validation(for_will)
+
+% This code performs both leave-one-out cross validation on the HUP
+% training data AND trains the model on all the HUP data and tests it on
+% the MUSC data. It does this for a model using all features as well as a
+% model using only spike rates.
+
+%% Parameters
+pca_perc = 95; % the percent variance to explain for pca
+rm_non_temporal = 1; % remove patients who are not temporal
+rm_wake = 1; % don't include wake segments
+
+%% Get file locs
+if ~for_will
+    locations = fc_toolbox_locs;
+    results_folder = [locations.main_folder,'results/'];
+    plot_folder = [results_folder,'analysis/new_outcome/plots/'];
+    if ~exist(plot_folder,'dir')
+        mkdir(plot_folder)
+    end
+    
+    % add script folder to path
+    scripts_folder = locations.script_folder;
+    addpath(genpath(scripts_folder));
+end
+
+if for_will
+    will_data = load('will_data.mat');
+    T = will_data.T;
+    features = will_data.features;
+else
+    %% Run the lr_mt to extract AI features
+    if rm_wake == 1
+        [T,features] =  lr_mt(3); % the 3 refers to only looking at sleep
+    else
+        error('why are you doing this?')
+    end
+
+end
+
+% Remove those without a response (soz_lats is the response variable)
+empty_class = cellfun(@isempty,T.soz_lats);
+T(empty_class,:) = [];
+
+%% Establish HUP and MUSC as training and testing, respectively
+train  = contains(T.names,'HUP');
+test  = contains(T.names,'MP');
+
+%% Do the LOO cross validation on the HUP data - FULL model
+Ttrain = T(train,:);
+just_spikes = 0; % not just spikes, full model
+lefta_int = classifier_wrapper(Ttrain,features,pca_perc,1,just_spikes,rm_non_temporal,[]); % 1 means left
+righta_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_temporal,[]); % 2 means right
+
+% Get ROC stats
+[lefta_int.XL,lefta_int.YL,~,lefta_int.AUCL] = perfcurve(lefta_int.class,lefta_int.scores,lefta_int.pos_class);
+[righta_int.XR,righta_int.YR,~,righta_int.AUCR] = perfcurve(righta_int.class,righta_int.scores,righta_int.pos_class);
+
+%% Train on the HUP data, test on MUSC - FULL model
+just_spikes = 0; % not just spikes
+lefta_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,1,just_spikes,rm_non_temporal); % 1 means left
+righta_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just_spikes,rm_non_temporal); % 2 means right
+
+% Get ROC stats
+[lefta_ext.XL,lefta_ext.YL,~,lefta_ext.AUCL] = perfcurve(lefta_ext.class,lefta_ext.scores,lefta_ext.pos_class);
+[righta_ext.XR,righta_ext.YR,~,righta_ext.AUCR] = perfcurve(righta_ext.class,righta_ext.scores,righta_ext.pos_class);
+
+
+%% Do the LOO cross validation on the HUP data - spike only model
+Ttrain = T(train,:);
+just_spikes = 1; % only spike feature
+lefts_int = classifier_wrapper(Ttrain,features,pca_perc,1,just_spikes,rm_non_temporal,[]); % 1 means left
+rights_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_temporal,[]); % 2 means right
+
+% Get ROC stats
+[lefts_int.XL,lefts_int.YL,~,lefts_int.AUCL] = perfcurve(lefts_int.class,lefts_int.scores,lefts_int.pos_class);
+[rights_int.XR,rights_int.YR,~,rights_int.AUCR] = perfcurve(rights_int.class,rights_int.scores,rights_int.pos_class);
+
+
+%% Train on the HUP data, test on MUSC - spike only model
+fprintf('\nDoing main models...');
+just_spikes = 1; 
+lefts_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,1,just_spikes,rm_non_temporal); % 1 means left
+rights_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just_spikes,rm_non_temporal); % 2 means right
+
+% Get ROC stats
+[lefts_ext.XL,lefts_ext.YL,~,lefts_ext.AUCL] = perfcurve(lefts_ext.class,lefts_ext.scores,lefts_ext.pos_class);
+[rights_ext.XR,rights_ext.YR,~,rights_ext.AUCR] = perfcurve(rights_ext.class,rights_ext.scores,rights_ext.pos_class);
+
+
+%% Show the results
+figure
+tiledlayout(2,2)
+
+% Full model - internal
+nexttile
+ll = plot(lefta_int.XL,lefta_int.YL,'linewidth',2);
+hold on
+lr = plot(righta_int.XR,righta_int.YR,':','linewidth',2);
+plot([0 1],[0 1],'k--','linewidth',2)
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend([ll,lr],{sprintf('Left vs right/bilateral: AUC = %1.2f',lefta_int.AUCL),...
+    sprintf('Right vs left/bilateral: AUC = %1.2f',righta_int.AUCR)},'fontsize',20,...
+    'location','southeast')
+title({'Full model - LOO CV HUP'})
+set(gca,'fontsize',20)
+
+% Full model - external
+nexttile
+ll = plot(lefta_ext.XL,lefta_ext.YL,'linewidth',2);
+hold on
+lr = plot(righta_ext.XR,righta_ext.YR,':','linewidth',2);
+plot([0 1],[0 1],'k--','linewidth',2)
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend([ll,lr],{sprintf('Left vs right/bilateral: AUC = %1.2f',lefta_ext.AUCL),...
+    sprintf('Right vs left/bilateral: AUC = %1.2f',righta_ext.AUCR)},'fontsize',20,...
+    'location','southeast')
+title({'Full model - External validation'})
+set(gca,'fontsize',20)
+
+% Spike model - internal
+nexttile
+ll = plot(lefts_int.XL,lefts_int.YL,'linewidth',2);
+hold on
+lr = plot(rights_int.XR,rights_int.YR,':','linewidth',2);
+plot([0 1],[0 1],'k--','linewidth',2)
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend([ll,lr],{sprintf('Left vs right/bilateral: AUC = %1.2f',lefts_int.AUCL),...
+    sprintf('Right vs left/bilateral: AUC = %1.2f',rights_int.AUCR)},'fontsize',20,...
+    'location','southeast')
+title({'Spike model - LOO CV HUP'})
+set(gca,'fontsize',20)
+
+% Spike model - external
+nexttile
+ll = plot(lefts_ext.XL,lefts_ext.YL,'linewidth',2);
+hold on
+lr = plot(rights_ext.XR,rights_ext.YR,':','linewidth',2);
+plot([0 1],[0 1],'k--','linewidth',2)
+xlabel('False positive rate')
+ylabel('True positive rate')
+legend([ll,lr],{sprintf('Left vs right/bilateral: AUC = %1.2f',lefts_ext.AUCL),...
+    sprintf('Right vs left/bilateral: AUC = %1.2f',rights_ext.AUCR)},'fontsize',20,...
+    'location','southeast')
+title({'Spike model - External validation'})
+set(gca,'fontsize',20)
+end

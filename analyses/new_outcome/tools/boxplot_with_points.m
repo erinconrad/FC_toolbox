@@ -1,4 +1,4 @@
-function [h,out] = boxplot_with_points(x,categories,show_stats,groupOrder,specialMarker)
+function [h,out] = boxplot_with_points(x,categories,show_stats,groupOrder,specialMarker,which_test)
 
 %{
 cols = [0 0.4470 0.7410;...
@@ -35,17 +35,34 @@ if show_stats
     new_y = [yl(1) yl(1) + 1.3*(yl(2)-yl(1))];
     ylim(new_y)
 
-    [p,tbl,stats] = kruskalwallis(x,categories,'off');
-    out.p = p;
-    out.tbl = tbl;
-    out.stats = stats;
-    out.eta2 = tbl{2,2}/(tbl{2,2}+tbl{3,2});
+    switch which_test
+        case 'non_para'
+            [p,tbl,stats] = kruskalwallis(x,categories,'off');
+            out.p = p;
+            out.tbl = tbl;
+            out.stats = stats;
+            out.eta2 = tbl{2,2}/(tbl{2,2}+tbl{3,2});
+        case 'para'
+            [p,tbl,stats] = anova1(x,categories,'off');
+            out.p = p;
+            out.tbl = tbl;
+            out.stats = stats;
+            out.eta2 = tbl{2,2}/(tbl{2,2}+tbl{3,2});
+    end
+    
     bon_p = 0.05/3;
     if p < 0.05
             % do post hoc
-            lrp = ranksum(x(strcmp(categories,'left')),x(strcmp(categories,'right')));
-            rbp = ranksum(x(strcmp(categories,'right')),x(strcmp(categories,'bilateral')));
-            lbp = ranksum(x(strcmp(categories,'left')),x(strcmp(categories,'bilateral')));
+            switch which_test
+                case 'para'
+                    [~,lrp] = ttest2(x(strcmp(categories,'left')),x(strcmp(categories,'right')));
+                    [~,rbp] = ttest2(x(strcmp(categories,'right')),x(strcmp(categories,'bilateral')));
+                    [~,lbp] = ttest2(x(strcmp(categories,'left')),x(strcmp(categories,'bilateral')));
+                case 'non_para'
+                    lrp = ranksum(x(strcmp(categories,'left')),x(strcmp(categories,'right')));
+                    rbp = ranksum(x(strcmp(categories,'right')),x(strcmp(categories,'bilateral')));
+                    lbp = ranksum(x(strcmp(categories,'left')),x(strcmp(categories,'bilateral')));
+            end
             out.lrp = lrp;
             out.rbp = rbp;
             out.lbp = lbp;

@@ -1,4 +1,7 @@
 function out = classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal,response)
+% This code is the wrapping function to perform leave one out
+% classification on the training dataset
+
 
 % Define response
 if isempty(response)
@@ -7,16 +10,15 @@ end
 
 % Restrict to spike features if desired
 spike_features = features(contains(features,'spikes') & contains(features,'bipolar') & ...
-    ~contains(features,'SD'));
+    ~contains(features,'SD')); % this should only be one feature - spikes in bipolar reference
 
-%features(contains(features,'spikes'));
 if just_spikes == 1 || just_spikes == 2
     features = spike_features;
 end
 
 % Remove patients without response
 empty_class = cellfun(@isempty,T.(response));
-assert(sum(empty_class)==0)
+assert(sum(empty_class)==0) % I should already have removed these
 npts = size(T,1);
 
 % Remove non temporal patients if desired
@@ -47,7 +49,7 @@ if strcmp(response,'outcome')
 end
 
 
-% Initialize ROC parameters
+% Initialize ROC and confusion matrix parameters
 classes = unique(T.(response));
 all_scores = nan(npts,1);
 nclasses = length(classes);
@@ -58,6 +60,7 @@ nbest = 20; % see 20 best features;
 all_best_features = cell(npts,nbest);
 
 %% Do leave-one-patient-out classifier to predict laterality
+% Loop over patients
 for i = 1:npts
     
     % split into training and testing
@@ -68,14 +71,17 @@ for i = 1:npts
     assert(isempty(intersect(Ttrain.names,Ttest.names)))
     
 
-    % perform imputation of missing data
+    % perform imputation of missing data, loop over columns
     for j = 1:size(Ttrain,2)
         a = Ttrain{:,j};
         if ~isnumeric(a), continue; end
 
+        % replace nans with median for that column
         a(isnan(a)) = nanmedian(a);
         Ttrain{:,j} = a;
 
+        % replace any nans in the testing data with the median from the
+        % training data
         b = Ttest{:,j};
         b(isnan(b)) = nanmedian(a); % impute with training data median
         Ttest{:,j} = b;
@@ -83,13 +89,12 @@ for i = 1:npts
 
     
     % Dumb spikes - binarize spikes according to which side has more
-    
     if just_spikes == 2
         binTtrain = Ttrain;
         binTtest = Ttest;
         for j = 1:size(Ttrain,2)
             if ~isnumeric(Ttrain{:,j}), continue; end
-            binTtrain{Ttrain{:,j}>0,j} = 1; binTtrain{Ttrain{:,j}<0,j} = 0;
+            binTtrain{Ttrain{:,j}>0,j} = 1; binTtrain{Ttrain{:,j}<0,j} = 0; % 1 if positive, 0 otherwise
             binTtest{Ttest{:,j}>0,j} = 1; binTtest{Ttest{:,j}<0,j} = 0;
             binTtrain{:,j} = logical(binTtrain{:,j});
             binTtest{:,j} = logical(binTtest{:,j});
@@ -102,14 +107,13 @@ for i = 1:npts
     %% Classifier
     if combine_br == 0 && ~strcmp(response,'outcome')
         % Do the general classifier
-        
         tc = general_classifier(Ttrain,'svm',features,response,pca_perc,1e2,length(features));
 
     else
-        % Do the lasso classifier
-        tc = lasso_classifier(Ttrain,features,response,pca_perc,classes);
+        % Do the lasso classifier with a cost function (PCA first)
+        tc = lasso_classifier_cost(Ttrain,features,response,pca_perc,classes);
     
-        % Get score
+        % Get probability for testing data
         all_scores(i) = tc.probabilityFcn(Ttest);
     end
 
@@ -132,6 +136,7 @@ for i = 1:npts
     C(which_row,which_column) = C(which_row,which_column) + 1;
 
     % find the winningest features
+    %{
     if combine_br ~= 0
         a = tc.sorted_features(1:min([nbest,length(tc.sorted_features)]));
         if size(a,2) == 1
@@ -140,10 +145,11 @@ for i = 1:npts
     
         all_best_features(i,1:min([nbest,length(tc.sorted_features)])) = a;
     end
+    %}
     
 
 end
-
+%{
 if combine_br ~= 0
     % Find the features that show up the most in the winning set
     comb_features = all_best_features(:); % transform to 1d cell array
@@ -160,6 +166,7 @@ if combine_br ~= 0
         xticklabels(unique_features(I(1:20)))
     end
 end
+%}
 
 
 % Prepare output structure
@@ -171,10 +178,22 @@ out.C = C;
 out.unique_classes = classes;
 out.npts = npts;
 out.names = all_names;
+out.accuracy = (C(1,1)+C(2,2))/sum(C,'all');
 
+recall = nan(nclasses,1);
+for i = 1:nclasses
+    tp = C(i,i);
+    fn = sum(C(i,~ismember(1:nclasses,i))); 
+    recall(i) = tp/(tp+fn); % tp is number correctly predicted to be in class, tp + fn is everyone in the class
+end
+out.balanced_accuracy = mean(recall);
+
+
+%{
 if combine_br ~= 0
     out.unique_features = unique_features;
     out.counts = a_counts;
 end
+%}
 
 end
