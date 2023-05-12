@@ -202,10 +202,10 @@ for iss = 1:nss
 
     % save data
     cv_data(iss,1,:,:) = cv_auc_l;
-    cv_data(iss,2,:,:) = cv_auc_l;
+    cv_data(iss,2,:,:) = cv_auc_r;
 
     ext_data(iss,1,:,:) = ext_auc_l;
-    ext_data(iss,2,:,:) = ext_auc_l;
+    ext_data(iss,2,:,:) = ext_auc_r;
 
 end
 fprintf('\nDone with subsampling analysis, took %1.1f seconds.\n',toc)
