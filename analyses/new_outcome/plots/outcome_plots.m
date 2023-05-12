@@ -3,8 +3,8 @@ function outcome_plots
 %% Parameters
 which_outcome = 'engel';
 which_year = 2;
-outcome_approach = 'prob';
-which_model = 'full';
+outcome_approach = 'auc';
+which_model = 'spikes';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -124,14 +124,28 @@ switch outcome_approach
         % AUC higher than if you had left surgery & bad outcome. Same for
         % right. So overall, the AUC for the corresponding model is higher
         % for good outcome.
-        [~,~,~,AUCLg] = perfcurve(left.class(good_outcome),left.scores(good_outcome),...
+        [XLg,YLg,~,AUCLg] = perfcurve(left.class(good_outcome),left.scores(good_outcome),...
             left.pos_class);
-        [~,~,~,AUCLb] = perfcurve(left.class(bad_outcome),left.scores(bad_outcome),...
+        [XLb,YLb,~,AUCLb] = perfcurve(left.class(bad_outcome),left.scores(bad_outcome),...
             left.pos_class);
-        [~,~,~,AUCRg] = perfcurve(right.class(good_outcome),right.scores(good_outcome),...
+        [XRg,YRg,~,AUCRg] = perfcurve(right.class(good_outcome),right.scores(good_outcome),...
             right.pos_class);
-        [~,~,~,AUCRb] = perfcurve(right.class(bad_outcome),right.scores(bad_outcome),...
+        [XRb,YRb,~,AUCRb] = perfcurve(right.class(bad_outcome),right.scores(bad_outcome),...
             right.pos_class);
+
+
+        ll = plot(XLg,YLg,'linewidth',2);
+        hold on
+        lr = plot(XLb,YLb,':','linewidth',2);
+        plot([0 1],[0 1],'k--','linewidth',2)
+        xlabel('False positive rate')
+        ylabel('True positive rate')
+        legend([ll,lr],{sprintf('Left vs right/bilateral good: AUC = %1.2f',AUCLg),...
+            sprintf('Left vs right/bilateral bad: AUC = %1.2f',AUCLb)},'fontsize',20,...
+            'location','southeast')
+        title({'Model performance (spikes only)'})
+        set(gca,'fontsize',20)
+
     case 'prob' % hypothesis: the modeled probability of concordant laterality is higher for good outcome patients
         scores = nan(npts,1);
         left_scores = left.scores;
