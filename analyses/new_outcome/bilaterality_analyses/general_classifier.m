@@ -127,7 +127,6 @@ end
 norm_counts = nClass./sum(nClass);
 
 % build cost function
-
 cost = 1./norm_counts .* [0,1,1; 1,0,1; 1,1,0];
 
 %% Train a classifier

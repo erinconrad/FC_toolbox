@@ -4,6 +4,7 @@ function correlation_figure
 ss = 3; % just look at sleep
 montage_names = {'car'};%{'machine','car','bipolar'};
 all_montages = {'machine','car','bipolar'}; 
+which_pts = 'hup';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -37,10 +38,19 @@ fprintf(fid,['We examined the correlation between interictal EEG features. ']);
 mt_data = load([inter_folder,'mt_out.mat']);
 mt_data = mt_data.out;
 
+%% Get appropriate patients
+switch which_pts
+    case 'hup'
+        pts = contains(mt_data.all_names,'HUP');
+    case 'musc'
+        pts = contains(mt_data.all_names,'MP');
+end
+npts = length(pts);
+
 %% Find non-empty pts
-non_empty = find(cellfun(@(x) ~isempty(x), mt_data.all_bp(:,1,1)));
+non_empty = find(cellfun(@(x) ~isempty(x), mt_data.all_bp(pts,1,1)));
 first_non_empty = non_empty(1);
-npts = size(mt_data.all_bp,1);
+%npts = size(mt_data.all_bp,1);
 
 %% Prep figure
 figure
@@ -55,7 +65,7 @@ net_names = cellfun(@(x) strrep(x,'all_',''),all_things,'UniformOutput',false);
 nnet = 0;
 for in = 1:length(all_things)
     curr_net = mt_data.(all_things{in});
-    curr_net = curr_net(:,1,ss);
+    curr_net = curr_net(pts,1,ss);
     if ismember(all_things{in},networks)
         nnet = nnet + nmontages*size(curr_net{first_non_empty},3);
     else
@@ -77,7 +87,7 @@ for im = 1:nmontages
     for in = 1:length(all_things)
 
         curr_neti = mt_data.(all_things{in});
-        curr_neti = curr_neti(:,im,ss);
+        curr_neti = curr_neti(pts,im,ss);
 
         if ismember(all_things{in},networks)
             nfreqi = size(curr_neti{first_non_empty},3); % how many frequencies
@@ -110,7 +120,7 @@ for im = 1:nmontages
             for jm = 1:nmontages
                 for jn = 1:length(all_things)
                     curr_netj = mt_data.(all_things{jn});
-                    curr_netj = curr_netj(:,jm,ss);
+                    curr_netj = curr_netj(pts,jm,ss);
 
                     if ismember(all_things{jn},networks)
                         nfreqj = size(curr_netj{first_non_empty},3); % how many frequencies
@@ -174,7 +184,7 @@ set(gca,'fontsize',15)
 title(sprintf('Inter-feature correlation (electrode contact level)'))
 
 fprintf(fid,['For this analysis, we studied only the mean feature '...
-    'across time segments. We first measured inter-feature correlation on an electrode contact-level. To do '...
+    'across time segments (not the standard deviation). We first measured inter-feature correlation on an electrode contact-level. To do '...
     'this, we first converted bivariate features to electrode contact-specific '...
     'univariate features by taking the average edge weight across all other electrode contacts. (For '...
     'this analysis, we did not restrict the average to contacts only on the same electrode). This yielded '...
@@ -186,7 +196,8 @@ fprintf(fid,['For this analysis, we studied only the mean feature '...
     'average inter-feature correlation matrix across patients for a single choice of reference (common average). '...
     'There were often high correlations between different frequency band measurements of the same feature. '... ...
     'There were also often high correlations or anti-correlations between different features, such as between '...
-    'coherence and phase-locking value, and between coherence and relative entropy (negative correlation).']);
+    'coherence and phase-locking value, and between coherence and relative entropy (negative correlation).'...
+    ' Spike rates were moderately positively correlated with relative entropy and bandpower']);
 
 %% Subfigure B: How much correlation is there across montages for different features?
 which_freq = 6; % broadband
@@ -194,7 +205,7 @@ thing_montages = nan(length(all_things),3);
 thing_montages_sd = nan(length(all_things),3);
 for in = 1:length(all_things)
     curr_net = mt_data.(all_things{in});
-    temp_net = curr_net(:,1,1);
+    temp_net = curr_net(pts,1,1);
     if ismember(all_things{in},networks)
         nfreq = size(temp_net{first_non_empty},3); % how many frequencies
     else
@@ -319,6 +330,14 @@ fprintf(fid,[' Fig. 2B shows the mean (standard deviation) inter-reference featu
 %% Now do lr_mt to get AI features
 which_sleep_stages = 3;
 [T,features] =  lr_mt(which_sleep_stages);
+
+% Restrict to correct hospital
+switch which_pts
+    case 'hup'
+        T = T(contains(T.names,'HUP'),:);
+    case 'musc'
+        T = T(contains(T.names,'MP'),:);
+end
 
 %% Subfigure C: Inter-AI correlation
 % Restrict to desired montage and no SD

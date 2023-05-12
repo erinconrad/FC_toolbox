@@ -44,7 +44,7 @@ T(empty_class,:) = [];
 
 %% Establish HUP and MUSC as training and testing, respectively
 train  = contains(T.names,'HUP');
-test  = contains(T.names,'MP');
+test  = contains(T.names,'MUSC');
 
 %% Do the LOO cross validation on the HUP data - FULL model
 Ttrain = T(train,:);

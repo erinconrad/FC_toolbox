@@ -65,6 +65,22 @@ for j = 1:size(Ttrain,2)
     Ttest{:,j} = b;
 end
 
+% Binarize spikes according to which side has more
+if just_spikes == 2
+    binTtrain = Ttrain;
+    binTtest = Ttest;
+
+    for j = 1:size(Ttrain,2)
+        if ~isnumeric(Ttrain{:,j}), continue; end
+        binTtrain{Ttrain{:,j}>0,j} = 1; binTtrain{Ttrain{:,j}<0,j} = 0; % 1 if positive, 0 otherwise
+        binTtest{Ttest{:,j}>0,j} = 1; binTtest{Ttest{:,j}<0,j} = 0;
+        binTtrain{:,j} = logical(binTtrain{:,j});
+        binTtest{:,j} = logical(binTtest{:,j});
+    end
+    Ttrain = binTtrain;
+    Ttest = binTtest;
+end
+
 if combine_br == 0
     tc = general_classifier(Ttrain,'svm_cost',features,response,pca_perc,1e2,length(features));
     all_scores = [];
