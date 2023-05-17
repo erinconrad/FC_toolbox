@@ -86,6 +86,10 @@ for im = 1:nmodels
     end
 end
 
+all.model = model;
+save([plot_folder,'ext_models.mat'],'all')
+
+
 % test - show results
 if 0
     figure
@@ -210,7 +214,6 @@ for iss = 1:nss
 end
 fprintf('\nDone with subsampling analysis, took %1.1f seconds.\n',toc)
 
-all.model = model;
 all.cv_ss = cv_data;
 all.ext_ss = ext_data;
 all.durations = durations;
