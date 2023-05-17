@@ -1,17 +1,13 @@
-function prob = prob_fcn_for_carlos(L,R,params)
+function prob = prob_fcn_for_carlos(L,R)
 
-pcaWeights = params.pcaWeights;
-pcaCoefficients = params.pcaCoefficients;
-pcaCenters = params.pcaCenters;
-coef = params.coef;
+% establish coef (this will change). There will actually be two different
+% models, each with a different coef
+coef = [-0.4564 2.9101];
 
 % Calculate AI
 AI = (L-R)/(L+R);
 
-% Do PCA (do I need this? Try to remove it)
-x = (AI-pcaCenters).*pcaWeights*pcaCoefficients;
-
 % Do logistic function
-prob = 1/(1+exp(-coef(1)+coef(2)*x));
+prob = 1/(1+exp(-coef(1)+coef(2)*AI));
 
 end

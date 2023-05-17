@@ -22,7 +22,7 @@ nmodels = length(model);
 %% Initialize results file
 fname = [plot_folder,'results.html'];
 fid = fopen(fname,'a');
-fprintf(fid,'<p><br><b>A classifier incorporating interictal EEG features predicts epilepsy laterality</b></br>');
+fprintf(fid,'<p><br><b>A classifier incorporating interictal EEG features predicts SOZ laterality</b></br>');
 
 
 %% Initialize figure
@@ -54,7 +54,13 @@ for iv = 1
     end
 end
 
+fprintf(fid,[' We first performed leave-one-out classification on the HUP patients using two'...
+    ' separate models: one classifying a patient as having either a left-sided SOZ '...
+    'or a bilateral or right-sided SOZ, and the other classifying right versus left or'...
+    ' bilateral. '])
+
 %% D: Subsampling plots, internal validation
+if 0
 sub = out.cv_ss; % cross validation
 
 nexttile
@@ -104,6 +110,7 @@ xticklabels(arrayfun(@(x) sprintf('%d min',x),durations,'uniformoutput',false))
 ylabel('Median (IQR) AUC')
 title(sprintf('Spike model accuracy by duration\n(HUP cross-validation)'))
 set(gca,'fontsize',15)
+end
 
 %% E-F Confusion matrix (spikes only, internal cross-validation)
 curr = model(2).val(1);
