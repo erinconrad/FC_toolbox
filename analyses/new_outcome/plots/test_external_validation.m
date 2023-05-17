@@ -44,7 +44,16 @@ T(empty_class,:) = [];
 
 %% Establish HUP and MUSC as training and testing, respectively
 train  = contains(T.names,'HUP');
-test  = contains(T.names,'MUSC');
+test  = contains(T.names,'MP');
+
+%% try multiclass model on spikes
+% oof doesn't work
+%{
+Ttrain = T(train,:);
+just_spikes = 1;
+sint = classifier_wrapper(Ttrain,features,pca_perc,0,just_spikes,rm_non_temporal,[]); % 0 means multiclass
+sext = validation_classifier_wrapper(T,train,test,features,pca_perc,0,just_spikes,rm_non_temporal); % 1 means left
+%}
 
 %% Do the LOO cross validation on the HUP data - FULL model
 Ttrain = T(train,:);

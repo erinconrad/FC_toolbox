@@ -107,7 +107,7 @@ for i = 1:npts
     %% Classifier
     if combine_br == 0 && ~strcmp(response,'outcome')
         % Do the general classifier
-        tc = general_classifier(Ttrain,'svm',features,response,pca_perc,1e2,length(features));
+        tc = general_classifier(Ttrain,'svm',features,response,pca_perc,1e2,length(features),classes);
 
     else
         % Do the lasso classifier with a cost function (PCA first)

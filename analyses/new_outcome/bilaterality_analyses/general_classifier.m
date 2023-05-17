@@ -1,4 +1,4 @@
-function trainedClassifier = general_classifier(trainingData,method,features,respVar,pc_perc,ncycles,numFeaturesToKeep)
+function trainedClassifier = general_classifier(trainingData,method,features,respVar,pc_perc,ncycles,numFeaturesToKeep,classNames)
 
 %% Data prep
 inputTable = trainingData;
@@ -6,7 +6,6 @@ predictorNames = features;
 predictors = inputTable(:, predictorNames);
 response = inputTable.(respVar);
 isCategoricalPredictor = repmat(false,1,length(predictorNames));
-classNames = unique(response);
 
 %nca = fscnca(table2array(predictors),response,'FitMethod','exact');
 if numFeaturesToKeep == length(features)
@@ -124,10 +123,18 @@ nClass = nan(length(classNames),1);
 for ic = 1:length(classNames)
     nClass(ic) = sum(strcmp(response,classNames{ic}));
 end
-norm_counts = nClass./sum(nClass);
 
 % build cost function
-cost = 1./norm_counts .* [0,1,1; 1,0,1; 1,1,0];
+cost = zeros(length(classNames),length(classNames));
+for i = 1:length(classNames)
+    for j = 1:length(classNames)
+        if j == i
+        else
+            cost(i,j) = (sum(nClass)-nClass(i))/sum(nClass);
+        end
+    end
+
+end
 
 %% Train a classifier
 % This code specifies all the classifier options and trains the classifier.
@@ -219,8 +226,6 @@ switch method
             'Coding', 'onevsone', ...
             'ClassNames', classNames);
     case 'svm_cost'
-        
-
         template = templateSVM(...
             'KernelFunction', 'linear', ...
             'PolynomialOrder', [], ...

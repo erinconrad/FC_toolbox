@@ -82,7 +82,7 @@ if just_spikes == 2
 end
 
 if combine_br == 0
-    tc = general_classifier(Ttrain,'svm_cost',features,response,pca_perc,1e2,length(features));
+    tc = general_classifier(Ttrain,'svm_cost',features,response,pca_perc,1e2,length(features),classes);
     all_scores = [];
 else
     % train the model on the training data
@@ -96,6 +96,8 @@ all_pred = tc.predictFcn(Ttest);
 %alt_pred = tc.altPredictFcn(Ttest);
 
 %% Make confusion matrix
+response_true = Ttest.(response);
+%{
 positive = strcmp(Ttest.(response),classes{2});
 negative = strcmp(Ttest.(response),classes{1});
 pred_positive = strcmp(all_pred,classes{2});
@@ -104,6 +106,20 @@ C(1,1) = sum(positive & pred_positive);
 C(1,2) = sum(positive & pred_negative);
 C(2,1) = sum(negative & pred_positive);
 C(2,2) = sum(negative & pred_negative);
+%}
+for i = 1:length(all_pred)
+    pred = all_pred{i};
+    actual = response_true{i};
+
+    % which row to add to confusion matrix (the true value)
+    which_row = find(strcmp(actual,classes));
+
+    % which column to add to confusion matrix (the predicted value)
+    which_column = find(strcmp(pred,classes));
+
+    C(which_row,which_column) = C(which_row,which_column) + 1;
+
+end
 
 %% Prepare output structure
 out.scores = all_scores;

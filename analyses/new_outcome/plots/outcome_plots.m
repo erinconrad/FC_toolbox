@@ -3,7 +3,7 @@ function outcome_plots
 %% Parameters
 which_year = 1;
 outcome_approach = 'prob';
-which_model = 'full';
+which_model = 'spikes';
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -196,15 +196,29 @@ set(gca,'fontsize',20)
             right_scores = right.scores;
     
             nexttile
+            
             unpaired_plot(left_scores(good_outcome&left_surg),left_scores(bad_outcome&left_surg),...
                 {'Good','Poor'},'Modeled probability of left laterality','para')
+            %}
+            %{
+            unpaired_plot(left_scores(good_outcome&left_surg)-right_scores(good_outcome&left_surg),...
+                left_scores(bad_outcome&left_surg)-right_scores(bad_outcome&left_surg),...
+                {'Good','Poor'},'Modeled probability of left laterality','para')
+            %}
             title({'Left-sided probability for patients','who underwent left-sided surgery'})
             xlim([0.5 2.5])
             set(gca,'fontsize',20)
     
             nexttile
+            
             unpaired_plot(right_scores(good_outcome&right_surg),right_scores(bad_outcome&right_surg),{'Good','Poor'},...
                 'Modeled probability of right laterality','para')
+            %}
+            %{
+            unpaired_plot(right_scores(good_outcome&right_surg)-left_scores(good_outcome&right_surg),...
+                right_scores(bad_outcome&right_surg)-left_scores(bad_outcome&right_surg),{'Good','Poor'},...
+                'Modeled probability of right laterality','para')
+            %}
             title({'Right-sided probability for patients','who underwent right-sided surgery'})
             xlim([0.5 2.5])
             set(gca,'fontsize',20)

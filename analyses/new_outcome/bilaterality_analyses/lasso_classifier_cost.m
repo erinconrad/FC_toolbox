@@ -17,18 +17,22 @@ response = inputTable.(respVar); % get the response
 
 
 %% PCA
-numericPredictors = table2array(varfun(@double, predictors));
-numericPredictors(isinf(numericPredictors)) = NaN;
-
-% Do PCA with normalization
-w = 1./std(numericPredictors,[],1,"omitnan");
-[pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
-    numericPredictors,'centered',true,'VariableWeights',w);
-% Keep enough components to explain the desired amount of variance.
-explainedVarianceToKeepAsFraction = pc_perc/100;
-numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
-pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
-predictors = array2table(pcaScores(:,1:numComponentsToKeep));
+if length(features) ==1 
+    % skip PCA
+else
+    numericPredictors = table2array(varfun(@double, predictors));
+    numericPredictors(isinf(numericPredictors)) = NaN;
+    
+    % Do PCA with normalization
+    w = 1./std(numericPredictors,[],1,"omitnan");
+    [pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
+        numericPredictors,'centered',true,'VariableWeights',w);
+    % Keep enough components to explain the desired amount of variance.
+    explainedVarianceToKeepAsFraction = pc_perc/100;
+    numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
+    pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
+    predictors = array2table(pcaScores(:,1:numComponentsToKeep));
+end
 
 
 %% Make a function to turn 1s and 0s into classes
@@ -71,29 +75,50 @@ alt_class = fitcsvm(table2array(old_predictors),response,'KernelFunction','linea
 
 % Make final output anonumous functions
 predictorExtractionFcn = @(t) t(:, predictorNames); % get the predictors
-pcaTransformationFcn = @(x) (table2array(varfun(@double, x)) - pcaCenters) .* w * pcaCoefficients; % apply PCA using the coefficients obtained from the training data
-invTransformationFcn = @(x) x'/pcaCoefficients/w+pcaCenters; % I only need this for understanding feature importance
-predictFcn = @(x) class_from_bin(lr_prediction(lr_prob(pcaTransformationFcn(predictorExtractionFcn(x))))); % generate final class preciction
-probabilityFcn = @(x) lr_prob(pcaTransformationFcn(predictorExtractionFcn(x))); % generate probability
+
+if length(features) == 1
+    predictFcn = @(x) class_from_bin(lr_prediction(lr_prob(table2array(varfun(@double, predictorExtractionFcn(x)))))); % generate final class preciction
+    
+    probabilityFcn = @(x) lr_prob(table2array(varfun(@double, predictorExtractionFcn(x)))); % generate probability
+else
+    pcaTransformationFcn = @(x) (table2array(varfun(@double, x)) - pcaCenters) .* w * pcaCoefficients; % apply PCA using the coefficients obtained from the training data
+    invTransformationFcn = @(x) x'/pcaCoefficients/w+pcaCenters; % I only need this for understanding feature importance
+    predictFcn = @(x) class_from_bin(lr_prediction(lr_prob(pcaTransformationFcn(predictorExtractionFcn(x))))); % generate final class preciction
+    probabilityFcn = @(x) lr_prob(pcaTransformationFcn(predictorExtractionFcn(x))); % generate probability
+end
 altPredictFcn = @(x) alt_class.predict(table2array(predictorExtractionFcn(x)));
 
 
 % Add additional fields to the result struct
 trainedClassifier.predictFcn = predictFcn;
 trainedClassifier.RequiredVariables = predictorNames;
-trainedClassifier.PCACenters = pcaCenters;
 trainedClassifier.coef = coef;
-trainedClassifier.PCACoefficients = pcaCoefficients;
+
+if length(features) == 1
+    trainedClassifier.PCACenters = [];
+    trainedClassifier.PCACoefficients = [];
+    trainedClassifier.pcaTransformationFcn = [];
+    trainedClassifier.invTransformationFcn = [];
+    trainedClassifier.pcaWeights = [];
+else
+    trainedClassifier.PCACenters = pcaCenters;
+    trainedClassifier.PCACoefficients = pcaCoefficients;
+    trainedClassifier.pcaTransformationFcn = pcaTransformationFcn;
+    trainedClassifier.invTransformationFcn = invTransformationFcn;
+    trainedClassifier.pcaWeights = w;
+end
+
 trainedClassifier.probabilityFcn = probabilityFcn;
-trainedClassifier.pcaTransformationFcn = pcaTransformationFcn;
 trainedClassifier.predictorExtractionFcn = predictorExtractionFcn;
-trainedClassifier.invTransformationFcn = invTransformationFcn;
+
 trainedClassifier.classes = classes;
 trainedClassifier.n_in_class = n_in_class;
 trainedClassifier.cost = cost;
 trainedClassifier.altPredictFcn = altPredictFcn;
 trainedClassifier.alt_class = alt_class;
 trainedClassifier.classifier = classifier;
+trainedClassifier.lr_prob = lr_prob;
+
 
 
 
