@@ -60,7 +60,7 @@ fprintf(fid,[' We first performed leave-one-out classification on the HUP patien
     ' bilateral. '])
 
 %% D: Subsampling plots, internal validation
-if 0
+if 1
 sub = out.cv_ss; % cross validation
 
 nexttile
@@ -130,7 +130,8 @@ for is = 1:2
 
     % Get optimal ROC point
     [X,Y,T,~,opt] = perfcurve(class,scores,pos_class);
-    opt_thresh = T((X==opt(1))&(Y==opt(2)));
+    %opt_thresh = T((X==opt(1))&(Y==opt(2)));
+    opt_thresh = my_opt(X,Y,T);
 
     
     pred = cell(length(class),1);
@@ -173,6 +174,7 @@ for is = 1:2
     % replace classnames
     pretty_name = classes;
     pretty_name = strrep(pretty_name,'left','Left');
+    pretty_name = strrep(pretty_name,'right','Right');
     pretty_name = strrep(pretty_name,'br','Right/bilateral');
     pretty_name = strrep(pretty_name,'bl','Left/bilateral');
     xticks(1:nclasses)
@@ -233,8 +235,8 @@ for is = 1:2
 
     % Get optimal ROC point
     [X,Y,T,~,opt] = perfcurve(class,scores,pos_class);
-    opt_thresh = T((X==opt(1))&(Y==opt(2)));
-
+    %opt_thresh = T((X==opt(1))&(Y==opt(2)));
+    opt_thresh = my_opt(X,Y,T);
     
     pred = cell(length(class),1);
     pred(scores >= opt_thresh) = {pos_class};
@@ -276,6 +278,7 @@ for is = 1:2
     % replace classnames
     pretty_name = classes;
     pretty_name = strrep(pretty_name,'left','Left');
+    pretty_name = strrep(pretty_name,'right','Right');
     pretty_name = strrep(pretty_name,'br','Right/bilateral');
     pretty_name = strrep(pretty_name,'bl','Left/bilateral');
     xticks(1:nclasses)

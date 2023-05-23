@@ -48,6 +48,16 @@ if rm_non_temporal
     T(~temporal,:) = [];
 end
 
+if 1
+    feature = 'spikes bipolar sleep';
+    figure
+    boxplot_with_points(T.(feature),T.(response),0,{'left','right','bilateral'},[],'para');
+    ylabel({'Spike rate asymmetry index','(bipolar reference)'})
+    set(gca,'fontsize',25)
+    print(gcf,[plot_folder,'methods_ex_AI'],'-depsc')
+
+end
+
 %% Initialize figure
 figure
 set(gcf,'position',[1 1 1000 1000])
@@ -326,5 +336,8 @@ fprintf(fid,[' We asked if there was a significant difference in the features th
     'features to identify right-sided SOZs (nor are they more similar than expected by chance) (Fig. 3D). </p>']);
 
 print(gcf,[plot_folder,'Fig3'],'-dpng')
+
+
+
 
 end

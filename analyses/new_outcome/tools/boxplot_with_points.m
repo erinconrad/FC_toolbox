@@ -101,6 +101,8 @@ if show_stats
 
     end
 
+else
+    out = [];
 end
 
 

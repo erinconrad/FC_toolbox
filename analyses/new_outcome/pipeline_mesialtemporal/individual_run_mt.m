@@ -22,6 +22,36 @@ name = pt(which_pt).name;
 %% get allowable electrodes (only LA, LB, LC, RA, RB, RC electrodes)
 potentially_allowable_labels = get_allowable_elecs(name);
 
+%% Find which of these electrodes are outside the brain
+% Get atlas labels
+dkt = pt(which_pt).dkt.label;
+atropos = pt(which_pt).atropos.label;
+atlas_elec_names = pt(which_pt).atropos.names;
+
+% convert atlas names to the A, B, C convention
+atlas_elec_names = mt_name_conversion(atlas_elec_names,name);
+
+outside_brain = zeros(length(potentially_allowable_labels),1);
+for i = 1:length(potentially_allowable_labels)
+    % find the matching atlas elec name
+    match = strcmp(potentially_allowable_labels{i},atlas_elec_names);
+
+    if match == 0, continue; end
+
+    if strcmp(dkt{match},'EmptyLabel') && (strcmp(atropos{match},'CSF') ...
+            || strcmp(atropos{match},'EmptyLabel'))
+        outside_brain(i) = 1;
+    end
+end
+outside_brain = logical(outside_brain);
+
+if 0
+    table(pt(which_pt).atropos.names,atlas_elec_names,atropos,dkt)
+end
+
+% remove those outside brain
+potentially_allowable_labels(outside_brain) = [];
+
 %% Remove some potentially allowable labels if they aren't really targeting mesial temporal region for that patient
 exr = strcmp(mT.name,name); assert(sum(exr==1));
 exc = mT.exclude{exr};
@@ -34,9 +64,11 @@ if ~isempty(exc)
     potentially_allowable_labels(rm_allow==1) = [];
 end
 
+
 %% Turn non-A, B, C MT electrodes into A, B, C
 old_labels = labels;
 labels = mt_name_conversion(labels,name);
+
 
 %% Find labels that match allowable electrodes and have symmetric coverage
 [allowed_labels,final_allowed_idx] = find_mt_symmetric_coverage(labels,potentially_allowable_labels);
