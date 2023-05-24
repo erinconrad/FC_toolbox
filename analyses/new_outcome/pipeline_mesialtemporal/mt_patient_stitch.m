@@ -283,7 +283,7 @@ end
 save([edf_summ_path,name,'/summ.mat'],'out');
 
 for im = 1:nmontages
-    plot_random_spikes(all_spike_times{im},name,nout.labels,montages{im},edf_path,edf_summ_path,mT)
+    plot_random_spikes(all_spike_times{im},name,nout.labels,montages{im},edf_path,edf_summ_path,mT,pt,which_pt)
 end
 
 end

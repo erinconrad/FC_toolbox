@@ -1,4 +1,4 @@
-function plot_random_spikes(all_spikes,name,labels,montage,edf_path,edf_summ_path,mT)
+function plot_random_spikes(all_spikes,name,labels,montage,edf_path,edf_summ_path,mT,pt,which_pt)
 
 nspikes = 40;
 surround = 2; % 2 seconds befor or after
