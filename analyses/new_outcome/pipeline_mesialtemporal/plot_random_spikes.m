@@ -49,16 +49,16 @@ for i = 1:nspikes
         % convert atlas names to the A, B, C convention
         atlas_elec_names = mt_name_conversion(atlas_elec_names,name);
         
-        outside_brain = zeros(length(potentially_allowable_labels),1);
-        for i = 1:length(potentially_allowable_labels)
+        outside_brain = zeros(length(allowable_labels),1);
+        for j = 1:length(allowable_labels)
             % find the matching atlas elec name
-            match = strcmp(potentially_allowable_labels{i},atlas_elec_names);
+            match = strcmp(allowable_labels{j},atlas_elec_names);
         
             if match == 0, continue; end
         
             if strcmp(dkt{match},'EmptyLabel') && (strcmp(atropos{match},'CSF') ...
                     || strcmp(atropos{match},'EmptyLabel'))
-                outside_brain(i) = 1;
+                outside_brain(j) = 1;
             end
         end
         outside_brain = logical(outside_brain);
@@ -68,7 +68,7 @@ for i = 1:nspikes
         end
         
         % remove those outside brain
-        potentially_allowable_labels(outside_brain) = [];
+        allowable_labels(outside_brain) = [];
     end
 
     % Remove some potentially allowable labels if they aren't really targeting mesial temporal region for that patient
