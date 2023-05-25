@@ -48,7 +48,7 @@ if rm_non_temporal
     T(~temporal,:) = [];
 end
 
-if 1
+if 0
     feature = 'spikes bipolar sleep';
     figure
     boxplot_with_points(T.(feature),T.(response),0,{'left','right','bilateral'},[],'para');

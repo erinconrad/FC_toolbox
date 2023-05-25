@@ -2,7 +2,7 @@ function outcome_plots
 
 %% Parameters
 which_year = 1;
-outcome_approach = 'prob';
+outcome_approach = 'prob_comb';
 which_model = 'spikes';
 
 %% Get file locs
@@ -18,8 +18,6 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Load the model file
-%out = load([plot_folder,'models.mat']);
-%out = out.out;
 out = load([plot_folder,'ext_models.mat']);
 out = out.all;
 
@@ -42,8 +40,14 @@ T(~hup,:) = [];
 
 %% Initialize figure
 figure
-set(gcf,'position',[1 1 1400 1000])
-tiledlayout(2,3,"TileSpacing",'tight','padding','loose')
+switch outcome_approach
+    case 'prob_comb'
+        set(gcf,'position',[1 1 1000 1000])
+        tiledlayout(2,2,"TileSpacing",'compact','padding','tight')
+    otherwise
+        set(gcf,'position',[1 1 1400 1000])
+        tiledlayout(2,3,"TileSpacing",'compact','padding','tight')
+end
 
 % Loop over outcome approaches
 for io = 1:2
@@ -97,23 +101,23 @@ for io = 1:2
 
 
 
-%{
-left_surg = surg & strcmp(T.surg_lat,'left');
-right_surg = surg & strcmp(T.surg_lat,'right');
-out_cat_left = categorical(outcome(left_surg&~empty_outcome));
-out_cat_right = categorical(outcome(right_surg&~empty_outcome));
-nexttile
-histogram(out_cat_left,cats,'facecolor','none','edgecolor',[0, 0.4470, 0.7410],...
-    'linewidth',2)
-hold on
-histogram(out_cat_right,cats,'facecolor','none','edgecolor',[0.8500, 0.3250, 0.0980],...
-    'linewidth',2)
-legend({'Left','Right'},'location','northeast','fontsize',20)
-ylabel('Number of patients')
-title('Engel outcome by surgery laterality')
-set(gca,'fontsize',20)
-%}
-
+    %{
+    left_surg = surg & strcmp(T.surg_lat,'left');
+    right_surg = surg & strcmp(T.surg_lat,'right');
+    out_cat_left = categorical(outcome(left_surg&~empty_outcome));
+    out_cat_right = categorical(outcome(right_surg&~empty_outcome));
+    nexttile
+    histogram(out_cat_left,cats,'facecolor','none','edgecolor',[0, 0.4470, 0.7410],...
+        'linewidth',2)
+    hold on
+    histogram(out_cat_right,cats,'facecolor','none','edgecolor',[0.8500, 0.3250, 0.0980],...
+        'linewidth',2)
+    legend({'Left','Right'},'location','northeast','fontsize',20)
+    ylabel('Number of patients')
+    title('Engel outcome by surgery laterality')
+    set(gca,'fontsize',20)
+    %}
+    
     %% Outcome analysis
     
     % Get some basic model stuff
@@ -223,9 +227,24 @@ set(gca,'fontsize',20)
             xlim([0.5 2.5])
             set(gca,'fontsize',20)
     
+        case 'prob_comb' % hypothesis: the modeled probability of concordant laterality is higher for good outcome patients
+            left_scores = left.scores;
+            right_scores = right.scores;
+    
+            nexttile
+            % concordant lateralty: probability of left for those with left
+            % surgery; probability of right for those with right surgery
+            unpaired_plot([left_scores(good_outcome&left_surg);right_scores(good_outcome&right_surg)],...
+                [left_scores(bad_outcome&left_surg);right_scores(bad_outcome&right_surg)],...
+                {'Good','Poor'},{'Modeled probability of','concordant laterality'},'para')
+            title({'Surgery-model laterality concordance'})
+            xlim([0.5 2.5])
+            set(gca,'fontsize',20)
+    
     
     end
 end
+
 
 
 %% Model performance by good vs bad outcome???

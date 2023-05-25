@@ -99,6 +99,8 @@ for i = 1:npts
             binTtrain{:,j} = logical(binTtrain{:,j});
             binTtest{:,j} = logical(binTtest{:,j});
         end
+        oldTtrain = Ttrain;
+        oldTtest = Ttest;
         Ttrain = binTtrain;
         Ttest = binTtest;
     end
@@ -146,9 +148,7 @@ for i = 1:npts
         all_best_features(i,1:min([nbest,length(tc.sorted_features)])) = a;
     end
     %}
-    
-
-end
+ end
 %{
 if combine_br ~= 0
     % Find the features that show up the most in the winning set

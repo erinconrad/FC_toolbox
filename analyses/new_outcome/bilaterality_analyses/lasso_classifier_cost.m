@@ -118,7 +118,7 @@ trainedClassifier.altPredictFcn = altPredictFcn;
 trainedClassifier.alt_class = alt_class;
 trainedClassifier.classifier = classifier;
 trainedClassifier.lr_prob = lr_prob;
-
+trainedClassifier.coef = coef;
 
 
 
