@@ -6,7 +6,7 @@ overwrite = 0;
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 bids_folder = '/data/Human_Data/CNT_iEEG_BIDS/';
-musc_recon_folder = 'users/allucas/CNT_borel/Q5_ieeg_recon_paper/source_data/musc_data/MUSC_recon/';
+musc_recon_folder = '/users/allucas/CNT_borel/Q5_ieeg_recon_paper/source_data/musc_data/MUSC_recon/';
 
 data_folder = [locations.main_folder,'data/'];
 
