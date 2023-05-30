@@ -1,9 +1,13 @@
 function add_atlas_parcellations
 
+overwrite = 0;
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 bids_folder = '/data/Human_Data/CNT_iEEG_BIDS/';
+musc_recon_folder = 'users/allucas/CNT_borel/Q5_ieeg_recon_paper/source_data/musc_data/MUSC_recon/';
+
 data_folder = [locations.main_folder,'data/'];
 
 % add script folder to path
@@ -19,19 +23,32 @@ for p = 1:length(pt)
     name = pt(p).name;
     rid = pt(p).rid;
 
-    
-    % Load the relevant atlas parcellation files
+    if overwrite == 0
+        if isfield(pt(p),'atropos') && ~isempty(pt(p).atropos) && isfield(pt(p).atropos, 'label') && ~isempty(pt(p).atropos.label)
+            fprintf('\nAlready did %s, skipping...\n',name);
+            continue
+        end
+    end
+
+    % Get patient folder name
     if rid < 100
         rid_text = ['sub-RID',sprintf('00%d',rid)];
     else
         rid_text = ['sub-RID',sprintf('0%d',rid)];
     end
-    
-    pt_folder = [bids_folder,rid_text,'/'];
-    
 
+    
+    %% Separate locations for musc and HUP
+    if contains(name,'HUP')
+
+        pt_folder = [bids_folder,rid_text,'/'];
+          
+    elseif contains(name,'MP')
+        pt_folder = [musc_recon_folder,rid_text,'/'];
+
+
+    end
     module3_folder = [pt_folder,'derivatives/ieeg_recon/module3/'];
-
     a_listing = dir([module3_folder,'*atropos*.csv']);
     d_listing = dir([module3_folder,'*DKT*.csv']);
 
@@ -45,7 +62,7 @@ for p = 1:length(pt)
 
     aT = readtable(atropos_file);
     dT = readtable(dkt_file);
-
+    
     if isempty(aT) || isempty(dT)
         continue
     end

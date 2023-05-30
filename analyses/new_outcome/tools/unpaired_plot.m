@@ -20,6 +20,8 @@ switch which_test
         stats.p = p;
         stats.tstat = ostats.tstat;
         stats.df = ostats.df;
+        stats.means = [nanmean(a) nanmean(b)];
+        stats.sd = [nanstd(a) nanstd(b)];
 end
 yl = ylim;
 ybar = yl(1)+(yl(2)-yl(1))*1.1;

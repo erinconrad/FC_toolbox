@@ -72,6 +72,10 @@ to_rm = zeros(length(letter_no_side_number),1);
 to_rm(to_rm_idx) = 1;
 to_rm = logical(to_rm);
 
+if sum(to_rm) >0 % I would not expect any of these to remain.
+    error('what')
+end
+
 if 0
     table(atropos,dkt,out_of_brain,letter_no_side_number,to_rm)
 end

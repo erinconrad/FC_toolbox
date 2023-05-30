@@ -83,7 +83,7 @@ righta_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just
 
 %% Do the LOO cross validation on the HUP data - spike only model
 Ttrain = T(train,:);
-just_spikes = 2; % only spike feature
+just_spikes = 1; % only spike feature
 lefts_int = classifier_wrapper(Ttrain,features,pca_perc,1,just_spikes,rm_non_temporal,[]); % 1 means left
 rights_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_temporal,[]); % 2 means right
 
@@ -94,7 +94,7 @@ rights_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_te
 
 %% Train on the HUP data, test on MUSC - spike only model
 fprintf('\nDoing main models...');
-just_spikes = 2; 
+just_spikes = 1; 
 lefts_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,1,just_spikes,rm_non_temporal); % 1 means left
 rights_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just_spikes,rm_non_temporal); % 2 means right
 
