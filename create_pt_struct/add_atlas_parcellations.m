@@ -53,10 +53,19 @@ for p = 1:length(pt)
     d_listing = dir([module3_folder,'*DKT*.csv']);
 
     if isempty(a_listing)
-        fprintf('\nSkipping %s because cannot find atlas\n',name);
-        continue; 
+        % First try Alfredo's other folder for missing recons
+        module3_folder = ['/data/Human_Data/recons/BIDS_penn/',rid_text,'/derivatives/ieeg_recon/module3/'];
+        a_listing = dir([module3_folder,'*atropos*.csv']);
+        d_listing = dir([module3_folder,'*DKT*.csv']);
+
+        if isempty(a_listing)
+
+            fprintf('\nSkipping %s because cannot find atlas\n',name);
+            continue; 
+        end
     end
 
+    fprintf('\nDoing %s\n',name);
     atropos_file = [module3_folder,a_listing(1).name];
     dkt_file = [module3_folder,d_listing(1).name];
 

@@ -95,6 +95,15 @@ all_names = Ttest.names;
 all_pred = tc.predictFcn(Ttest);
 %alt_pred = tc.altPredictFcn(Ttest);
 
+%% Re-derive feature weights
+coef = tc.coef(2:end);
+pcaCoefficients = tc.PCACoefficients;
+pcaCenters = tc.PCACenters;
+w = tc.pcaWeights;
+coef_feature_space = tc.invTransformationFcn(coef);
+[sorted_coefs,I] = sort(coef_feature_space,'descend');
+sorted_features = features(I);
+
 %% Make confusion matrix
 response_true = Ttest.(response);
 %{

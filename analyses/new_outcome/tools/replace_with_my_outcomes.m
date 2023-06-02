@@ -1,5 +1,5 @@
 function [engel1,engel2,ilae1,ilae2] = replace_with_my_outcomes(names,...
-    engel1,ilae1,engel2,ilae2,T,soz_locs,soz_lats,surgery)
+    engel1,ilae1,engel2,ilae2,T,soz_locs,surg_lat,surgery)
 
 npts = length(names);
 table_names = T.name;
@@ -21,7 +21,7 @@ for i = 1:npts
         continue
     end
 
-    if ~strcmp(soz_lats{i},'right') && ~strcmp(soz_lats{i},'left') % only for unilateral pts
+    if ~strcmp(surg_lat{i},'right') && ~strcmp(surg_lat{i},'left') % only for unilateral pts
         continue
     end
 

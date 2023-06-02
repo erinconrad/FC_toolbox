@@ -69,10 +69,6 @@ n_connected = sum(disconnected == 0,2);
 ref_labels = mt_data.all_labels(:,1);
 n_symmetric = cellfun(@length,ref_labels);
 
-%% Fix the outcomes for the patients I manually confirmed
-% I manually confirmed these myself, last updated May 2023
-[engel_yr1,engel_yr2,ilae_yr1,ilae_yr2] = replace_with_my_outcomes(names,...
-    engel_yr1,ilae_yr1,engel_yr2,ilae_yr2,T,soz_locs,soz_lats,surgery);
 
 
 %% Clean SOZ localizations and lateralities
@@ -99,6 +95,7 @@ for i = 1:npts
 
 end
 
+
 %% Consensus ablation or reseciton loc
 surg_loc = cell(npts,1);
 for i = 1:npts
@@ -112,6 +109,13 @@ for i = 1:npts
         surg_loc{i} = 'other';
     end
 end
+
+%% Fix the outcomes for the patients I manually confirmed
+% I manually confirmed these myself, last updated May 2023
+[engel_yr1,engel_yr2,ilae_yr1,ilae_yr2] = replace_with_my_outcomes(names,...
+    engel_yr1,ilae_yr1,engel_yr2,ilae_yr2,T,soz_locs,surg_lat,surgery);
+
+
 
 
 %% Parse surgery
@@ -287,10 +291,11 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             
     
             %% Get asymmetry index
-            %{ 
+            %
             k = find(strcmp(names,'HUP202'));
-            %k = 80;
-            ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},uni,last_dim,which_thing,subplot_path,0);
+           % k = 160;
+            ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},atropos{k},dkt{k},uni,last_dim,which_thing,...
+                subplot_path,0);
             %}
             
     

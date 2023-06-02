@@ -38,6 +38,10 @@ else
 
 end
 
+% temporary fix
+temp_feat = 'pearson bipolar sleep' ;
+T{T{:,temp_feat}>10,temp_feat} = 3;
+
 % Remove those without a response (soz_lats is the response variable)
 empty_class = cellfun(@isempty,T.soz_lats);
 T(empty_class,:) = [];

@@ -265,6 +265,16 @@ for io = 1:2
             % engel, ilae; mean good, std good, mean bad, std bad, df, tstat, p
             prob_stats(io,:) = [stats.means(1) stats.sd(1) stats.means(2) stats.sd(2),...
                 stats.df stats.tstat stats.p];
+
+            % investigating the patients with high predicted concordant
+            % laterality but poor outcome
+            if 0
+                table([T.names(bad_outcome&left_surg);T.names((bad_outcome&right_surg))],[left_scores(bad_outcome&left_surg);right_scores(bad_outcome&right_surg)])
+            end
+            % HUP138 (0.81) had a high modeled
+            % probability of concordant laterality but poor outcome. They
+            % had an ablation, and no repeat surgical evaluation. 
+
     
         case 'prob_comb_alt' % hypothesis: the modeled probability of concordant laterality is higher for good outcome patients
             % more complicated, takes difference in model scores. Slightly

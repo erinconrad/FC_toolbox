@@ -141,6 +141,7 @@ end
 %% E-F Confusion matrix (spikes only, internal cross-validation)
 curr = model(2).val(1);
 both_bal_acc = nan(2,1);
+both_opt_thresh = nan(2,1);
 for is = 1:2
     scores = curr.side(is).result.scores;
     class = curr.side(is).result.class;
@@ -155,10 +156,15 @@ for is = 1:2
         classes = classes([2 1]);
     end
 
+    % get cost for finding optimal ROC point
+    cost = [0 sum(strcmp(class,neg_class));sum(strcmp(class,pos_class)) 0];
+
     % Get optimal ROC point
-    [X,Y,T,~,opt] = perfcurve(class,scores,pos_class);
-    %opt_thresh = T((X==opt(1))&(Y==opt(2)));
-    opt_thresh = my_opt(X,Y,T);
+    [X,Y,T,~,opt] = perfcurve(class,scores,pos_class,'cost',cost);
+    opt_thresh = T((X==opt(1))&(Y==opt(2)));
+    %opt_thresh = my_opt(X,Y,T);
+    %opt_thresh = 0.5;
+    both_opt_thresh(is) = opt_thresh;
 
     
     pred = cell(length(class),1);
@@ -277,9 +283,11 @@ for is = 1:2
     end
 
     % Get optimal ROC point
-    [X,Y,T,~,opt] = perfcurve(class,scores,pos_class);
+    %[X,Y,T,~,opt] = perfcurve(class,scores,pos_class);
     %opt_thresh = T((X==opt(1))&(Y==opt(2)));
-    opt_thresh = my_opt(X,Y,T);
+    %opt_thresh = my_opt(X,Y,T);
+    % use the optimal threshold from the internal cross validated model
+    opt_thresh = both_opt_thresh(is);
     
     pred = cell(length(class),1);
     pred(scores >= opt_thresh) = {pos_class};

@@ -101,6 +101,22 @@ for ip = 1:length(pt)
 
     if sum(r) ~= 1, continue; end
 
+    if isfield(pt(ip),'atropos')
+        if ~isempty(pt(ip).atropos)
+            has_atropos(r) = 1;
+        end
+    end
+
+    if isfield(pt(ip),'dkt')
+        if ~isempty(pt(ip).dkt)
+            has_dkt(r) = 1;
+        end
+    end
+
+    if ~isempty(pt(ip).rid)
+        rid(r) = pt(ip).rid;
+    end
+
     % get the demographics
     if ~isfield(pt(ip),'clinical') || isempty(pt(ip).clinical)
         continue;
@@ -118,21 +134,7 @@ for ip = 1:length(pt)
     age_onset(r) = pt(ip).clinical.age_onset;
     age_implant(r) = pt(ip).clinical.age_implant;
 
-    if isfield(pt(ip),'atropos')
-        if ~isempty(pt(ip).atropos)
-            has_atropos(r) = 1;
-        end
-    end
-
-    if isfield(pt(ip),'dkt')
-        if ~isempty(pt(ip).dkt)
-            has_dkt(r) = 1;
-        end
-    end
-
-    if ~isempty(pt(ip).rid)
-        rid(r) = pt(ip).rid;
-    end
+    
 
 end
 
