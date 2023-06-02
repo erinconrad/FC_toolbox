@@ -54,7 +54,7 @@ for p = 1:length(pt)
 
     if isempty(a_listing)
         % First try Alfredo's other folder for missing recons
-        module3_folder = ['/data/Human_Data/recons/BIDS_penn/',rid_text,'/derivatives/ieeg_recon/module3/'];
+        module3_folder = ['/data/Human_Data/recon/BIDS_penn/',rid_text,'/derivatives/ieeg_recon/module3/'];
         a_listing = dir([module3_folder,'*atropos*.csv']);
         d_listing = dir([module3_folder,'*DKT*.csv']);
 
