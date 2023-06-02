@@ -396,7 +396,7 @@ for im = 1:3
     end
     
     % PC
-    pc =  new_pearson_calc(run_values,fs,tw,1);
+    [pc,pc_squared] = new_pearson_calc(run_values,fs,tw,1);
     if test_flag
         pc2 =  new_pearson_calc(run_values,fs,tw,0);
         figure
@@ -501,6 +501,7 @@ for im = 1:3
     out.montage(im).bp = bp;
     out.montage(im).rel_bp = rel_bp;
     out.montage(im).pc = pc;
+    out.montage(im).pc_squared = pc_squared;
     out.montage(im).plv = plv;
     out.montage(im).coh = coh;
     out.montage(im).gdf = gdf;

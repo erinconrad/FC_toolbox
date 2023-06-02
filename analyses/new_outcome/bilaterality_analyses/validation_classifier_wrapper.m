@@ -6,7 +6,7 @@ function out = validation_classifier_wrapper(T,train,test,features,pca_perc,comb
 response = 'soz_lats';
 
 % Restrict to spike features if desired
-spike_features = features(contains(features,'spikes') & contains(features,'bipolar') & ...
+spike_features = features(contains(features,'spikes') & contains(features,'car') & ...
     ~contains(features,'SD'));
 
 if just_spikes == 1 || just_spikes == 2
@@ -100,9 +100,9 @@ coef = tc.coef(2:end);
 pcaCoefficients = tc.PCACoefficients;
 pcaCenters = tc.PCACenters;
 w = tc.pcaWeights;
-coef_feature_space = tc.invTransformationFcn(coef);
-[sorted_coefs,I] = sort(coef_feature_space,'descend');
-sorted_features = features(I);
+%coef_feature_space = tc.invTransformationFcn(coef);
+%[sorted_coefs,I] = sort(coef_feature_space,'descend');
+%sorted_features = features(I);
 
 %% Make confusion matrix
 response_true = Ttest.(response);
