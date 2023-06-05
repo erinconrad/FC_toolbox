@@ -147,6 +147,10 @@ for p = 1:npts
         datlas = pt(p).dkt.label;
         dlabels = mt_name_conversion(pt(p).dkt.names,name);
         assert(isequal(alabels,dlabels))
+
+        % convert musc to hup
+        alabels = convert_musc_labels_to_hup(alabels);
+        dlabels = convert_musc_labels_to_hup(dlabels);
     
         % Fix for HUP162
         if strcmp(pt(p).name,'HUP162');
