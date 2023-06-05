@@ -153,10 +153,17 @@ for p = 1:npts
         dlabels = convert_musc_labels_to_hup(dlabels);
     
         % Fix for HUP162
-        if strcmp(pt(p).name,'HUP162');
+        if strcmp(pt(p).name,'HUP162')
             alabels = [alabels;'LA12';'LB12';'LC12';'RA12';'RB12';'RC12'];
             aatlas = [aatlas;'nan';'nan';'nan';'nan';'nan';'nan'];
             datlas = [datlas;'nan';'nan';'nan';'nan';'nan';'nan'];
+        end
+
+        % Fix for MP0037
+        if strcmp(pt(p).name,'MP0037')
+            alabels = [alabels;'RC5'];
+            aatlas = [aatlas;'nan'];
+            datlas = [datlas;'nan'];
         end
 
 
