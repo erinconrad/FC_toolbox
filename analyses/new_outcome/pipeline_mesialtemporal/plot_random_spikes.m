@@ -63,14 +63,16 @@ for i = 1:nspikes
                 end
             end
             outside_brain = logical(outside_brain);
+
+            if 0
+                table(pt(which_pt).atropos.names,atlas_elec_names,atropos,dkt)
+            end
+            
+            % remove those outside brain
+            allowable_labels(outside_brain) = [];
         end
         
-        if 0
-            table(pt(which_pt).atropos.names,atlas_elec_names,atropos,dkt)
-        end
         
-        % remove those outside brain
-        allowable_labels(outside_brain) = [];
     end
 
     % Remove some potentially allowable labels if they aren't really targeting mesial temporal region for that patient

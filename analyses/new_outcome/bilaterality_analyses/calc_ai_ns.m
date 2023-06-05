@@ -6,7 +6,7 @@ This function takes a list of features for different electrode contacts,
 finds the mesial temporal ones, and calculates a single asymmetry index
 (for each frequency band) representing the L-R difference.
 %}
-
+attempt_rm_oob = 0;
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
 average_level = 'side'; % side = whole L vs R side; electrode = single electrode; contact = single contact
@@ -66,22 +66,25 @@ for i = 1:length(letter_no_side_number)
     opp_partner(i) = poss_opp_partners(1);
 end
 
-% Define ones to remove
-to_rm_idx = [find(out_of_brain),opp_partner(out_of_brain)];
-to_rm = zeros(length(letter_no_side_number),1);
-to_rm(to_rm_idx) = 1;
-to_rm = logical(to_rm);
 
-if sum(to_rm) >0 % I would not expect any of these to remain.
-    error('what')
+if attempt_rm_oob
+    % Define ones to remove
+    to_rm_idx = [find(out_of_brain),opp_partner(out_of_brain)];
+    to_rm = zeros(length(letter_no_side_number),1);
+    to_rm(to_rm_idx) = 1;
+    to_rm = logical(to_rm);
+    
+    if sum(to_rm) >0 % I would not expect any of these to remain.
+        error('what')
+    end
+
+    if 0
+        table(atropos,dkt,out_of_brain,letter_no_side_number,to_rm)
+    end
+    
+    % Make the thing nans
+    thing(to_rm) = nan;
 end
-
-if 0
-    table(atropos,dkt,out_of_brain,letter_no_side_number,to_rm)
-end
-
-% Make the thing nans
-thing(to_rm) = nan;
 
 %% calculate the AI measurement
 % initialize
