@@ -148,6 +148,14 @@ for p = 1:npts
         dlabels = mt_name_conversion(pt(p).dkt.names,name);
         assert(isequal(alabels,dlabels))
     
+        % Fix for HUP162
+        if strcmp(pt(p).name,'HUP162');
+            alabels = [alabels;'LA12';'LB12';'LC12';'RA12';'RB12';'RC12'];
+            aatlas = [aatlas;'nan';'nan';'nan';'nan';'nan';'nan'];
+            datlas = [datlas;'nan';'nan';'nan';'nan';'nan';'nan'];
+        end
+
+
         [Lia,~] = ismember(alabels,clean_labels);
         [~,Locb] = ismember(clean_labels,alabels(Lia));
         txf_fcn1 = @(x) x(Lia);
@@ -161,9 +169,9 @@ for p = 1:npts
         if 0
             table(clean_labels,aatlas,datlas)
         end
+        %}
 
-        all_atropos{p} = aatlas;
-        all_dkt{p} = datlas;
+        
     end
 
     % find disconnected periods
