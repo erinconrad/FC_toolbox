@@ -1,7 +1,7 @@
 function make_table_1
 
 %% Parameters
-rm_non_temporal = 0;
+rm_non_temporal = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;

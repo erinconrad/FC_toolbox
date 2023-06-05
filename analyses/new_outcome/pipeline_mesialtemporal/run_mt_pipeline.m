@@ -1,6 +1,9 @@
 %% RUN MT pipeline
 function run_mt_pipeline(whichPts,overwrite)
 
+%% Parameters
+attempt_remove_oob = 0; % try to remove electrodes out of the brain
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -43,7 +46,7 @@ end
 for i = 1:length(whichPts)
     ip = whichPts(i);
     name = pt(ip).name;
-    mt_patient_stitch(pt,ip,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT,mT);
+    mt_patient_stitch(pt,ip,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT,mT,attempt_remove_oob);
 
 end
 

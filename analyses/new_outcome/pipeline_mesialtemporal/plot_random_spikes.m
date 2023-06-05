@@ -1,4 +1,4 @@
-function plot_random_spikes(all_spikes,name,labels,montage,edf_path,edf_summ_path,mT,pt,which_pt)
+function plot_random_spikes(all_spikes,name,labels,montage,edf_path,edf_summ_path,mT,pt,which_pt,attempt_remove_oob)
 
 nspikes = 40;
 surround = 2; % 2 seconds befor or after
@@ -48,20 +48,22 @@ for i = 1:nspikes
         
         % convert atlas names to the A, B, C convention
         atlas_elec_names = mt_name_conversion(atlas_elec_names,name);
-        
-        outside_brain = zeros(length(allowable_labels),1);
-        for j = 1:length(allowable_labels)
-            % find the matching atlas elec name
-            match = strcmp(allowable_labels{j},atlas_elec_names);
-        
-            if match == 0, continue; end
-        
-            if strcmp(dkt{match},'EmptyLabel') && (strcmp(atropos{match},'CSF') ...
-                    || strcmp(atropos{match},'EmptyLabel'))
-                outside_brain(j) = 1;
+
+        if attempt_remove_oob
+            outside_brain = zeros(length(allowable_labels),1);
+            for j = 1:length(allowable_labels)
+                % find the matching atlas elec name
+                match = strcmp(allowable_labels{j},atlas_elec_names);
+            
+                if match == 0, continue; end
+            
+                if strcmp(dkt{match},'EmptyLabel') && (strcmp(atropos{match},'CSF') ...
+                        || strcmp(atropos{match},'EmptyLabel'))
+                    outside_brain(j) = 1;
+                end
             end
+            outside_brain = logical(outside_brain);
         end
-        outside_brain = logical(outside_brain);
         
         if 0
             table(pt(which_pt).atropos.names,atlas_elec_names,atropos,dkt)

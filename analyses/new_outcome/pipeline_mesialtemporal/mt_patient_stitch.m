@@ -1,4 +1,4 @@
-function mt_patient_stitch(pt,which_pt,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT,mT)
+function mt_patient_stitch(pt,which_pt,edf_path,edf_summ_path,name,overwrite,overlap_log_file,szT,mT,attempt_remove_oob)
 
 %% Seed random number generator so that I get the same result each time I do this.
 rng(0)
@@ -46,26 +46,28 @@ else
     % convert atlas names to the A, B, C convention
     atlas_elec_names = mt_name_conversion(atlas_elec_names,name);
     
-    outside_brain = zeros(length(potentially_allowable_labels),1);
-    for i = 1:length(potentially_allowable_labels)
-        % find the matching atlas elec name
-        match = strcmp(potentially_allowable_labels{i},atlas_elec_names);
-    
-        if match == 0, continue; end
-    
-        if strcmp(dkt{match},'EmptyLabel') && (strcmp(atropos{match},'CSF') ...
-                || strcmp(atropos{match},'EmptyLabel'))
-            outside_brain(i) = 1;
+    if attempt_remove_oob
+        outside_brain = zeros(length(potentially_allowable_labels),1);
+        for i = 1:length(potentially_allowable_labels)
+            % find the matching atlas elec name
+            match = strcmp(potentially_allowable_labels{i},atlas_elec_names);
+        
+            if match == 0, continue; end
+        
+            if strcmp(dkt{match},'EmptyLabel') && (strcmp(atropos{match},'CSF') ...
+                    || strcmp(atropos{match},'EmptyLabel'))
+                outside_brain(i) = 1;
+            end
         end
+        outside_brain = logical(outside_brain);
+        
+        if 0
+            table(pt(which_pt).atropos.names,atlas_elec_names,atropos,dkt)
+        end
+        
+        % remove those outside brain
+        potentially_allowable_labels(outside_brain) = [];
     end
-    outside_brain = logical(outside_brain);
-    
-    if 0
-        table(pt(which_pt).atropos.names,atlas_elec_names,atropos,dkt)
-    end
-    
-    % remove those outside brain
-    potentially_allowable_labels(outside_brain) = [];
 end
 
 % Remove some potentially allowable labels if they aren't really targeting mesial temporal region for that patient
@@ -158,7 +160,7 @@ for f = 1:nfiles
     fprintf('\nDoing %s file %d of %d...',name,f,nfiles);
 
     %% Do the individual run
-    out = individual_run_mt(file_path,pt,which_pt,meta,f,overlap_log_file,mT);
+    out = individual_run_mt(file_path,pt,which_pt,meta,f,overlap_log_file,mT,attempt_remove_oob);
     fprintf('took %1.1f s\n',toc);
     if isempty(out) 
         skipped_file(f) = 1;
@@ -286,7 +288,7 @@ end
 save([edf_summ_path,name,'/summ.mat'],'out');
 
 for im = 1:nmontages
-    plot_random_spikes(all_spike_times{im},name,nout.labels,montages{im},edf_path,edf_summ_path,mT,pt,which_pt)
+    plot_random_spikes(all_spike_times{im},name,nout.labels,montages{im},edf_path,edf_summ_path,mT,pt,which_pt,attempt_remove_oob)
 end
 
 end
