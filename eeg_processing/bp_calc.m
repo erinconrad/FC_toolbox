@@ -23,7 +23,7 @@ all_power(all(isnan(run_values),1),:) = nan;
 
 
 % also get relative power (divide signal by power in whole thing (first freq band is broadband)
-rel_power = all_power./all_power(:,1); 
+rel_power = all_power./all_power(:,1);
 
 
 end

@@ -68,6 +68,7 @@ all_bp_iqr = cell(npts,3,3);
 all_spikes_iqr = cell(npts,3,3);
 all_rl_iqr = cell(npts,3,3);
 all_pearson_iqr = cell(npts,3,3);
+all_pearson_squared_iqr = cell(npts,3,3);
 all_plv_iqr = cell(npts,3,3);
 all_se_iqr = cell(npts,3,3);
 all_re_iqr = cell(npts,3,3);
@@ -141,48 +142,50 @@ for p = 1:npts
     clean_labels = cellfun(@(x) strrep(x,'-Ref',''),labels{1,1},'UniformOutput',false);
 
     % get atlas parcellations
-    if ~isempty(pt(p).atropos)
-        aatlas = pt(p).atropos.label;
-        alabels = mt_name_conversion(pt(p).atropos.names,name);
-        datlas = pt(p).dkt.label;
-        dlabels = mt_name_conversion(pt(p).dkt.names,name);
-        assert(isequal(alabels,dlabels))
-
-        % convert musc to hup
-        alabels = convert_musc_labels_to_hup(alabels);
-        dlabels = convert_musc_labels_to_hup(dlabels);
+    if 0
+        if ~isempty(pt(p).atropos)
+            aatlas = pt(p).atropos.label;
+            alabels = mt_name_conversion(pt(p).atropos.names,name);
+            datlas = pt(p).dkt.label;
+            dlabels = mt_name_conversion(pt(p).dkt.names,name);
+            assert(isequal(alabels,dlabels))
     
-        % Fix for HUP162
-        if strcmp(pt(p).name,'HUP162')
-            alabels = [alabels;'LA12';'LB12';'LC12';'RA12';'RB12';'RC12'];
-            aatlas = [aatlas;'nan';'nan';'nan';'nan';'nan';'nan'];
-            datlas = [datlas;'nan';'nan';'nan';'nan';'nan';'nan'];
-        end
-
-        % Fix for MP0037
-        if strcmp(pt(p).name,'MP0037')
-            alabels = [alabels;'RC5'];
-            aatlas = [aatlas;'nan'];
-            datlas = [datlas;'nan'];
-        end
-
-
-        [Lia,~] = ismember(alabels,clean_labels);
-        [~,Locb] = ismember(clean_labels,alabels(Lia));
-        txf_fcn1 = @(x) x(Lia);
-        txf_fcn2 = @(x) x(Locb);
-        txf_fcn = @(x) txf_fcn2(txf_fcn1(x));
-
-        assert(isequal(clean_labels,txf_fcn(alabels)))
-        aatlas = txf_fcn(aatlas);
-        datlas = txf_fcn(datlas);
+            % convert musc to hup
+            alabels = convert_musc_labels_to_hup(alabels);
+            dlabels = convert_musc_labels_to_hup(dlabels);
         
-        if 0
-            table(clean_labels,aatlas,datlas)
+            % Fix for HUP162
+            if strcmp(pt(p).name,'HUP162')
+                alabels = [alabels;'LA12';'LB12';'LC12';'RA12';'RB12';'RC12'];
+                aatlas = [aatlas;'nan';'nan';'nan';'nan';'nan';'nan'];
+                datlas = [datlas;'nan';'nan';'nan';'nan';'nan';'nan'];
+            end
+    
+            % Fix for MP0037
+            if strcmp(pt(p).name,'MP0037')
+                alabels = [alabels;'RC5'];
+                aatlas = [aatlas;'nan'];
+                datlas = [datlas;'nan'];
+            end
+    
+    
+            [Lia,~] = ismember(alabels,clean_labels);
+            [~,Locb] = ismember(clean_labels,alabels(Lia));
+            txf_fcn1 = @(x) x(Lia);
+            txf_fcn2 = @(x) x(Locb);
+            txf_fcn = @(x) txf_fcn2(txf_fcn1(x));
+    
+            assert(isequal(clean_labels,txf_fcn(alabels)))
+            aatlas = txf_fcn(aatlas);
+            datlas = txf_fcn(datlas);
+            
+            if 0
+                table(clean_labels,aatlas,datlas)
+            end
+            %}
+    
+            
         end
-        %}
-
-        
     end
 
     % find disconnected periods
@@ -493,8 +496,12 @@ out.all_engel = all_engel;
 out.all_ilae = all_ilae;
 out.all_soz_loc = all_soz_loc;
 out.all_soz_lat = all_soz_lat;
+%{
 out.all_atropos = all_atropos;
 out.all_dkt = all_dkt;
+%}
+out.all_atropos = [];
+out.all_dkt = [];
 
 out.all_n_wake_sleep = all_n_wake_sleep;
 out.all_n_wake_sleep_connected = all_n_wake_sleep_connected;

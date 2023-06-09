@@ -10,7 +10,7 @@ pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
 
 figure
-for i = 1:length(pt)
+for i = 160:length(pt)
     if isempty(pt(i).atropos)
         continue
     end
