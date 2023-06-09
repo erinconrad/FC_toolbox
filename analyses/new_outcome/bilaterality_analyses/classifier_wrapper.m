@@ -9,7 +9,7 @@ if isempty(response)
 end
 
 % Restrict to spike features if desired
-spike_features = features(contains(features,'spikes') & contains(features,'car') & ...
+spike_features = features(contains(features,'spikes') & contains(features,'bipolar') & ...
     ~contains(features,'SD')); % this should only be one feature - spikes in car reference
 
 if just_spikes == 1 || just_spikes == 2
