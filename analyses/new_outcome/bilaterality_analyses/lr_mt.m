@@ -55,6 +55,9 @@ all_n_wake_sleep_connected = mt_data.all_n_wake_sleep_connected;
 atropos = mt_data.all_atropos;
 dkt = mt_data.all_dkt;
 
+atropos = cell(npts,1);
+dkt = cell(npts,1);
+
 % Find and exclude patients for whom bulk of record is disconnected
 most_disconnected = sum(disconnected == 1,2) >= 0.9* size(disconnected,2);
 
@@ -291,9 +294,10 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
             
     
             %% Get asymmetry index
-            %
+            %{
             k = find(strcmp(names,'HUP202'));
            % k = 160;
+           
             ai1 = calc_ai_ns(labels{k},thing{k},names{k},mt_data.all_labels{k,1},atropos{k},dkt{k},uni,last_dim,which_thing,...
                 subplot_path,0);
             %}
