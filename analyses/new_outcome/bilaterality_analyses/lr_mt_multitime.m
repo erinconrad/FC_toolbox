@@ -41,6 +41,10 @@ disconnected = mt_data.all_disconnected;
 all_n_wake_sleep_connected = mt_data.all_n_wake_sleep_connected;
 atropos = mt_data.all_atropos;
 dkt = mt_data.all_dkt;
+
+atropos = cell(npts,1);
+dkt = cell(npts,1);
+
 all_spikes = mt_data.spikes_subsample;
 durations = mt_data.durations;
 
