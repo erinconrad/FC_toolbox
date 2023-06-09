@@ -100,9 +100,13 @@ coef = tc.coef(2:end);
 pcaCoefficients = tc.PCACoefficients;
 pcaCenters = tc.PCACenters;
 w = tc.pcaWeights;
-%coef_feature_space = tc.invTransformationFcn(coef);
-%[sorted_coefs,I] = sort(coef_feature_space,'descend');
-%sorted_features = features(I);
+if length(coef) > 1
+    coef_feature_space = tc.invTransformationFcn(coef);
+    [~,I] = sort(abs(coef_feature_space),'descend');
+    sorted_features = features(I);
+    out.sorted_features = sorted_features;
+    out.coefs = coef_feature_space(I);
+end
 
 %% Make confusion matrix
 response_true = Ttest.(response);

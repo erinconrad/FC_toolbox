@@ -155,7 +155,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
     
         
         coh = mt_data.all_coh(:,which_montage,which_sleep_stage);
-        pearson = mt_data.all_pearson(:,which_montage,which_sleep_stage);
+        pearson = mt_data.all_pearson_squared(:,which_montage,which_sleep_stage);
         bp = mt_data.all_bp(:,which_montage,which_sleep_stage);
         rel_bp = mt_data.all_rel_bp(:,which_montage,which_sleep_stage);
         plv = mt_data.all_plv(:,which_montage,which_sleep_stage);
@@ -167,7 +167,7 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         ll = mt_data.all_ll(:,which_montage,which_sleep_stage);
 
         coh_iqr = mt_data.all_coh_iqr(:,which_montage,which_sleep_stage);
-        pearson_iqr = mt_data.all_pearson_iqr(:,which_montage,which_sleep_stage);
+        pearson_iqr = mt_data.all_pearson_squared_iqr(:,which_montage,which_sleep_stage);
         bp_iqr = mt_data.all_bp_iqr(:,which_montage,which_sleep_stage);
         rel_bp_iqr = mt_data.all_rel_bp_iqr(:,which_montage,which_sleep_stage);
         plv_iqr = mt_data.all_plv_iqr(:,which_montage,which_sleep_stage);
