@@ -110,6 +110,14 @@ for i = 1:nspikes
         %curr_signal = allowed_labels{is};
         curr_signal = old_allowed{is};
   
+        % Fix for hup119
+        if strcmp(name,'HUP119')
+            if ~ismember(curr_signal,data.Properties.VariableNames)
+                matching_idx = contains(data.Properties.VariableNames,curr_signal);
+                curr_signal = data.Properties.VariableNames(matching_idx);
+            end
+        end
+
         %% Fill up values
         values(:,is) = data.(curr_signal){1};
         
