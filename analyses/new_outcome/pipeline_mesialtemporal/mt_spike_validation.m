@@ -54,7 +54,7 @@ for i = 1:length(whichPts)
     % Plot random spike detections
     for im = 1:nmontages
         %plot_random_spikes(all_spike_times{im},name,labels,montages{im},edf_path,edf_summ_path)
-            plot_random_spikes(all_spike_times{im},name,nout.labels,montages{im},...
+            plot_random_spikes(all_spike_times{im},name,out.labels,montages{im},...
                 edf_path,edf_summ_path,mT,pt,ip,0)
 
     end
