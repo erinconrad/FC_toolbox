@@ -114,7 +114,7 @@ for i = 1:nspikes
         if strcmp(name,'HUP119')
             if ~ismember(curr_signal,data.Properties.VariableNames)
                 matching_idx = contains(data.Properties.VariableNames,curr_signal);
-                curr_signal = data.Properties.VariableNames(matching_idx);
+                curr_signal = data.Properties.VariableNames{matching_idx};
             end
         end
 
