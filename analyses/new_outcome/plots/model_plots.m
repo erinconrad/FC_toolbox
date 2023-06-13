@@ -13,7 +13,7 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% Load the intermediat file
+%% Load the intermediate file
 out = load([plot_folder,'ext_models.mat']);
 out = out.all;
 model = out.model;
@@ -28,11 +28,11 @@ fprintf(fid,'<p><br><b>A classifier incorporating interictal EEG features predic
 %% Initialize figure
 figure
 set(gcf,'position',[1 1 1200 1400])
-tiledlayout(3,3,"TileSpacing",'tight','padding','tight')
+t = tiledlayout(3,3,"TileSpacing",'tight','padding','tight');
 
-%% A-C Do ROC curves for internal validation
+%% A-B Do ROC curves for internal validation
 for iv = 1
-    for im = 1:nmodels
+    for im = 1:3
         nexttile
         ll = plot(model(im).val(iv).side(1).result.X,...
             model(im).val(iv).side(1).result.Y,'linewidth',2);
@@ -74,7 +74,7 @@ fprintf(fid,['We tested whether interictal features can predict SOZ laterality i
     model(2).val(1).side(1).result.AUC,model(2).val(1).side(2).result.AUC,...
     model(3).val(1).side(1).result.AUC,model(3).val(1).side(2).result.AUC);
 
-%% D: Subsampling plots, internal validation
+%% C: Subsampling plots, internal validation
 if 1
 sub = out.cv_ss; % cross validation
 
@@ -138,6 +138,55 @@ fprintf(fid,['<p>Given the high performance of the spike rate-only model, and gi
 
 end
 
+%{
+%% D Stem plot of most important features
+rm_sleep_text = @(x) strrep(x,' sleep','');
+left = model(1).val(2).side(1).result;
+right = model(1).val(2).side(2).result;
+n_to_plot = 15;
+left_coefs = left.coefs(1:n_to_plot);
+left_names = left.sorted_features(1:n_to_plot);
+right_coefs = right.coefs(1:n_to_plot);
+right_names = right.sorted_features(1:n_to_plot);
+
+tt = tiledlayout(t,1,1);
+tt.Layout.Tile = 4;
+tt.Layout.TileSpan = [1 1];
+ax1 = axes(tt);
+
+
+pl = plot(ax1,1:n_to_plot,left_coefs,'o','markersize',15,'color',[0 0.4470 0.7410],'linewidth',2);
+ax1.XAxisLocation = 'top';
+ax1.YAxisLocation = 'left';
+ax1.XColor = [0 0.4470 0.7410];
+ax1.YColor = [0 0.4470 0.7410];
+ax1.Box = 'off';
+ax1.YLim = [min([min(left_coefs),min(right_coefs)]),...
+    max([max(left_coefs),max(right_coefs)])];
+ax1.XTick = 1:n_to_plot;
+ax1.XTickLabel = cellfun(rm_sleep_text,cellfun(@greek_letters_plots,left_names,'uniformoutput',false),...
+    'uniformoutput',false);
+
+ax2 = axes(tt);
+pr = plot(ax2,1:n_to_plot,right_coefs,'o','markersize',15,'color',[0.8500 0.3250 0.0980],'linewidth',2);
+ax2.XAxisLocation = 'bottom';
+ax2.YAxisLocation = 'right';
+ax2.XColor = [0.8500 0.3250 0.0980];
+ax2.YColor = [0.8500 0.3250 0.0980];
+ax2.Box = 'off';
+ax2.YLim = [min([min(left_coefs),min(right_coefs)]),...
+    max([max(left_coefs),max(right_coefs)])];
+ax2.XTick = 1:n_to_plot;
+ax2.XTickLabel = cellfun(rm_sleep_text,cellfun(@greek_letters_plots,right_names,'uniformoutput',false),...
+    'uniformoutput',false);
+ax2.Color = 'none';
+ax2.Box = 'off';
+
+legend([pl pr],{'Left vs right/bilateral','Right vs left/bilateral'},'location','northeast','fontsize',15)
+set(ax1,'fontsize',15); set(ax2,'fontsize',15)
+ylabel('Estimated model coefficient','color','k','fontsize',15)
+%}
+
 %% E-F Confusion matrix (spikes only, internal cross-validation)
 curr = model(2).val(1);
 both_bal_acc = nan(2,1);
@@ -161,6 +210,7 @@ for is = 1:2
 
     % Get optimal ROC point
     [X,Y,T,~,opt] = perfcurve(class,scores,pos_class,'cost',cost);
+    %[X,Y,T,~,opt] = perfcurve(class,scores,pos_class);
     opt_thresh = T((X==opt(1))&(Y==opt(2)));
     %opt_thresh = my_opt(X,Y,T);
     %opt_thresh = 0.5;

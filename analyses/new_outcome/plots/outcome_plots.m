@@ -336,6 +336,12 @@ fprintf(fid,[' We hypothesized that patients with a good surgical outcome would 
     get_p_html(prob_stats(2,7)));
 % engel, ilae; mean good, std good, mean bad, std bad, df, tstat, p
 
+%% Add subtitles
+annotation('textbox',[0 0.9 0.1 0.1],'String','A','LineStyle','none','fontsize',25)
+annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','LineStyle','none','fontsize',25)
+annotation('textbox',[0 0.40 0.1 0.1],'String','C','LineStyle','none','fontsize',25)
+annotation('textbox',[0.5 0.4 0.1 0.1],'String','D','LineStyle','none','fontsize',25)
+
 %% Model performance by good vs bad outcome???
  print(gcf,[plot_folder,'Fig6'],'-dpng')
 

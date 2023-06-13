@@ -16,6 +16,10 @@ addpath(genpath(scripts_folder));
 pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
 
+%% LOad validation file
+validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
+mT = readtable(validation_file,'Sheet','strange_elec_names');
+
 if isempty(whichPts)
     whichPts = 1:length(pt);
 end
@@ -49,7 +53,10 @@ for i = 1:length(whichPts)
 
     % Plot random spike detections
     for im = 1:nmontages
-        plot_random_spikes(all_spike_times{im},name,labels,montages{im},edf_path,edf_summ_path)
+        %plot_random_spikes(all_spike_times{im},name,labels,montages{im},edf_path,edf_summ_path)
+            plot_random_spikes(all_spike_times{im},name,nout.labels,montages{im},...
+                edf_path,edf_summ_path,mT,pt,ip,0)
+
     end
 end
 
