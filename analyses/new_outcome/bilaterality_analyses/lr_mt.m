@@ -1,4 +1,4 @@
-function [T,features] =  lr_mt(which_sleep_stages)
+function [T,features] =  lr_mt(which_sleep_stages,rm_bad_spikes)
 
 %% Parameters
 only_hup = 0;
@@ -8,6 +8,9 @@ do_little_plots = 0;
 do_big_plots = 0;
 if ~exist('which_sleep_stages','var')
     which_sleep_stages = [2 3]; % all = 1, wake =2, sleep = 3
+end
+if ~exist('rm_bad_spikes','var')
+    rm_bad_spikes = 0;
 end
 which_montages = [1 2 3]; % machine = 1,car = 2, bipolar = 3
 
@@ -34,6 +37,7 @@ mt_data = mt_data.out;
 
 %% Load Manual validation file
 T = readtable('Manual validation.xlsx','Sheet','outcome');
+sT = readtable('Manual validation.xlsx','Sheet','EDF pipeline');
 
 %% get variables of interest
 all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
@@ -72,6 +76,17 @@ n_connected = sum(disconnected == 0,2);
 ref_labels = mt_data.all_labels(:,1);
 n_symmetric = cellfun(@length,ref_labels);
 
+%% Remove bad spikes
+sT(cellfun(@isempty,sT.name),:) = [];
+snames = sT.name;
+assert(isequal(snames,names))
+min_allowable = 25;
+if rm_bad_spikes
+    bi_good = sT.x_Correct_outOf50__bi_;
+    bad_spikes = bi_good < min_allowable;
+else
+    bad_spikes = false(length(names),1);
+end
 
 
 %% Clean SOZ localizations and lateralities
@@ -427,7 +442,7 @@ end
 
 %% Prep  output table
 % First, remove those rows missing all columns
-T = Ts(~all_missing & ~most_disconnected,:);
+T = Ts(~all_missing & ~most_disconnected & ~bad_spikes,:);
 
 %
 

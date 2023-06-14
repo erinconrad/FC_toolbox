@@ -16,106 +16,128 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% Run the lr_mt to extract AI features
-if rm_wake == 1
-    [T,features] =  lr_mt(3); % the 3 refers to only looking at sleep
-else
-    error('why are you doing this?')
-end
+%% Main analysis and good spike analysis
+for ia = 1:2
 
-% Remove those without a response (soz_lats is the response variable)
-empty_class = cellfun(@isempty,T.soz_lats);
-T(empty_class,:) = [];
+    if ia == 1 % all spikes
+        approach(ia).type = 'all spikes';
+        % Run the lr_mt to extract AI features
+        if rm_wake == 1
+            [T,features] =  lr_mt(3); % the 3 refers to only looking at sleep
+        else
+            error('why are you doing this?')
+        end
 
-%% Establish HUP and MUSC as training and testing, respectively
-train  = contains(T.names,'HUP');
-test  = contains(T.names,'MP');
+    else % good spikes only
+        approach(ia).type = 'good spikes';
+        % Run the lr_mt to extract AI features, but restrict to good spikes
+        % only
+        if rm_wake == 1
+            [T,features] =  lr_mt(3,1); % the 3 refers to only looking at sleep
+        else
+            error('why are you doing this?')
+        end
 
-%% Establish model types
-model(1).type = 'All features';
-model(2).type = 'Spikes';
-model(3).type = 'Binary spikes';
-nmodels = length(model);
-
-for im = 1:nmodels
-    model(im).val(1).description = 'HUP cross-validation';
-    model(im).val(2).description = 'MUSC external validation';
-end
-
-for im = 1:nmodels
-    for iv = 1:2
-        model(im).val(iv).side(1).description = 'Left vs right/bilateral';
-        model(im).val(iv).side(2).description = 'Right vs left/bilateral';
     end
-end
 
-%% Run all the models
-fprintf('\nDoing main models...');
-tic
-% Loop over model types
-for im = 1:nmodels
-    just_spikes = im - 1; % if full model, just_spikes = 0, if spikes, just_spikes = 1, if binary, just_spikes = 2
     
-   
-    % Loop over internal vs external validation
-    for iv = 1:2
-
-        % Loop over sides
-        for is = 1:2
-
-            % run the internal cross validation
-            if iv == 1
-                out = classifier_wrapper(T(train,:),features,pca_perc,is,...
-                    just_spikes,rm_non_temporal,[]);
+    % Remove those without a response (soz_lats is the response variable)
+    empty_class = cellfun(@isempty,T.soz_lats);
+    T(empty_class,:) = [];
     
-            % run the external test
-            elseif iv == 2
-                out = validation_classifier_wrapper(T,train,test,features,pca_perc,...
-                    is,just_spikes,rm_non_temporal);
+    % Establish HUP and MUSC as training and testing, respectively
+    train  = contains(T.names,'HUP');
+    test  = contains(T.names,'MP');
+    
+    % Establish model types
+    model(1).type = 'All features';
+    model(2).type = 'Spikes';
+    model(3).type = 'Binary spikes';
+    nmodels = length(model);
+    
+    for im = 1:nmodels
+        model(im).val(1).description = 'HUP cross-validation';
+        model(im).val(2).description = 'MUSC external validation';
+    end
+    
+    for im = 1:nmodels
+        for iv = 1:2
+            model(im).val(iv).side(1).description = 'Left vs right/bilateral';
+            model(im).val(iv).side(2).description = 'Right vs left/bilateral';
+        end
+    end
+    
+    % Run all the models
+    fprintf('\nDoing main models...');
+    tic
+    % Loop over model types
+    for im = 1:nmodels
+        just_spikes = im - 1; % if full model, just_spikes = 0, if spikes, just_spikes = 1, if binary, just_spikes = 2
+        
+       
+        % Loop over internal vs external validation
+        for iv = 1:2
+    
+            % Loop over sides
+            for is = 1:2
+    
+                % run the internal cross validation
+                if iv == 1
+                    out = classifier_wrapper(T(train,:),features,pca_perc,is,...
+                        just_spikes,rm_non_temporal,[]);
+        
+                % run the external test
+                elseif iv == 2
+                    out = validation_classifier_wrapper(T,train,test,features,pca_perc,...
+                        is,just_spikes,rm_non_temporal);
+        
+                end
+    
+                % Do the perfcurve
+                [out.X,out.Y,~,out.AUC] = perfcurve(out.class,out.scores,out.pos_class);
+    
+                % Fill the appropriate structure entry
+                model(im).val(iv).side(is).result = out;
     
             end
-
-            % Do the perfcurve
-            [out.X,out.Y,~,out.AUC] = perfcurve(out.class,out.scores,out.pos_class);
-
-            % Fill the appropriate structure entry
-            model(im).val(iv).side(is).result = out;
-
-        end
-        
-    end
-end
-
-all.model = model;
-save([plot_folder,'ext_models.mat'],'all')
-
-
-% test - show results
-if 0
-    figure
-    tiledlayout(2,3)
-    for iv = 1:2
-        for im = 1:nmodels
-            nexttile
-            ll = plot(model(im).val(iv).side(1).result.X,...
-                model(im).val(iv).side(1).result.Y,'linewidth',2);
-            hold on
-            lr = plot(model(im).val(iv).side(2).result.X,...
-                model(im).val(iv).side(2).result.Y,'linewidth',2);
-            plot([0 1],[0 1],'k--','linewidth',2)
-            xlabel('False positive rate')
-            ylabel('True positive rate')
-            legend([ll,lr],{sprintf('%s: AUC = %1.2f',...
-                model(im).val(iv).side(1).description,model(im).val(iv).side(1).result.AUC),...
-                sprintf('%s: AUC = %1.2f',...
-                model(im).val(iv).side(2).description,model(im).val(iv).side(2).result.AUC)},'fontsize',15,...
-                'location','southeast')
-            title(sprintf('%s %s',model(im).type,model(im).val(iv).description))
-            set(gca,'fontsize',15)
-
-
+            
         end
     end
+    
+    
+    approach(ia).model = model;
+    all.approach(ia) = approach(ia);
+    save([plot_folder,'ext_models.mat'],'all')
+    
+    
+    % test - show results
+    if 0
+        figure
+        tiledlayout(2,3)
+        for iv = 1:2
+            for im = 1:nmodels
+                nexttile
+                ll = plot(model(im).val(iv).side(1).result.X,...
+                    model(im).val(iv).side(1).result.Y,'linewidth',2);
+                hold on
+                lr = plot(model(im).val(iv).side(2).result.X,...
+                    model(im).val(iv).side(2).result.Y,'linewidth',2);
+                plot([0 1],[0 1],'k--','linewidth',2)
+                xlabel('False positive rate')
+                ylabel('True positive rate')
+                legend([ll,lr],{sprintf('%s: AUC = %1.2f',...
+                    model(im).val(iv).side(1).description,model(im).val(iv).side(1).result.AUC),...
+                    sprintf('%s: AUC = %1.2f',...
+                    model(im).val(iv).side(2).description,model(im).val(iv).side(2).result.AUC)},'fontsize',15,...
+                    'location','southeast')
+                title(sprintf('%s %s',model(im).type,model(im).val(iv).description))
+                set(gca,'fontsize',15)
+    
+    
+            end
+        end
+    end
+
 end
 
 %% Do subsampling analysis

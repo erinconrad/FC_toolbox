@@ -1,4 +1,4 @@
-function test_external_validation(for_will)
+function test_external_validation
 
 % This code performs both leave-one-out cross validation on the HUP
 % training data AND trains the model on all the HUP data and tests it on
@@ -6,9 +6,11 @@ function test_external_validation(for_will)
 % model using only spike rates.
 
 %% Parameters
+for_will = 0;
 pca_perc = 95; % the percent variance to explain for pca
 rm_non_temporal = 1; % remove patients who are not temporal
 rm_wake = 1; % don't include wake segments
+rm_bad_spikes = 0;
 
 %% Get file locs
 if ~for_will
@@ -31,7 +33,7 @@ if for_will
 else
     %% Run the lr_mt to extract AI features
     if rm_wake == 1
-        [T,features] =  lr_mt(3); % the 3 refers to only looking at sleep
+        [T,features] =  lr_mt(3,rm_bad_spikes); % the 3 refers to only looking at sleep
     else
         error('why are you doing this?')
     end
