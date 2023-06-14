@@ -29,7 +29,7 @@ for ia = 1:2
         end
 
     else % good spikes only
-        approach(ia).type = 'good spikes';
+        approach(ia).type = 'good spikes, PPV above 0.5';
         % Run the lr_mt to extract AI features, but restrict to good spikes
         % only
         if rm_wake == 1
