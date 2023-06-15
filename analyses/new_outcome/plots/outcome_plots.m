@@ -2,7 +2,7 @@ function outcome_plots
 
 %% Parameters
 which_year = 1;
-outcome_approach = 'prob_comb';
+outcome_approach = 'direct_model';
 which_model = 'spikes';
 
 %% Get file locs
@@ -31,9 +31,9 @@ out = out.all;
 % which model
 switch which_model
     case 'full'
-        model = out.model(1).val(1);
+        model = out.approach(1).model(1).val(1);
     case 'spikes'
-        model = out.model(2).val(1);
+        model = out.approach(1).model(2).val(1);
 end
 
 %% Run the mt_lr again just to get overall outcome stuff
@@ -53,13 +53,16 @@ T(contains(T.surgery,'ablation')|contains(T.surgery,'Resection'),:)
 % concordant with the side of their surgery.
 end
 
+%% Get the 5-SENSE scores
+outT = five_sense_calculator;
+
 
 %% Initialize figure
 figure
 switch outcome_approach
     case 'prob_comb'
-        set(gcf,'position',[1 1 1000 1000])
-        tiledlayout(2,2,"TileSpacing",'compact','padding','tight')
+        set(gcf,'position',[1 1 1000 1400])
+        tiledlayout(2,3,"TileSpacing",'compact','padding','tight')
     case 'auc_comb'
         set(gcf,'position',[1 1 1000 1000])
         tiledlayout(2,2,"TileSpacing",'compact','padding','tight')
@@ -299,8 +302,43 @@ for io = 1:2
                 table(T.names(left_surg),T.surg_lat(left_surg),T.ilae_yr1(left_surg),good_outcome(left_surg),left_scores(left_surg),right_scores(left_surg))
                 table(T.names(right_surg),T.surg_lat(right_surg),T.ilae_yr1(right_surg),good_outcome(right_surg),left_scores(right_surg),right_scores(right_surg))
             end
+        
+        case 'direct_model'
+            outcome_for_model = cell(length(good_outcome),1);
+            outcome_for_model(good_outcome==1) = {'good'};
+            outcome_for_model(bad_outcome==1) = {'bad'};
+            predictor = T.('spikes bipolar sleep');
+            predictor = abs(predictor);
+            newT = table(outcome_for_model,predictor,T.names,'VariableNames',{'outcome','spikes bipolar','names'});
+            newT(cellfun(@isempty,outcome_for_model),:) = [];
+            out = classifier_wrapper(newT,{'spikes bipolar'},95,0,1,0,'outcome');
+             
     
     end
+
+    %% 5-sense score
+
+    % Get the outcomes of these patients
+    names_5sense = outT.names;
+    prob_5sense = outT.prob;
+    good_outcome_5sense = nan(length(names_5sense),1);
+    bad_outcome_5sense = nan(length(names_5sense),1);
+    for i = 1:length(names_5sense)
+        % get row in the other outcome table corresponding to this name
+        curr_name_5sense = names_5sense{i};
+        row = strcmp(curr_name_5sense,T.names);
+    
+        if sum(row)~=1, continue; end
+    
+        good_outcome_5sense(i) = good_outcome(row);
+        bad_outcome_5sense(i) = bad_outcome(row);
+    end
+
+    nexttile
+    unpaired_plot(prob_5sense(good_outcome_5sense==1),prob_5sense(bad_outcome_5sense==1),...
+        {'Good','Poor'},'5-Sense score','para')
+    title('5-Sense score by outcome')
+    set(gca,'fontsize',20)
 end
 
 %% Do text
@@ -342,8 +380,14 @@ annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','LineStyle','none','fontsize
 annotation('textbox',[0 0.40 0.1 0.1],'String','C','LineStyle','none','fontsize',25)
 annotation('textbox',[0.5 0.4 0.1 0.1],'String','D','LineStyle','none','fontsize',25)
 
+
+
 %% Model performance by good vs bad outcome???
  print(gcf,[plot_folder,'Fig6'],'-dpng')
+
+
+
+
 
 
 end

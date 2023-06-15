@@ -16,7 +16,7 @@ addpath(genpath(scripts_folder));
 %% Load the intermediate file
 out = load([plot_folder,'ext_models.mat']);
 out = out.all;
-model = out.model;
+model = out.approach(1).model;
 nmodels = length(model);
 
 %% Initialize results file
