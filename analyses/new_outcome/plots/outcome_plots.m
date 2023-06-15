@@ -2,7 +2,7 @@ function outcome_plots
 
 %% Parameters
 which_year = 1;
-outcome_approach = 'direct_model';
+outcome_approach = 'prob_comb';
 which_model = 'spikes';
 
 %% Get file locs
@@ -311,7 +311,7 @@ for io = 1:2
             predictor = abs(predictor);
             newT = table(outcome_for_model,predictor,T.names,'VariableNames',{'outcome','spikes bipolar','names'});
             newT(cellfun(@isempty,outcome_for_model),:) = [];
-            out = classifier_wrapper(newT,{'spikes bipolar'},95,0,1,0,'outcome');
+            %out = classifier_wrapper(newT,{'spikes bipolar'},95,0,1,0,'outcome');
              
     
     end
@@ -321,24 +321,38 @@ for io = 1:2
     % Get the outcomes of these patients
     names_5sense = outT.names;
     prob_5sense = outT.prob;
-    good_outcome_5sense = nan(length(names_5sense),1);
-    bad_outcome_5sense = nan(length(names_5sense),1);
-    for i = 1:length(names_5sense)
+    reconciled_prob = nan(length(names),1);
+    for i = 1:length(names)
         % get row in the other outcome table corresponding to this name
-        curr_name_5sense = names_5sense{i};
-        row = strcmp(curr_name_5sense,T.names);
+        curr_name = names{i};
+        row = strcmp(curr_name,names_5sense);
     
         if sum(row)~=1, continue; end
     
-        good_outcome_5sense(i) = good_outcome(row);
-        bad_outcome_5sense(i) = bad_outcome(row);
+        reconciled_prob(i) = prob_5sense(row);
     end
 
+    %{
     nexttile
-    unpaired_plot(prob_5sense(good_outcome_5sense==1),prob_5sense(bad_outcome_5sense==1),...
+    unpaired_plot(reconciled_prob(good_outcome),reconciled_prob(bad_outcome),...
         {'Good','Poor'},'5-Sense score','para')
     title('5-Sense score by outcome')
     set(gca,'fontsize',20)
+    %}
+
+    %% build a model to predict outcome
+    scores = nan(length(left_scores),1);
+    scores(left_surg == 1) = left_scores(left_surg==1);
+    scores(right_surg==1) = right_scores(right_surg==1);
+    outcome_for_mdl = nan(length(scores),1);
+    outcome_for_mdl(strcmp(outcome_bin,'good')) = 1; outcome_for_mdl(strcmp(outcome_bin,'bad')) = 0;
+    newT = table(names,outcome_bin,outcome_for_mdl,surg,left_surg,right_surg,reconciled_prob,left_scores,right_scores,scores);
+    newT(isnan(newT.scores) | cellfun(@isempty,newT.outcome_bin),:) = [];
+    newT.outcome_for_mdl = logical(newT.outcome_for_mdl);
+
+    mdl = fitglm(newT,'outcome_for_mdl ~ reconciled_prob + scores','distribution','binomial');
+    simple_mdl = fitglm(newT,'outcome_for_mdl ~ reconciled_prob','distribution','binomial');
+
 end
 
 %% Do text
