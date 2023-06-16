@@ -1,4 +1,4 @@
-function outcome_plots
+function dT = outcome_plots
 
 %% Parameters
 which_year = 1;
@@ -61,8 +61,8 @@ outT = five_sense_calculator;
 figure
 switch outcome_approach
     case 'prob_comb'
-        set(gcf,'position',[1 1 1000 1400])
-        tiledlayout(2,3,"TileSpacing",'compact','padding','tight')
+        set(gcf,'position',[1 1 1400 1000])
+        tiledlayout(2,3,"TileSpacing",'tight','padding','tight')
     case 'auc_comb'
         set(gcf,'position',[1 1 1000 1000])
         tiledlayout(2,2,"TileSpacing",'compact','padding','tight')
@@ -350,8 +350,47 @@ for io = 1:2
     newT(isnan(newT.scores) | cellfun(@isempty,newT.outcome_bin),:) = [];
     newT.outcome_for_mdl = logical(newT.outcome_for_mdl);
 
-    mdl = fitglm(newT,'outcome_for_mdl ~ reconciled_prob + scores','distribution','binomial');
-    simple_mdl = fitglm(newT,'outcome_for_mdl ~ reconciled_prob','distribution','binomial');
+    % combined spike and 5-sense model to predict outcome
+    probs = simple_loo_cv(newT,'outcome_for_mdl ~ reconciled_prob + scores','binomial');
+    [X,Y,~,AUC] = perfcurve(newT.outcome_bin,probs,'good');
+
+    % just 5-sense model to predict outcome
+    simple_probs = simple_loo_cv(newT,'outcome_for_mdl ~ reconciled_prob','binomial');
+    [simple_X,simple_Y,~,simple_AUC] = perfcurve(newT.outcome_bin,simple_probs,'good');
+
+    %% DeLong test comparing simple to complicated model
+
+    % Put things into correct format
+    all_probs = [probs;simple_probs];
+    all_truth = [newT.outcome_bin;newT.outcome_bin];
+    all_tests = [ones(length(probs),1);2*ones(length(probs),1)];
+    reader = ones(length(all_probs),1);
+    all_case = [(1:length(probs))';(1:length(probs))'];
+    dT = table(all_probs,all_truth,all_tests,all_case,reader);
+
+    % remove nan rows
+    nan_rows = isnan(dT.all_probs);
+    dT(nan_rows,:) = [];
+    return
+
+    y = ROCAUCVariate(dT.all_truth,dT.all_probs);
+    fit = mrmc(y, dT.all_tests, dT.reader, dT.all_case, 'cov', 'DeLong');
+
+
+    %% do the plot
+    nexttile
+    cp = plot(X,Y,'linewidth',2);
+    hold on
+    sp = plot(simple_X,simple_Y,'linewidth',2);
+    plot([0 1],[0 1],'k--','linewidth',2)
+    xlabel('False positive rate')
+    ylabel('True positive rate')
+    legend([cp,sp],{sprintf('Model + pre-implant data: AUC = %1.2f',AUC),...
+        sprintf('Pre-implant data only: AUC = %1.2f',simple_AUC)},...
+        'location','southeast','fontsize',15)
+    title('Outcome prediction')
+    set(gca,'fontsize',20)
+
 
 end
 
@@ -393,6 +432,7 @@ annotation('textbox',[0 0.9 0.1 0.1],'String','A','LineStyle','none','fontsize',
 annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','LineStyle','none','fontsize',25)
 annotation('textbox',[0 0.40 0.1 0.1],'String','C','LineStyle','none','fontsize',25)
 annotation('textbox',[0.5 0.4 0.1 0.1],'String','D','LineStyle','none','fontsize',25)
+
 
 
 
