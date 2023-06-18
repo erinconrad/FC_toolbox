@@ -1,4 +1,8 @@
-function outT = five_sense_calculator
+function outT = five_sense_calculator(impute_missing_data,which_pts)
+
+if exist('impute_missing_data','var') == 0
+    impute_missing_data = 0;
+end
 
 %% Locations
 %% Get file locs
@@ -26,6 +30,12 @@ semiology = cell(npts,1);
 ictal = cell(npts,1);
 prob = nan(npts,1);
 final_focal = cell(npts,1);
+lesion_coefficient = nan(npts,1);
+interictal_coefficient = nan(npts,1);
+neuropsych_coefficient = nan(npts,1);
+semiology_coefficient = nan(npts,1);
+ictal_coefficient = nan(npts,1);
+intercept = nan(npts,1);
 
 %% Map manual validation entries onto 5-SENSE categories
 for i = 1:npts
@@ -122,77 +132,96 @@ for i = 1:npts
 
 
     %% Now, apply the model coefficients to get the 5-SENSE score
-    intercept = -0.3135; % from paper appendix
+    intercept(i) = -0.3135; % from paper appendix
 
     % lesion coefficient
     if isempty(lesion{i})
-        lesion_coefficient = nan;
+        lesion_coefficient(i) = nan;
     elseif strcmp(lesion{i},'no lesion')
-        lesion_coefficient = -2.2626;
+        lesion_coefficient(i) = -2.2626;
     elseif strcmpi(lesion{i},'focal')
-        lesion_coefficient = 0;
+        lesion_coefficient(i) = 0;
     elseif strcmp(lesion{i},'all other lesions')
-        lesion_coefficient = -2.1494;
+        lesion_coefficient(i) = -2.1494;
     else
         error('why')
     end
 
     % interictal EEG coefficient
     if isempty(interictal{i})
-        interictal_coefficient = nan;
+        interictal_coefficient(i) = nan;
     elseif strcmp(interictal{i},'no IEDs')
-        interictal_coefficient = 1.8056;
+        interictal_coefficient(i) = 1.8056;
     elseif strcmp(interictal{i},'bilateral')
-        interictal_coefficient = 0;
+        interictal_coefficient(i) = 0;
     elseif strcmp(interictal{i},'all others')
-        interictal_coefficient = 1.1807;
+        interictal_coefficient(i) = 1.1807;
     else
         error('why')
     end
 
     % neuropsych coefficient
     if isempty(neuropsych{i})
-        neuropsych_coefficient = nan;
+        neuropsych_coefficient(i) = nan;
     elseif strcmp(neuropsych{i},'no deficit')
-        neuropsych_coefficient = 1.1550;
+        neuropsych_coefficient(i) = 1.1550;
     elseif strcmp(neuropsych{i},'not localizing')
-        neuropsych_coefficient = -0.2554;
+        neuropsych_coefficient(i) = -0.2554;
     elseif strcmp(neuropsych{i},'localizing')
-        neuropsych_coefficient = 0;
+        neuropsych_coefficient(i) = 0;
     else
         error('why')
     end
 
     % semiology coefficient
     if isempty(semiology{i})
-        semiology_coefficient = nan;
+        semiology_coefficient(i) = nan;
     elseif strcmp(semiology{i},'weak or not localizing')
-        semiology_coefficient = 0;
+        semiology_coefficient(i) = 0;
     elseif strcmp(semiology{i},'strong')
-        semiology_coefficient = 0.8489;
+        semiology_coefficient(i) = 0.8489;
     else
         error('why')
     end
 
     % ictal coefficient
     if isempty(ictal{i})
-        ictal_coefficient = nan;
+        ictal_coefficient(i) = nan;
     elseif strcmp(ictal{i},'none/multilobar/diffuse')
-        ictal_coefficient = -0.8124;
+        ictal_coefficient(i) = -0.8124;
     elseif strcmp(ictal{i},'focal')
-        ictal_coefficient = 0.8442;
+        ictal_coefficient(i) = 0.8442;
     end
 
-    % Add the coefficients plus the intercept
-    sum_coefficients = intercept + lesion_coefficient + interictal_coefficient + ...
-        neuropsych_coefficient + semiology_coefficient + ictal_coefficient;
-
-    % calculate the probability
-    prob(i) = exp(sum_coefficients)/(exp(sum_coefficients)+1)*100;
+   
 
 end
 
-outT = table(names,lesion,interictal,neuropsych,semiology,ictal,prob,final_focal);
+outT = table(names,lesion,interictal,neuropsych,semiology,ictal,final_focal,...
+    intercept,lesion_coefficient,interictal_coefficient,neuropsych_coefficient,...
+    semiology_coefficient,ictal_coefficient);
+
+%% Do imputation
+% restrict outT to allowable names
+if impute_missing_data
+    allowable_names = which_pts;
+    allowable_rows = ismember(outT.names,allowable_names);
+    outT(~allowable_rows,:) = [];
+    
+    outT.neuropsych_coefficient(isnan(outT.neuropsych_coefficient)) = ...
+        nanmean(outT.neuropsych_coefficient);
+end
+
+
+
+ % Add the coefficients plus the intercept
+sum_coefficients = outT.intercept + outT.lesion_coefficient + outT.interictal_coefficient + ...
+    outT.neuropsych_coefficient + outT.semiology_coefficient + outT.ictal_coefficient;
+
+% calculate the probability
+prob = exp(sum_coefficients)./(exp(sum_coefficients)+1)*100;
+outT.prob = prob;
+
 
 % I confirmed that the 5 sense score is higher for the focal patients, nice
 % positive control
@@ -204,4 +233,5 @@ if 0
 end
     
 end
+
 

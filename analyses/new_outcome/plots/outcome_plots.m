@@ -1,4 +1,4 @@
-function dT = outcome_plots
+function outcome_plots
 
 %% Parameters
 which_year = 1;
@@ -52,9 +52,6 @@ T(contains(T.surgery,'ablation')|contains(T.surgery,'Resection'),:)
 % but unilateral surgery. I count these in the outcomes and use the model
 % concordant with the side of their surgery.
 end
-
-%% Get the 5-SENSE scores
-outT = five_sense_calculator;
 
 
 %% Initialize figure
@@ -316,12 +313,35 @@ for io = 1:2
     
     end
 
+    
+
+    %{
+    nexttile
+    unpaired_plot(reconciled_prob(good_outcome),reconciled_prob(bad_outcome),...
+        {'Good','Poor'},'5-Sense score','para')
+    title('5-Sense score by outcome')
+    set(gca,'fontsize',20)
+    %}
+
+    %% prep stuff for model
+    scores = nan(length(left_scores),1);
+    scores(left_surg == 1) = left_scores(left_surg==1);
+    scores(right_surg==1) = right_scores(right_surg==1);
+    outcome_for_mdl = nan(length(scores),1);
+    outcome_for_mdl(strcmp(outcome_bin,'good')) = 1; outcome_for_mdl(strcmp(outcome_bin,'bad')) = 0;
+    nan_rows =  isnan(scores) | cellfun(@isempty,outcome_bin);
+    non_nan_names = names(~nan_rows);
+
+    
     %% 5-sense score
+    % Get 5 sense score
+    outT = five_sense_calculator(0,non_nan_names);
 
     % Get the outcomes of these patients
     names_5sense = outT.names;
     prob_5sense = outT.prob;
     reconciled_prob = nan(length(names),1);
+
     for i = 1:length(names)
         % get row in the other outcome table corresponding to this name
         curr_name = names{i};
@@ -332,23 +352,15 @@ for io = 1:2
         reconciled_prob(i) = prob_5sense(row);
     end
 
-    %{
-    nexttile
-    unpaired_plot(reconciled_prob(good_outcome),reconciled_prob(bad_outcome),...
-        {'Good','Poor'},'5-Sense score','para')
-    title('5-Sense score by outcome')
-    set(gca,'fontsize',20)
-    %}
-
-    %% build a model to predict outcome
-    scores = nan(length(left_scores),1);
-    scores(left_surg == 1) = left_scores(left_surg==1);
-    scores(right_surg==1) = right_scores(right_surg==1);
-    outcome_for_mdl = nan(length(scores),1);
-    outcome_for_mdl(strcmp(outcome_bin,'good')) = 1; outcome_for_mdl(strcmp(outcome_bin,'bad')) = 0;
+    %% Combined table
     newT = table(names,outcome_bin,outcome_for_mdl,surg,left_surg,right_surg,reconciled_prob,left_scores,right_scores,scores);
     newT(isnan(newT.scores) | cellfun(@isempty,newT.outcome_bin),:) = [];
     newT.outcome_for_mdl = logical(newT.outcome_for_mdl);
+
+    if 0 % looks good
+        table(newT.names,newT.reconciled_prob,outT.names,outT.prob)
+    end
+    
 
     % combined spike and 5-sense model to predict outcome
     probs = simple_loo_cv(newT,'outcome_for_mdl ~ reconciled_prob + scores','binomial');
@@ -360,6 +372,7 @@ for io = 1:2
 
     %% DeLong test comparing simple to complicated model
 
+    %{
     % Put things into correct format
     all_probs = [probs;simple_probs];
     all_truth = [newT.outcome_bin;newT.outcome_bin];
@@ -375,6 +388,27 @@ for io = 1:2
 
     y = ROCAUCVariate(dT.all_truth,dT.all_probs);
     fit = mrmc(y, dT.all_tests, dT.reader, dT.all_case, 'cov', 'DeLong');
+    %}
+    % Put things into format
+    pred = [probs,simple_probs];
+    target = newT.outcome_for_mdl;
+    % rm nans
+    nan_rows = any(isnan(pred),2);
+    pred(nan_rows,:) = [];
+    target(nan_rows) = [];
+
+    [ W ] = wilcoxon( pred, target );
+    assert(abs(W(1)-AUC)<5e-3 && abs(W(2)-simple_AUC)<5e-3)
+
+    [ S, S10, S01, V10, V01, theta ] = wilcoxonCovariance(pred,target);
+    L = [1,-1]; % must always sum to 0
+    alpha = 0.05; % significance level
+    [ thetaP, thetaCI ] = wilcoxonConfidence(L, S, theta, alpha );
+    % I should check that this gives the same answer as R -> I checked and
+    % it did give the same answer as roc.test in R gives, and so I think
+    % this is correct (although not significant)
+
+    %writetable(table(target,pred),[plot_folder,'delong_test.csv'])
 
 
     %% do the plot
