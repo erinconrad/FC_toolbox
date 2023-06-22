@@ -1,4 +1,4 @@
-function [T,features] =  lr_mt(which_sleep_stages,rm_bad_spikes)
+function [T,features,Ts] =  lr_mt(which_sleep_stages,rm_bad_spikes)
 
 %% Parameters
 only_hup = 0;
@@ -62,6 +62,7 @@ dkt = mt_data.all_dkt;
 atropos = cell(npts,1);
 dkt = cell(npts,1);
 
+
 % Find and exclude patients for whom bulk of record is disconnected
 most_disconnected = sum(disconnected == 1,2) >= 0.9* size(disconnected,2);
 
@@ -76,13 +77,17 @@ n_connected = sum(disconnected == 0,2);
 ref_labels = mt_data.all_labels(:,1);
 n_symmetric = cellfun(@length,ref_labels);
 
+% is all_missing ==1 the same as n_symmetric == 0?
+assert(isequal(all_missing==1,n_symmetric==0)) % yes
+
 %% Remove bad spikes
 sT(cellfun(@isempty,sT.name),:) = [];
 snames = sT.name;
 assert(isequal(snames,names))
 min_allowable = 25;
+bi_good = sT.x_Correct_outOf50__bi_;
 if rm_bad_spikes
-    bi_good = sT.x_Correct_outOf50__bi_;
+    
     bad_spikes = bi_good < min_allowable;
 else
     bad_spikes = false(length(names),1);
@@ -146,7 +151,7 @@ outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 
 %% Get features
 % Initialize table
-Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats,no_wake,no_sleep,n_wake,n_sleep,n_connected,n_symmetric);
+Ts = table(names,engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surgery,surg_lat,surg_loc,soz_locs,soz_lats,no_wake,no_sleep,n_wake,n_sleep,n_connected,n_symmetric,most_disconnected,bi_good);
 features = {};
 
 for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;

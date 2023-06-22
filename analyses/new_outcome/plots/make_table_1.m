@@ -16,8 +16,12 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
+%% Initialize results file
+fname = [plot_folder,'results.html'];
+fid = fopen(fname,'a');
+
 %% Run the lr_mt to extract features
-[T,features] =  lr_mt;
+[T,features,Ts] =  lr_mt(3,0);
 empty_class = cellfun(@isempty,T.soz_lats);
 T(empty_class,:) = [];
 
@@ -275,6 +279,58 @@ all = [total_str;...
 
 T2 = cell2table(all);
 writetable(T2,[plot_folder,'Table1.csv']);
+
+%% Get inclusion/exclusion numbers
+% How many total HUP patients did I look at?
+n_hup_total = sum(contains(Ts.names,'HUP'));
+hup_pts = contains(Ts.names,'HUP');
+
+% musc
+musc_pts = contains(Ts.names,'MP');
+n_musc_total = sum(contains(Ts.names,'MP'));
+
+% How many did I exclude due to no symmetric mesial temporal contacts?
+n_exclude_no_symm_hup = sum(hup_pts & Ts.n_symmetric == 0);
+n_exclude_no_symm_musc = sum(musc_pts & Ts.n_symmetric == 0);
+
+% How many did I exclude due to etle
+n_etle_hup = sum(hup_pts & ~contains(Ts.soz_locs,'temporal') & (Ts.n_symmetric ~= 0));
+n_etle_musc = sum(musc_pts & ~contains(Ts.soz_locs,'temporal') & (Ts.n_symmetric ~= 0));
+
+% How many did I exclude due to most of the EEG disconnected?
+n_exclude_no_sleep_conn_hup = sum(hup_pts & Ts.most_disconnected); % 0
+n_exclude_no_sleep_conn_musc = sum(musc_pts & Ts.most_disconnected & Ts.n_symmetric ~= 0 & contains(Ts.soz_locs,'temporal'));
+assert(n_exclude_no_sleep_conn_hup == 0)
+assert(n_exclude_no_sleep_conn_musc == 1)
+
+% total I think I should have excluded
+n_hup_excluded = n_exclude_no_symm_hup + n_etle_hup;
+n_hup_remaining = n_hup_total - n_hup_excluded;
+n_musc_excluded = n_exclude_no_symm_musc + n_etle_musc + n_exclude_no_sleep_conn_musc;
+n_musc_remaining = n_musc_total - n_musc_excluded;
+
+% Make sure it adds up to expected number of included patients
+assert(sum(contains(T.names,'HUP'))==n_hup_remaining)
+assert(sum(contains(T.names,'MP'))==n_musc_remaining)
+
+%% Summary results
+fprintf(fid,'<p><br><b>Clinical information and summary of intracranial recording</b></br>');
+fprintf(fid,['We examined %d consecutive patients at HUP for our univariate analyses and model '...
+    'development and internal validation. Of these, we excluded %d patients who did not have symmetric bitemporal '...
+    'electrode coverage, and an additional %d patients who were clinically determined to have '...
+    'extratemporal seizure onset zones, yielding %d patients included for analysis.'],...
+    n_hup_total,n_exclude_no_symm_hup,n_etle_hup,n_hup_remaining);
+
+fprintf(fid,[' We examined %d consecutive patients at MUSC for external model validation. We excluded %d patients '...
+    'with no symmetric bilateral electrode coverage, an additional %d patient with extra-temporal seizure onset, '...
+    'and an additional %d patient for whom most of the EEG was disconnected, yielding %d remaining patients who '...
+    'met inclusion criteria (Table 1).'],...
+    n_musc_total,n_exclude_no_symm_musc,n_etle_musc,n_exclude_no_sleep_conn_musc,n_musc_remaining);
+
+fprintf(fid,[' As described in Table 1, the majority of patients underwent bilateral electrode implantation '...
+    ' either because one of the two primary pre-implantation hypotheses was bilateral, '...
+    'or because the two primary pre-implant hypotheses were discordant lateralities (e.g., '...
+    'the first hypothesis was left-sided and the second hypothesis was right-sided).</p>']);
 
 %% COmpare duration between left and right
 if 0

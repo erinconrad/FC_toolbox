@@ -1,8 +1,12 @@
 function do_all_results
 
+make_table_1
+
+% Figure S2
 correlation_figure
 
-univariate_fdr_plots
+% Figure 2
+combined_univariate_fmri_plots
 
 fmri_plot
 
