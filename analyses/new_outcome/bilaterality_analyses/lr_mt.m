@@ -203,7 +203,8 @@ for which_sleep_stage = which_sleep_stages% all = 1, wake =2, sleep = 3;
         first_non_empty = non_empty(1);
         
         % Loop over features
-        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','ll','re','spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr','ll_iqr'}
+        for which_thing = {'spikes','rl','bp','se','pearson','xcor','coh','plv','ll','re'}
+            %{'spikes','rl','bp','se','pearson','xcor','coh','plv','ll','re','spikes_iqr','rl_iqr','bp_iqr','xcor_iqr','coh_iqr','pearson_iqr','se_iqr','plv_iqr','re_iqr','ll_iqr'}
             % Decide thing
             switch which_thing{1}
                 case {'pearson','inter_pearson','near_pearson'}

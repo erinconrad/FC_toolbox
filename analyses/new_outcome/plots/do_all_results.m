@@ -1,5 +1,6 @@
 function do_all_results
 
+% Table 1
 make_table_1
 
 % Figure S2

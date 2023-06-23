@@ -34,6 +34,7 @@ else
     %% Run the lr_mt to extract AI features
     if rm_wake == 1
         [T,features] =  lr_mt(3,rm_bad_spikes); % the 3 refers to only looking at sleep
+
     else
         error('why are you doing this?')
     end

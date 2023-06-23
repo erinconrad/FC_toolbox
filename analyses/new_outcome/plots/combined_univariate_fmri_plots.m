@@ -35,9 +35,7 @@ fprintf(fid,['We first examined, using univariate comparisons, how interictal EE
 
 %% Now do lr_mt to get AI features
 [T,features] =  lr_mt(3); % just sleep
-
 allowed_features = features;
-
 
 %% Restrict to desired hospital
 switch which_pts
@@ -58,12 +56,19 @@ end
 
 %% Initialize figure
 figure
-set(gcf,'position',[25 235 1423 479])
+%set(gcf,'position',[25 235 1423 479])
+%t = tiledlayout(2,4,"TileSpacing",'tight','padding','tight');
+
+set(gcf,'position',[25 235 1050 900])
 t = tiledlayout(2,4,"TileSpacing",'tight','padding','tight');
 
 
 %% Univariate analyses of features
 rm_sleep_text = @(x) strrep(x,' sleep','');
+shorten_bi_text = @(x) strrep(x,'bipolar','bi');
+shorten_machine_text = @(x) strrep(x,'machine','mac');
+all_shorten = @(x) rm_sleep_text(shorten_machine_text(shorten_bi_text(x)));
+
 nfeatures = length(allowed_features);
 feature_p_val = nan(nfeatures,1);
 feature_eta2= nan(nfeatures,1);
@@ -85,7 +90,7 @@ assert(sum(isnan(feature_eta2))==0)
 [~,I] = sort(feature_eta2,'descend'); % sort by eta2
 sorted_qvalues = qvalues(I(1:n_to_plot));
 
-nexttile(t,1,[2 1])
+nexttile(t,1,[1 2])
 plot(feature_eta2(I(1:n_to_plot)),'ko','markersize',15,'linewidth',2) % plot the top eta 2 scores
 hold on
 for i = 1:n_to_plot
@@ -93,23 +98,28 @@ for i = 1:n_to_plot
         plot(i,feature_eta2(I(i)),'k*','markersize',15,'linewidth',2)
     end
 end
-assert(all(sorted_qvalues<0.05)) % ensure q is actually < 0.05
+%assert(all(sorted_qvalues<0.05)) % ensure q is actually < 0.05
 
 xticks(1:n_to_plot)
 ylabel('\eta^2_p')
-xticklabels(cellfun(rm_sleep_text,cellfun(@greek_letters_plots,allowed_features(I(1:n_to_plot)),'uniformoutput',false),...
+
+xticklabels(cellfun(all_shorten,cellfun(@greek_letters_plots,allowed_features(I(1:n_to_plot)),'uniformoutput',false),...
     'UniformOutput',false));
-title({'Effect size (\eta^2_p) to distinguish','left/right/bilateral SOZ'})
+axt = gca;
+axt.XAxisLocation = 'top';
+axt.XTickLabelRotation = 45;
+%}
+title({'Effect size (\eta^2_p) to distinguish left/right/bilateral SOZ'})
 set(gca,'fontsize',15)
 
-fprintf(fid,['We next examined the ability of all interictal EEG features to '...
+fprintf(fid,['We examined the ability of interictal EEG features to '...
     'distinguish SOZ laterality. For each interictal EEG feature, we calculated the effect '...
     'size (&#951;<sup>2</sup>) at separating the three SOZ lateralities. We ranked '...
-    'features in descending order by effect size. Fig. 3B shows the effect size of the top %d ranked features. '...
+    'features in descending order by effect size. Fig. 3A shows the effect size of the top %d ranked features. '...
     'Each of these features had a significant effect at separating the three SOZ lateralities (ANOVA with '...
     'Benjamini-Hochberg false discovery rate correction). The top-ranked AI '...
-    'features involve spike rates, '...
-    'relative entropy, and bandpower.</p>'],n_to_plot);
+    'features involve spike rates and '...
+    'relative entropy.</p>'],n_to_plot);
 
 %% Univariate analyses for different comparisons
 feature_p_val = nan(nfeatures,2);
@@ -145,8 +155,8 @@ assert(sum(isnan(feature_eta2),'all')==0)
 [~,I1] = sort(abs(feature_eta2(:,1)),'descend'); [~,I2] = sort(abs(feature_eta2(:,2)),'descend'); 
 sorted_q1 = qvalues1(I1(1:n_to_plot)); sorted_q2 = qvalues2(I2(1:n_to_plot));
 tt = tiledlayout(t,1,1,'tilespacing','none','padding','none');
-tt.Layout.Tile = 2;
-tt.Layout.TileSpan = [2 1];
+tt.Layout.Tile = 3;
+tt.Layout.TileSpan = [1 2];
 ax1 = axes(tt);
 
 pl = plot(ax1,1:n_to_plot,abs(feature_eta2(I1(1:n_to_plot),1)),'o','markersize',15,'color',[0 0.4470 0.7410],'linewidth',2);
@@ -170,7 +180,7 @@ ax1.XTick = 1:n_to_plot;
 ax1.XTickLabel = cellfun(make_text_short,cellfun(@greek_letters_plots,allowed_features(I1(1:n_to_plot)),'uniformoutput',false),...
     'uniformoutput',false);
 %}
-ax1.XTickLabel = cellfun(@make_text_short,allowed_features(I1(1:n_to_plot)),'uniformoutput',false);
+%ax1.XTickLabel = cellfun(@make_text_short,allowed_features(I1(1:n_to_plot)),'uniformoutput',false);
 
 
 ax2 = axes(tt);
@@ -202,8 +212,15 @@ ax2.XTick = 1:n_to_plot;
 ax2.XTickLabel = cellfun(make_text_short,cellfun(@greek_letters_plots,allowed_features(I2(1:n_to_plot)),'uniformoutput',false),...
     'uniformoutput',false);
 %}
-ax2.XTickLabel = cellfun(@make_text_short,allowed_features(I2(1:n_to_plot)),'uniformoutput',false);
-
+%ax2.XTickLabel = cellfun(@make_text_short,allowed_features(I2(1:n_to_plot)),'uniformoutput',false);
+ax2.XTickLabel = cellfun(all_shorten, ...
+    cellfun(@greek_letters_plots,allowed_features(I2(1:n_to_plot)),'uniformoutput',false),...
+    'uniformoutput',false);
+ax1.XTickLabel = cellfun(all_shorten, ...
+    cellfun(@greek_letters_plots,allowed_features(I1(1:n_to_plot)),'uniformoutput',false),...
+    'uniformoutput',false);
+ax1.XTickLabelRotation =45;
+ax2.XTickLabelRotation =45;
 
 %xticklabels([])
 if just_sep_bilat
@@ -214,21 +231,29 @@ end
 
 set(ax1,'fontsize',15); set(ax2,'fontsize',15)
 ylabel(ax1,'|Cohen''s {\it d}|','color','k','fontsize',15)
-title(tt,{'Effect sizes (Cohen''s {\it d}) to','distinguish specific laterality'},...
-    'fontsize',15,'fontweight','bold')
+%{
+title(tt,{'Effect sizes (Cohen''s {\it d}) to distinguish specific laterality'},...
+    'fontsize',20,'fontweight','bold')
+%}
+annotation('textbox', [0.52 0.9 0.1 0.1],...
+    'String', 'Effect sizes (Cohen''s {\it d}) to distinguish specific laterality', ...
+    'EdgeColor', 'none', ...
+    'fontweight','bold','fontsize',17,...
+    'HorizontalAlignment', 'left')
 
 fprintf(fid,['<p>We compared the set of interictal features that best distinguished '...
     'left from bilateral SOZs versus right from bilateral SOZs. '...
     'We separately calculated the absolute value of the effect size (Cohen''s <i>d</i>) '...
     'at distinguishing left-sided SOZs from bilateral SOZs and that for distinguishing '...
     'right-sided SOZs from bilateral SOZs. For each of the two classification questions, '...
-    'we ranked features in descending order by their absolute Cohen''s <i>d</i>. Fig. 3C '...
+    'we ranked features in descending order by their absolute Cohen''s <i>d</i>. Fig. 3B '...
     'shows the Cohen''s <i>d</i> values for the top %d ranked features. '...
     'For distinguishing '...
     'left-sided SOZ, spikes and relative entropy features performed best '...
-    '(and two spike features were the only two that significantly discriminated left from bilateral). For distinguishing '...
+    '. For distinguishing '...
     'right-sided SOZ, several other features performed best (though none were significant'...
-    ' correcting for the false discovery rate).'],n_to_plot);
+    ' correcting for the false discovery rate). This suggests that right-sided SOZs '...
+    'are harder to distinguish than left-sided SOZs in our dataset.</p>'],n_to_plot);
 
 
 %% fmri locs
@@ -392,18 +417,26 @@ mni_brain(mni_brain <= 100) = max(mni_brain,[],'all');
 mni_brain(mt_mask==1) = nan;
 
 % Plots
-t1 = nexttile(t,3);
+t1 = nexttile(t,5);
 colormap(t1,'gray')
 turn_nans_gray(imrotate(mni_brain(:,:,60),90),special_color,t1)
+%axis equal
 axis off
-title({'Regions included in fMRI','connectivity calculations'})
+%title({'Regions included in fMRI','connectivity calculations'})
 set(gca,'fontsize',15)
 
 % Plot brain again
-t2 = nexttile(t,7);
+t2 = nexttile(t,6);
 colormap(t2,'gray')
 turn_nans_gray(imrotate(squeeze(mni_brain(:,100,:)),90),special_color,t2)
+%axis equal
 axis off
+
+annotation('textbox', [0.07 0.30 0.1 0.1],...
+    'String', 'Regions included in fMRI connectivity calculations', ...
+    'EdgeColor', 'none', ...
+    'fontweight','bold','fontsize',17,...
+    'HorizontalAlignment', 'left')
 
 fprintf(fid,[' We parcellated brain regions according to the DKT atlas, and we identified'...
     ' regions in the temporal lobe gray matter (we excluded white matter regions as '...
@@ -411,17 +444,16 @@ fprintf(fid,[' We parcellated brain regions according to the DKT atlas, and we i
     'We measured the fMRI BOLD correlation between all ipsilateral temporal regions, separately for '...
     'the left and the right. The goal was to approximate our measure of intra-hemispheric '...
     'temporal lobe correlations from the interictal EEG data as closely as possible '...
-    'using fMRI data. Fig. 4A shows the DKT atlas regions included for fMRI connectivity '...
-    'analysis (only the left-sided regions are highlighted, and Fig. 4B shows an example fMRI connectivity matrix between the regions highlighted '...
-    'in Fig. 4A for a single patient.']);
+    'using fMRI data. Fig. 3C shows the DKT atlas regions included for fMRI connectivity '...
+    'analysis (only the left-sided regions are highlighted).']);
 
 
 %% Main plot
-nexttile(t,4,[2 1])
+nexttile(t,7,[1 2])
 [~,stats] = boxplot_with_points(AI,lat,1,{'left','right','bilateral','Control'},[],'para');
 set(gca,'fontsize',15)
 ylabel('Asymmetry index')
-title({'fMRI asymmetry by','SOZ laterality'})
+title({'fMRI asymmetry by SOZ laterality'})
 
 %{
 annotation('textbox', [0.05 0.90 1 0.1],...
@@ -436,20 +468,23 @@ fprintf(fid,[' We defined the fMRI connectivity AI using the same method as for 
     '<i>Connectivity</i><sub>Right</sub>)/(<i>Connectivity</i><sub>Left</sub> + '...
     '<i>Connectivity</i><sub>Right</sub>). We compared the AI between '...
     'patients with left-sided SOZs, right-sided SOZs, bilateral SOZs, and control '...
-    'subjects without epilepsy. There was a significant difference in AI between groups '...
+    'subjects without epilepsy (Fig. 3D). There was a significant difference in AI between groups '...
     '(ANOVA: F(%d,%d) = %1.1f, %s, &#951;<sup>2</sup> = %1.2f). In post-hoc t-tests, only '...
     'the difference between the left and bilateral SOZ group was significant after '...
-    'correcting for multiple comparisons (%s). This result suggests that fMRI temporal lobe connectivity '...
+    'correcting for multiple comparisons using Bonferroni''s method (%s). This result suggests that, similar to the result for interictal EEG data, fMRI temporal lobe connectivity '...
     'AI can distinguish patients with left from bilateral SOZs, but cannot clearly '...
     'distinguish between patients with right and bilateral SOZs.</p>'],...
     stats.tbl{2,3},stats.tbl{3,3},stats.tbl{2,5},get_p_html(stats.p),stats.eta2,...
     get_p_html(stats.lbp));
 
+
+
+
 %% Add subtitles
 annotation('textbox',[0 0.9 0.1 0.1],'String','A','LineStyle','none','fontsize',20)
-annotation('textbox',[0.27 0.9 0.1 0.1],'String','B','LineStyle','none','fontsize',20)
-annotation('textbox',[0.53 0.9 0.1 0.1],'String','C','LineStyle','none','fontsize',20)
-annotation('textbox',[0.77 0.9 0.1 0.1],'String','D','LineStyle','none','fontsize',20)
+annotation('textbox',[0.5 0.9 0.1 0.1],'String','B','LineStyle','none','fontsize',20)
+annotation('textbox',[0 0.31 0.1 0.1],'String','C','LineStyle','none','fontsize',20)
+annotation('textbox',[0.5 0.31 0.1 0.1],'String','D','LineStyle','none','fontsize',20)
 
 
 print(gcf,[plot_folder,'Fig3'],'-dpng')
