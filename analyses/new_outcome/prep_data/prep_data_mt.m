@@ -8,7 +8,7 @@ samples_per_duration = 20;
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 data_folder = [locations.main_folder,'data/'];
-edf_path = [results_folder,'edf_summ_out/'];
+edf_path = [results_folder,'edf_summ_out_edf_summ_out_epilepsy_laterality/'];
 sleep_stage_path = [results_folder,'edf_out/'];
 out_folder = [results_folder,'analysis/new_outcome/data/'];
 if ~exist(out_folder,'dir')
@@ -508,6 +508,6 @@ out.all_n_wake_sleep_connected = all_n_wake_sleep_connected;
 out.spikes_subsample = spikes_subsample;
 out.durations = durations;
 
-save([out_folder,'mt_out.mat'],'out')
+save([out_folder,'mt_out_epilepsy_laterality.mat'],'out')
 
 end
