@@ -8,7 +8,7 @@ samples_per_duration = 20;
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 data_folder = [locations.main_folder,'data/'];
-edf_path = [results_folder,'edf_summ_out_edf_summ_out_epilepsy_laterality/'];
+edf_path = [results_folder,'edf_summ_out_epilepsy_laterality/'];
 sleep_stage_path = [results_folder,'edf_out/'];
 out_folder = [results_folder,'analysis/new_outcome/data/'];
 if ~exist(out_folder,'dir')

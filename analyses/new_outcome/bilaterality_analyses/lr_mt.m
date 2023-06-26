@@ -32,7 +32,7 @@ addpath(genpath(scripts_folder));
 freq_names = {'delta','theta','alpha','beta','gamma','broadband'};
 
 %% Load data file
-mt_data = load([inter_folder,'mt_out.mat']);
+mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
 mt_data = mt_data.out;
 
 %% Load Manual validation file
