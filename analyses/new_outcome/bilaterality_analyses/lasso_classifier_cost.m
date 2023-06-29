@@ -80,13 +80,16 @@ if length(features) == 1
     predictFcn = @(x) class_from_bin(lr_prediction(lr_prob(table2array(varfun(@double, predictorExtractionFcn(x)))))); % generate final class preciction
     
     probabilityFcn = @(x) lr_prob(table2array(varfun(@double, predictorExtractionFcn(x)))); % generate probability
+    predFcn2 = @(x) classifier.predict(predictorExtractionFcn(x));
 else
     pcaTransformationFcn = @(x) (table2array(varfun(@double, x)) - pcaCenters) .* w * pcaCoefficients; % apply PCA using the coefficients obtained from the training data
     invTransformationFcn = @(x) x'/pcaCoefficients/w+pcaCenters; % I only need this for understanding feature importance
     predictFcn = @(x) class_from_bin(lr_prediction(lr_prob(pcaTransformationFcn(predictorExtractionFcn(x))))); % generate final class preciction
     probabilityFcn = @(x) lr_prob(pcaTransformationFcn(predictorExtractionFcn(x))); % generate probability
+    predFcn2 = @(x) classifier.predict(pcaTransformationFcn(predictorExtractionFcn(x)));
 end
 altPredictFcn = @(x) alt_class.predict(table2array(predictorExtractionFcn(x)));
+
 
 
 % Add additional fields to the result struct
@@ -119,6 +122,7 @@ trainedClassifier.alt_class = alt_class;
 trainedClassifier.classifier = classifier;
 trainedClassifier.lr_prob = lr_prob;
 trainedClassifier.coef = coef;
+trainedClassifier.predFcn2 = predFcn2;
 
 
 

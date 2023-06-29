@@ -32,7 +32,7 @@ xticklabels(unique_lats_upper )
 
 if show_stats
     yl = ylim;
-    new_y = [yl(1) yl(1) + 1.3*(yl(2)-yl(1))];
+    new_y = [yl(1) yl(1) + 1.33*(yl(2)-yl(1))];
     ylim(new_y)
 
     switch which_test
@@ -68,27 +68,39 @@ if show_stats
             out.lbp = lbp;
             ybar1 = yl(1) + 1.06*(yl(2)-yl(1));
             ytext1 = yl(1) + 1.09*(yl(2)-yl(1));
-            ybar2 = yl(1) + 1.18*(yl(2)-yl(1));
-            ytext2 = yl(1) + 1.21*(yl(2)-yl(1));
+            ybar2 = yl(1) + 1.23*(yl(2)-yl(1));
+            ytext2 = yl(1) + 1.26*(yl(2)-yl(1));
+            ybar3 = yl(1) + 1.15*(yl(2)-yl(1));
+            ytext3 = yl(1) + 1.18*(yl(2)-yl(1));
             downtick = 0.03*(yl(2)-yl(1));
 
+            % plot lines
+            plot([1 2],[ybar1 ybar1],'k-','linewidth',2)
+            plot([1 1],[ybar1-downtick ybar1],'k-','linewidth',2)
+            plot([2 2],[ybar1-downtick ybar1],'k-','linewidth',2)
+
+            plot([2 3],[ybar3 ybar3],'k-','linewidth',2)
+            plot([2 2],[ybar3-downtick ybar3],'k-','linewidth',2)
+            plot([3 3],[ybar3-downtick ybar3],'k-','linewidth',2)
+
+            plot([1 3],[ybar2 ybar2],'k-','linewidth',2)
+            plot([1 1],[ybar2-downtick ybar2],'k-','linewidth',2)
+            plot([3 3],[ybar2-downtick ybar2],'k-','linewidth',2)
+
             if lrp < bon_p
-                plot([1 2],[ybar1 ybar1],'k-','linewidth',2)
-                plot([1 1],[ybar1-downtick ybar1],'k-','linewidth',2)
-                plot([2 2],[ybar1-downtick ybar1],'k-','linewidth',2)
                 text(1.5,ytext1,get_asterisks_bonferroni(lrp,3),'horizontalalignment','center','fontsize',20)
+            else
+                text(1.5,ytext1+0.005,'ns','horizontalalignment','center','fontsize',15)
             end
             if rbp < bon_p
-                plot([2 3],[ybar1 ybar1],'k-','linewidth',2)
-                plot([2 2],[ybar1-downtick ybar1],'k-','linewidth',2)
-                plot([3 3],[ybar1-downtick ybar1],'k-','linewidth',2)
-                text(2.5,ytext1,get_asterisks_bonferroni(rbp,3),'horizontalalignment','center','fontsize',20)
+                text(2.5,ytext3,get_asterisks_bonferroni(rbp,3),'horizontalalignment','center','fontsize',20)
+            else
+                text(2.5,ytext3+0.005,'ns','horizontalalignment','center','fontsize',15)
             end
             if lbp < bon_p
-                plot([1 3],[ybar2 ybar2],'k-','linewidth',2)
-                plot([1 1],[ybar2-downtick ybar2],'k-','linewidth',2)
-                plot([3 3],[ybar2-downtick ybar2],'k-','linewidth',2)
                 text(2,ytext2,get_asterisks_bonferroni(lbp,3),'horizontalalignment','center','fontsize',20)
+            else
+                text(2,ytext2+0.005,'ns','horizontalalignment','center','fontsize',15)
             end
     else
         ybar1 = yl(1) + 1.06*(yl(2)-yl(1));

@@ -123,7 +123,8 @@ for i = 1:npts
     all_names{i} = Ttest.names{1};
 
     % make prediction on left out
-    pred = tc.predictFcn(Ttest);
+    %pred = tc.predictFcn(Ttest);
+    pred = tc.predFcn2(Ttest);
     all_pred{i} = pred{1};
     
     % compare to true

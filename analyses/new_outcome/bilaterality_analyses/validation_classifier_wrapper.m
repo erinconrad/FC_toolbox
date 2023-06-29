@@ -92,8 +92,10 @@ else
     all_scores = tc.probabilityFcn(Ttest);
 end
 all_names = Ttest.names;
-all_pred = tc.predictFcn(Ttest);
+%all_pred = tc.predictFcn(Ttest);
+%all_pred = tc.classifier.predict(Ttest);
 %alt_pred = tc.altPredictFcn(Ttest);
+all_pred = tc.predFcn2(Ttest);
 
 %% Re-derive feature weights
 coef = tc.coef(2:end);

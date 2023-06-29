@@ -1,18 +1,32 @@
 function do_all_results
 
+%% Get file locs
+locations = fc_toolbox_locs;
+results_folder = [locations.main_folder,'results/'];
+plot_folder = [results_folder,'analysis/new_outcome/plots/'];
+
+%% Remove the results.html file
+if exist([plot_folder,'results.html'],'file') ~= 0
+    delete([plot_folder,'results.html'])
+end
+
+% Figure 1 is methods figure
+
 % Table 1
 make_table_1
 
-% Figure S2
-correlation_figure
+% Table S1 is feature description table
 
 % Figure 2
 combined_univariate_fmri_plots
 
-fmri_plot
+% Figure S1
+correlation_figure
 
+% Figure 3
 model_plots
 
+% Figure 4
 outcome_plots
 
 
