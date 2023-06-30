@@ -41,10 +41,6 @@ else
 
 end
 
-% temporary fix
-temp_feat = 'pearson bipolar sleep' ;
-T{T{:,temp_feat}>10,temp_feat} = 3;
-
 % Remove those without a response (soz_lats is the response variable)
 empty_class = cellfun(@isempty,T.soz_lats);
 T(empty_class,:) = [];
@@ -169,4 +165,32 @@ legend([ll,lr],{sprintf('Left vs right/bilateral: AUC = %1.2f',lefts_ext.AUCL),.
     'location','southeast')
 title({'Spike model - External validation'})
 set(gca,'fontsize',20)
+
+%% double check some things - these checks work
+% basically, I confirmed that I can use a simple logistic function that
+% takes the coefficients from the model and re-derive the scores, and then
+% if I apply a cutoff of 0.5 it derives the predictions.
+% get info for left model
+features_left_test = T{test,"spikes bipolar sleep"};
+classNames = lefts_ext.unique_classes;
+coefs = lefts_ext.tc.coef;
+
+% Try to solve it again using a simple calculator
+[preds,scores] = simple_prediction_calculator(features_left_test,classNames,coefs);
+
+% confirm that I can re-derive the predicted scores and classes
+assert(isequal(preds,lefts_ext.all_pred))
+assert(sum(abs(scores-lefts_ext.scores)>1e-3)==0)
+
+% same for right
+features_right_test = T{test,"spikes bipolar sleep"};
+classNames = rights_ext.unique_classes;
+coefs = rights_ext.tc.coef;
+
+% Try to solve it again using a simple calculator
+[preds,scores] = simple_prediction_calculator(features_right_test,classNames,coefs);
+
+% confirm that I can re-derive the predicted scores and classes
+assert(isequal(preds,rights_ext.all_pred))
+assert(sum(abs(scores-rights_ext.scores)>1e-3)==0)
 end

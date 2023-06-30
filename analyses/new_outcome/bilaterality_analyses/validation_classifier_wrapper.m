@@ -6,8 +6,7 @@ function out = validation_classifier_wrapper(T,train,test,features,pca_perc,comb
 response = 'soz_lats';
 
 % Restrict to spike features if desired
-spike_features = features(contains(features,'spikes') & contains(features,'bipolar') & ...
-    ~contains(features,'SD'));
+spike_features = features(contains(features,'spikes') & contains(features,'bipolar'));
 
 if just_spikes == 1 || just_spikes == 2
     features = spike_features;
@@ -96,6 +95,9 @@ all_names = Ttest.names;
 %all_pred = tc.classifier.predict(Ttest);
 %alt_pred = tc.altPredictFcn(Ttest);
 all_pred = tc.predFcn2(Ttest);
+alt_pred = tc.guessPred(Ttest);
+
+assert(isequal(all_pred,alt_pred))
 
 %% Re-derive feature weights
 coef = tc.coef(2:end);

@@ -9,8 +9,7 @@ if isempty(response)
 end
 
 % Restrict to spike features if desired
-spike_features = features(contains(features,'spikes') & contains(features,'bipolar') & ...
-    ~contains(features,'SD')); % this should only be one feature - spikes in car reference
+spike_features = features(contains(features,'spikes') & contains(features,'bipolar'));
 
 if just_spikes == 1 || just_spikes == 2
     features = spike_features;
@@ -58,6 +57,8 @@ all_pred = cell(npts,1);
 all_names = cell(npts,1);
 nbest = 20; % see 20 best features;
 all_best_features = cell(npts,nbest);
+alt_all_scores = nan(npts,1);
+alt_preds = cell(npts,1);
 
 %% Do leave-one-patient-out classifier to predict laterality
 % Loop over patients
@@ -117,6 +118,7 @@ for i = 1:npts
     
         % Get probability for testing data
         all_scores(i) = tc.probabilityFcn(Ttest);
+        alt_all_scores(i) = tc.guessScoreFcn(Ttest);
     end
 
 
@@ -126,6 +128,8 @@ for i = 1:npts
     %pred = tc.predictFcn(Ttest);
     pred = tc.predFcn2(Ttest);
     all_pred{i} = pred{1};
+    alt_pred = tc.guessPred(Ttest);
+    alt_preds{i} = alt_pred{1};
     
     % compare to true
     true = Ttest.(response);
@@ -170,8 +174,15 @@ end
 %}
 
 
+% Make sure the scores match what I think they should be, and the guesses
+% match what I think they should be
+assert(sum(abs(all_scores-alt_all_scores)>1e-3)==0)
+assert(isequal(all_pred,alt_preds))
+
 % Prepare output structure
 out.scores = all_scores;
+out.alt_scores = alt_all_scores;
+out.alt_preds = alt_preds;
 out.class = T.(response);
 out.pos_class = classes{2};
 out.all_pred = all_pred;

@@ -53,6 +53,7 @@ for i = 1:length(classes)
     n_in_class(i) = sum(strcmp(response,classes{i})); % get number in each class
 end
 cost = [0 n_in_class(2);n_in_class(1) 0];
+%cost = [0 1;1 0];
 
 %% Do the classifier
 % default lambda for lasso is 1/n where n is training sample size, and this
@@ -81,15 +82,17 @@ if length(features) == 1
     
     probabilityFcn = @(x) lr_prob(table2array(varfun(@double, predictorExtractionFcn(x)))); % generate probability
     predFcn2 = @(x) classifier.predict(predictorExtractionFcn(x));
+    guessScoreFcn = @(x) 1./(1+exp(-(table2array(varfun(@double, predictorExtractionFcn(x)))*coef(2:end)+coef(1))));
 else
     pcaTransformationFcn = @(x) (table2array(varfun(@double, x)) - pcaCenters) .* w * pcaCoefficients; % apply PCA using the coefficients obtained from the training data
     invTransformationFcn = @(x) x'/pcaCoefficients/w+pcaCenters; % I only need this for understanding feature importance
     predictFcn = @(x) class_from_bin(lr_prediction(lr_prob(pcaTransformationFcn(predictorExtractionFcn(x))))); % generate final class preciction
     probabilityFcn = @(x) lr_prob(pcaTransformationFcn(predictorExtractionFcn(x))); % generate probability
     predFcn2 = @(x) classifier.predict(pcaTransformationFcn(predictorExtractionFcn(x)));
+    guessScoreFcn = @(x) 1./(1+exp(-(pcaTransformationFcn(predictorExtractionFcn(x))*coef(2:end)+coef(1))));
 end
 altPredictFcn = @(x) alt_class.predict(table2array(predictorExtractionFcn(x)));
-
+guessPred = @(x) guess_prediction_fcn(guessScoreFcn(x),classes);
 
 
 % Add additional fields to the result struct
@@ -123,7 +126,29 @@ trainedClassifier.classifier = classifier;
 trainedClassifier.lr_prob = lr_prob;
 trainedClassifier.coef = coef;
 trainedClassifier.predFcn2 = predFcn2;
+trainedClassifier.guessScoreFcn = guessScoreFcn;
+trainedClassifier.guessPred = guessPred;
 
 
 
 end
+
+function pred= guess_prediction_fcn(x,classes)
+
+% assume class 2 is positive and class 1 negative - double check
+pos_class = classes{2};
+neg_class = classes{1};
+
+pred = cell(length(x),1);
+for i = 1:length(x)
+
+    if x(i) >= 0.5
+        pred{i} = pos_class;
+    else
+        pred{i} = neg_class;
+    end
+
+end
+
+end
+
