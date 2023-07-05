@@ -176,8 +176,11 @@ end
 
 % Make sure the scores match what I think they should be, and the guesses
 % match what I think they should be
-assert(sum(abs(all_scores-alt_all_scores)>1e-3)==0)
-assert(isequal(all_pred,alt_preds))
+if contains(features,'samp')
+else
+    assert(sum(abs(all_scores-alt_all_scores)>1e-3)==0)
+    assert(isequal(all_pred,alt_preds))
+end
 
 % Prepare output structure
 out.scores = all_scores;

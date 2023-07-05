@@ -7,6 +7,7 @@ rm_non_temporal = 1;
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 data_folder = [locations.main_folder,'data/'];
+alfredo_folder = [locations.main_folder,'Alfredo_code/fmri_analysis_AL_3_28_23/'];
 plot_folder = [results_folder,'analysis/new_outcome/plots/'];
 if ~exist(plot_folder,'dir')
     mkdir(plot_folder)
@@ -28,6 +29,12 @@ T(empty_class,:) = [];
 %% Load the pt file
 pt = load([data_folder,'pt.mat']);
 pt = pt.pt;
+
+%% Load Alfredo file for fMRI patients
+f1T = readtable([alfredo_folder,'df.csv']);
+
+%% Load clinical file for additional info for fMRI patients
+f2T = readtable([data_folder,'clinical_info/all_rids.csv']);
 
 %% Go through and remove non-temporal patients
 soz_loc = T.soz_locs;
@@ -56,17 +63,19 @@ site(is_musc) = {'MUSC'};
 nhup = sum(is_hup);
 nmusc = sum(is_musc);
 
+% Get surgery and soz locs and lats
+surg = T.surgery;
+resection = contains(surg,'Resection');
+ablation = contains(surg,'ablation');
+device = contains(surg,'RNS') | contains(surg,'DBS') | contains(surg,'VNS');
+
+
 % Get outcomes
 engel_yr1 = cellfun(@(x) parse_outcome_num(x,'engel'),T.engel_yr1);
 engel_yr2 = cellfun(@(x) parse_outcome_num(x,'engel'),T.engel_yr2);
 ilae_yr1 = cellfun(@(x) parse_outcome_num(x,'ilae'),T.ilae_yr1);
 ilae_yr2 = cellfun(@(x) parse_outcome_num(x,'ilae'),T.ilae_yr2);
 
-% Get surgery and soz locs and lats
-surg = T.surgery;
-resection = contains(surg,'Resection');
-ablation = contains(surg,'ablation');
-device = contains(surg,'RNS') | contains(surg,'DBS') | contains(surg,'VNS');
 
 
 soz_lat = T.soz_lats;
@@ -179,79 +188,156 @@ if 0
     table(name,no1_lat,no2_lat,bilat_or_discordant)
 end
 
+%% Get information for the fMRI patients
+fmri_non_control = strcmp(f1T.Control,'No'); nfmri_no_control = sum(fmri_non_control);
+fmri_rids = f1T.Subject(fmri_non_control);
+fmri_rid_nums = cellfun(@(x) str2num(x(end-2:end)),fmri_rids);
+
+% get age
+age_fmri = f1T.Age(fmri_non_control);
+
+% age of onset
+age_onset_fmri = f1T.SzOnset(fmri_non_control);
+
+% sex
+sex_fmri = f1T.Sex(fmri_non_control);
+
+% lat
+lat_fmri = f1T.Final_Lat(fmri_non_control);
+
+% get corresponding rows in my demographics table
+[Lia,Locb]=ismember(fmri_rid_nums,f2T.record_id); % Locb has the corresponding rows
+assert(sum(Lia==1)==length(Lia))
+assert(isequal(f2T.record_id(Locb),fmri_rid_nums))
+
+% Get number with resection, ablation, and device
+resection_fmri = (f2T.outcome_proctype___1(Locb)==1 | f2T.outcome_proctype___2(Locb)==1);
+ablation_fmri = (f2T.outcome_proctype___4(Locb)==1);
+device_fmri = (f2T.outcome_proctype___3(Locb)==1 | f2T.outcome_proctype___5(Locb)==1 | f2T.outcome_proctype___6(Locb)==1);
+nresection_fmri = sum(resection_fmri);
+nablation_fmri = sum(ablation_fmri);
+ndevice_fmri = sum(device_fmri);
+
+% outcomes
+tengel1 = f2T.demog_year(Locb & (resection_fmri | ablation_fmri));
+tilae1 = f2T.demog_ilae1year(Locb& (resection_fmri | ablation_fmri));
+tengel2 = f2T.demog_years2(Locb& (resection_fmri | ablation_fmri));
+tilae2 = f2T.demog_ilae2years(Locb& (resection_fmri | ablation_fmri));
+ilae1_fmri = get_ilae(tilae1);
+engel1_fmri = get_engel(tengel1);
+ilae2_fmri = get_ilae(tilae2);
+engel2_fmri = get_engel(tengel2);
+engel_yr1_fmri = cellfun(@(x) parse_outcome_num(x,'engel'),engel1_fmri);
+engel_yr2_fmri = cellfun(@(x) parse_outcome_num(x,'engel'),engel2_fmri);
+ilae_yr1_fmri = cellfun(@(x) parse_outcome_num(x,'ilae'),ilae1_fmri);
+ilae_yr2_fmri = cellfun(@(x) parse_outcome_num(x,'ilae'),ilae2_fmri);
+
+if 0
+    table(fmri_rids,f2T.outcome_proctype___1(Locb)==1 | f2T.outcome_proctype___2(Locb)==1,...
+        f2T.outcome_proctype___4(Locb)==1,...
+        f2T.outcome_proctype___3(Locb)==1 | f2T.outcome_proctype___5(Locb)==1 | f2T.outcome_proctype___6(Locb)==1,...
+        ilae1_fmri,ilae2_fmri,engel1_fmri,engel2_fmri,...
+        'VariableNames',{'RID','Resection','Ablation','Device','ILAE1','ILAE2','Engel1','Engel2'})
+end
+
 %% Put the table together
-% Planning to have 3 total columns: the first column says the thing, the
-% second is the data for HUP, the third is the data for MUSC
-total_str = {'Total: N',sprintf('%d',nhup),sprintf('%d',nmusc)};
+% Planning to have 4 total columns: the first column says the thing, the
+% second is the data for HUP, the third is the data for MUSC, the fourth
+% column is for fMRI
+total_str = {'Total: N',sprintf('%d',nhup),sprintf('%d',nmusc),sprintf('%d',sum(fmri_non_control))};
 female_str = {'Female: N (%)',sprintf('%d (%1.1f%%)',sum(female==1 & is_hup),sum(female==1 & is_hup)/sum(~isnan(female(is_hup)))*100),...
-    sprintf('%d (%1.1f%%)',sum(female==1 & is_musc),sum(female==1 & is_musc)/sum(~isnan(female(is_musc)))*100)};
+    sprintf('%d (%1.1f%%)',sum(female==1 & is_musc),sum(female==1 & is_musc)/sum(~isnan(female(is_musc)))*100),...
+    sprintf('%d (%1.1f%%)',sum(strcmp(sex_fmri,'F')),sum(strcmp(sex_fmri,'F'))/sum(fmri_non_control)*100)};
 age_onset_str = {'Age at onset in years: median (range)',...
     sprintf('%1.1f (%1.1f-%1.1f)',...
     nanmedian(age_onset(is_hup)),min(age_onset(is_hup)),max(age_onset(is_hup))),...
     sprintf('%1.1f (%1.1f-%1.1f)',...
-    nanmedian(age_onset(is_musc)),min(age_onset(is_musc)),max(age_onset(is_musc)))};
+    nanmedian(age_onset(is_musc)),min(age_onset(is_musc)),max(age_onset(is_musc))),...
+    sprintf('%1.1f (%1.1f-%1.1f)',...
+    nanmedian(age_onset_fmri),min(age_onset_fmri),max(age_onset_fmri))};
 age_implant_str = {'Age at implant in years: median (range)',...
     sprintf('%1.1f (%1.1f-%1.1f)',...
     nanmedian(age_implant(is_hup)),min(age_implant(is_hup)),max(age_implant(is_hup))),...
     sprintf('%1.1f (%1.1f-%1.1f)',...
-    nanmedian(age_implant(is_musc)),min(age_implant(is_musc)),max(age_implant(is_musc)))};
+    nanmedian(age_implant(is_musc)),min(age_implant(is_musc)),max(age_implant(is_musc))),...
+    sprintf('%1.1f (%1.1f-%1.1f)',...
+    nanmedian(age_fmri),min(age_fmri),max(age_fmri))};
 n_discordant_str = {'Bilateral or discordant pre-implant hypotheses: N (%)',...
     sprintf('%d (%1.1f%%)',sum(bilat_or_discordant==1 & is_hup),sum(bilat_or_discordant==1 & is_hup)/sum(~isnan(bilat_or_discordant(is_hup)))*100),...
-    sprintf('%d (%1.1f%%)',sum(bilat_or_discordant==1 & is_musc),sum(bilat_or_discordant==1 & is_musc)/sum(~isnan(bilat_or_discordant(is_musc)))*100)};
+    sprintf('%d (%1.1f%%)',sum(bilat_or_discordant==1 & is_musc),sum(bilat_or_discordant==1 & is_musc)/sum(~isnan(bilat_or_discordant(is_musc)))*100),...
+    'NA'};
 n_elecs_str = {'Symmetric mesial temporal-targeted contacts: median (range)',...
     sprintf('%1.1f (%1.1f-%1.1f)',...
     nanmedian(n_symmetric(is_hup)),min(n_symmetric(is_hup)),max(n_symmetric(is_hup))),...
     sprintf('%1.1f (%1.1f-%1.1f)',...
-    nanmedian(n_symmetric(is_musc)),min(n_symmetric(is_musc)),max(n_symmetric(is_musc)))};
-loc_str = {'SOZ localization (clinician determination)','',''};
+    nanmedian(n_symmetric(is_musc)),min(n_symmetric(is_musc)),max(n_symmetric(is_musc))),...
+    'NA'};
+%{
+loc_str = {'SOZ localization (clinician determination)','','',''};
+
 tle_str = {'Temporal: N (%)',...
     sprintf('%d (%1.1f%%)',sum(tle==1 & is_hup),sum(tle==1 & is_hup)/sum(is_hup)*100),...
     sprintf('%d (%1.1f%%)',sum(tle==1 & is_musc),sum(tle==1 & is_musc)/sum(is_musc)*100)};
 etle_str = {'Extratemporal: N (%)',...
     sprintf('%d (%1.1f%%)',sum(etle==1 & is_hup),sum(etle==1 & is_hup)/sum((is_hup))*100),...
     sprintf('%d (%1.1f%%)',sum(etle==1 & is_musc),sum(etle==1 & is_musc)/sum(is_musc)*100)};
-lat_str = {'SOZ lateralization (clinician determination)','',''};
+%}
+lat_str = {'SOZ lateralization (clinician determination)','','',''};
 left_str = {'Left: N (%)',...
     sprintf('%d (%1.1f%%)',sum(left==1 & is_hup),sum(left==1 & is_hup)/sum(~isnan(left(is_hup)))*100),...
-    sprintf('%d (%1.1f%%)',sum(left==1 & is_musc),sum(left==1 & is_musc)/sum(~isnan(left(is_musc)))*100)};
+    sprintf('%d (%1.1f%%)',sum(left==1 & is_musc),sum(left==1 & is_musc)/sum(~isnan(left(is_musc)))*100),...
+    sprintf('%d (%1.1f%%)',sum(strcmp(lat_fmri,'L')),sum(strcmp(lat_fmri,'L'))/sum(fmri_non_control)*100)};
 right_str = {'Right: N (%)',...
     sprintf('%d (%1.1f%%)',sum(right==1 & is_hup),sum(right==1 & is_hup)/sum(~isnan(right(is_hup)))*100),...
-    sprintf('%d (%1.1f%%)',sum(right==1 & is_musc),sum(right==1 & is_musc)/sum(~isnan(right(is_musc)))*100)};
+    sprintf('%d (%1.1f%%)',sum(right==1 & is_musc),sum(right==1 & is_musc)/sum(~isnan(right(is_musc)))*100),...
+    sprintf('%d (%1.1f%%)',sum(strcmp(lat_fmri,'R')),sum(strcmp(lat_fmri,'R'))/sum(fmri_non_control)*100)};
 bilat_str = {'Bilateral: N (%)',...
     sprintf('%d (%1.1f%%)',sum(bilateral==1 & is_hup),sum(bilateral==1 & is_hup)/sum((is_hup))*100),...
-    sprintf('%d (%1.1f%%)',sum(bilateral==1 & is_musc),sum(bilateral==1 & is_musc)/sum((is_musc))*100)};
-surg_str = {'Surgery performed','',''};
+    sprintf('%d (%1.1f%%)',sum(bilateral==1 & is_musc),sum(bilateral==1 & is_musc)/sum((is_musc))*100),...
+    sprintf('%d (%1.1f%%)',sum(strcmp(lat_fmri,'B')),sum(strcmp(lat_fmri,'B'))/sum(fmri_non_control)*100)};
+surg_str = {'Surgery performed','','',''};
 resection_str = {'Resection: N (%)',...
     sprintf('%d (%1.1f%%)',sum(resection==1 & is_hup),sum(resection==1 & is_hup)/sum(is_hup)*100),...
-    sprintf('%d (%1.1f%%)',sum(resection==1 & is_musc),sum(resection==1 & is_musc)/sum(is_musc)*100)};
+    sprintf('%d (%1.1f%%)',sum(resection==1 & is_musc),sum(resection==1 & is_musc)/sum(is_musc)*100),...
+    sprintf('%d (%1.1f%%)',nresection_fmri,nresection_fmri/sum(fmri_non_control)*100)};
 ablation_str = {'Ablation: N (%)',...
     sprintf('%d (%1.1f%%)',sum(ablation==1 & is_hup),sum(ablation==1 & is_hup)/sum(is_hup)*100),...
-    sprintf('%d (%1.1f%%)',sum(ablation==1 & is_musc),sum(ablation==1 & is_musc)/sum(is_musc)*100)};
+    sprintf('%d (%1.1f%%)',sum(ablation==1 & is_musc),sum(ablation==1 & is_musc)/sum(is_musc)*100),...
+    sprintf('%d (%1.1f%%)',nablation_fmri,nablation_fmri/sum(fmri_non_control)*100)};
 device_str = {'Device: N (%)',...
     sprintf('%d (%1.1f%%)',sum(device==1 & is_hup),sum(device==1 & is_hup)/sum(is_hup)*100),...
-    sprintf('%d (%1.1f%%)',sum(device==1 & is_musc),sum(device==1 & is_musc)/sum(is_musc)*100)};
-engel_str = {'Engel outcome','',''};
+    sprintf('%d (%1.1f%%)',sum(device==1 & is_musc),sum(device==1 & is_musc)/sum(is_musc)*100),...
+    sprintf('%d (%1.1f%%)',ndevice_fmri,ndevice_fmri/sum(fmri_non_control)*100)};
+engel_str = {'Engel outcome','','',''};
 engel_one_str = {'Year 1: median (range)',...
     sprintf('%1.1f (%1.1f-%1.1f)',...
-    nanmedian(engel_yr1(is_hup)),min(engel_yr1(is_hup)),max(engel_yr1(is_hup))),...
+    nanmedian(engel_yr1(is_hup&(resection | ablation))),min(engel_yr1(is_hup&(resection | ablation))),max(engel_yr1(is_hup&(resection | ablation)))),...
     sprintf('%1.1f (%1.1f-%1.1f)',...
-    nanmedian(engel_yr1(is_musc)),min(engel_yr1(is_musc)),max(engel_yr1(is_musc)))};
+    nanmedian(engel_yr1(is_musc)),min(engel_yr1(is_musc)),max(engel_yr1(is_musc))),...
+    sprintf('%1.1f (%1.1f-%1.1f)',...
+    nanmedian(engel_yr1_fmri),min(engel_yr1_fmri),max(engel_yr1_fmri))};
 engel_two_str = {'Year 2: median (range)',...
     sprintf('%1.1f (%1.1f-%1.1f)',...
     nanmedian(engel_yr2(is_hup)),min(engel_yr2(is_hup)),max(engel_yr2(is_hup))),...
     sprintf('%1.1f (%1.1f-%1.1f)',...
-    nanmedian(engel_yr2(is_musc)),min(engel_yr2(is_musc)),max(engel_yr2(is_musc)))};
-ilae_str = {'ILAE outcome','',''};
+    nanmedian(engel_yr2(is_musc)),min(engel_yr2(is_musc)),max(engel_yr2(is_musc))),...
+    sprintf('%1.1f (%1.1f-%1.1f)',...
+    nanmedian(engel_yr2_fmri),min(engel_yr2_fmri),max(engel_yr2_fmri))};
+ilae_str = {'ILAE outcome','','',''};
 ilae_one_str = {'Year 1: median (range)',...
     sprintf('%1.1f (%1.1f-%1.1f)',...
     nanmedian(ilae_yr1(is_hup)),min(ilae_yr1(is_hup)),max(ilae_yr1(is_hup))),...
     sprintf('%1.1f (%1.1f-%1.1f)',...
-    nanmedian(ilae_yr1(is_musc)),min(ilae_yr1(is_musc)),max(ilae_yr1(is_musc)))};
+    nanmedian(ilae_yr1(is_musc)),min(ilae_yr1(is_musc)),max(ilae_yr1(is_musc))),...
+    sprintf('%1.1f (%1.1f-%1.1f)',...
+    nanmedian(ilae_yr1_fmri),min(ilae_yr1_fmri),max(ilae_yr1_fmri))};
 ilae_two_str = {'Year 2: median (range)',...
     sprintf('%1.1f (%1.1f-%1.1f)',...
     nanmedian(ilae_yr2(is_hup)),min(ilae_yr2(is_hup)),max(ilae_yr2(is_hup))),...
     sprintf('%1.1f (%1.1f-%1.1f)',...
-    nanmedian(ilae_yr2(is_musc)),min(ilae_yr2(is_musc)),max(ilae_yr2(is_musc)))};
+    nanmedian(ilae_yr2(is_musc)),min(ilae_yr2(is_musc)),max(ilae_yr2(is_musc))),...
+    sprintf('%1.1f (%1.1f-%1.1f)',...
+    nanmedian(ilae_yr2_fmri),min(ilae_yr2_fmri),max(ilae_yr2_fmri))};
 
 all = [total_str;...
     female_str;...
@@ -259,9 +345,9 @@ all = [total_str;...
     age_implant_str;...
     n_discordant_str;...
     n_elecs_str;...
-    loc_str;...
-    tle_str;...
-    etle_str;...
+   % loc_str;...
+   % tle_str;...
+   % etle_str;...
     lat_str;...
     left_str;...
     right_str;...
@@ -279,6 +365,8 @@ all = [total_str;...
 
 T2 = cell2table(all);
 writetable(T2,[plot_folder,'Table1.csv']);
+
+
 
 %% Get inclusion/exclusion numbers
 % How many total HUP patients did I look at?
@@ -363,5 +451,71 @@ and 2021 screwed up due to COVID). HUP159-199 + 2 stragglers (HUP140 and
  which gets 90% power.
 %}
 
+
+end
+
+function engel = get_engel(tengel)
+
+engel = cell(length(tengel),1);
+for i = 1:length(tengel)
+    switch tengel(i)
+                    
+        case 1
+            engel{i} = 'IA';
+        case 5
+            engel{i} = 'IB';
+        case 6
+            engel{i} = 'IC';
+        case 7
+            engel{i} = 'ID';
+        case 2
+            engel{i} = 'IIA';
+        case 8
+            engel{i} = 'IIB';
+        case 9
+            engel{i} = 'IIC';
+        case 10
+            engel{i} = 'IID';
+        case 3
+            engel{i} = 'IIIA';
+        case 11
+            engel{i} = 'IIIB';
+        case 4
+            engel{i} = 'IVA';
+        case 12
+            engel{i} = 'IVB';
+        case 13
+            engel{i} = 'IVC';
+        otherwise
+            engel{i} = '';
+            
+    end
+
+end
+end
+
+function ilae = get_ilae(tilae)
+ilae = cell(length(tilae),1);
+for i = 1:length(ilae)
+    switch tilae(i)
+                    
+        case 1
+            ilae{i} = 'ILAE 1';
+        case 2
+            ilae{i} = 'ILAE 1a';
+        case 3
+            ilae{i} = 'ILAE 2';
+        case 4
+            ilae{i} = 'ILAE 3';
+        case 5
+            ilae{i} = 'ILAE 4';
+        case 6
+            ilae{i} = 'ILAE 5';
+        case 7
+            ilae{i} = 'ILAE 6';
+        otherwise
+            ilae{i} = '';
+    end
+end
 
 end
