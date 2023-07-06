@@ -171,7 +171,7 @@ set(gca,'fontsize',20)
 % takes the coefficients from the model and re-derive the scores, and then
 % if I apply a cutoff of 0.5 it derives the predictions.
 % get info for left model
-features_left_test = T{test,"spikes bipolar sleep"};
+features_left_test = T{test,"spikes car sleep"};
 classNames = lefts_ext.unique_classes;
 coefs = lefts_ext.tc.coef;
 
@@ -183,7 +183,7 @@ assert(isequal(preds,lefts_ext.all_pred))
 assert(sum(abs(scores-lefts_ext.scores)>1e-3)==0)
 
 % same for right
-features_right_test = T{test,"spikes bipolar sleep"};
+features_right_test = T{test,"spikes car sleep"};
 classNames = rights_ext.unique_classes;
 coefs = rights_ext.tc.coef;
 

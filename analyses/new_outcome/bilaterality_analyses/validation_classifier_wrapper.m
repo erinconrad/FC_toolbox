@@ -6,7 +6,7 @@ function out = validation_classifier_wrapper(T,train,test,features,pca_perc,comb
 response = 'soz_lats';
 
 % Restrict to spike features if desired
-spike_features = features(contains(features,'spikes') & contains(features,'bipolar'));
+spike_features = features(contains(features,'spikes') & contains(features,'car'));
 
 if just_spikes == 1 || just_spikes == 2
     features = spike_features;

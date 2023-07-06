@@ -150,9 +150,9 @@ tic
 empty_class = cellfun(@isempty,T.soz_lats);
 T(empty_class,:) = [];
 
-% Restrict to bipolar spikes
-bipolar_spikes = contains(features,'spikes_bipolar');
-features = features(bipolar_spikes);
+% Restrict to car spikes
+car_spikes = contains(features,'spikes_car');
+features = features(car_spikes);
 just_spikes = 1; % Just spikes
 
 % Establish what I am varying

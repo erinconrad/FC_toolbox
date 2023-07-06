@@ -23,7 +23,7 @@ combined_univariate_fmri_plots
 % Figure S1
 correlation_figure
 
-% Figure 3
+% Figure 3 and Fig S2
 model_plots
 
 % Figure 4
