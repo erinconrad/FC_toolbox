@@ -1,4 +1,4 @@
-function [engel1,engel2,ilae1,ilae2] = replace_with_my_outcomes(names,...
+function [engel1,engel2,ilae1,ilae2,surg_lat] = replace_with_my_outcomes(names,...
     engel1,ilae1,engel2,ilae2,T,soz_locs,surg_lat,surgery)
 
 npts = length(names);
@@ -22,7 +22,11 @@ for i = 1:npts
     end
 
     if ~strcmp(surg_lat{i},'right') && ~strcmp(surg_lat{i},'left') % only for unilateral pts
-        continue
+        if ~strcmpi((T.Lat{i}),'right') && ~strcmpi((T.Lat{i}),'left')
+            continue
+        else
+            surg_lat{i} = lower(T.Lat{i});
+        end
     end
 
     if contains(surgery{i},'VNS') || contains(surgery{i},'RNS') || contains(surgery{i},'DBS') % only for resection

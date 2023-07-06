@@ -1,4 +1,4 @@
-function out = classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal,response)
+function out = classifier_wrapper(T,features,pca_perc,combine_br,just_spikes,rm_non_temporal,response,which_ref)
 % This code is the wrapping function to perform leave one out
 % classification on the training dataset
 
@@ -9,7 +9,7 @@ if isempty(response)
 end
 
 % Restrict to spike features if desired
-spike_features = features(contains(features,'spikes') & contains(features,'car'));
+spike_features = features(contains(features,'spikes') & contains(features,which_ref));
 
 if just_spikes == 1 || just_spikes == 2
     features = spike_features;

@@ -121,6 +121,9 @@ for io = 1:2
     assert(isequal(left.names,right.names))
     names = left.names;
     assert(isequal(T.names,names))
+
+    % 224 did not have surgery, just planned to get it
+    T.surgery(strcmp(T.names,'HUP224')) = {'none'};
     
     % Get some basic outcome stuff
     surg = (strcmp(T.surgery,'Laser ablation') | contains(T.surgery,'Resection'));
@@ -130,6 +133,10 @@ for io = 1:2
     left_surg = surg & strcmp(T.surg_lat,'left');
     right_surg = surg & strcmp(T.surg_lat,'right');
     npts = length(good_outcome);
+
+    if 0
+        table(T.names(surg),outcome_bin(surg),T.surgery(surg))
+    end
 
     % Make sure no one had both left and right surg
     assert(sum(left_surg&right_surg)==0)

@@ -1,4 +1,4 @@
-function out = validation_classifier_wrapper(T,train,test,features,pca_perc,combine_br,just_spikes,rm_non_temporal)
+function out = validation_classifier_wrapper(T,train,test,features,pca_perc,combine_br,just_spikes,rm_non_temporal,which_ref)
 % this code is the wrapping function to train a model on a training dataset
 % and test on an external validation set
 
@@ -6,7 +6,7 @@ function out = validation_classifier_wrapper(T,train,test,features,pca_perc,comb
 response = 'soz_lats';
 
 % Restrict to spike features if desired
-spike_features = features(contains(features,'spikes') & contains(features,'car'));
+spike_features = features(contains(features,'spikes') & contains(features,which_ref));
 
 if just_spikes == 1 || just_spikes == 2
     features = spike_features;

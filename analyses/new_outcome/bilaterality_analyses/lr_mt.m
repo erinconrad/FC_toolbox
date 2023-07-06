@@ -135,7 +135,7 @@ end
 
 %% Fix the outcomes for the patients I manually confirmed
 % I manually confirmed these myself, last updated May 2023
-[engel_yr1,engel_yr2,ilae_yr1,ilae_yr2] = replace_with_my_outcomes(names,...
+[engel_yr1,engel_yr2,ilae_yr1,ilae_yr2,surg_lat] = replace_with_my_outcomes(names,...
     engel_yr1,ilae_yr1,engel_yr2,ilae_yr2,T,soz_locs,surg_lat,surgery);
 
 

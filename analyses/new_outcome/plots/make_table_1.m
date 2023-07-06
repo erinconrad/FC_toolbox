@@ -64,6 +64,7 @@ nhup = sum(is_hup);
 nmusc = sum(is_musc);
 
 % Get surgery and soz locs and lats
+T.surgery(strcmp(T.names,'HUP224')) = {'none'}; % 224 did not have surgery, just planned to get it
 surg = T.surgery;
 resection = contains(surg,'Resection');
 ablation = contains(surg,'ablation');
