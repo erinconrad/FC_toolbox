@@ -205,9 +205,9 @@ for ir = 1:length(which_refs)
     
                 % Run the internal CV models
                 left_int = classifier_wrapper(T(train,:),curr_features,...
-                    pca_perc,1,just_spikes,rm_non_temporal,[]);
+                    pca_perc,1,just_spikes,rm_non_temporal,[],which_refs{ir});
                 right_int = classifier_wrapper(T(train,:),curr_features,...
-                    pca_perc,2,just_spikes,rm_non_temporal,[]);
+                    pca_perc,2,just_spikes,rm_non_temporal,[],which_refs{ir});
     
                 % Get ROC stats
                 [~,~,~,AUCL] = perfcurve(left_int.class,left_int.scores,left_int.pos_class);
@@ -217,9 +217,9 @@ for ir = 1:length(which_refs)
     
                 % Run the external validation models
                 left_ext = validation_classifier_wrapper(T,train,test,curr_features,...
-                    pca_perc,1,just_spikes,rm_non_temporal);
+                    pca_perc,1,just_spikes,rm_non_temporal,which_refs{ir});
                 right_ext = validation_classifier_wrapper(T,train,test,curr_features,...
-                    pca_perc,2,just_spikes,rm_non_temporal);
+                    pca_perc,2,just_spikes,rm_non_temporal,which_refs{ir});
     
                 % Get ROC stats
                 [~,~,~,AUCL] = perfcurve(left_ext.class,left_ext.scores,left_ext.pos_class);
