@@ -2,6 +2,7 @@ function model_plots
 
 %% Parameters
 use_model_predict_fcn = 1;
+which_refs = {'car','bipolar','machine'};
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -15,13 +16,15 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
-%% Load the intermediate file
-out = load([plot_folder,'ext_models.mat']);
-out = out.all;
 
-for ia = 1 % just do model with all patients
+for ia = 1:length(which_refs) 
 
-    model = out.approach(ia).model;
+
+    %% Load the intermediate file
+    out = load([plot_folder,sprintf('ext_models_%s.mat',which_refs{ia})]);
+    out = out.all;
+
+    model = out.approach(1).model; % use all patients
     nmodels = length(model);
     
     %% Initialize results file
@@ -386,6 +389,7 @@ for ia = 1 % just do model with all patients
             pred(scores >= opt_thresh) = {pos_class};
             pred(scores < opt_thresh) = neg_class;
         end
+
     
         % Rebuild C
         positive = strcmp(class,pos_class);
@@ -481,8 +485,10 @@ for ia = 1 % just do model with all patients
     
     if ia == 1
         print(gcf,[plot_folder,'Fig3'],'-dpng')
-    else
+    elseif ia == 2
         print(gcf,[plot_folder,'FigS2'],'-dpng')
+    elseif ia == 3
+        print(gcf,[plot_folder,'FigS3'],'-dpng')
     end
 
 end

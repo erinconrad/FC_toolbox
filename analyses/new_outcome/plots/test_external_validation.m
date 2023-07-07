@@ -67,8 +67,8 @@ sext = validation_classifier_wrapper(T,train,test,features,pca_perc,0,just_spike
 %% Do the LOO cross validation on the HUP data - FULL model
 Ttrain = T(train,:);
 just_spikes = 0; % not just spikes, full model
-lefta_int = classifier_wrapper(Ttrain,features,pca_perc,1,just_spikes,rm_non_temporal,[]); % 1 means left
-righta_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_temporal,[]); % 2 means right
+lefta_int = classifier_wrapper(Ttrain,features,pca_perc,1,just_spikes,rm_non_temporal,[],'bipolar'); % 1 means left
+righta_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_temporal,[],'bipolar'); % 2 means right
 
 % Get ROC stats
 [lefta_int.XL,lefta_int.YL,~,lefta_int.AUCL] = perfcurve(lefta_int.class,lefta_int.scores,lefta_int.pos_class);
@@ -76,8 +76,8 @@ righta_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_te
 
 %% Train on the HUP data, test on MUSC - FULL model
 just_spikes = 0; % not just spikes
-lefta_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,1,just_spikes,rm_non_temporal); % 1 means left
-righta_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just_spikes,rm_non_temporal); % 2 means right
+lefta_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,1,just_spikes,rm_non_temporal,'bipolar'); % 1 means left
+righta_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just_spikes,rm_non_temporal,'bipolar'); % 2 means right
 
 % Get ROC stats
 [lefta_ext.XL,lefta_ext.YL,~,lefta_ext.AUCL] = perfcurve(lefta_ext.class,lefta_ext.scores,lefta_ext.pos_class);
@@ -87,8 +87,8 @@ righta_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just
 %% Do the LOO cross validation on the HUP data - spike only model
 Ttrain = T(train,:);
 just_spikes = 1; % only spike feature
-lefts_int = classifier_wrapper(Ttrain,features,pca_perc,1,just_spikes,rm_non_temporal,[]); % 1 means left
-rights_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_temporal,[]); % 2 means right
+lefts_int = classifier_wrapper(Ttrain,features,pca_perc,1,just_spikes,rm_non_temporal,[],'bipolar'); % 1 means left
+rights_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_temporal,[],'bipolar'); % 2 means right
 
 % Get ROC stats
 [lefts_int.XL,lefts_int.YL,~,lefts_int.AUCL] = perfcurve(lefts_int.class,lefts_int.scores,lefts_int.pos_class);
@@ -98,8 +98,8 @@ rights_int = classifier_wrapper(Ttrain,features,pca_perc,2,just_spikes,rm_non_te
 %% Train on the HUP data, test on MUSC - spike only model
 fprintf('\nDoing main models...');
 just_spikes = 1; 
-lefts_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,1,just_spikes,rm_non_temporal); % 1 means left
-rights_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just_spikes,rm_non_temporal); % 2 means right
+lefts_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,1,just_spikes,rm_non_temporal,'bipolar'); % 1 means left
+rights_ext = validation_classifier_wrapper(T,train,test,features,pca_perc,2,just_spikes,rm_non_temporal,'bipolar'); % 2 means right
 
 % Get ROC stats
 [lefts_ext.XL,lefts_ext.YL,~,lefts_ext.AUCL] = perfcurve(lefts_ext.class,lefts_ext.scores,lefts_ext.pos_class);
@@ -171,7 +171,7 @@ set(gca,'fontsize',20)
 % takes the coefficients from the model and re-derive the scores, and then
 % if I apply a cutoff of 0.5 it derives the predictions.
 % get info for left model
-features_left_test = T{test,"spikes car sleep"};
+features_left_test = T{test,"spikes bipolar sleep"};
 classNames = lefts_ext.unique_classes;
 coefs = lefts_ext.tc.coef;
 
@@ -183,7 +183,7 @@ assert(isequal(preds,lefts_ext.all_pred))
 assert(sum(abs(scores-lefts_ext.scores)>1e-3)==0)
 
 % same for right
-features_right_test = T{test,"spikes car sleep"};
+features_right_test = T{test,"spikes bipolar sleep"};
 classNames = rights_ext.unique_classes;
 coefs = rights_ext.tc.coef;
 

@@ -1,4 +1,4 @@
-function signed = calc_ai_ns(labels,thing,name,labels_plot,atropos,dkt,uni,last_dim,...
+function [signed,left,right] = calc_ai_ns(labels,thing,name,labels_plot,atropos,dkt,uni,last_dim,...
     which_thing,subplot_path,do_plots)
 
 %{
@@ -178,6 +178,8 @@ else
             %signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./(sqrt(intra_avg(:,:,1,:).^2+intra_avg(:,:,2,:).^2));
             signed = (intra_avg(:,:,1,:)-intra_avg(:,:,2,:))./(intra_avg(:,:,1,:)+intra_avg(:,:,2,:));
             signed = (squeeze(nanmean(signed,[1 2 3])))';
+            left = nanmean(intra_avg(:,:,1,:));
+            right = nanmean(intra_avg(:,:,2,:));
     end
 end
 
