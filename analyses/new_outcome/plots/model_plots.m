@@ -334,7 +334,7 @@ for ia = 1:length(which_refs)
         'LineWidth',2,'MarkerSize',10);
     %}
     
-    ylim([0.55 0.9])
+    ylim([0.4 0.9])
     
     legend([el,er],{'Left vs right/bilateral','Right vs left/bilateral'},...
         'location','southeast','fontsize',15)
@@ -465,7 +465,10 @@ for ia = 1:length(which_refs)
             'using only spike rate asymmetry accurately distinguished left from right or bilateral SOZs, '...
             'in both internal cross-validation and in a separate hospital''s test dataset. However, '...
             'although right-sided SOZs could be distinguished from left/bilateral SOZs in the external '...
-            'dataset set, they were not distinguishable in the internal validation dataset.</p>']);
+            'dataset set, they were not distinguishable in the internal validation dataset.']);
+
+        fprintf(fid,[' Results were similar when we used spikes detected in bipolar and machine references to '...
+            'build the SOZ laterality classifier (Fig. S2 and S3).</p>']);
     end
         
     

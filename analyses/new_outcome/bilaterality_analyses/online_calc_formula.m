@@ -1,5 +1,11 @@
 function [AI,score,pred] = online_calc_formula(left,right,coefs,classNames)
 
+%{
+- classNames will be either {'br','left'} or {'bl','right'}
+- coeffs will be a 2x1 array containing the model intercept and AI
+coefficient, respectively
+%}
+
 % Get AI
 AI = (left-right)/(left+right);
 

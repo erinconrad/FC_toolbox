@@ -31,6 +31,21 @@ elseif rm_non_temporal == 2 % only include non-temporal (excludes diffuse and mu
     npts = size(T,1);
 end
 
+% If I am doing a single feature model, exclude patient(s) with nan for
+% variable
+%
+if just_spikes == 1 || just_spikes == 2   
+    nan_feature = isnan(T{:,spike_features});
+    out.rm_nan_spikes = sum(nan_feature); % note how many i end up removing 
+    T(nan_feature,:) = [];    
+    npts = size(T,1);
+
+end
+%}
+
+
+
+
 % Combine right and bilateral or left and bilateral
 if combine_br == 1
     T.soz_lats(strcmp(T.soz_lats,'right') | strcmp(T.soz_lats,'bilateral')) = {'br'};
@@ -194,6 +209,7 @@ out.unique_classes = classes;
 out.npts = npts;
 out.names = all_names;
 out.accuracy = (C(1,1)+C(2,2))/sum(C,'all');
+
 
 recall = nan(nclasses,1);
 for i = 1:nclasses
