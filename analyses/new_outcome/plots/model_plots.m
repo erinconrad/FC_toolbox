@@ -31,7 +31,7 @@ for ia = 1:length(which_refs)
     if ia == 1
         fname = [plot_folder,'results.html'];
         fid = fopen(fname,'a');
-        fprintf(fid,'<br><b>A classifier incorporating interictal EEG features predicts SOZ laterality</b></br>');
+        fprintf(fid,'<br><u><i>A classifier incorporating interictal EEG features predicts SOZ laterality</i></u></br>');
     end
     
     
@@ -282,7 +282,7 @@ for ia = 1:length(which_refs)
     end
     
     if ia == 1
-        fprintf(fid,['Given the high performance of the spike rate-only model, and given '...
+        fprintf(fid,['<p>Given the high performance of the spike rate-only model, and given '...
             'that this feature could easily be calculated in clinical settings, we performed '...
             'additional analyses to probe the accuracy of this model. To demonstrate '...
             'statistics for a specific use-case, we selected the '...

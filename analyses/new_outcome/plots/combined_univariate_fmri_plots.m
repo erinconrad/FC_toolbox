@@ -29,7 +29,7 @@ addpath(genpath(scripts_folder));
 %% Initialize results file
 fname = [plot_folder,'results.html'];
 fid = fopen(fname,'a');
-fprintf(fid,'<br><b>Several interictal EEG feature asymmetries are distinct across SOZ lateralities</b></br>');
+fprintf(fid,'<br><u><i>Several interictal EEG feature asymmetries are distinct across SOZ lateralities</i></u></br>');
 fprintf(fid,['We first examined, using univariate comparisons, how interictal EEG feature AI differs '...
     'between patients with left-sided SOZs, right-sided SOZs, and bilateral SOZs.']);
 
@@ -270,7 +270,7 @@ bT = readtable([file_path,'BNA_subregions.xlsx']);
 mt_mask = niftiread([file_path,'mesial_temporal_roi.nii.gz']);
 mni_brain = niftiread([file_path,'tpl-MNI152NLin2009cAsym_res-01_desc-brain_T1w.nii.gz']);
 
-fprintf(fid,'<br><b>fMRI BOLD connectivity AI also distinguishes SOZ lateralities</b></br>');
+fprintf(fid,'<br><u><i>fMRI BOLD connectivity AI also distinguishes SOZ lateralities</i></u></br>');
 fprintf(fid,['We asked whether the AI of fMRI connectivity similarly distinguished left, right, '...
     'and bilateral SOZs.']);
 

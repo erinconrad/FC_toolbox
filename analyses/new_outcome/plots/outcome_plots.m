@@ -24,7 +24,7 @@ for ir = 1:length(which_refs)
     if ir == 1
         fname = [plot_folder,'results.html'];
         fid = fopen(fname,'a');
-        fprintf(fid,'<p><br><b>Concordance between spike-predicted laterality and surgical laterality is higher for patients with good surgical outcomes</b></br>');
+        fprintf(fid,'<br><u><i>Concordance between spike-predicted laterality and surgical laterality is higher for patients with good surgical outcomes</i></u></br>');
         
         fprintf(fid,['We examined the one-year surgical outcomes of patients who underwent resection '...
             'or laser ablation, studying both Engel and ILAE outcome classifications.']);

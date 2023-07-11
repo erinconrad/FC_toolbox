@@ -5,9 +5,13 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 plot_folder = [results_folder,'analysis/new_outcome/plots/'];
 
-%% Remove the results.html file
+% Remove the results.html file
 if exist([plot_folder,'results.html'],'file') ~= 0
     delete([plot_folder,'results.html'])
+end
+
+if exist([plot_folder,'supplemental_results.html'],'file') ~= 0
+    delete([plot_folder,'supplemental_results.html'])
 end
 
 % Figure 1 is methods figure
