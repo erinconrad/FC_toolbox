@@ -5,6 +5,7 @@ which_year = 1;
 which_model = 'spikes';
 which_refs = {'car','bipolar','machine'};
 
+
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
@@ -49,7 +50,12 @@ for ir = 1:length(which_refs)
     T(~temporal_loc,:) = [];
     hup = contains(T.names,'HUP');
     T(~hup,:) = [];
-    
+
+    %% Remove patients (should be one patient for bipolar) with nan feature
+    features = T.Properties.VariableNames;
+    spike_features = features(contains(features,'spikes') & contains(features,which_refs{ir}));
+    nan_feature = isnan(T{:,spike_features});
+    T(nan_feature,:) = [];    
     
     %% Initialize figure
     figure
