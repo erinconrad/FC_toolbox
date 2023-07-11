@@ -261,7 +261,7 @@ fprintf(fid,['<p>We next compared the set of interictal features that best disti
 
 
 %% fmri locs
-file_path = '/Users/erinconrad/Desktop/research/FC_toolbox/Alfredo_code/fmri_analysis_AL_3_28_23/';
+file_path = [locations.main_folder,'Alfredo_code/fmri_analysis_AL_3_28_23/'];
 csv_path = [file_path,'out_csvs/'];
 
 %% Load files
