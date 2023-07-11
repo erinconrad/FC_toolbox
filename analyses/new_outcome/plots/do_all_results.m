@@ -29,5 +29,6 @@ model_plots
 % Figure 4 and Fig S4 and S5
 outcome_plots
 
+close all
 
 end
