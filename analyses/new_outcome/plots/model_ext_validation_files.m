@@ -155,6 +155,10 @@ for ir = 1:length(which_refs)
     [T,features,way,dur,sample,ss,durations] =  lr_mt_multitime([2 3]); 
     empty_class = cellfun(@isempty,T.soz_lats);
     T(empty_class,:) = [];
+
+    % Establish HUP and MUSC as training and testing, respectively
+    train  = contains(T.names,'HUP');
+    test  = contains(T.names,'MP');
     
     % Restrict to car spikes
     car_spikes = contains(features,sprintf('spikes_%s',which_refs{ir}));
