@@ -173,26 +173,25 @@ all_nans = isnan(nanmean(ic,2));
 clean_net_names = strrep(net_namesi(~all_nans),sprintf(' %s',montage_names{1}),'');
 nexttile
 turn_nans_gray(ic(~all_nans,~all_nans))
-xticks(1:size(ic,1)-1);
-yticks(1:size(ic,1)-1);
+xticks(1:size(ic,1));
+yticks(1:size(ic,1));
 %xticklabels(strrep(net_namesj(~all_nans),sprintf(' %s',montage_names{1}),''))
-xticklabels(clean_net_names)
-yticklabels(clean_net_names)
+xticklabels(cellfun(@greek_letters_plots,clean_net_names,'uniformoutput',false))
+yticklabels(cellfun(@greek_letters_plots,clean_net_names,'uniformoutput',false))
 colorbar
 clim([-1 1])
 set(gca,'fontsize',15)
 title(sprintf('Inter-feature correlation (electrode contact level)'))
 
-fprintf(fid,['For this analysis, we studied only the mean feature '...
-    'across time segments (not the standard deviation). We first measured inter-feature correlation on an electrode contact-level. To do '...
-    'this, we first converted bivariate features to electrode contact-specific '...
+fprintf(fid,['We first measured inter-feature correlation on an electrode contact-level. To do '...
+    'this, we converted bivariate features to electrode contact-specific '...
     'univariate features by taking the average edge weight across all other electrode contacts. (For '...
     'this analysis, we did not restrict the average to contacts only on the same electrode). This yielded '...
     'a single measure for each patient, feature, electrode contact, and reference. '...
     'We then calculated the Pearson correlation across electrode contacts between all features and choices of reference, '...
     'yielding a <i>N</i><sub>features x references</sub> x <i>N</i><sub>features x references</sub> '...
     'correlation matrix for each patient, where <i>N</i><sub>features x references</sub> is the '...
-    'number of features times the number of references (3). Fig. S1A shows the '...
+    'number of features times the number of references (30 x 3 = 90). Fig. S1A shows the '...
     'average inter-feature correlation matrix across patients for a single choice of reference (common average). '...
     'There were often high correlations between different frequency band measurements of the same feature. '... ...
     'There were also often high correlations or anti-correlations between different features, such as between '...
@@ -298,11 +297,11 @@ for i = 1:size(thing_montages,1)
     
 end
 
-ylim([-1 1])
+ylim([-1 1.3])
 plot(xlim,[0 0],'k--')
 xticks(1:size(thing_montages,1))
 xlim([0.5 size(thing_montages,1)+0.5])
-xticklabels(cellfun(@(x) strrep(x,'_',' '),net_names,'uniformoutput',false))
+xticklabels(cellfun(@greek_letters_plots, cellfun(@(x) strrep(x,'_',' '),net_names,'uniformoutput',false),'uniformoutput',false))
 ylabel('Correlation (r)')
 labels = cell(3,1);
 for i =1:3
@@ -364,11 +363,11 @@ aic = aic(locb,locb);
 % plot it
 nexttile
 turn_nans_gray(aic)
-xticks(1:size(aic,1)-1);
-yticks(1:size(aic,1)-1);
+xticks(1:size(aic,1));
+yticks(1:size(aic,1));
 %xticklabels(strrep(net_namesj(~all_nans),sprintf(' %s',montage_names{1}),''))
-xticklabels(no_sd_names)
-yticklabels(no_sd_names)
+xticklabels(cellfun(@greek_letters_plots,no_sd_names,'uniformoutput',false))
+yticklabels(cellfun(@greek_letters_plots,no_sd_names,'uniformoutput',false))
 colorbar
 clim([-1 1])
 set(gca,'fontsize',15)
@@ -475,6 +474,12 @@ fprintf(fid,['<p>We repeated this inter-feature correlation analysis, this time 
     ' there is only a single correlation value across all patients for this analysis). '...
     'Again, we observed high variability of inter-reference correlations '...
     'across features.</p>']);
+
+%% Add subtitles
+annotation('textbox',[0 0.905 0.1 0.1],'String','A','LineStyle','none','fontsize',20)
+annotation('textbox',[0.53 0.905 0.1 0.1],'String','B','LineStyle','none','fontsize',20)
+annotation('textbox',[0 0.41 0.1 0.1],'String','C','LineStyle','none','fontsize',20)
+annotation('textbox',[0.53 0.41 0.1 0.1],'String','D','LineStyle','none','fontsize',20)
 
 print(gcf,[plot_folder,'FigS1'],'-dpng')
 

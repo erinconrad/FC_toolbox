@@ -24,8 +24,8 @@ addpath(genpath(scripts_folder));
 fname = [plot_folder,'results.html'];
 fid = fopen(fname,'a');
 fprintf(fid,'<p><br><b>Several interictal EEG feature asymmetries are distinct across SOZ lateralities</b></br>');
-fprintf(fid,['We first examined, using univariate comparisons, how interictal EEG feature AI differs '...
-    'between patients with left-sided SOZs, right-sided SOZs, and bilateral SOZs.']);
+fprintf(fid,['We compared interictal EEG features '...
+    'between patients with left-sided, right-sided, and bilateral SOZs.']);
 
 %% Now do lr_mt to get AI features
 [T,features] =  lr_mt(3); % just sleep 
