@@ -1,4 +1,4 @@
-function [T,features,way,dur,sample,ss,durations] =  lr_mt_multitime(which_sleep_stages)
+function [T,features,way,dur,sample,ss,durations] =  lr_mt_multitime(mt_data,which_sleep_stages)
 
 %% Parameters
 only_hup = 0;
@@ -21,8 +21,8 @@ addpath(genpath(scripts_folder));
 
 
 %% Load data file
-mt_data = load([inter_folder,'mt_out.mat']);
-mt_data = mt_data.out;
+%mt_data = load([inter_folder,'mt_out.mat']);
+%mt_data = mt_data.out;
 all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 names = mt_data.all_names;
 npts = length(names);

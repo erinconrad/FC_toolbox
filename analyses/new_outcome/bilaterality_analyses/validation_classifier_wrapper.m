@@ -1,4 +1,5 @@
-function out = validation_classifier_wrapper(T,train,test,features,pca_perc,combine_br,just_spikes,rm_non_temporal,which_ref)
+function out = validation_classifier_wrapper(T,train,test,features,pca_perc,...
+    combine_br,just_spikes,rm_non_temporal,which_ref)
 % this code is the wrapping function to train a model on a training dataset
 % and test on an external validation set
 

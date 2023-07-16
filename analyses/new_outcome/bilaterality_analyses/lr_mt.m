@@ -1,4 +1,4 @@
-function [T,features,Ts] =  lr_mt(which_sleep_stages,rm_bad_spikes)
+function [T,features,Ts] =  lr_mt(mt_data,which_sleep_stages,rm_bad_spikes)
 
 %% Parameters
 only_hup = 0;
@@ -32,8 +32,8 @@ addpath(genpath(scripts_folder));
 freq_names = {'delta','theta','alpha','beta','gamma','broadband'};
 
 %% Load data file
-mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
-mt_data = mt_data.out;
+%mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
+%mt_data = mt_data.out;
 
 %% Load Manual validation file
 T = readtable('Manual validation.xlsx','Sheet','outcome');

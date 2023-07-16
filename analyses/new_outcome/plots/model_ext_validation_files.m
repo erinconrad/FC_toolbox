@@ -17,6 +17,11 @@ end
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
+%% Load the file containing intermediate data
+inter_folder = [results_folder,'analysis/new_outcome/data/'];
+mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
+mt_data = mt_data.out;
+
 for ir = 1:length(which_refs)
 
     file_name = sprintf('ext_models_%s.mat',which_refs{ir});
@@ -28,7 +33,7 @@ for ir = 1:length(which_refs)
             approach(ia).type = 'all spikes';
             % Run the lr_mt to extract AI features
             if rm_wake == 1
-                [T,features] =  lr_mt(3); % the 3 refers to only looking at sleep
+                [T,features] =  lr_mt(mt_data,3); % the 3 refers to only looking at sleep
             else
                 error('why are you doing this?')
             end
@@ -38,7 +43,7 @@ for ir = 1:length(which_refs)
             % Run the lr_mt to extract AI features, but restrict to good spikes
             % only
             if rm_wake == 1
-                [T,features] =  lr_mt(3,1); % the 3 refers to only looking at sleep
+                [T,features] =  lr_mt(mt_data,3,1); % the 3 refers to only looking at sleep
             else
                 error('why are you doing this?')
             end
@@ -152,7 +157,7 @@ for ir = 1:length(which_refs)
     tic
     
     % Run the lr_mt to extract features
-    [T,features,way,dur,sample,ss,durations] =  lr_mt_multitime([2 3]); 
+    [T,features,way,dur,sample,ss,durations] =  lr_mt_multitime(mt_data,[2 3]); 
     empty_class = cellfun(@isempty,T.soz_lats);
     T(empty_class,:) = [];
 
