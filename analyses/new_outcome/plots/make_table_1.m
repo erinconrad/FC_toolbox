@@ -1,5 +1,7 @@
 function make_table_1
 
+% This can't be run by the general user because it requires pt.mt
+
 %% Parameters
 rm_non_temporal = 1;
 

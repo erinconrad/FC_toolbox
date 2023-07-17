@@ -6,8 +6,7 @@ which_refs = {'car','bipolar','machine'};
 
 %% Get file locs
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-plot_folder = [results_folder,'analysis/new_outcome/plots/'];
+plot_folder = locations.el_plots_folder;
 if ~exist(plot_folder,'dir')
     mkdir(plot_folder)
 end

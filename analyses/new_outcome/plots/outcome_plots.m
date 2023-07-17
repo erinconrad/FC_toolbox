@@ -8,8 +8,7 @@ which_refs = {'car','bipolar','machine'};
 
 %% Get file locs
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-plot_folder = [results_folder,'analysis/new_outcome/plots/'];
+plot_folder = locations.el_plots_folder;
 if ~exist(plot_folder,'dir')
     mkdir(plot_folder)
 end
@@ -17,6 +16,11 @@ end
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
+
+%% Load the file containing intermediate data
+inter_folder = locations.el_data_folder;
+mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
+mt_data = mt_data.out;
 
 %% Initialize results file
 for ir = 1:length(which_refs)
@@ -43,7 +47,7 @@ for ir = 1:length(which_refs)
     end
     
     %% Run the mt_lr again just to get overall outcome stuff
-    T =  lr_mt(3);
+    T =  lr_mt(mt_data,3);
     empty_class = cellfun(@isempty,T.soz_lats);
     T(empty_class,:) = [];
     temporal_loc = contains(T.soz_locs,'temporal');

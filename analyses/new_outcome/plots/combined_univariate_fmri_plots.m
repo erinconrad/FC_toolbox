@@ -6,25 +6,24 @@ which_pts = 'hup';
 rm_non_temporal = 1;
 response = 'soz_lats';
 just_sep_bilat = 1;
-nboot = 1e1;
 
 % fmri parameters
-rm_ieeg = 0;
 rm_controls = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-inter_folder = [results_folder,'analysis/new_outcome/data/'];
-plot_folder = [results_folder,'analysis/new_outcome/plots/'];
-subplot_path = [plot_folder,'ai_subplots/'];
-if ~exist(subplot_path,'dir')
-    mkdir(subplot_path)
-end
+data_folder = locations.el_data_folder;
+fmri_folder = [data_folder,'fmri_data/'];
+plot_folder = locations.el_plots_folder;
 
 % add script folder to path
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
+
+%% Load the file containing intermediate data
+inter_folder = data_folder;
+mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
+mt_data = mt_data.out;
 
 %% Initialize results file
 fname = [plot_folder,'results.html'];
@@ -34,7 +33,7 @@ fprintf(fid,['We compared interictal EEG feature AIs '...
     'between patients with left-sided, right-sided, and bilateral SOZs.']);
 
 %% Now do lr_mt to get AI features
-[T,features] =  lr_mt(3); % just sleep
+[T,features] =  lr_mt(mt_data,3); % just sleep
 allowed_features = features;
 
 %% Restrict to desired hospital
@@ -56,8 +55,6 @@ end
 
 %% Initialize figure
 figure
-%set(gcf,'position',[25 235 1423 479])
-%t = tiledlayout(2,4,"TileSpacing",'tight','padding','tight');
 
 set(gcf,'position',[25 235 1050 900])
 t = tiledlayout(2,4,"TileSpacing",'tight','padding','tight');
@@ -258,7 +255,8 @@ fprintf(fid,['We next compared the set of features that best distinguished '...
 
 
 %% fmri locs
-file_path = [locations.main_folder,'Alfredo_code/fmri_analysis_AL_3_28_23/'];
+%file_path = [locations.main_folder,'Alfredo_code/fmri_analysis_AL_3_28_23/'];
+file_path = fmri_folder;
 csv_path = [file_path,'out_csvs/'];
 
 %% Load files
@@ -279,12 +277,6 @@ end
 
 %% Remove ieeg?
 ieeg = strcmp(T.IEEG,'IEEG');
-%{
-if rm_ieeg
-    
-    T(ieeg,:) = [];
-end
-%}
 
 
 %% Define temporal ROIs

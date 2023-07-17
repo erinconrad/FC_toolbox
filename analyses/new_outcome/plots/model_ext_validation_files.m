@@ -7,8 +7,10 @@ rm_wake = 1; % don't include wake segments
 which_refs = {'machine','car','bipolar'};
 
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-plot_folder = [results_folder,'analysis/new_outcome/plots/'];
+%results_folder = [locations.main_folder,'results/'];
+%plot_folder = [results_folder,'analysis/new_outcome/plots/'];
+plot_folder = locations.el_plots_folder;
+inter_folder = locations.el_data_folder;
 if ~exist(plot_folder,'dir')
     mkdir(plot_folder)
 end
@@ -18,7 +20,7 @@ scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Load the file containing intermediate data
-inter_folder = [results_folder,'analysis/new_outcome/data/'];
+%inter_folder = [results_folder,'analysis/new_outcome/data/'];
 mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
 mt_data = mt_data.out;
 
