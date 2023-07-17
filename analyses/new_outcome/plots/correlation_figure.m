@@ -323,7 +323,7 @@ fprintf(fid,[' Fig. S1B shows the mean (standard deviation) inter-reference feat
 
 %% Now do lr_mt to get AI features
 which_sleep_stages = 3;
-[T,features] =  lr_mt(which_sleep_stages);
+[T,features] =  lr_mt(mt_data,which_sleep_stages);
 
 % Restrict to correct hospital
 switch which_pts
