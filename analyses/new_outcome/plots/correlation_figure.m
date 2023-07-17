@@ -8,13 +8,8 @@ which_pts = 'hup';
 
 %% Get file locs
 locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-inter_folder = [results_folder,'analysis/new_outcome/data/'];
-plot_folder = [results_folder,'analysis/new_outcome/plots/'];
-subplot_path = [plot_folder,'ai_subplots/'];
-if ~exist(subplot_path,'dir')
-    mkdir(subplot_path)
-end
+inter_folder = locations.el_data_folder;
+plot_folder = locations.el_plots_folder;
 
 % add script folder to path
 scripts_folder = locations.script_folder;
