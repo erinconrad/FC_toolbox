@@ -9,6 +9,7 @@ rm_non_temporal = 1;
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 data_folder = [locations.main_folder,'data/'];
+inter_folder = locations.el_data_folder;
 alfredo_folder = [locations.main_folder,'Alfredo_code/fmri_analysis_AL_3_28_23/'];
 plot_folder = [results_folder,'analysis/new_outcome/plots/'];
 if ~exist(plot_folder,'dir')
@@ -23,8 +24,12 @@ addpath(genpath(scripts_folder));
 fname = [plot_folder,'results.html'];
 fid = fopen(fname,'a');
 
+%% Load the file containing intermediate data
+mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
+mt_data = mt_data.out;
+
 %% Run the lr_mt to extract features
-[T,features,Ts] =  lr_mt(3,0);
+[T,features,Ts] =  lr_mt(mt_data,3,0);
 empty_class = cellfun(@isempty,T.soz_lats);
 T(empty_class,:) = [];
 
