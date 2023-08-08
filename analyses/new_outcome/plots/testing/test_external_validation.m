@@ -14,33 +14,38 @@ rm_bad_spikes = 0;
 which_ref = 'car';
 
 %% Get file locs
-if ~for_will
-    locations = fc_toolbox_locs;
-    results_folder = [locations.main_folder,'results/'];
-    plot_folder = [results_folder,'analysis/new_outcome/plots/'];
-    if ~exist(plot_folder,'dir')
-        mkdir(plot_folder)
-    end
-    
-    % add script folder to path
-    scripts_folder = locations.script_folder;
-    addpath(genpath(scripts_folder));
-end
 
-if for_will
-    will_data = load('will_data.mat');
-    T = will_data.T;
-    features = will_data.features;
+locations = fc_toolbox_locs;
+data_folder = locations.el_data_folder;
+fmri_folder = [data_folder,'fmri_data/'];
+plot_folder = locations.el_plots_folder;
+
+% add script folder to path
+scripts_folder = locations.script_folder;
+addpath(genpath(scripts_folder));
+
+%% Load the file containing intermediate data
+inter_folder = data_folder;
+mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
+mt_data = mt_data.out;
+
+%% RID table
+rid_table = readtable([inter_folder,'all_rids.csv']);
+
+%% fmri locs
+file_path = fmri_folder;
+csv_path = [file_path,'out_csvs/'];
+fT = readtable([file_path,'df.csv']);
+
+%% Run the lr_mt to extract AI features
+if rm_wake == 1
+    [T,features] =  lr_mt(mt_data,3,rm_bad_spikes); % the 3 refers to only looking at sleep
+
 else
-    %% Run the lr_mt to extract AI features
-    if rm_wake == 1
-        [T,features] =  lr_mt(3,rm_bad_spikes); % the 3 refers to only looking at sleep
-
-    else
-        error('why are you doing this?')
-    end
-
+    error('why are you doing this?')
 end
+
+
 
 % Remove those without a response (soz_lats is the response variable)
 empty_class = cellfun(@isempty,T.soz_lats);
@@ -51,6 +56,9 @@ if 0
     bilateral = strcmp(T.soz_lats,'bilateral');
     T(bilateral,:) = [];
 end
+
+%% Get fmri AI and add it to table
+T = add_fmri_info_table(T,fT,rid_table,csv_path);
 
 %% Establish HUP and MUSC as training and testing, respectively
 train  = contains(T.names,'HUP');

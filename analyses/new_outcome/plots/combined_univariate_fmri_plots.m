@@ -482,8 +482,6 @@ fprintf(fid,['Of the %d patients and controls studied in the fMRI analysis, '...
     tbl_rm_ieeg{2,3},tbl_rm_ieeg{3,3},tbl_rm_ieeg{2,5},get_p_html(p_rm_ieeg),eta2_rm_ieeg);
 
 
-
-
 %% Add subtitles
 annotation('textbox',[0 0.9 0.1 0.1],'String','A','LineStyle','none','fontsize',25)
 annotation('textbox',[0.49 0.9 0.1 0.1],'String','B','LineStyle','none','fontsize',25)
@@ -492,6 +490,86 @@ annotation('textbox',[0.49 0.33 0.1 0.1],'String','D','LineStyle','none','fontsi
 
 
 print(gcf,[plot_folder,'Fig2'],'-dpng')
+
+%% Prediction analysis
+%{
+% Do LOO CV
+npts = length(AI);
+
+% Prepare combined lats
+comb_br = lat;
+comb_br(contains(comb_br,'bilateral')|contains(comb_br,'right')) = {'br'};
+pos_br = 'left';
+
+comb_bl = lat;
+comb_bl(contains(comb_bl,'bilateral')|contains(comb_bl,'left')) = {'bl'};
+pos_bl = 'right';
+
+% Initialize scores
+all_scores = nan(2,npts);
+alt_scores = nan(2,npts);
+
+for ic = 1:2
+
+    % Choose which lats to combine
+    if ic == 1
+        comb_lat = comb_br;
+        pos = pos_br;
+    elseif ic == 2
+        comb_lat = comb_bl;
+        pos = pos_bl;
+    end
+
+    comb_lat_bin = zeros(npts,1);
+    comb_lat_bin(strcmp(comb_lat,pos)) = 1;
+
+    fT = table(comb_lat,comb_lat_bin,AI,'VariableNames',{'lat','lat_bin','AI'});
+
+    % Loop over patients for LOO
+    for ip = 1:npts
+
+        % divide training and testing data
+        testing = ip;
+        training = [1:ip-1,ip+1:npts];
+
+        ft_test = fT(testing,:);
+        ft_train = fT(training,:);
+
+        % train the model on the training data
+        mdl = fitglm(ft_train,'lat_bin ~ AI','Distribution','binomial'); % basic LR model
+        coef = [mdl.Coefficients.Estimate(1);mdl.Coefficients.Estimate(2)];
+
+        % test the model on the testing data
+        score = glmval(coef,ft_test.AI,'logit');
+        alt_scores(ic,ip) = 1/(1+exp(-coef(1)-coef(2)*ft_test.AI));
+        all_scores(ic,ip) = score;
+       
+        
+    end
+end
+
+% Get ROC curves
+[XL,YL,~,AUCL] = perfcurve(comb_br,all_scores(1,:),'left');
+[XR,YR,~,AUCR] = perfcurve(comb_bl,all_scores(2,:),'bl');
+
+% Plot ROC curves
+figure
+ll = plot(XL,YL,'linewidth',2);
+hold on
+%lr = plot(XR,YR,'linewidth',2);
+plot([0 1],[0 1],'k--','linewidth',2)
+xlabel('False positive rate')
+ylabel('True positive rate')
+%{
+legend([ll,lr],{sprintf('Left vs right/bilateral: AUC = %1.2f',AUCL),...
+    sprintf('Right vs left/bilateral: AUC = %1.2f',AUCR)},'fontsize',15,...
+    'location','southeast')
+%}
+legend([ll],{sprintf('Left vs right/bilateral: AUC = %1.2f',AUCL),...
+    },'fontsize',15,...
+    'location','southeast')
+title({'LOO CV'})
+%}
 
 
 end

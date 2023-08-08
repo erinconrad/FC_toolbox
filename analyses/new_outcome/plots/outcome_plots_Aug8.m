@@ -46,10 +46,8 @@ for ir = 1:length(which_refs)
     switch which_model
         case 'full'
             model = out.approach(1).model(1).val(1);
-            musc_model = out.approach(1).model(1).val(2);
         case 'spikes'
             model = out.approach(1).model(2).val(1);
-            musc_model = out.approach(1).model(2).val(2);
     end
     
     %% Run the mt_lr again just to get overall outcome stuff
@@ -58,47 +56,13 @@ for ir = 1:length(which_refs)
     T(empty_class,:) = [];
     temporal_loc = contains(T.soz_locs,'temporal');
     T(~temporal_loc,:) = [];
+
+    %% Figure out outcomes for HUP vs MUSC
     hup = contains(T.names,'HUP');
-    musc = contains(T.names,'MP');
-
-    %% Get MUSC outcomes
-    % Loop over patients in T
-    if 1
-    for ip = 1:size(T,1)
-
-        if ~contains(T.names,'MP')
-            continue
-        end
-
-        % find matching musc table patient
-        musc_row = contains(muscT.LENID_,T.names{ip});
-        if sum(musc_row) == 1
-            if contains(muscT.EngelYear1{musc_row},'N/a') % don't change format if empty outcome
-                T.engel_yr1{ip} = '';
-                T.engel_yr2{ip} = '';
-                T.ilae_yr1{ip} = '';
-                T.ilae_yr2{ip} = '';
-                continue
-            end
-
-            % get outcomes
-            T.engel_yr1{ip} = muscT.EngelYear1{musc_row};
-            T.engel_yr2{ip} = muscT.EngelYear2{musc_row};
-            T.ilae_yr1{ip} = muscT.ILAEYear1{musc_row};
-            T.ilae_yr2{ip} = muscT.ILAEYear2{musc_row};
-
-            % get surgery
-            if strcmp(muscT.TypeOfSurgery{musc_row},'ATL')
-                T.surgery{ip} = 'Resection';
-                T.surg_lat{ip} = lower(muscT.SurgeryLaterality{musc_row});
-                T.surg_loc{ip} = 'temporal';
-            end
-        end
+   % musc = contains(T.names,'MP');
 
 
-    end
-    end
-
+    %T(~hup,:) = []; % Erin took this out 8/8
 
     %% Remove patients (should be one patient for bipolar) with nan feature
     features = T.Properties.VariableNames;
@@ -177,18 +141,10 @@ for ir = 1:length(which_refs)
         % Get models
         left = model.side(1).result;
         right = model.side(2).result;
-
-        left_musc = musc_model.side(1).result;
-        right_musc = musc_model.side(2).result;
-
-
-        % combine hup and musc models
-        all_left_names = [left.names;left_musc.names];
-        all_right_names = [right.names;right_musc.names];
         
         % confirm that the patients all align with the outcome table
-        assert(isequal(all_left_names,all_right_names))
-        names = all_left_names;
+        assert(isequal(left.names,right.names))
+        names = left.names;
         assert(isequal(T.names,names))
     
         % 224 did not have surgery, just planned to get it
@@ -203,7 +159,9 @@ for ir = 1:length(which_refs)
         right_surg = surg & strcmp(T.surg_lat,'right');
         npts = length(good_outcome);
     
-        
+        if 0
+            table(T.names(surg),outcome_bin(surg),T.surgery(surg))
+        end
     
         % Make sure no one had both left and right surg
         assert(sum(left_surg&right_surg)==0)
@@ -212,21 +170,14 @@ for ir = 1:length(which_refs)
         good_bad(io,1) = sum(good_outcome==1);
         good_bad(io,2) = sum(bad_outcome==1);
         
-        % Get the model scores (combining hup and musc)
-        left_scores = [left.scores;left_musc.scores];
-        right_scores = [right.scores;right_musc.scores];
+        % Get the model scores
+        left_scores = left.scores;
+        right_scores = right.scores;
     
         % Get the concordant laterality scores for good and bad outcome
         concordant_lat_scores = nan(npts,1);
         concordant_lat_scores(left_surg == 1) = left_scores(left_surg==1);
         concordant_lat_scores(right_surg == 1) = right_scores(right_surg==1);
-
-        if 0
-            table(T.names(surg),outcome_bin(surg),T.surgery(surg),T.surg_lat(surg),...
-                left_scores(surg),right_scores(surg),concordant_lat_scores(surg),...
-                'VariableNames',{'Name','Outcome','Surgery','Lat','Left score',...
-                'Righ score','concordant score'})
-        end
     
     
         nexttile

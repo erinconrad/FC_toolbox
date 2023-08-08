@@ -59,6 +59,7 @@ cost = [0 n_in_class(2);n_in_class(1) 0];
 % default lambda for lasso is 1/n where n is training sample size, and this
 % appears to be the lamda it is using in my dataset. No cross validation to
 % find optimal lambda. I could potentially optimize this.
+
 classifier = fitclinear(predictors,response,'Learner','logistic',...
     'ClassNames',classes,'cost',cost,'Regularization','Lasso');
 
@@ -73,6 +74,7 @@ lr_prediction = @(x) (x>=0.5); % make corresponding prediction rule with thresho
 % alternate classifier
 alt_class = fitcsvm(table2array(old_predictors),response,'KernelFunction','linear',...
     'ClassNames',classes,'cost',cost);
+
 
 % Make final output anonumous functions
 predictorExtractionFcn = @(t) t(:, predictorNames); % get the predictors
