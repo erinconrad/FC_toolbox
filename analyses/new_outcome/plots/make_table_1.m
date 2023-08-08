@@ -43,6 +43,50 @@ f1T = readtable([alfredo_folder,'df.csv']);
 %% Load clinical file for additional info for fMRI patients
 f2T = readtable([data_folder,'clinical_info/all_rids.csv']);
 
+%% Load MUSC clinical folder
+muscT = readtable([inter_folder,'LEN patient list research erin.xlsx']);
+
+% Get musc outcomes, surg
+for ip = 1:size(T,1)
+
+    if ~contains(T.names,'MP')
+        continue
+    end
+
+    % find matching musc table patient
+    musc_row = contains(muscT.LENID_,T.names{ip});
+    if sum(musc_row) == 1
+
+        % get surgery
+        if strcmp(muscT.TypeOfSurgery{musc_row},'ATL') || contains(muscT.TypeOfSurgery{musc_row},'Resection')
+            T.surgery{ip} = 'Resection';
+        elseif strcmp(muscT.TypeOfSurgery{musc_row},'LITT') || contains(muscT.TypeOfSurgery{musc_row},'ablation')
+            T.surgery{ip} = 'Laser ablation';
+        elseif strcmp(muscT.TypeOfSurgery{musc_row},'RNS')
+            T.surgery{ip} = 'RNS';
+        end
+
+        if contains(muscT.EngelYear1{musc_row},'N/a') % don't change format if empty outcome
+            T.engel_yr1{ip} = '';
+            T.engel_yr2{ip} = '';
+            T.ilae_yr1{ip} = '';
+            T.ilae_yr2{ip} = '';
+            continue
+        end
+
+        % get outcomes
+        T.engel_yr1{ip} = muscT.EngelYear1{musc_row};
+        T.engel_yr2{ip} = muscT.EngelYear2{musc_row};
+        T.ilae_yr1{ip} = muscT.ILAEYear1{musc_row};
+        T.ilae_yr2{ip} = muscT.ILAEYear2{musc_row};
+
+        
+
+    end
+
+
+end
+
 %% Go through and remove non-temporal patients
 soz_loc = T.soz_locs;
 tle = contains(soz_loc,'temporal');
@@ -159,6 +203,29 @@ for ip = 1:length(pt)
 
 end
 
+%% Get MUSC demographics
+for ip = 1:size(muscT,1)
+    musc_name = muscT.LENID_{ip};
+    part_name = musc_name(4:end);
+
+    % see if the name matches any of the main names
+    r = strcmp(part_name,name);
+    if sum(r) ~= 1, continue; end
+
+    sex = muscT.Sex{ip};
+    if strcmp(sex,'F') == 1
+        female(r) = 1;
+    elseif strcmp(sex,'M') == 1
+        female(r) = 0;
+    else
+        error('what')
+    end
+
+    age_onset(r) = muscT.AgeOfSeizureOnset(ip);
+    age_implant(r) = muscT.AgeAtImplant(ip);
+    
+end
+
 %% Maybe get some preimplant data from the manual validation file
 % MRI, scalp seizure laterality, scalp spike laterality, PET
 mT = readtable('Manual validation.xlsx','Sheet','Pre-implant data');
@@ -170,7 +237,7 @@ for i = 1:npts
 
     r = strcmp(curr_name,mT.name);
 
-    if r ~=1, continue; end
+    if sum(r) ~=1, continue; end
 
     % Get the laterality hypotheses
     no1_lat{i} = lower(mT.x_1PreimplantHypothesisLaterality_left_Right_Bilateral_Broad_NA{r});
@@ -179,6 +246,45 @@ for i = 1:npts
     
 
 end
+
+%% Add preimplant hypotheses from MUSC
+for i = 1:npts
+    % See if you can find the patient in this table
+    curr_name = name{i};
+
+    r = contains(muscT.LENID_,['3T_',curr_name]);
+    if sum(r) ~=1, continue; end
+
+    % Get the laterality hypotheses
+    hyp = muscT.Primary2HypothesesForEpilepsyLocalization{r};
+    C = strsplit(hyp,'2');
+    if length(C) ~=2, error('what'); end
+
+    for ic = 1:2
+        if contains(C{ic},'Right')
+            if ic == 1
+                no1_lat{i} = 'right';
+            elseif ic == 2
+                no2_lat{i} = 'right';
+            end
+        elseif contains(C{ic},'Left')
+            if ic == 1
+                no1_lat{i} = 'left';
+            elseif ic == 2
+                no2_lat{i} = 'left';
+            end
+        else
+            if strcmp(curr_name,'MP0029')
+                no2_lat{i} = 'right';
+            else
+                error('what');
+            end
+        end
+    end
+
+
+end
+
 no1_lat(cellfun(@isempty,no1_lat)) = {''};
 no2_lat(cellfun(@isempty,no2_lat)) = {''};
 
