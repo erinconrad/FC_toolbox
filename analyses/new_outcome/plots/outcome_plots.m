@@ -93,6 +93,7 @@ for ir = 1:length(which_refs)
                 T.surg_lat{ip} = lower(muscT.SurgeryLaterality{musc_row});
                 T.surg_loc{ip} = 'temporal';
             end
+
         end
 
 
@@ -275,6 +276,11 @@ for ir = 1:length(which_refs)
         names_5sense = outT.names;
         prob_5sense = outT.prob;
         reconciled_prob = nan(length(names),1);
+
+        % add info for the two musc patients with 5-sense scores (copied
+        % these probs from LEN table)
+        names_5sense = [names_5sense;{'MP0006'};{'MP0011'}];
+        prob_5sense = [prob_5sense;56.8;29.2];
     
         for i = 1:length(names)
             % get row in the other outcome table corresponding to this name
