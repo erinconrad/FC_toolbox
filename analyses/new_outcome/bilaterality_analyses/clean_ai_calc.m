@@ -5,6 +5,7 @@ This function takes a list of features for different electrode contacts,
 finds the mesial temporal ones, and calculates a single asymmetry index
 (for each frequency band) representing the L-R difference.
 %}
+
 which_elecs = {'A','B','C'};
 which_lats = {'L','R'};
 
@@ -84,8 +85,6 @@ intra_avg = squeeze(nanmean(intra,[1 2]));
 left = intra_avg(1,:);
 right = intra_avg(2,:);
 AI = (left-right)./(left+right);
-
-
 
 
 

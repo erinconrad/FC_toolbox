@@ -1,4 +1,12 @@
-function do_all_results(do_full_pipeline,doing_from_github)
+%{
+This is the primary script to run all the analyses for the epilepsy
+laterality project.
+%}
+
+do_full_pipeline = 0; % switch to 1 if you want to run the full analysis (takes several hours)
+
+% End users should not change this
+doing_from_github = 1;
 
 %% Get file locs
 locations = fc_toolbox_locs;
@@ -52,4 +60,3 @@ outcome_plots
 
 close all
 
-end

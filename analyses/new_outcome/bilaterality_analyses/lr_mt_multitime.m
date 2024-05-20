@@ -5,24 +5,7 @@ only_hup = 0;
 which_montages = [1 2 3];
 do_little_plots = 0;
 
-%% Get file locs
-locations = fc_toolbox_locs;
-results_folder = [locations.main_folder,'results/'];
-inter_folder = [results_folder,'analysis/new_outcome/data/'];
-plot_folder = [results_folder,'analysis/new_outcome/plots/'];
-subplot_path = [plot_folder,'ai_subplots/'];
-if ~exist(subplot_path,'dir')
-    mkdir(subplot_path)
-end
 
-% add script folder to path
-scripts_folder = locations.script_folder;
-addpath(genpath(scripts_folder));
-
-
-%% Load data file
-%mt_data = load([inter_folder,'mt_out.mat']);
-%mt_data = mt_data.out;
 all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
 names = mt_data.all_names;
 npts = length(names);
@@ -39,11 +22,6 @@ soz_lats = mt_data.all_soz_lat;
 soz_locs = mt_data.all_soz_loc;
 disconnected = mt_data.all_disconnected;
 all_n_wake_sleep_connected = mt_data.all_n_wake_sleep_connected;
-atropos = mt_data.all_atropos;
-dkt = mt_data.all_dkt;
-
-atropos = cell(npts,1);
-dkt = cell(npts,1);
 
 all_spikes = mt_data.spikes_subsample;
 durations = mt_data.durations;
@@ -100,14 +78,6 @@ for i = 1:npts
         surg_loc{i} = 'other';
     end
 end
-
-
-%% Parse surgery
-surgery(cellfun(@isempty,surgery)) = {''};
-resection_or_ablation = cellfun(@(x) ...
-    contains(x,'resection','ignorecase',true) | contains(x,'ablation','ignorecase',true),...
-    surgery);
-outcome(~resection_or_ablation) = {''}; % make non resection or ablation nan
 
 
 %% Get features

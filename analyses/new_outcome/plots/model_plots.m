@@ -11,10 +11,6 @@ if ~exist(plot_folder,'dir')
     mkdir(plot_folder)
 end
 
-% add script folder to path
-scripts_folder = locations.script_folder;
-addpath(genpath(scripts_folder));
-
 
 for ia = 1:length(which_refs) 
 

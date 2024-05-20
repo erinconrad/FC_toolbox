@@ -1,26 +1,31 @@
 function model_ext_validation_files
 
-%% Parameters
+%{
+This function re-runs the code to take intermediate dataset containing
+electrode contact-level features, calculate patient-level AI values for
+each feature, and runs the machine learning algorithms to predict epilepsy
+laterality.
+%}
+
+%% Parameters (end-users should probably not change)
 pca_perc = 95; % the percent variance to explain for pca
 rm_non_temporal = 1; % remove patients who are not temporal
 rm_wake = 1; % don't include wake segments
 which_refs = {'machine','car','bipolar'};
 
+%% Get locations of various files and scripts
 locations = fc_toolbox_locs;
-%results_folder = [locations.main_folder,'results/'];
-%plot_folder = [results_folder,'analysis/new_outcome/plots/'];
 plot_folder = locations.el_plots_folder;
 inter_folder = locations.el_data_folder;
+scripts_folder = locations.el_script_folder;
 if ~exist(plot_folder,'dir')
     mkdir(plot_folder)
 end
 
 % add script folder to path
-scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
 %% Load the file containing intermediate data
-%inter_folder = [results_folder,'analysis/new_outcome/data/'];
 mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
 mt_data = mt_data.out;
 

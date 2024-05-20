@@ -11,10 +11,6 @@ locations = fc_toolbox_locs;
 inter_folder = locations.el_data_folder;
 plot_folder = locations.el_plots_folder;
 
-% add script folder to path
-scripts_folder = locations.script_folder;
-addpath(genpath(scripts_folder));
-
 % Frequency band names
 freq_names = {'delta','theta','alpha','beta','gamma','broadband'};
 nmontages = length(montage_names);

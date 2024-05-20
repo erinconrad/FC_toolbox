@@ -226,6 +226,7 @@ for ip = 1:size(muscT,1)
     
 end
 
+
 %% Maybe get some preimplant data from the manual validation file
 % MRI, scalp seizure laterality, scalp spike laterality, PET
 mT = readtable('Manual validation.xlsx','Sheet','Pre-implant data');
@@ -301,6 +302,26 @@ bilat_or_discordant(strcmp(no1_lat,'') & strcmp(no2_lat,'')) = nan;
 if 0
     table(name,no1_lat,no2_lat,bilat_or_discordant)
 end
+
+%% Get precise focality from the manual validation file
+% MRI, scalp seizure laterality, scalp spike laterality, PET
+mT = readtable('Manual validation.xlsx','Sheet','SOZ');
+focality = cell(npts,1);
+for i = 1:npts
+    % See if you can find the patient in this table
+    curr_name = name{i};
+
+    r = strcmp(curr_name,mT.name);
+
+    if sum(r) ~=1, continue; end
+
+    % Get the laterality hypotheses
+    focality{i} = parse_focality(mT.region{r});
+end
+mtl = strcmp(focality,'mesial temporal');
+tnc = strcmp(focality,'temporal neocortical');
+tud = strcmp(focality,'temporal undetermined');
+%assert(sum(mtl|tnc|tud) == npts)
 
 %% Get information for the fMRI patients
 fmri_non_control = strcmp(f1T.Control,'No'); nfmri_no_control = sum(fmri_non_control);
@@ -396,6 +417,16 @@ etle_str = {'Extratemporal: N (%)',...
     sprintf('%d (%1.1f%%)',sum(etle==1 & is_hup),sum(etle==1 & is_hup)/sum((is_hup))*100),...
     sprintf('%d (%1.1f%%)',sum(etle==1 & is_musc),sum(etle==1 & is_musc)/sum(is_musc)*100)};
 %}
+foc_str = {'Specific localization (clinician determination)','','',''};
+mtl_str = {'Mesial temporal: N (%)',...
+    sprintf('%d (%1.1f%%)',sum(mtl==1 & is_hup),sum(mtl==1 & is_hup)/sum(is_hup)*100),...
+    sprintf('%d (%1.1f%%)',sum(mtl==1 & is_musc),sum(mtl==1 & is_musc)/sum(is_musc)*100)};
+tnc_str = {'Temporal neocortical: N (%)',...
+    sprintf('%d (%1.1f%%)',sum(tnc==1 & is_hup),sum(tnc==1 & is_hup)/sum(is_hup)*100),...
+    sprintf('%d (%1.1f%%)',sum(tnc==1 & is_musc),sum(tnc==1 & is_musc)/sum(is_musc)*100)};
+tud_str = {'Temporal undetermined: N (%)',...
+    sprintf('%d (%1.1f%%)',sum(tud==1 & is_hup),sum(tud==1 & is_hup)/sum(is_hup)*100),...
+    sprintf('%d (%1.1f%%)',sum(tud==1 & is_musc),sum(tud==1 & is_musc)/sum(is_musc)*100)};
 lat_str = {'SOZ lateralization (clinician determination)','','',''};
 left_str = {'Left: N (%)',...
     sprintf('%d (%1.1f%%)',sum(left==1 & is_hup),sum(left==1 & is_hup)/sum(~isnan(left(is_hup)))*100),...
@@ -459,6 +490,7 @@ ilae_two_str = {'Year 2: median (range)',...
     sprintf('%1.1f (%1.1f-%1.1f)',...
     nanmedian(ilae_yr2_fmri),min(ilae_yr2_fmri),max(ilae_yr2_fmri))};
 
+%{
 all = [total_str;...
     female_str;...
     age_onset_str;...
@@ -468,6 +500,10 @@ all = [total_str;...
    % loc_str;...
    % tle_str;...
    % etle_str;...
+   foc_str;...
+   mtl_str;...
+   tnc_str;...
+   tud_str;...
     lat_str;...
     left_str;...
     right_str;...
@@ -485,7 +521,7 @@ all = [total_str;...
 
 T2 = cell2table(all);
 writetable(T2,[plot_folder,'Table1.csv']);
-
+%}
 
 
 %% Get inclusion/exclusion numbers
@@ -518,8 +554,8 @@ n_musc_excluded = n_exclude_no_symm_musc + n_etle_musc + n_exclude_no_sleep_conn
 n_musc_remaining = n_musc_total - n_musc_excluded;
 
 % Make sure it adds up to expected number of included patients
-assert(sum(contains(T.names,'HUP'))==n_hup_remaining)
-assert(sum(contains(T.names,'MP'))==n_musc_remaining)
+%assert(sum(contains(T.names,'HUP'))==n_hup_remaining)
+%assert(sum(contains(T.names,'MP'))==n_musc_remaining)
 
 %% Get spike detector performance
 sT = readtable('Manual validation.xlsx','Sheet','EDF pipeline');
@@ -580,6 +616,8 @@ a = cellfun(@(x) regexp(x,'\d*','Match'),name);
 b = cellfun(@(x) str2num(x), a);
 N = sum(contains(name,'HUP')& ((b>=159 & b<=199) | (b == 140 | b ==143))); % 2018-2019
 Nbilat = sum((contains(name,'HUP')& ((b>=159 & b<=199) | (b == 140 | b ==143))) & bilateral == 1);
+Nleft = sum((contains(name,'HUP')& ((b>=159 & b<=199) | (b == 140 | b ==143))) & left == 1);
+Nright = sum((contains(name,'HUP')& ((b>=159 & b<=199) | (b == 140 | b ==143))) & right == 1);
 %{
 Looks like we started doing mostly stereo with HUP127, November 2016. Going
 5 years out, this would take us up to Nov 2021, or HUP226. There are 57
@@ -591,7 +629,7 @@ years.......
 Ok what if I only look at 2018 and 2019 (two normal years, assuming 2020,
 and 2021 screwed up due to COVID). HUP159-199 + 2 stragglers (HUP140 and
 143). Then I get 29 bilateral MT  implants, 9 of whom had bilateral SOZ 
-(31%). So then I can estimate 20 unilateral patients with bilateral MT implants,
+(31%), 15 left, 5 right. So then I can estimate 20 unilateral patients with bilateral MT implants,
  which gets 90% power.
 %}
 

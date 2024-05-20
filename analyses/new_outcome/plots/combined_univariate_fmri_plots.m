@@ -16,10 +16,6 @@ data_folder = locations.el_data_folder;
 fmri_folder = [data_folder,'fmri_data/'];
 plot_folder = locations.el_plots_folder;
 
-% add script folder to path
-scripts_folder = locations.script_folder;
-addpath(genpath(scripts_folder));
-
 %% Load the file containing intermediate data
 inter_folder = data_folder;
 mt_data = load([inter_folder,'mt_out_epilepsy_laterality.mat']);
@@ -311,8 +307,10 @@ for i = 1:npatients
 end
 
 %% Get the left strength and right strength
-left_str = mean(sum(abs(all_fcon(:,temporal_hippo_amygdala_left,temporal_hippo_amygdala_left)),3),2);
-right_str = mean(sum(abs(all_fcon(:,temporal_hippo_amygdala_right,temporal_hippo_amygdala_right)),3),2);
+% Take abs value of connectivity and then mean across each temporal lobe
+% (averaging all left-left connections and all right-right connections)
+left_str = mean(abs(all_fcon(:,temporal_hippo_amygdala_left,temporal_hippo_amygdala_left)),[2 3]);
+right_str = mean(abs(all_fcon(:,temporal_hippo_amygdala_right,temporal_hippo_amygdala_right)),[2 3]);
 
 %% Define AI
 AI = (left_str-right_str)./(left_str+right_str);

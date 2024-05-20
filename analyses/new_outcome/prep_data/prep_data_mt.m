@@ -77,6 +77,8 @@ all_lags_iqr = cell(npts,3,3);
 all_rel_bp_iqr = cell(npts,3,3);
 all_ll_iqr = cell(npts,3,3);
 all_n_wake_sleep = nan(npts,2);
+all_n_transition = nan(npts,1);
+all_n_n1_rem = nan(npts,2);
 all_disconnected = nan(npts,72);
 all_n_wake_sleep_connected = nan(npts,2);
 all_atropos = cell(npts,1);
@@ -212,8 +214,12 @@ for p = 1:npts
     sleep = strcmp(seeg_stage,'N3') | strcmp(seeg_stage,'N2');% | ...
         %strcmp(seeg_stage,'N1') | strcmp(seeg_stage,'R');
     wake = strcmp(seeg_stage,'W');
+    transition = cellfun(@isempty,seeg_stage);
 
     all_n_wake_sleep(p,:) = [sum(wake) sum(sleep)];
+    all_n_transition(p) = sum(transition);
+    all_n_n1_rem(p,:) = [sum(strcmp(seeg_stage,'N1')) sum(strcmp(seeg_stage,'R'))];
+    assert(sum(wake)+sum(sleep)+sum(transition)+sum(strcmp(seeg_stage,'N1')) + sum(strcmp(seeg_stage,'R'))==72)
     all_n_wake_sleep_connected(p,:) = [sum(wake&~low_amplitude) sum(sleep&~low_amplitude)];
     
 
@@ -505,6 +511,8 @@ out.all_dkt = [];
 
 out.all_n_wake_sleep = all_n_wake_sleep;
 out.all_n_wake_sleep_connected = all_n_wake_sleep_connected;
+out.all_n_transition = all_n_transition;
+out.all_n_n1_rem = all_n_n1_rem;
 out.spikes_subsample = spikes_subsample;
 out.durations = durations;
 
