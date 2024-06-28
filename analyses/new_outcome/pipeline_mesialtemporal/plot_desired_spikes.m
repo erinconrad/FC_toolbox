@@ -27,7 +27,7 @@ for p = 1:npts
     name = pts{p};
 
     % Load the edf summary file
-    info = load([edf_path,name,'/summ.mat']);
+    info = load([edf_summ_path,name,'/summ.mat']);
     info = info.out;
 
     random_spikes_pretty(info.all_spike_times{im},name,info.labels,info.montages{im},edf_path,edf_summ_path,mT)
