@@ -17,6 +17,7 @@ sleep_stage_path = [results_folder,'edf_out/'];
 scripts_folder = locations.script_folder;
 addpath(genpath(scripts_folder));
 
+validation_file = [scripts_folder,'spike_detector/Manual validation.xlsx'];
 mT = readtable(validation_file,'Sheet','strange_elec_names');
 
 
