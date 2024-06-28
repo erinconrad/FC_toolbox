@@ -10,7 +10,7 @@ locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 data_folder = [locations.main_folder,'data/'];
 edf_path = [results_folder,'edf_out/'];
-edf_summ_path = [results_folder,'edf_summ_out/'];
+edf_summ_path = [results_folder,'edf_summ_out_epilepsy_laterality/'];
 sleep_stage_path = [results_folder,'edf_out/'];
 
 % add script folder to path
