@@ -32,5 +32,3 @@ for p = 1:npts
     random_spikes_pretty(info.all_spike_times{im},name,info.labels,info.montages{im},edf_path,edf_summ_path,mT)
 
 end
-
-end
