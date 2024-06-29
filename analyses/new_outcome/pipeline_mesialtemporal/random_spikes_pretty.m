@@ -14,7 +14,7 @@ else
     fprintf('\n%d spikes detected for %s\n',ntotal,name)
 end
 figure
-set(gcf,'position',[10 10 1400 1400])
+set(gcf,'position',[10 10 1600 1000])
 nwidth = 5;
 nheight = 5;
 tiledlayout(nheight,nwidth,'tilespacing','tight','padding','tight')
