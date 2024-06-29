@@ -4,8 +4,8 @@ function random_spikes_pretty(all_spikes,name,labels,montage,edf_path,edf_summ_p
 rng(0)
 
 
-nspikes = 50;
-surround = 2; % 2 seconds befor or after
+nspikes = 25;
+surround = 4; % 2 seconds befor or after
 ntotal = size(all_spikes,1);
 if ntotal == 0
     fprintf('\nNo spikes detected for %s\n',name)
@@ -15,7 +15,9 @@ else
 end
 figure
 set(gcf,'position',[10 10 1400 1000])
-tiledlayout(5,10,'tilespacing','tight','padding','tight')
+nwidth = 5;
+nheight = 5;
+tiledlayout(nheight,nwidth,'tilespacing','tight','padding','tight')
 
 for i = 1:nspikes
     
@@ -120,12 +122,33 @@ for i = 1:nspikes
     start_idx = idx - fs*surround;
     end_idx = idx + fs*surround;
 
+    times = (1:end_idx-start_idx+1)/fs;
+
+    curr_vals = values(start_idx:end_idx,rch);
+    
+    %subtract median
+    curr_vals = curr_vals - nanmedian(curr_vals);
+
     % plot the appropriate indices
     nexttile
-    plot(values(start_idx:end_idx,rch));
+    plot(times,curr_vals);
     hold on
-    plot(fs*surround+1,values(fs*surround+1,rch),'o')
-    title(sprintf('Spike %d %s',s,mlabels{rch}))
+    %plot(fs*surround+1,values(fs*surround+1,rch),'o')
+    %title(sprintf('Spike %d %s',s,mlabels{rch}))
+
+    if i > nwidth * (nheight-1)
+        xlabel('Time (s)')
+    else
+        xticklabels([])
+    end
+
+    %{
+    if mod(i,nwidth) == 1
+        ylabel('uV')
+    else
+        yticklabels([])
+    end
+    %}
 
 end
 
