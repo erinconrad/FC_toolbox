@@ -2,7 +2,7 @@
 
 % which pts
 %pts = {'HUP162','HUP157','MP0010','MP0003'};
-pts = {'MP0003'};
+pts = {'MP0006'};
 npts = length(pts);
 im = 3; %bipolar
 
