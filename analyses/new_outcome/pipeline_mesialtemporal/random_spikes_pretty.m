@@ -14,7 +14,7 @@ else
     fprintf('\n%d spikes detected for %s\n',ntotal,name)
 end
 figure
-set(gcf,'position',[10 10 1400 1000])
+set(gcf,'position',[10 10 1400 1400])
 nwidth = 5;
 nheight = 5;
 tiledlayout(nheight,nwidth,'tilespacing','tight','padding','tight')
@@ -141,6 +141,8 @@ for i = 1:nspikes
     else
         xticklabels([])
     end
+
+    set(gca,'fontsize',15)
 
     %{
     if mod(i,nwidth) == 1
