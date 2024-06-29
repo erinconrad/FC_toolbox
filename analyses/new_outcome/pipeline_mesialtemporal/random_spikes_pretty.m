@@ -135,7 +135,7 @@ for i = 1:nspikes
     hold on
     %plot(fs*surround+1,values(fs*surround+1,rch),'o')
     %title(sprintf('Spike %d %s',s,mlabels{rch}))
-
+    xlim([0 8])
     if i > nwidth * (nheight-1)
         xlabel('Time (s)')
     else
@@ -144,11 +144,11 @@ for i = 1:nspikes
 
     set(gca,'fontsize',15)
 
-    %{
+    %
     if mod(i,nwidth) == 1
         ylabel('uV')
     else
-        yticklabels([])
+        %yticklabels([])
     end
     %}
 
