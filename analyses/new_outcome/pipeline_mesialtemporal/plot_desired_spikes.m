@@ -1,8 +1,8 @@
 %% Plot desired spikes
 
 % which pts
-%pts = {'HUP162','HUP157','MP0001','MP0003'};
-pts = {'MP0010'};
+%pts = {'HUP162','HUP157','MP0010','MP0003'};
+pts = {'MP0003'};
 npts = length(pts);
 im = 3; %bipolar
 
