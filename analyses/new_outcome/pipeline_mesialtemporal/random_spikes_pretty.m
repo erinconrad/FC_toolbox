@@ -1,4 +1,4 @@
-function random_spikes_pretty(all_spikes,name,labels,montage,edf_path,edf_summ_path,mT)
+function random_spikes_pretty(all_spikes,name,labels,montage,edf_path,edf_summ_path,mT,titles)
 
 % seed rng
 rng(0)
@@ -17,7 +17,7 @@ figure
 set(gcf,'position',[10 10 1600 1000])
 nwidth = 5;
 nheight = 5;
-tiledlayout(nheight,nwidth,'tilespacing','tight','padding','tight')
+t = tiledlayout(nheight,nwidth,'tilespacing','tight','padding','tight');
 
 for i = 1:nspikes
     
@@ -153,6 +153,7 @@ for i = 1:nspikes
     %}
 
 end
+title(t,titles)
 
 print(gcf,[edf_summ_path,name,'/',montage,'_pretty'],'-dpng')
 close gcf

@@ -1,8 +1,9 @@
 %% Plot desired spikes
 
 % which pts
-%pts = {'HUP162','HUP157','MP0010','MP0003'};
-pts = {'MP0006'};
+pts = {'HUP162','HUP157','MP0010','MP0006'};
+titles = {'HUP-high accuracy','HUP-low accuracy','MUSC-high accuracy','MUSC-low accuracy'};
+%pts = {'MP0006'};
 npts = length(pts);
 im = 3; %bipolar
 
@@ -31,6 +32,7 @@ for p = 1:npts
     info = load([edf_summ_path,name,'/summ.mat']);
     info = info.out;
 
-    random_spikes_pretty(info.all_spike_times{im},name,info.labels,info.montages{im},edf_path,edf_summ_path,mT)
+    random_spikes_pretty(info.all_spike_times{im},...
+        name,info.labels,info.montages{im},edf_path,edf_summ_path,mT,titles)
 
 end
