@@ -155,7 +155,7 @@ for i = 1:nspikes
 end
 title(t,titles)
 
-print(gcf,[out_path,name,'/',montage,'_pretty'],'-dpng')
+print(gcf,[out_path,name,'_',montage,'_pretty'],'-dpng')
 close gcf
 
 
