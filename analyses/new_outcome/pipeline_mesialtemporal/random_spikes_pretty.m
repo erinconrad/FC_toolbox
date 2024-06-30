@@ -1,11 +1,11 @@
-function random_spikes_pretty(all_spikes,name,labels,montage,edf_path,out_path,mT,titles)
+function random_spikes_pretty(all_spikes,name,labels,montage,edf_path,out_path,mT,curr_title)
 
 % seed rng
 rng(0)
 
 
 nspikes = 25;
-surround = 4; % 2 seconds befor or after
+surround = 3; % seconds befor or after
 ntotal = size(all_spikes,1);
 if ntotal == 0
     fprintf('\nNo spikes detected for %s\n',name)
@@ -135,7 +135,7 @@ for i = 1:nspikes
     hold on
     %plot(fs*surround+1,values(fs*surround+1,rch),'o')
     %title(sprintf('Spike %d %s',s,mlabels{rch}))
-    xlim([0 8])
+    xlim([0 6])
     if i > nwidth * (nheight-1)
         xlabel('Time (s)')
     else
@@ -153,7 +153,7 @@ for i = 1:nspikes
     %}
 
 end
-title(t,titles)
+title(t,curr_title)
 
 print(gcf,[out_path,name,'_',montage,'_pretty'],'-dpng')
 close gcf

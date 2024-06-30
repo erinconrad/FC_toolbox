@@ -2,7 +2,8 @@
 
 % which pts
 pts = {'HUP162','HUP157','MP0010','MP0006'};
-titles = {'HUP-high accuracy','HUP-low accuracy','MUSC-high accuracy','MUSC-low accuracy'};
+titles = {'HUP-high accuracy patient',...
+    'HUP-low accuracy patient','MUSC-high accuracy patient','MUSC-low accuracy patient'};
 %pts = {'MP0006'};
 npts = length(pts);
 im = 3; %bipolar
@@ -34,6 +35,6 @@ for p = 1:npts
     info = info.out;
 
     random_spikes_pretty(info.all_spike_times{im},...
-        name,info.labels,info.montages{im},edf_path,out_path,mT,titles)
+        name,info.labels,info.montages{im},edf_path,out_path,mT,titles{p})
 
 end
