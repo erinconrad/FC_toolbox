@@ -2,8 +2,8 @@
 
 % which pts
 pts = {'HUP162','HUP157','MP0010','MP0006'};
-titles = {'HUP-high accuracy patient',...
-    'HUP-low accuracy patient','MUSC-high accuracy patient','MUSC-low accuracy patient'};
+titles = {'A: HUP-high accuracy patient',...
+    'B: HUP-low accuracy patient','C: MUSC-high accuracy patient','D: MUSC-low accuracy patient'};
 %pts = {'MP0006'};
 npts = length(pts);
 im = 3; %bipolar
