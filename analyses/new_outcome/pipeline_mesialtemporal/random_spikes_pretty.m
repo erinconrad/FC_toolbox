@@ -1,4 +1,4 @@
-function random_spikes_pretty(all_spikes,name,labels,montage,edf_path,edf_summ_path,mT,titles)
+function random_spikes_pretty(all_spikes,name,labels,montage,edf_path,out_path,mT,titles)
 
 % seed rng
 rng(0)
@@ -155,7 +155,7 @@ for i = 1:nspikes
 end
 title(t,titles)
 
-print(gcf,[edf_summ_path,name,'/',montage,'_pretty'],'-dpng')
+print(gcf,[out_path,name,'/',montage,'_pretty'],'-dpng')
 close gcf
 
 

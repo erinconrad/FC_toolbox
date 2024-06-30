@@ -13,6 +13,7 @@ results_folder = [locations.main_folder,'results/'];
 data_folder = [locations.main_folder,'data/'];
 edf_path = [results_folder,'edf_out/'];
 edf_summ_path = [results_folder,'edf_summ_out_epilepsy_laterality/'];
+out_path = [results_folder,'analysis/new_outcome/new_validation/'];
 sleep_stage_path = [results_folder,'edf_out/'];
 
 % add script folder to path
@@ -33,6 +34,6 @@ for p = 1:npts
     info = info.out;
 
     random_spikes_pretty(info.all_spike_times{im},...
-        name,info.labels,info.montages{im},edf_path,edf_summ_path,mT,titles)
+        name,info.labels,info.montages{im},edf_path,out_path,mT,titles)
 
 end
