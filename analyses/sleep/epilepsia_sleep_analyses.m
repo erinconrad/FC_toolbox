@@ -13,7 +13,7 @@ doing_from_github = 1; % change to 1 if doing from github
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
 scripts_folder = locations.script_folder;
-out_folder = [scripts_folder,'analyses/sleep/data/'];
+out_folder = [results_folder,'for_jack/'];
 addpath(genpath(scripts_folder))
 
 %% Do circadian analysis
@@ -25,6 +25,7 @@ fprintf('\nDoing alpha delta ratio validation\n');
 roc_out = ad_validation;
 disc = roc_out.disc;
 
+%{
 %% Do SleepSEEG analyses
 fprintf('\nDoing SleepSEEG analyses\n')
 seeg_out = basic_seeg_analyses;
@@ -33,6 +34,7 @@ seeg_ad_out = sleep_seeg_ad(0);
 %% Time-varying analysis
 fprintf('\nDoing time-varying analysis\n');
 time_out = time_varying_spikes(disc);
+%}
 
 %% Do binary ad analyses
 fprintf('\nDoing binary AD analyses\n');
@@ -45,7 +47,11 @@ iqr_sleep = prctile(perc_asleep,[25 75]);
 fprintf('\nAcross all patients, a median of %1.1f%% (IQR %1.1f%% - %1.1f%%) of periods were determined to be asleep.\n',...
     nanmedian(perc_asleep),iqr_sleep(1),iqr_sleep(2));
 
+out.circ_out = circ_out;
+out.bin_out = bin_out;
+save([out_folder,'out.mat'],'out')
 
+%{
 %% Seizure circadian analysis
 sz_circ_out = sz_circadian(disc);
 
@@ -67,6 +73,7 @@ out.seeg_ad_out = seeg_ad_out;
 save([out_folder,'out.mat'],'out')
 
 %% Do sleep models
+
 % Skip this if I am only doing the periictal analysis
 if exist('just_for_periictal','var') ~= 0 && just_for_periictal == 1
     epilepsia_figure2
@@ -120,3 +127,4 @@ if ~doing_from_github
 end
 end
 
+%}

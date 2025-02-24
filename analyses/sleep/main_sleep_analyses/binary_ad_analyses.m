@@ -88,12 +88,15 @@ all_is_soz = cell(npts,1);
 all_elecs_rates = cell(npts,1);
 all_elecs_rl = cell(npts,1);
 all_elecs_names = cell(npts,1);
+all_elecs_bp = cell(npts,1);
 
 all_elecs_rates_sw = cell(npts,1);
 all_elecs_rl_sw = cell(npts,1);
 
 all_elecs_leader = cell(npts,1);
 all_elecs_leader_sw = cell(npts,1);
+
+all_elecs_bp_sw = cell(npts,1);
 
 all_elecs_ns_sw = cell(npts,1);
 
@@ -123,6 +126,7 @@ for p = 1:npts
     seq_info = summ.seq_info;
     leader = summ.leader;
     mod_midnight = summ.mod_midnight;
+    bp = summ.bp;
     
     names{p} = name;
     
@@ -154,6 +158,7 @@ for p = 1:npts
     rl = rl(~ekg,:);
     labels = labels(~ekg);
     ns = ns(~ekg,:);
+    bp = bp(~ekg,:,:);
     
     
     is_soz = is_soz(~ekg);
@@ -167,6 +172,7 @@ for p = 1:npts
     all_elecs_rl{p} = nanmean(rl,2); % mean over times
     all_elecs_names{p} = labels;
     all_elecs_leader{p} = nansum(leader,2); % I don't think I use this
+    all_elecs_bp{p} = nanmean(bp,3); % mean over times;
        
     %% Determine "wake" and "sleep" times
     [sleep,wake] = find_sleep_wake(ad,exc,disc);
@@ -198,6 +204,7 @@ for p = 1:npts
     all_elecs_rates_sw{p} = [nanmean(spikes(:,wake),2) nanmean(spikes(:,sleep),2)];
     all_elecs_rl_sw{p} = [nanmean(rl(:,wake),2) nanmean(rl(:,sleep),2)];
     all_elecs_leader_sw{p} = [nansum(leader(:,wake),2) nansum(leader(:,sleep),2)];
+    all_elecs_bp_sw{p}  = [nanmean(bp(:,:,wake),2) nanmean(bp(:,:,sleep),2)];
     
     %% Wake vs sleep coi
     all_coi(p,:) = [nanmean(coi_global(wake)) nanmean(coi_global(sleep))];
@@ -332,6 +339,7 @@ out.nspikey = nspikey;
 out.overall_rates = overall_rates;
 out.all_is_soz = all_is_soz;
 out.all_elecs_rates = all_elecs_rates;
+out.all_elecs_bp = all_elecs_bp;
 out.all_elecs_leader = all_elecs_leader;
 out.all_elecs_rl = all_elecs_rl;
 out.all_elecs_names = all_elecs_names;
@@ -339,6 +347,7 @@ out.all_elecs_rl_sw = all_elecs_rl_sw;
 out.all_elecs_rates_sw = all_elecs_rates_sw;
 out.all_elecs_leader_sw = all_elecs_leader_sw;
 out.all_elecs_ns_sw = all_elecs_ns_sw;
+out.all_elecs_bp_sw = all_elecs_bp_sw;
 out.all_tod_sw = all_tod_sw;
 out.tod_edges = tod_edges;
 

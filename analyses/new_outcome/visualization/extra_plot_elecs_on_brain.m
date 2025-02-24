@@ -1,13 +1,14 @@
-function plot_elecs_on_brain(overwrite,in_name)
+function extra_plot_elecs_on_brain
 
 p = 110;
 
 %% Get file locs
 locations = fc_toolbox_locs;
 results_folder = [locations.main_folder,'results/'];
-data_folder = '/data/Human_Data/CNT_iEEG_BIDS/';
+data_folder = '/Users/erinconrad/Desktop/research/FC_toolbox/data/brain_surf/sub-RID0652/';
 inter_folder = [results_folder,'analysis/new_outcome/data/'];
-freesurfer_path = '/tools/freesurfer/matlab/';
+%freesurfer_path = '/tools/freesurfer/matlab/';
+freesurfer_path = '/Applications/freesurfer/7.3.2/matlab/';
 out_folder = [results_folder,'analysis/new_outcome/plots/elec_locs/'];
 other_data_folder = [locations.main_folder,'data/'];
 if ~exist(out_folder,'dir')
@@ -20,12 +21,7 @@ addpath(genpath(scripts_folder));
 
 % add freesurfer path
 addpath(genpath(freesurfer_path))
-
-%% Load data file
-mt_data = load([inter_folder,'mt_out.mat']);
-mt_data = mt_data.out;
-all_missing = cellfun(@isempty,mt_data.all_spikes(:,1,1));
-names = mt_data.all_names;
+addpath(genpath('/Users/erinconrad/Desktop/research/FC_toolbox/tools/surfstat/'))
 
 %% Load pt file
 pt = load([other_data_folder,'pt.mat']);
@@ -34,25 +30,12 @@ pt = pt.pt;
 %% Load Manual validation file
 T = readtable('Manual validation.xlsx','Sheet','RIDs');
 
-non_missing = find(~all_missing);
-npts = length(non_missing);
+
 for p = 110
 %for i = 1:npts
     %name = names{non_missing(i)};
     name = pt(p).name;
-    
-    if ~isempty(in_name)
-        if ~ismember(name,in_name)
-            continue
-        end
-    end
 
-    if exist([out_folder,name,'.fig'],'file') ~=0
-        if overwrite == 0
-            fprintf('\nSkipping %s\n',name);
-            continue
-        end
-    end
     fprintf('\nDoing %s\n',name);
     % find matching row
     r = strcmp(T.name,name);
@@ -62,11 +45,7 @@ for p = 110
     rid = T.RIDs(r);
 
     % make rid text
-    if rid <100
-        folder_text = sprintf('sub-RID00%d/',rid);
-    else
-        folder_text = sprintf('sub-RID0%d/',rid);
-    end
+    folder_text = '';
 
     % Load T1 file and get transformation matrix
    
@@ -185,13 +164,15 @@ for p = 110
     lh.LineStyle = 'none';
     lh.FaceAlpha = 0.1;
     lh.FaceColor = [0.7 0.6 0.6];
-    scatter3(locs(~mt,1),locs(~mt,2),locs(~mt,3),'markerfacecolor','w','markeredgecolor','k')
-    scatter3(locs(mt,1),locs(mt,2),locs(mt,3),'markerfacecolor','w','markeredgecolor','r')
+    scatter3(locs(~mt,1),locs(~mt,2),locs(~mt,3),'markerfacecolor','k','markeredgecolor','k')
+    scatter3(locs(mt,1),locs(mt,2),locs(mt,3),'markerfacecolor','r','markeredgecolor','r')
+    %{
     if ~isempty(pt(p).atropos)
         text(locs(:,1),locs(:,2),locs(:,3),...
             cellfun(@(x,y,z) sprintf('%s, %s, %s',x,y,z), enames, atropos_labels, dkt_labels,'uniformoutput',false),...
             'HorizontalAlignment','center','fontsize',8)
     end
+    %}
     
     %{
     % Name LA, LB, etc.
@@ -218,10 +199,11 @@ for p = 110
     end
     %}
     
-    view(-180,-90)%view(-176,4) %view(-182,-5)
+    view(-185,-90)%view(-176,4) %view(-182,-5)
     axis off
-    print(gcf,[out_folder,name],'-dpng')
-    savefig(gcf,[out_folder,name,'.fig'])
+    set(gcf,'renderer','painters')
+    print(gcf,[out_folder,name,'_extra'],'-dpng')
+    savefig(gcf,[out_folder,name,'_extra','.fig'])
     
     close(gcf)
 
