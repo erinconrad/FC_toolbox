@@ -204,7 +204,7 @@ for p = 1:npts
     all_elecs_rates_sw{p} = [nanmean(spikes(:,wake),2) nanmean(spikes(:,sleep),2)];
     all_elecs_rl_sw{p} = [nanmean(rl(:,wake),2) nanmean(rl(:,sleep),2)];
     all_elecs_leader_sw{p} = [nansum(leader(:,wake),2) nansum(leader(:,sleep),2)];
-    all_elecs_bp_sw{p}  = [nanmean(bp(:,:,wake),2) nanmean(bp(:,:,sleep),2)];
+    all_elecs_bp_sw{p}  = {nanmean(bp(:,:,wake),3), nanmean(bp(:,:,sleep),3)};
     
     %% Wake vs sleep coi
     all_coi(p,:) = [nanmean(coi_global(wake)) nanmean(coi_global(sleep))];
